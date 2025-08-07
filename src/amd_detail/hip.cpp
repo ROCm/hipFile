@@ -162,4 +162,34 @@ Hip::hipAmdFileWrite(hipAmdFileHandle_t handle, void *devicePtr, uint64_t size, 
     return bytes_written;
 }
 
+void
+Hip::hipLaunchHostFunc(hipStream_t stream, hipHostFn_t fn, void *user_data) const
+{
+    (void)throwOnHipError<Hip::RuntimeError>(::hipLaunchHostFunc(stream, fn, user_data));
+}
+
+void
+Hip::hipLaunchKernel(const void *function_address, dim3 numBlocks, dim3 dimBlocks, void **args,
+                     size_t sharedMemBytes, hipStream_t stream) const
+{
+    (void)throwOnHipError<Hip::RuntimeError>(
+        ::hipLaunchKernel(function_address, numBlocks, dimBlocks, args, sharedMemBytes, stream));
+}
+
+int
+Hip::hipDeviceGetAttribute(hipDeviceAttribute_t attr, int device_id) const
+{
+    int attr_value;
+    (void)throwOnHipError<Hip::RuntimeError>(::hipDeviceGetAttribute(&attr_value, attr, device_id));
+    return attr_value;
+}
+
+hipDevice_t
+Hip::hipStreamGetDevice(hipStream_t stream) const
+{
+    hipDevice_t device_id;
+    (void)throwOnHipError<Hip::RuntimeError>(::hipStreamGetDevice(stream, &device_id));
+    return device_id;
+}
+
 }
