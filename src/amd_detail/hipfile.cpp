@@ -4,6 +4,7 @@
  */
 
 #include "backend.h"
+#include "backend/fallback.h"
 #include "batch/batch.h"
 #include "buffer.h"
 #include "context.h"
@@ -44,6 +45,16 @@ catch (const Hip::RuntimeError &e) {
 }
 catch (...) {
     return {hipFileInternalError, hipSuccess};
+}
+
+static void
+checkNull(std::initializer_list<void *> ptrs)
+{
+    for (auto ptr : ptrs) {
+        if (!ptr) {
+            throw hipFileError_t{hipFileInvalidValue, hipSuccess};
+        }
+    }
 }
 
 // Ensures that the driver is initialized without incrementing the reference
@@ -400,52 +411,54 @@ catch (...) {
     return;
 }
 
-hipFileError_t
-hipFileReadAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
-                 hoff_t *buffer_offset_p, ssize_t *bytes_read_p, hipStream_t stream)
+static hipFileError_t
+hipFileIOAsync(IoType io_type, hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
+               hoff_t *buffer_offset_p, ssize_t *bytes_transferred_p, hipStream_t hipStream)
 try {
     if (Context<DriverState>::get()->getRefCount() == 0) {
-        // Match cuFile behaviour
         ensureDriverInit();
         return {hipFileInvalidValue, hipSuccess};
     }
 
-    (void)fh;
-    (void)buffer_base;
-    (void)size_p;
-    (void)file_offset_p;
-    (void)buffer_offset_p;
-    (void)bytes_read_p;
-    (void)stream;
+    checkNull({buffer_base, size_p, file_offset_p, buffer_offset_p, bytes_transferred_p});
 
-    throw std::runtime_error("Not Implemented");
+    auto [file, buffer, stream] =
+        Context<DriverState>::get()->getFileBufferAndStream(fh, buffer_base, *size_p, 0, hipStream);
+    Fallback().async_io(io_type, file, buffer, size_p, file_offset_p, buffer_offset_p, bytes_transferred_p,
+                        stream);
+
+    return {hipFileSuccess, hipSuccess};
+}
+catch (hipFileError_t e) {
+    return e;
+}
+catch (const std::invalid_argument &) {
+    return {hipFileInvalidValue, hipSuccess};
+}
+catch (const std::bad_alloc &) {
+    return {hipFileHipDriverError, hipErrorOutOfMemory};
+}
+catch (const FileNotRegistered &) {
+    return {hipFileHandleNotRegistered, hipSuccess};
 }
 catch (...) {
     return handle_exception();
+}
+
+hipFileError_t
+hipFileReadAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
+                 hoff_t *buffer_offset_p, ssize_t *bytes_read_p, hipStream_t stream)
+{
+    return hipFileIOAsync(IoType::Read, fh, buffer_base, size_p, file_offset_p, buffer_offset_p, bytes_read_p,
+                          stream);
 }
 
 hipFileError_t
 hipFileWriteAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
                   hoff_t *buffer_offset_p, ssize_t *bytes_written_p, hipStream_t stream)
-try {
-    if (Context<DriverState>::get()->getRefCount() == 0) {
-        // Match cuFile behaviour
-        ensureDriverInit();
-        return {hipFileInvalidValue, hipSuccess};
-    }
-
-    (void)fh;
-    (void)buffer_base;
-    (void)size_p;
-    (void)file_offset_p;
-    (void)buffer_offset_p;
-    (void)bytes_written_p;
-    (void)stream;
-
-    throw std::runtime_error("Not Implemented");
-}
-catch (...) {
-    return handle_exception();
+{
+    return hipFileIOAsync(IoType::Write, fh, buffer_base, size_p, file_offset_p, buffer_offset_p,
+                          bytes_written_p, stream);
 }
 
 hipFileError_t
