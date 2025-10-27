@@ -6,6 +6,7 @@
 #include "hipfile-warnings.h"
 #include "hipfile.h"
 #include "test-common.h"
+#include "test-options.h"
 #include "test-shared-fixtures.h"
 
 #include <errno.h>
@@ -18,6 +19,8 @@
 #include <vector>
 
 using namespace std;
+
+extern SystemTestOptions test_env;
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 
@@ -61,7 +64,7 @@ TEST_F(DriverInit, hipFileHandleRegisterNullDescr)
 
 TEST_F(DriverInit, hipFileHandleRegisterNullHandle)
 {
-    Tmpfile tmpfile;
+    Tmpfile tmpfile{test_env.ais_capable_dir};
 
     hipFileDescr_t descr{};
     descr.type      = hipFileHandleTypeOpaqueFD;
@@ -81,7 +84,7 @@ TEST_F(DriverInit, hipFileHandleRegisterNullHandle)
 
 TEST_F(DriverInit, hipFileHandleRegisterInitsDriver)
 {
-    Tmpfile tmpfile;
+    Tmpfile tmpfile{test_env.ais_capable_dir};
 
     hipFileDescr_t descr{};
     descr.type      = hipFileHandleTypeOpaqueFD;
@@ -94,7 +97,7 @@ TEST_F(DriverInit, hipFileHandleRegisterInitsDriver)
 
 TEST_F(DriverInit, hipFileDriverOpenAfterHandleRegisterIncrementsUseCount)
 {
-    Tmpfile tmpfile;
+    Tmpfile tmpfile{test_env.ais_capable_dir};
 
     hipFileDescr_t descr{};
     descr.type      = hipFileHandleTypeOpaqueFD;
@@ -111,12 +114,15 @@ TEST_F(DriverInit, hipFileDriverOpenAfterHandleRegisterIncrementsUseCount)
 TEST_F(DriverInit, hipFileHandleRegisterThreadedInitsDriverOnce)
 {
     constexpr size_t             count{64};
-    std::vector<Tmpfile>         tmpfiles(count);
+    std::vector<Tmpfile>         tmpfiles;
     std::vector<std::thread>     threads;
     std::vector<hipFileDescr_t>  descrs(count);
     std::vector<hipFileHandle_t> handles(count);
 
+    tmpfiles.reserve(count);
+
     for (size_t i{0}; i < count; i++) {
+        tmpfiles.emplace_back(test_env.ais_capable_dir);
         descrs[i].type      = hipFileHandleTypeOpaqueFD;
         descrs[i].handle.fd = tmpfiles[i].fd;
     }
@@ -140,7 +146,7 @@ TEST_F(DriverInit, hipFileHandleRegisterThreadedInitsDriverOnce)
 
 TEST_F(DriverInit, hipFileDriverCloseDeregisteresHandle)
 {
-    Tmpfile         tmpfile;
+    Tmpfile         tmpfile{test_env.ais_capable_dir};
     hipFileHandle_t handle{};
     hipFileDescr_t  descr{};
 

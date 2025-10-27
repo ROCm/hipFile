@@ -66,6 +66,17 @@ struct Tmpfile {
         }
     }
 
+    Tmpfile(std::string directory)
+    {
+        directory += "/hipFile.XXXXXX";
+        if ((fd = mkstemp(directory.data())) == -1) {
+            throw std::runtime_error("Could not create temporary file");
+        }
+        if (unlink(directory.c_str()) == -1) {
+            throw std::runtime_error("Could not unlink temporary file)");
+        }
+    }
+
     ~Tmpfile()
     {
         close(fd);

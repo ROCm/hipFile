@@ -27,6 +27,7 @@ set(SYSTEM_TEST_SOURCE_FILES
     system/buffer.cpp
     system/config.cpp
     system/driver.cpp
+    system/main.cpp
     system/version.cpp
 )
 
@@ -70,7 +71,7 @@ ais_add_executable(
     SYSINCLS ${TEST_SYSINCLS}
 )
 target_link_libraries(hipfile_system_tests PRIVATE GTest::gtest)
-target_link_libraries(hipfile_system_tests PRIVATE GTest::gtest_main)
+target_link_libraries(hipfile_system_tests PRIVATE Boost::program_options)
 if(CMAKE_HIP_PLATFORM STREQUAL "amd")
     target_link_libraries(hipfile_system_tests PRIVATE rocfile_shared)
 endif()
