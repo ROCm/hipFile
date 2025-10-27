@@ -59,7 +59,7 @@ endif()
 
 ais_gtest_discover_tests(
     hipfile_tests
-    WORKING_DIRECTORY ${AIS_TEST_DIR}
+    WORKING_DIRECTORY ${AIS_CAPABLE_DIR}
     PROPERTIES LABELS unit
     TEST_LIST hipfile_unit_tests
 )
@@ -78,7 +78,7 @@ endif()
 
 gtest_discover_tests(
     hipfile_system_tests
-    WORKING_DIRECTORY ${AIS_TEST_DIR}
+    WORKING_DIRECTORY ${AIS_CAPABLE_DIR}
     PROPERTIES LABELS system
 )
 
