@@ -23,8 +23,10 @@ set(UNIT_TEST_SOURCE_FILES
 # They will not pass if a HIP capable GPU is not present
 # and configured on the system.
 set(SYSTEM_TEST_SOURCE_FILES
-    system/system.cpp
     system/buffer.cpp
+    system/config.cpp
+    system/driver.cpp
+    system/version.cpp
 )
 
 set(TEST_SYSINCLS

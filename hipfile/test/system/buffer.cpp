@@ -8,6 +8,10 @@
 #include "test-common.h"
 #include "test-shared-fixtures.h"
 
+#include <gtest/gtest.h>
+#include <hip/hip_runtime_api.h>
+#include <stdint.h>
+
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 
 class HipBuffer : public DriverInit {};
