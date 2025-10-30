@@ -10,6 +10,7 @@ RUN apt update && \
         doxygen \
         gdb \
         git \
+        libboost-program-options-dev \
         libmount-dev \
         librocthrust-dev \
         libssl-dev \
