@@ -1,11 +1,6 @@
 # hipFile / rocFile
 AMD Infinity Storage library that supports IO directly to the GPU
 
-## Setup Guides
-
-- [GPU Direct Storage on Bare Metal](docs/bare-metal.md)
-- [GPU Direct Storage in QEMU](docs/qemu.md)
-
 ## Building hipFile and rocFile
 
 Supported compilers: amdclang++, clang++, g++
