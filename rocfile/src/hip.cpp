@@ -121,18 +121,20 @@ uint64_t
 Hip::hipAmdFileRead(hipAmdFileHandle_t handle, void *devicePtr, uint64_t size, int64_t file_offset) const
 {
     static const hipAmdFileRead_t hipAmdFileReadPtr{getHipAmdFileReadPtr()};
-    uint64_t                      bytes_read;
-    int                           status;
+    uint64_t                      bytes_read{};
+    int                           status{};
 
     if (!hipAmdFileReadPtr) {
         throw Hip::SymbolNotFound("Could not find hipAmdFileRead()");
     }
 
-    (void)throwOnHipError<Hip::RuntimeError>(
-        (*hipAmdFileReadPtr)(handle, devicePtr, size, file_offset, &bytes_read, &status));
+    auto hip_error{(*hipAmdFileReadPtr)(handle, devicePtr, size, file_offset, &bytes_read, &status)};
 
     if (status) {
-        throw std::system_error(status, std::generic_category());
+        throw std::system_error(abs(status), std::generic_category());
+    }
+    else if (hip_error) {
+        throw Hip::RuntimeError(hip_error);
     }
 
     return bytes_read;
@@ -142,18 +144,20 @@ uint64_t
 Hip::hipAmdFileWrite(hipAmdFileHandle_t handle, void *devicePtr, uint64_t size, int64_t file_offset) const
 {
     static const hipAmdFileWrite_t hipAmdFileWritePtr{getHipAmdFileWritePtr()};
-    uint64_t                       bytes_written;
-    int32_t                        status;
+    uint64_t                       bytes_written{};
+    int32_t                        status{};
 
     if (!hipAmdFileWritePtr) {
         throw Hip::SymbolNotFound("Could not find hipAmdFileWrite()");
     }
 
-    (void)throwOnHipError<Hip::RuntimeError>(
-        (*hipAmdFileWritePtr)(handle, devicePtr, size, file_offset, &bytes_written, &status));
+    auto hip_error{(*hipAmdFileWritePtr)(handle, devicePtr, size, file_offset, &bytes_written, &status)};
 
     if (status) {
-        throw std::system_error(status, std::generic_category());
+        throw std::system_error(abs(status), std::generic_category());
+    }
+    else if (hip_error) {
+        throw Hip::RuntimeError(hip_error);
     }
 
     return bytes_written;
