@@ -1,0 +1,5 @@
+# codespell config file docs:
+#    https://github.com/codespell-project/codespell#using-a-config-file
+[codespell]
+check-hidden = true
+skip = ./.git
