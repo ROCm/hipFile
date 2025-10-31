@@ -1,0 +1,62 @@
+/* Copyright (c) Advanced Micro Devices, Inc. All rights reserved.
+ *
+ * SPDX-License-Identifier: MIT
+ */
+#pragma once
+
+#include "buffer.h"
+#include "file.h"
+#include "io.h"
+#include "stream.h"
+
+#include <condition_variable>
+#include <memory>
+#include <mutex>
+#include <sys/types.h>
+#include <thread>
+#include <unordered_map>
+#include <variant>
+#include <vector>
+
+namespace rocFile::async {
+
+class AsyncOp {
+public:
+    const io::IoType                   io_type;
+    std::shared_ptr<file::IFile>       file;
+    std::shared_ptr<buffer::IBuffer>   buffer;
+    std::shared_ptr<stream::IStream>   stream;
+    std::variant<size_t, size_t *>     size;
+    std::variant<const off_t, off_t *> file_offset;
+    std::variant<const off_t, off_t *> buffer_offset;
+    ssize_t *const                     bytes_transferred;
+
+    AsyncOp(const AsyncOp &)            = delete;
+    AsyncOp &operator=(const AsyncOp &) = delete;
+    AsyncOp(AsyncOp &&)                 = delete;
+    AsyncOp &&operator=(AsyncOp &&)     = delete;
+    virtual ~AsyncOp();
+
+    AsyncOp(io::IoType ioType, std::shared_ptr<file::IFile> file, std::shared_ptr<buffer::IBuffer> buffer,
+            std::shared_ptr<stream::IStream> stream, size_t *size, off_t *file_offset, off_t *buffer_offset,
+            ssize_t *bytes_transferred);
+};
+
+class AsyncMonitor {
+public:
+    virtual ~AsyncMonitor();
+    AsyncMonitor();
+
+    void addOp(std::shared_ptr<AsyncOp> op);
+    void completeOp(AsyncOp *op);
+
+private:
+    void                                                 completion_thread();
+    std::unordered_map<void *, std::shared_ptr<AsyncOp>> submitted_ops;
+    std::vector<AsyncOp *>                               completed_ops;
+    std::thread                                          thread;
+    std::mutex                                           mutex;
+    std::condition_variable                              cv;
+    bool                                                 is_finished;
+};
+}

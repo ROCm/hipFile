@@ -1,0 +1,352 @@
+/* Copyright (c) Advanced Micro Devices, Inc. All rights reserved.
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include "mbuffer.h"
+#include "mfile.h"
+#include "mstate.h"
+#include "rocfile-test.h"
+
+#include "batch/batch.h"
+#include "context.h"
+#include "hipfile-warnings.h"
+#include "invalid-enum.h"
+#include "rocfile.h"
+#include "state.h"
+
+#include <gtest/gtest.h>
+
+#include <limits>
+
+using ::testing::_;
+using ::testing::DoDefault;
+using ::testing::Return;
+using ::testing::StrictMock;
+using ::testing::Throw;
+
+using namespace rocFile;
+using rocFile::batch::BatchContext;
+using rocFile::batch::BatchContextMap;
+using rocFile::batch::BatchOperation;
+using rocFile::batch::IBatchContext;
+
+HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
+
+struct RocFileBatch : public RocFileUnopened {
+    BatchContextMap                      batch_map = BatchContextMap{};
+    std::unique_ptr<rocFileIOParams_t>   io_params;
+    std::shared_ptr<StrictMock<MBuffer>> default_mock_buffer;
+    std::shared_ptr<StrictMock<MFile>>   default_mock_file;
+    const rocFileHandle_t                file_handle{reinterpret_cast<void *>(0xDEADBEEF)};
+    void *const                          buffer_pointer{reinterpret_cast<void *>(0x0BADF00D)};
+
+    void SetUp() override
+    {
+        default_mock_buffer = std::make_shared<StrictMock<MBuffer>>();
+        EXPECT_CALL(*default_mock_buffer, getBuffer).WillRepeatedly(Return(buffer_pointer));
+        EXPECT_CALL(*default_mock_buffer, getLength).WillRepeatedly(Return(1));
+
+        default_mock_file = std::make_shared<StrictMock<MFile>>();
+        EXPECT_CALL(*default_mock_file, getHandle).WillRepeatedly(Return(file_handle));
+
+        io_params                      = std::make_unique<rocFileIOParams_t>();
+        io_params->u.batch.devPtr_base = const_cast<void *>(buffer_pointer);
+        io_params->u.batch.size        = 1;
+        io_params->fh                  = file_handle;
+        io_params->mode                = rocFileBatch;
+        io_params->opcode              = rocFileBatchRead;
+    }
+
+    RocFileBatch()
+    {
+        batch_map.clear();
+    }
+};
+
+TEST_F(RocFileBatch, CreateOperationRead)
+{
+    io_params->opcode = rocFileBatchRead;
+
+    BatchOperation op = BatchOperation{std::move(io_params), default_mock_buffer, default_mock_file};
+}
+
+TEST_F(RocFileBatch, CreateOperationWrite)
+{
+    io_params->opcode = rocFileBatchWrite;
+
+    BatchOperation op = BatchOperation{std::move(io_params), default_mock_buffer, default_mock_file};
+}
+
+TEST_F(RocFileBatch, CreateOperationBadBuffer)
+{
+    EXPECT_CALL(*default_mock_buffer, getBuffer).WillOnce(Return(reinterpret_cast<void *>(0xFACEFEED)));
+    EXPECT_THROW(BatchOperation(std::move(io_params), default_mock_buffer, default_mock_file),
+                 std::invalid_argument);
+}
+
+TEST_F(RocFileBatch, CreateOperationBadFileHandle)
+{
+    EXPECT_CALL(*default_mock_file, getHandle)
+        .WillOnce(Return(reinterpret_cast<rocFileHandle_t>(0xFACEFEED)));
+    EXPECT_THROW(BatchOperation(std::move(io_params), default_mock_buffer, default_mock_file),
+                 std::invalid_argument);
+}
+
+TEST_F(RocFileBatch, CreateOperationBadbufferOffsetIsNegative)
+{
+    io_params->u.batch.devPtr_offset = -1;
+
+    EXPECT_THROW(BatchOperation(std::move(io_params), default_mock_buffer, default_mock_file),
+                 std::invalid_argument);
+}
+
+TEST_F(RocFileBatch, CreateOperationBadBufferOffsetExceedsBuffer)
+{
+    io_params->u.batch.devPtr_offset = 1;
+
+    EXPECT_THROW(BatchOperation(std::move(io_params), default_mock_buffer, default_mock_file),
+                 std::invalid_argument);
+}
+
+TEST_F(RocFileBatch, CreateOperationBadOperationLargerThanBuffer)
+{
+    io_params->u.batch.size = 2;
+
+    EXPECT_THROW(BatchOperation(std::move(io_params), default_mock_buffer, default_mock_file),
+                 std::invalid_argument);
+}
+
+TEST_F(RocFileBatch, CreateOperationBadOperationLargerThanBufferWithOffset)
+{
+    EXPECT_CALL(*default_mock_buffer, getLength).WillRepeatedly(Return(10));
+    io_params->u.batch.devPtr_offset = 6;
+    io_params->u.batch.size          = 5;
+
+    EXPECT_THROW(BatchOperation(std::move(io_params), default_mock_buffer, default_mock_file),
+                 std::invalid_argument);
+}
+
+TEST_F(RocFileBatch, CreateOperationBadFileOffsetIsNegative)
+{
+    io_params->u.batch.file_offset = -1;
+
+    EXPECT_THROW(BatchOperation(std::move(io_params), default_mock_buffer, default_mock_file),
+                 std::invalid_argument);
+}
+
+TEST_F(RocFileBatch, CreateOperationBadOpcode)
+{
+    io_params->opcode = invalidEnum<rocFileOpcode_t>(-1);
+
+    EXPECT_THROW(BatchOperation(std::move(io_params), default_mock_buffer, default_mock_file),
+                 std::invalid_argument);
+}
+
+TEST_F(RocFileBatch, CreateOperationBadMode)
+{
+    io_params->mode = invalidEnum<rocFileBatchMode_t>(-1);
+
+    EXPECT_THROW(BatchOperation(std::move(io_params), default_mock_buffer, default_mock_file),
+                 std::invalid_argument);
+}
+
+TEST_F(RocFileBatch, CreateContext)
+{
+    rocFileBatchHandle_t handle = batch_map.createContext(32);
+
+    ASSERT_NE(nullptr, handle);
+}
+
+TEST_F(RocFileBatch, CreateTwoContexts)
+{
+    rocFileBatchHandle_t handle1 = batch_map.createContext(1);
+    rocFileBatchHandle_t handle2 = batch_map.createContext(1);
+
+    ASSERT_NE(handle1, handle2);
+}
+
+TEST_F(RocFileBatch, CreateContextZeroCapacity)
+{
+    ASSERT_THROW(batch_map.createContext(0), std::invalid_argument);
+}
+
+TEST_F(RocFileBatch, CreateContextMaxCapacity)
+{
+    rocFileBatchHandle_t handle = batch_map.createContext(BatchContext::MAX_SIZE);
+
+    ASSERT_NE(nullptr, handle);
+}
+
+TEST_F(RocFileBatch, CreateContextOverCapacity)
+{
+    ASSERT_THROW(batch_map.createContext(BatchContext::MAX_SIZE + 1), std::invalid_argument);
+}
+
+TEST_F(RocFileBatch, DestroyContext)
+{
+    rocFileBatchHandle_t handle = batch_map.createContext(1);
+
+    batch_map.destroyContext(handle);
+}
+
+TEST_F(RocFileBatch, DestroyMissingContext)
+{
+    ASSERT_THROW(batch_map.destroyContext(reinterpret_cast<rocFileBatchHandle_t>(1)), batch::InvalidHandle);
+}
+
+TEST_F(RocFileBatch, DestroyNullptrContext)
+{
+    ASSERT_THROW(batch_map.destroyContext(nullptr), batch::InvalidHandle);
+}
+
+TEST_F(RocFileBatch, GetContext)
+{
+    rocFileBatchHandle_t           handle  = batch_map.createContext(1);
+    std::shared_ptr<IBatchContext> context = batch_map.get(handle);
+
+    ASSERT_EQ(handle, context.get());
+}
+
+TEST_F(RocFileBatch, GetNullptrContext)
+{
+    ASSERT_THROW(batch_map.get(nullptr), batch::InvalidHandle);
+}
+
+TEST_F(RocFileBatch, GetInvalidContext)
+{
+    ASSERT_THROW(batch_map.get(reinterpret_cast<rocFileBatchHandle_t>(0xBAC00001)), batch::InvalidHandle);
+}
+
+TEST_F(RocFileBatch, GetDestroyedContext)
+{
+    rocFileBatchHandle_t handle = batch_map.createContext(1);
+    batch_map.destroyContext(handle);
+    ASSERT_THROW(batch_map.get(handle), batch::InvalidHandle);
+}
+
+struct RocFileBatchContext : public RocFileUnopened {
+    BatchContextMap                           batch_map = BatchContextMap{};
+    std::shared_ptr<IBatchContext>            _context;
+    unsigned                                  _context_capacity = 2;
+    std::unique_ptr<StrictMock<MDriverState>> mock_driver_state;
+
+    rocFileIOParams_t                    io_params{};
+    std::shared_ptr<StrictMock<MBuffer>> default_mock_buffer;
+    int                                  default_mock_buffer_length = 1;
+    std::shared_ptr<StrictMock<MFile>>   default_mock_file;
+
+    void SetUp() override
+    {
+        default_mock_buffer = std::make_shared<StrictMock<MBuffer>>();
+        EXPECT_CALL(*default_mock_buffer, getBuffer).WillRepeatedly(Return(reinterpret_cast<void *>(0x123)));
+        EXPECT_CALL(*default_mock_buffer, getLength).WillRepeatedly(Return(default_mock_buffer_length));
+
+        default_mock_file = std::make_shared<StrictMock<MFile>>();
+        EXPECT_CALL(*default_mock_file, getHandle).WillRepeatedly(Return(default_mock_file.get()));
+
+        file_buffer_pair default_fb_pair = {default_mock_file, default_mock_buffer};
+
+        io_params.u.batch.devPtr_base = default_mock_buffer->getBuffer();
+        io_params.u.batch.size        = 1;
+        io_params.fh                  = default_mock_file->getHandle();
+        io_params.mode                = rocFileBatch;
+        io_params.opcode              = rocFileBatchRead;
+
+        mock_driver_state = std::make_unique<StrictMock<MDriverState>>();
+        _context          = batch_map.get(batch_map.createContext(_context_capacity));
+        // May be overridden with EXPECT_CALL in the test.
+        EXPECT_CALL(*mock_driver_state, getFileAndBuffer).WillRepeatedly(Return(default_fb_pair));
+    }
+
+    void TearDown() override
+    {
+        batch_map.destroyContext(_context.get());
+        mock_driver_state.reset();
+    }
+};
+
+TEST_F(RocFileBatchContext, SubmitSingleGoodOp)
+{
+    _context->submit_operations(&io_params, 1);
+}
+
+TEST_F(RocFileBatchContext, SubmitZeroOperations)
+{
+    _context->submit_operations(nullptr, 0);
+}
+
+TEST_F(RocFileBatchContext, SubmitOverCapacity)
+{
+    // We should fail before we ever try touching the nullptr.
+    ASSERT_THROW(_context->submit_operations(nullptr, _context_capacity + 1), std::invalid_argument);
+}
+
+TEST_F(RocFileBatchContext, SubmitOverCapacityOverMultipleSubmissions)
+{
+    // Submit one at a time up to the capacity.
+    // In the future we might care that we are submitting the same operation.
+    for (unsigned i = 0; i < _context_capacity; i++) {
+        printf("i: %u\n", i);
+        _context->submit_operations(&io_params, 1);
+    }
+
+    ASSERT_THROW(_context->submit_operations(nullptr, 1), std::invalid_argument);
+}
+
+TEST_F(RocFileBatchContext, SubmitSingleBadBuffer)
+{
+    EXPECT_CALL(*mock_driver_state, getFileAndBuffer).WillOnce(Throw(buffer::NotRegistered()));
+    ASSERT_THROW(_context->submit_operations(&io_params, 1), buffer::NotRegistered);
+}
+
+TEST_F(RocFileBatchContext, SubmitSingleBadFileHandle)
+{
+    EXPECT_CALL(*mock_driver_state, getFileAndBuffer).WillOnce(Throw(file::NotRegistered()));
+    ASSERT_THROW(_context->submit_operations(&io_params, 1), file::NotRegistered);
+}
+
+// BatchOperation is not mocked.
+TEST_F(RocFileBatchContext, SubmitSingleBadParamBufferOffsetNegative)
+{
+    rocFileIOParams_t bad_io_params     = io_params;
+    bad_io_params.u.batch.devPtr_offset = -1;
+    ASSERT_THROW(_context->submit_operations(&bad_io_params, 1), std::invalid_argument);
+}
+
+TEST_F(RocFileBatchContext, SubmitSingleBadParamBufferOffsetTooLarge)
+{
+    rocFileIOParams_t bad_io_params     = io_params;
+    bad_io_params.u.batch.devPtr_offset = default_mock_buffer_length;
+    ASSERT_THROW(_context->submit_operations(&bad_io_params, 1), std::invalid_argument);
+}
+
+TEST_F(RocFileBatchContext, SubmitSingleBadParamIOSizeTooLarge)
+{
+    rocFileIOParams_t bad_io_params = io_params;
+    bad_io_params.u.batch.size      = static_cast<size_t>(default_mock_buffer_length + 1);
+    ASSERT_THROW(_context->submit_operations(&bad_io_params, 1), std::invalid_argument);
+}
+
+TEST_F(RocFileBatchContext, SubmitSingleBadParamFileOffsetNegative)
+{
+    rocFileIOParams_t bad_io_params   = io_params;
+    bad_io_params.u.batch.file_offset = -1;
+    ASSERT_THROW(_context->submit_operations(&bad_io_params, 1), std::invalid_argument);
+}
+
+TEST_F(RocFileBatchContext, SubmitSingleBadParamOpcodeInvalid)
+{
+    rocFileIOParams_t bad_io_params = io_params;
+    bad_io_params.opcode            = invalidEnum<rocFileOpcode_t>(-1);
+    ASSERT_THROW(_context->submit_operations(&bad_io_params, 1), std::invalid_argument);
+}
+
+TEST_F(RocFileBatchContext, SubmitSingleBadParamModeInvalid)
+{
+    rocFileIOParams_t bad_io_params = io_params;
+    bad_io_params.mode              = invalidEnum<rocFileBatchMode_t>(-1);
+    ASSERT_THROW(_context->submit_operations(&bad_io_params, 1), std::invalid_argument);
+}
+
+HIPFILE_WARN_NO_GLOBAL_CTOR_ON

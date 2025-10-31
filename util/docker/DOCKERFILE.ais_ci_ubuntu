@@ -1,0 +1,41 @@
+FROM rocm/dev-ubuntu-24.04:6.4.1
+LABEL org.opencontainers.image.source=https://github.com/ROCm/rocs-internal
+
+# CI Dependencies
+RUN apt update && \
+    apt install -y \
+        clang \
+        cmake \
+        curl \
+        doxygen \
+        gdb \
+        git \
+        libmount-dev \
+        librocthrust-dev \
+        libssl-dev \
+        llvm-dev \
+        rocm-llvm-dev
+
+# Install a minimal CUDA SDK
+# HIP depends on the ROCm libraries being installed.
+# This means we are unable to have a separate CUDA+HIP image
+# without ROCm.
+RUN curl https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb \
+    -o cuda-repo-install.deb
+RUN apt install ./cuda-repo-install.deb
+# https://gitlab.com/nvidia/container-images/cuda/blob/master/dist/12.6.1/ubuntu2404/devel/Dockerfile
+# Attempt a "minimal" CUDA Dev install.
+RUN apt update && \
+    apt install -y \
+    cuda-minimal-build-12-9 \
+    libcufile-dev-12-9 \
+    libnvidia-compute-570-server
+
+# Add ROCm and CUDA bin directories to the path
+ENV PATH=/usr/local/cuda/bin:/opt/rocm/bin:${PATH}
+
+# AIS Code Repository Mount Point
+VOLUME /mnt/ais
+
+# Generic Mount point for container to access AIS-capable storage.
+VOLUME /mnt/ais-fs

@@ -1,0 +1,20 @@
+/* Copyright (c) Advanced Micro Devices, Inc. All rights reserved.
+ *
+ * SPDX-License-Identifier: MIT
+ */
+#pragma once
+
+#include "stream.h"
+
+namespace rocFile {
+
+class MStream : public stream::IStream {
+public:
+    MOCK_METHOD(hipStream_t, getHipStream, (), (const override));
+    MOCK_METHOD(bool, fixedBufferOffset, (), (const override));
+    MOCK_METHOD(bool, fixedFileOffset, (), (const override));
+    MOCK_METHOD(bool, fixedIOSize, (), (const override));
+    MOCK_METHOD(bool, pageAligned, (), (const override));
+};
+
+}

@@ -1,0 +1,65 @@
+name: check-jenkins
+run-name: Verify Jenkins CI completed successfully.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened] # Defaults
+  workflow_dispatch:
+permissions:
+  actions: write
+  contents: read
+  statuses: read
+jobs:
+  check-for-jenkins-ci:
+    runs-on: ubuntu-24.04
+    steps:
+      # https://docs.github.com/en/rest/commits/statuses?apiVersion=2022-11-28#get-the-combined-status-for-a-specific-reference
+      - name: Check Jenkins CI job status
+        uses: actions/github-script@v8
+        with:
+          script: |
+            // What Jenkins jobs to check
+            const jenkinsCIJobs = [
+              'mci/main/precheckin(rocs-internal)'
+            ];
+
+            console.log(`Using context.payload.pull_request.head.sha: ${context.payload.pull_request.head.sha}`);
+            const { data: githubData } = await github.rest.repos.getCombinedStatusForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.payload.pull_request.head.sha,
+            });
+            // console.debug('::debug::Full combined status response:', JSON.stringify(githubData, null, 2));
+
+            const allCIStatuses = {};
+            for (const status of githubData.statuses) {
+              allCIStatuses[status.context] = status.state;
+            }
+            const missingJenkinsCIJobs = jenkinsCIJobs.filter(name => !(name in allCIStatuses));
+            const pendingJenkinsCIJobs = jenkinsCIJobs.filter(name => allCIStatuses[name] === 'pending');
+            const failedJenkinsCIJobs = jenkinsCIJobs.filter(name =>
+              allCIStatuses[name] === 'failure' || allCIStatuses[name] === 'error'
+            );
+            const passedJenkinsCIJobs = jenkinsCIJobs.filter(name => allCIStatuses[name] === 'success');
+
+            console.log(`Missing Jenkins CI Jobs: ${missingJenkinsCIJobs.join(', ')}`);
+            if (missingJenkinsCIJobs.length !== 0) {
+              console.log(`::error title=Missing Jobs:: ${missingJenkinsCIJobs.length} jobs missing.`);
+            }
+
+            console.log(`Pending Jenkins CI Jobs: ${pendingJenkinsCIJobs.join(', ')}`);
+            if (pendingJenkinsCIJobs.length !== 0) {
+              console.log(`::error title=Pending Jobs:: ${pendingJenkinsCIJobs.length} jobs pending completion.`);
+            }
+
+            console.log(`Failed Jenkins CI Jobs: ${failedJenkinsCIJobs.join(', ')}`);
+            if (failedJenkinsCIJobs.length !== 0 ) {
+              console.log(`::error title=Failed Jobs:: ${failedJenkinsCIJobs.length} jobs failed.`);
+            }
+
+            console.log(`Passed Jenkins CI Jobs: ${passedJenkinsCIJobs.join(', ')}`);
+            console.log(`::notice title=Passed Jobs:: ${passedJenkinsCIJobs.length} jobs completed.`);
+
+            if (passedJenkinsCIJobs.length !== jenkinsCIJobs.length) {
+              throw new Error('Not all Jenkins CI Jobs have passed.');
+            }
+            console.log('All Jenkins CI Jobs have passed.');

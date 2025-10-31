@@ -1,0 +1,410 @@
+name: AIS # Mono-workflow - May be advantageous to split up
+run-name: Build, Test, and Analyze AIS
+env:
+  AIS_MOUNT_PATH: /mnt/ais/ext4
+  AIS_DOCKER_REGISTRY: ghcr.io/rocm/rocs-internal
+  AIS_CI_IMAGE_NAME: ais_ci_${{inputs.platform}}
+  AIS_PR_BASE_URL: https://github.com/ROCm/rocs-internal/pull
+on:
+  workflow_call:
+    inputs:
+      platform:
+        required: true
+        type: string
+permissions:
+  contents: read
+  packages: write
+jobs:
+  build_AIS_image:
+    runs-on: [ubuntu-24.04]
+    container: docker:28.5
+    steps:
+      - name: Set AIS CI image environment variables
+        run: |
+          echo "AIS_CI_DEV_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
+            | sed 's|[^a-zA-Z0-9]|-|g')" >> "$GITHUB_ENV"
+          echo "AIS_CI_LATEST_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}:latest" >> "$GITHUB_ENV"
+          echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
+      - name: Fetching code repository...
+        uses: actions/checkout@v5
+      - name: Authenticating to GitHub Container Registry.
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup Docker Builder
+        uses: docker/setup-buildx-action@v3.11.1
+        with:
+          name: ais-builder
+          driver: docker-container
+          cache-binary: false # True uses the GHA Cache Backend.
+      - name: Build base image for AIS CI
+        run: |
+          docker buildx build \
+            -f ${GITHUB_WORKSPACE}/util/docker/DOCKERFILE.${{ env.AIS_CI_IMAGE_NAME }} \
+            --label "org.opencontainers.image.description= \
+              ${{ env.AIS_CI_IMAGE_NAME }} Development Image for AIS CI using branch \
+              ${{ github.head_ref }} for PR #${AIS_PR_NUMBER}. \
+              PR URL: ${{ env.AIS_PR_BASE_URL }}/${AIS_PR_NUMBER}" \
+            --cache-to=type=registry,ref="${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:cache" \
+            --cache-from=type=registry,ref="${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:cache" \
+            --push \
+            -t ${AIS_CI_DEV_IMAGE} \
+            ${GITHUB_WORKSPACE}
+  compile_on_AMD:
+    runs-on: [ubuntu-24.04]
+    needs: build_AIS_image
+    steps:
+      - name: Get PR number and store it as a environment variable
+        run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
+      - name: Set AIS CI image environment variables
+        run: |
+          echo "AIS_CI_DEV_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
+            | sed 's|[^a-zA-Z0-9]|-|g')" >> "$GITHUB_ENV"
+          echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{inputs.platform}}" >> "$GITHUB_ENV"
+      - name: Fetching code repository...
+        uses: actions/checkout@v5
+      - name: Authenticating to GitHub Container Registry
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # Detach the container and run separate commands to it.
+      # Thus we can make separate explicit steps in the Github CI
+      # as if we were able to parameterize the container image in the first place.
+      - name: Starting Docker Container
+        run: |
+          docker run \
+            -dt \
+            --rm \
+            --pull always \
+            -v ${GITHUB_WORKSPACE}:/mnt/ais:ro \
+            -v ${{ env.AIS_MOUNT_PATH }}:/mnt/ais-fs \
+            --name ${AIS_CONTAINER_NAME} \
+            ${AIS_CI_DEV_IMAGE}
+      - name: Make copy of the code repository and create build directories
+        # Single quotes necessary to ensure string/command substitutions happen
+        # in the container and not on the host.
+        run: |
+          docker exec \
+            -t \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              cp -R /mnt/ais /ais
+              mkdir /ais/build
+            '
+      - name: Generate build files for hipFile and rocFile targeting the AMD platform (amdclang++)
+        run: |
+          docker exec \
+            -t \
+            -w /ais/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              cmake \
+                -DCMAKE_CXX_COMPILER=amdclang++ \
+                -DCMAKE_CXX_FLAGS="-Werror" \
+                -DCMAKE_HIP_PLATFORM=amd \
+                -DBUILD_AIS_DOCS=ON \
+                -DBUILD_CODE_COVERAGE=ON \
+                ..
+            '
+      - name: Build hipFile and rocFile for the AMD platform (amdclang++)
+        run: |
+          docker exec \
+            -t \
+            -w /ais/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              cmake --build . --parallel
+            '
+      - name: Test hipFile and rocFile for the AMD platform (amdclang++)
+        run: |
+          docker exec \
+            -t \
+            -w /ais/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              ctest -V -L "unit" --parallel
+            '
+      - name: Generate coverage summary (amdclang++)
+        run: |
+          docker exec \
+            -t \
+            -w /ais/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              export PATH="/opt/rocm/llvm/bin:$PATH"
+              ../util/llvm-coverage.sh
+              printf "# Code Coverage\n"
+              printf "\`\`\`\n"
+              cat coverage-report.txt
+              printf "\`\`\`\n"
+            ' >> $GITHUB_STEP_SUMMARY
+        if: ${{ inputs.platform == 'ubuntu' }}
+      - name: Clean CMake build directories
+        run: |
+          docker exec \
+            -t \
+            -w /ais \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              rm -rf build/*
+            '
+      - name: Cleanup & Stop the Docker container
+        if: ${{ always() }}
+        run: |
+          docker stop ${AIS_CONTAINER_NAME}
+  compile_on_AMD_other:
+    runs-on: [ubuntu-24.04]
+    needs: build_AIS_image
+    strategy:
+      fail-fast: false
+      matrix:
+        alternate_compilers:
+          - clang++
+          - g++
+    steps:
+      - name: Get PR number and store it as a environment variable
+        run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
+      - name: Set AIS CI image environment variables
+        run: |
+          echo "AIS_CI_DEV_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
+            | sed 's|[^a-zA-Z0-9]|-|g')" >> "$GITHUB_ENV"
+          echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{inputs.platform}}" >> "$GITHUB_ENV"
+      - name: Fetching code repository...
+        uses: actions/checkout@v5
+      - name: Authenticating to GitHub Container Registry
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Starting Docker Container
+        run: |
+          docker run \
+            -dt \
+            --rm \
+            --pull always \
+            -v ${GITHUB_WORKSPACE}:/mnt/ais:ro \
+            -v ${{ env.AIS_MOUNT_PATH }}:/mnt/ais-fs \
+            --name ${AIS_CONTAINER_NAME} \
+            ${AIS_CI_DEV_IMAGE}
+      - name: Make copy of the code repository and create build directories
+        run: |
+          docker exec \
+            -t \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              cp -R /mnt/ais /ais
+              mkdir /ais/build
+            '
+      - name: Generate build files for hipFile and rocFile targeting the AMD platform (${{ matrix.alternate_compilers }})
+        run: |
+          docker exec \
+            -t \
+            -w /ais/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              cmake \
+                -DCMAKE_CXX_COMPILER=${{ matrix.alternate_compilers }} \
+                -DCMAKE_CXX_FLAGS="-Werror" \
+                -DCMAKE_HIP_PLATFORM=amd \
+                -DBUILD_AIS_DOCS=ON \
+                ..
+            '
+      - name: Build hipFile and rocFile for the AMD platform (${{ matrix.alternate_compilers }})
+        run: |
+          docker exec \
+            -t \
+            -w /ais/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              cmake --build . --parallel
+            '
+      - name: Cleanup & Stop the Docker container
+        if: ${{ always() }}
+        run: |
+          docker stop ${AIS_CONTAINER_NAME}
+  AMD_system_tests:
+    runs-on: [linux, AIS]
+    needs: compile_on_AMD
+    steps:
+      - name: Get PR number and store it as a environment variable
+        run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
+      - name: Set AIS CI image environment variables
+        run: |
+          echo "AIS_CI_DEV_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
+            | sed 's|[^a-zA-Z0-9]|-|g')" >> "$GITHUB_ENV"
+          echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{inputs.platform}}_nvidia" >> "$GITHUB_ENV"
+      - name: Fetching code repository...
+        uses: actions/checkout@v5
+      - name: Authenticating to GitHub Container Registry
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # Detach the container and run separate commands to it.
+      # Thus we can make separate explicit steps in the Github CI
+      # as if we were able to parameterize the container image in the first place.
+      - name: Starting Docker Container
+        run: |
+          docker run \
+            -dt \
+            --rm \
+            --device=/dev/kfd \
+            --device=/dev/dri \
+            --security-opt seccomp=unconfined \
+            --pull always \
+            -v ${GITHUB_WORKSPACE}:/mnt/ais:ro \
+            -v ${{ env.AIS_MOUNT_PATH }}:/mnt/ais-fs \
+            --name ${AIS_CONTAINER_NAME} \
+            ${AIS_CI_DEV_IMAGE}
+      - name: Make copy of the code repository and create build directories
+        run: |
+          docker exec \
+            -t \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              cp -R /mnt/ais /ais
+              mkdir /ais/build
+            '
+      - name: Generate build files for hipFile and rocFile targeting the AMD platform (amdclang++)
+        run: |
+          docker exec \
+            -t \
+            -w /ais/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              cmake \
+                -DCMAKE_CXX_COMPILER=amdclang++ \
+                -DCMAKE_CXX_FLAGS="-Werror" \
+                -DCMAKE_HIP_PLATFORM=amd \
+                -DBUILD_AIS_DOCS=ON \
+                ..
+            '
+      - name: Build hipFile and rocFile for the AMD platform (amdclang++)
+        run: |
+          docker exec \
+            -t \
+            -w /ais/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              cmake --build . --parallel
+            '
+      - name: Run hipFile and rocFile system tests for the AMD platform (amdclang++)
+        run: |
+          docker exec \
+            -t \
+            -w /ais/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              ctest -V -L "system" --parallel
+            '
+      - name: Stress tests for hipFile and rocFile targeting the AMD platform (amdclang++)
+        run: |
+          docker exec \
+            -t \
+            -w /ais/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              ctest -V -L "stress" --parallel
+            '
+      - name: Cleanup & Stop the Docker container
+        if: ${{ always() }}
+        run: |
+          docker stop ${AIS_CONTAINER_NAME}
+  compile_on_NVIDIA:
+    runs-on: [ubuntu-24.04]
+    needs: build_AIS_image
+    strategy:
+      fail-fast: false
+      matrix:
+        supported_compilers:
+          - g++
+          - clang++
+    steps:
+      - name: Get PR number and store it as a environment variable
+        run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
+      - name: Set AIS CI image environment variables
+        run: |
+          echo "AIS_CI_DEV_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
+            | sed 's|[^a-zA-Z0-9]|-|g')" >> "$GITHUB_ENV"
+          echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{inputs.platform}}_nvidia" >> "$GITHUB_ENV"
+      - name: Fetching code repository...
+        uses: actions/checkout@v5
+      - name: Authenticating to GitHub Container Registry
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # Detach the container and run separate commands to it.
+      # Thus we can make separate explicit steps in the Github CI
+      # as if we were able to parameterize the container image in the first place.
+      - name: Starting Docker Container
+        run: |
+          docker run \
+            -dt \
+            --rm \
+            --pull always \
+            -v ${GITHUB_WORKSPACE}:/mnt/ais:ro \
+            -v ${{ env.AIS_MOUNT_PATH }}:/mnt/ais-fs \
+            --name ${AIS_CONTAINER_NAME} \
+            ${AIS_CI_DEV_IMAGE}
+      - name: Make copy of the code repository and create build directories
+        run: |
+          docker exec \
+            -t \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              cp -R /mnt/ais /ais
+              mkdir /ais/build
+            '
+      - name: Generate build files for hipFile targeting the NVIDIA platform (${{ matrix.supported_compilers }})
+        run: |
+          docker exec \
+            -t \
+            -w /ais/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              cmake \
+                -DCMAKE_CXX_COMPILER=${{ matrix.supported_compilers }} \
+                -DCMAKE_CXX_FLAGS="-Werror" \
+                -DBUILD_ROCFILE=OFF \
+                -DBUILD_HIPFILE=ON \
+                -DCMAKE_HIP_PLATFORM=nvidia \
+                -DBUILD_AIS_DOCS=ON \
+                ..
+            '
+      - name: Build hipFile for the NVIDIA platform (${{ matrix.supported_compilers }})
+        run: |
+          docker exec \
+            -t \
+            -w /ais/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              cmake --build . --parallel
+            '
+      # NVIDIA hipFile unit tests require an NVIDIA GPU to be present.
+      # See hipfile-e2e-nvidia for where they are run.
+      - name: Clean CMake build directories
+        run: |
+          docker exec \
+            -t \
+            -w /ais \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              rm -rf build/*
+            '
+      - name: Cleanup & Stop the Docker container
+        if: ${{ always() }}
+        run: |
+          docker stop ${AIS_CONTAINER_NAME}
+  Run_hipFile_e2e_NVIDIA:
+    uses: ./.github/workflows/hipfile-e2e-nvidia.yml
+    needs: build_AIS_image
+    with:
+      platform: ${{inputs.platform}}

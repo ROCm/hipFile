@@ -1,0 +1,227 @@
+# Copyright (c) Advanced Micro Devices, Inc. All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+
+# Top-level CMake file for AIS
+
+# CMake version according to latest ROCm platform requirements
+cmake_minimum_required(VERSION 3.21)
+
+# Set the default build type to Debug
+#
+# NOTE: This has to be done BEFORE the project is declared!
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type")
+endif()
+
+# Set the library version in a variable so we can use
+# it in *.in files and avoid version mismatch.
+#
+# The versions number of rocFile and hipFile are identical
+set(AIS_LIBRARY_MAJOR 0)
+set(AIS_LIBRARY_MINOR 2)
+set(AIS_LIBRARY_PATCH 0)
+set(AIS_LIBRARY_VERSION "${AIS_LIBRARY_MAJOR}.${AIS_LIBRARY_MINOR}.${AIS_LIBRARY_PATCH}")
+
+# Set the SOVERSION to the major library version (this is the default
+# but we set it explicitly to convey intent).
+#
+# Changes to minor and patch releases must NEVER break the ABI. This
+# includes things like reordering struct fields that don't break the API.
+set(AIS_LIBRARY_SOVERSION "${AIS_LIBRARY_MAJOR}")
+
+project("ais"
+    VERSION ${AIS_LIBRARY_VERSION}
+    DESCRIPTION "High-performance I/O for AMD's ROCm platform"
+    LANGUAGES C CXX HIP
+)
+
+# Use position-independent code everywhere
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+# Everything uses C++17, which is mandatory, and we disable extensions (so no -std=gnu++17)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Set the list of build types for ccmake/CMake GUI
+#
+# This turns the build type box into a multi-select so you don't have to
+# enter the names manually
+#
+# "None" sets nothing, so it's easier to override -O flags, etc.
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel" "None")
+
+# Enable CTest (the include line automatically calls enable_testing())
+include(CTest)
+
+# Enable options with dependencies
+include(CMakeDependentOption)
+
+# Ensure compile_commands.json has implicit header paths
+if(CMAKE_EXPORT_COMPILE_COMMANDS)
+    set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
+endif()
+
+#-----------------------------------------------------------------------------
+# Get the HIP platform
+#-----------------------------------------------------------------------------
+# The default is "amd" if CMAKE_HIP_PLATFORM hasn't been set
+if(NOT CMAKE_HIP_PLATFORM)
+    set(CMAKE_HIP_PLATFORM "amd" CACHE STRING "HIP platform to build with")
+endif()
+set_property(CACHE CMAKE_HIP_PLATFORM PROPERTY STRINGS "amd" "nvidia")
+
+# Set the HIP_PLATFORM environment variable so that HIP headers are
+# parsed correctly
+set(ENV{HIP_PLATFORM} ${CMAKE_HIP_PLATFORM})
+
+# Make sure the HIP platform is valid
+if(NOT CMAKE_HIP_PLATFORM STREQUAL "amd" AND NOT CMAKE_HIP_PLATFORM STREQUAL "nvidia")
+    message(FATAL_ERROR "Invalid CMAKE_HIP_PLATFORM: '${CMAKE_HIP_PLATFORM}'. Allowed values are 'amd' or 'nvidia'.")
+endif()
+
+#-----------------------------------------------------------------------------
+# Include our custom CMake code in the module path
+#-----------------------------------------------------------------------------
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+
+#-----------------------------------------------------------------------------
+# Set the path to ROCm
+#-----------------------------------------------------------------------------
+# If ROCM_PATH was set in the environment, seed it with that
+if(DEFINED ENV{ROCM_PATH})
+    set(ROCM_INITIAL_PATH "$ENV{ROCM_PATH}")
+else()
+    set(ROCM_INITIAL_PATH "/opt/rocm")
+endif()
+set(ROCM_PATH "${ROCM_INITIAL_PATH}" CACHE PATH "The path to the ROCm installation")
+
+# Add ROCm search paths
+list(APPEND CMAKE_PREFIX_PATH
+    ${ROCM_PATH}/llvm
+    ${ROCM_PATH}
+    ${ROCM_PATH}/hip
+    /opt/rocm/llvm
+    /opt/rocm
+    /opt/rocm/hip
+)
+
+#-----------------------------------------------------------------------------
+# Import useful things for later
+#-----------------------------------------------------------------------------
+include(AISAddLibraries)
+
+#-----------------------------------------------------------------------------
+# Options
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+# Code coverage (via llvm-cov)
+#
+# To use with the hipFile/rocFile libraries:
+#   - Build with BUILD_CODE_COVERAGE set to ON
+#   - Run `ctest .`
+#
+#   This should create a default.profraw file in each test directory
+#
+# In each test directory:
+#   - Run `llvm-profdata merge -output=<hipfile, etc.>.profdata default.profraw`
+#
+# The show command gives line-by-line coverage, report gives a summary
+#   - Run `llvm-cov <show|report> -instr-profile=<hipfile, etc.>.profdata`
+#
+# You can export the data to lcov or json
+#   - Run `llvm-cov export -instr-profile=ais.profdata -format=<json|lcov> > coverage.<lcov|json>`
+#-----------------------------------------------------------------------------
+option(BUILD_CODE_COVERAGE "Build with code coverage flags (llvm C++ only)" OFF)
+
+#----------------------------------------------
+# Clang "safe buffer" warnings and suggestions
+#----------------------------------------------
+include(AISClangSafeBuffers)
+
+#-------------------
+# Sanitizer options
+#-------------------
+include(AISSanitizers)
+
+#----------------------------------
+# rocfile (default OFF for NVIDIA)
+#----------------------------------
+if(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
+    set(BUILD_ROCFILE_DEFAULT OFF)
+else()
+    set(BUILD_ROCFILE_DEFAULT ON)
+endif()
+option(BUILD_ROCFILE "Build rocfile library (AMD only)" ${BUILD_ROCFILE_DEFAULT})
+
+#---------
+# hipfile
+#---------
+option(BUILD_HIPFILE "Build hipfile library" ON)
+
+#------
+# docs
+#------
+option(BUILD_AIS_DOCS "Build the rocFile/hipFile docs (requires Doxygen)" OFF)
+
+#-----------------------------------------------------------------------------
+# Find important packages for building the software
+#-----------------------------------------------------------------------------
+
+find_package(hsa-runtime64 CONFIG REQUIRED)
+if(${hsa-runtime64_FOUND})
+    message(STATUS "hsa-runtime64 found @  ${hsa-runtime64_DIR} ")
+else()
+    message(NOTICE "find_package did NOT find hsa-runtime64")
+endif()
+
+find_package(hip CONFIG REQUIRED)
+if(${hip_FOUND})
+    message(STATUS "hip found @  ${hip_DIR} ")
+else()
+    message(NOTICE "find_package did NOT find hip")
+endif()
+
+# Find the CUfile library and headers on NVIDIA
+if(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
+    find_package(CUDAToolkit REQUIRED)
+
+    if(CMAKE_HIP_PLATFORM STREQUAL "nvidia" AND CMAKE_VERSION VERSION_LESS "3.28")
+        enable_language(CUDA)
+        # Set a default architecture if not provided.
+        if(NOT CMAKE_CUDA_ARCHITECTURES)
+            set(CMAKE_CUDA_ARCHITECTURES 80)
+        endif()
+    endif()
+
+    find_library(CUFILE_LIBRARY cufile PATHS ${CUDAToolkit_LIBRARY_DIR})
+
+    if(NOT CUFILE_LIBRARY)
+        message(FATAL_ERROR "CUfile library not found")
+    endif()
+endif()
+
+if(NOT AIS_TEST_DIR)
+    set(AIS_TEST_DIR "/tmp" CACHE STRING "Directory to use for e2e tests.")
+endif()
+
+#-----------------------------------------------------------------------------
+# Subdirectories to configure/build
+#-----------------------------------------------------------------------------
+if(BUILD_ROCFILE AND CMAKE_HIP_PLATFORM STREQUAL "amd")
+    add_subdirectory(rocfile)
+endif()
+if(BUILD_HIPFILE)
+    add_subdirectory(hipfile)
+endif()
+if(BUILD_AIS_DOCS)
+    add_subdirectory(docs)
+endif()
+
+#-----------------------------------------------------------------------------
+# Set up installs (must come AFTER target creation)
+#-----------------------------------------------------------------------------
+include(AISUseROCmCMake)
+include(AISInstall)

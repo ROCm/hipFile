@@ -1,0 +1,71 @@
+/* Copyright (c) Advanced Micro Devices, Inc. All rights reserved.
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include "sys.h"
+
+#include <cstring>
+#include <fcntl.h>
+#include <libmount/libmount.h>
+#include <sys/mman.h>
+#include <syslog.h>
+
+using rocFile::Sys;
+
+template <typename ExceptionType, typename L, typename R>
+static inline R
+throwOn(const L throw_value, R value)
+{
+    if (throw_value == value) {
+        throw ExceptionType();
+    }
+    return value;
+}
+
+void *
+Sys::mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset) const
+{
+    return throwOn<Sys::RuntimeError>(reinterpret_cast<void *>(-1),
+                                      ::mmap(addr, length, prot, flags, fd, offset));
+}
+
+void
+Sys::munmap(void *addr, size_t length) const
+{
+    throwOn<Sys::RuntimeError>(-1, ::munmap(addr, length));
+}
+
+ssize_t
+Sys::pread(int fd, void *buf, size_t count, off_t offset) const
+{
+    return throwOn<Sys::RuntimeError>(-1, ::pread(fd, buf, count, offset));
+}
+
+ssize_t
+Sys::pwrite(int fd, void *buf, size_t count, off_t offset) const
+{
+    return throwOn<Sys::RuntimeError>(-1, ::pwrite(fd, buf, count, offset));
+}
+
+void
+Sys::syslog(int priority, const char *msg) const
+{
+    ::syslog(priority, "%s", msg);
+}
+
+struct stat
+Sys::fstat(int fd) const
+{
+    struct stat statbuf;
+
+    throwOn<Sys::RuntimeError>(-1, ::fstat(fd, &statbuf));
+
+    return statbuf;
+}
+
+int
+Sys::fcntl(int fd, int op, uintptr_t arg) const
+{
+    return throwOn<Sys::RuntimeError>(-1, ::fcntl(fd, op, arg));
+}

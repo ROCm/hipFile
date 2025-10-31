@@ -1,0 +1,20 @@
+name: AIS_CI
+run-name: Kicks off several AIS CI workflows for various platforms.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened] # Defaults
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  AIS_CI:
+    strategy:
+      fail-fast: false
+      matrix:
+        supported_platforms:
+          - ubuntu
+          - rocky
+          - suse
+    uses: ./.github/workflows/build_ais.yml
+    with:
+      platform: ${{matrix.supported_platforms}}

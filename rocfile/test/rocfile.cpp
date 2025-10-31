@@ -1,0 +1,110 @@
+/* Copyright (c) Advanced Micro Devices, Inc. All rights reserved.
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+/*
+ * These tests are integration-level tests against th rocFile API.
+ * They should test that the various rocFile modules are compatible with
+ * one another. Running IO is not intended to be guaranteed to run here.
+ *
+ * All tests in this file are expected to pass on a CPU-only node.
+ */
+
+#include "mbatch.h"
+#include "mstate.h"
+#include "rocfile-test.h"
+
+#include "batch/batch.h"
+#include "hipfile-warnings.h"
+#include "rocfile.h"
+
+#include <gtest/gtest.h>
+
+using namespace rocFile;
+
+using ::testing::Return;
+using ::testing::StrictMock;
+using ::testing::Throw;
+
+// Put tests inside the macros to suppress the global constructor
+// warnings
+HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
+
+struct RocFileUnit : public RocFileUnopened {
+    StrictMock<MDriverState> mock_state;
+    void                     SetUp() override
+    {
+    }
+};
+
+TEST_F(RocFileUnit, TestRocFileBatchIOSetupSuccess)
+{
+    rocFileBatchHandle_t b_handle          = nullptr;
+    rocFileBatchHandle_t expected_b_handle = reinterpret_cast<rocFileBatchHandle_t>(0x12345678);
+
+    EXPECT_CALL(mock_state, createBatchContext).WillOnce(Return(expected_b_handle));
+
+    auto result = rocFileBatchIOSetUp(&b_handle, 1);
+    EXPECT_EQ(result, ROCFILE_SUCCESS);
+    EXPECT_EQ(b_handle, expected_b_handle);
+}
+
+TEST_F(RocFileUnit, TestRocFileBatchIOSetupBadArgument)
+{
+    rocFileBatchHandle_t b_handle = nullptr;
+
+    EXPECT_CALL(mock_state, createBatchContext).WillOnce(Throw(std::invalid_argument("")));
+
+    auto result = rocFileBatchIOSetUp(&b_handle, 0);
+    EXPECT_EQ(result, ROCFILE_INVALID_VALUE);
+    EXPECT_EQ(b_handle, nullptr);
+}
+
+TEST_F(RocFileUnit, TestRocFileBatchIOSetupNullptrHandle)
+{
+    auto result = rocFileBatchIOSetUp(nullptr, 1);
+    ASSERT_EQ(result, ROCFILE_INVALID_VALUE);
+}
+
+TEST_F(RocFileUnit, TestRocFileBatchIOSubmitSuccess)
+{
+    rocFileBatchHandle_t           b_handle = reinterpret_cast<rocFileBatchHandle_t>(0x12345678);
+    rocFileIOParams_t              io_param;
+    std::shared_ptr<MBatchContext> mock_b_context = std::make_shared<MBatchContext>();
+
+    EXPECT_CALL(mock_state, getBatchContext).WillOnce(Return(mock_b_context));
+    EXPECT_CALL(*mock_b_context, submit_operations);
+
+    auto result = rocFileBatchIOSubmit(b_handle, 1, &io_param, 0);
+    ASSERT_EQ(result, ROCFILE_SUCCESS);
+}
+
+TEST_F(RocFileUnit, TestRocFileBatchIOSubmitBadHandle)
+{
+    rocFileBatchHandle_t           b_handle = nullptr;
+    rocFileIOParams_t              io_param;
+    std::shared_ptr<MBatchContext> mock_b_context = std::make_shared<MBatchContext>();
+
+    EXPECT_CALL(mock_state, getBatchContext).WillOnce(Throw(batch::InvalidHandle()));
+    EXPECT_CALL(*mock_b_context, submit_operations).Times(0);
+
+    auto           result          = rocFileBatchIOSubmit(b_handle, 1, &io_param, 0);
+    rocFileError_t expected_result = {rocFileInvalidValue, hipSuccess};
+    ASSERT_EQ(result, expected_result);
+}
+
+TEST_F(RocFileUnit, TestRocFileBatchIOSubmitBadArgument)
+{
+    rocFileBatchHandle_t           b_handle = reinterpret_cast<rocFileBatchHandle_t>(0x12345678);
+    rocFileIOParams_t              io_param;
+    std::shared_ptr<MBatchContext> mock_b_context = std::make_shared<MBatchContext>();
+
+    EXPECT_CALL(mock_state, getBatchContext).WillOnce(Return(mock_b_context));
+    EXPECT_CALL(*mock_b_context, submit_operations).WillOnce(Throw(std::invalid_argument("")));
+
+    auto result = rocFileBatchIOSubmit(b_handle, 1, &io_param, 0);
+    ASSERT_EQ(result, ROCFILE_INVALID_VALUE);
+}
+
+HIPFILE_WARN_NO_GLOBAL_CTOR_ON
