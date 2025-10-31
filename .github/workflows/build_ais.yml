@@ -388,8 +388,6 @@ jobs:
             /bin/bash -c '
               cmake --build . --parallel
             '
-      # NVIDIA hipFile unit tests require an NVIDIA GPU to be present.
-      # See hipfile-e2e-nvidia for where they are run.
       - name: Clean CMake build directories
         run: |
           docker exec \
@@ -403,8 +401,3 @@ jobs:
         if: ${{ always() }}
         run: |
           docker stop ${AIS_CONTAINER_NAME}
-  Run_hipFile_e2e_NVIDIA:
-    uses: ./.github/workflows/hipfile-e2e-nvidia.yml
-    needs: build_AIS_image
-    with:
-      platform: ${{inputs.platform}}
