@@ -28,8 +28,6 @@
 #include <vector>
 
 using namespace rocFile;
-using rocFile::buffer::IBuffer;
-using rocFile::file::IFile;
 
 using namespace std;
 
@@ -75,7 +73,7 @@ thread_function(int id)
     constexpr int N_CYCLES  = 100; // # of cycles before checking the run flag
     constexpr int N_PRELOAD = 10;  // # of files/buffers to load before cycling
 
-    auto *ds = context::Context<DriverState>::get();
+    auto *ds = Context<DriverState>::get();
 
     vector<pair<int, rocFileHandle_t>> files;
     vector<void *>                     buffers;

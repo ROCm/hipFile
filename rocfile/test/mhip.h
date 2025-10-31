@@ -17,7 +17,7 @@
 namespace rocFile {
 
 struct MHip : Hip {
-    context::ContextOverride<Hip> co;
+    ContextOverride<Hip> co;
     MHip() : co{this}
     {
     }

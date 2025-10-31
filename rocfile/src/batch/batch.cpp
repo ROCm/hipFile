@@ -18,10 +18,10 @@
 #include <unordered_map>
 #include <vector>
 
-namespace rocFile::batch {
+namespace rocFile {
 
 BatchOperation::BatchOperation(std::unique_ptr<const rocFileIOParams_t> params,
-                               std::shared_ptr<buffer::IBuffer> _buffer, std::shared_ptr<file::IFile> _file)
+                               std::shared_ptr<IBuffer> _buffer, std::shared_ptr<IFile> _file)
     : io_params{std::move(params)}, buffer{_buffer}, file{_file}
 {
     // Cookie allows the user to track which operation caused the error.
@@ -120,7 +120,7 @@ BatchContext::submit_operations(const rocFileIOParams_t *params, unsigned num_pa
         auto param_copy = std::make_unique<const rocFileIOParams_t>(params[i]);
         // flags currently unused. Ambiguous if flags in rocFileBatchIOSubmit is for buffer or
         // file flags.
-        auto [_file, _buffer] = context::Context<DriverState>::get()->getFileAndBuffer(
+        auto [_file, _buffer] = Context<DriverState>::get()->getFileAndBuffer(
             param_copy->fh, param_copy->u.batch.devPtr_base, param_copy->u.batch.size, 0);
         auto op = std::make_shared<BatchOperation>(std::move(param_copy), _buffer, _file);
 
@@ -159,7 +159,7 @@ BatchContextMap::destroyContext(rocFileBatchHandle_t handle)
 
     auto context = active_contexts.find(handle);
     if (context == active_contexts.end()) {
-        throw InvalidHandle();
+        throw InvalidBatchHandle();
     }
     // TODO: Check for outstanding operations.
     // TODO: Attempt to cancel any outstanding operations.
@@ -177,7 +177,7 @@ BatchContextMap::get(rocFileBatchHandle_t handle)
 
     auto context = active_contexts.find(handle);
     if (context == active_contexts.end()) {
-        throw InvalidHandle();
+        throw InvalidBatchHandle();
     }
     return context->second;
 }

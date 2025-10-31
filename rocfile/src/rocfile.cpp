@@ -20,10 +20,6 @@
 #include <shared_mutex>
 
 using namespace rocFile;
-using namespace rocFile::io;
-using rocFile::buffer::IBuffer;
-using rocFile::context::Context;
-using rocFile::file::IFile;
 
 const char *
 rocFileOpStatusError(rocFileOpError_t status)
@@ -151,7 +147,7 @@ try {
             return {rocFileIONotSupported, hipSuccess};
     }
 }
-catch (const file::AlreadyRegistered &) {
+catch (const FileAlreadyRegistered &) {
     return {rocFileHandleAlreadyRegistered, hipSuccess};
 }
 catch (...) {
@@ -171,10 +167,10 @@ try {
 catch (const DriverNotInitialized &) {
     return {rocFileDriverNotInitialized, hipSuccess};
 }
-catch (const file::OperationsOutstanding &) {
+catch (const FileOperationsOutstanding &) {
     return {rocFileInternalError, hipSuccess};
 }
-catch (const file::NotRegistered &) {
+catch (const FileNotRegistered &) {
     return {rocFileHandleNotRegistered, hipSuccess};
 }
 catch (...) {
@@ -187,13 +183,13 @@ try {
     Context<DriverState>::get()->registerBuffer(buffer_base, length, flags);
     return {rocFileSuccess, hipSuccess};
 }
-catch (const buffer::AlreadyRegistered &) {
+catch (const BufferAlreadyRegistered &) {
     return {rocFileMemoryAlreadyRegistered, hipSuccess};
 }
-catch (const buffer::InvalidMemoryType &) {
+catch (const InvalidMemoryType &) {
     return {rocFileHipMemoryTypeInvalid, hipSuccess};
 }
-catch (const buffer::InvalidPointerRange &) {
+catch (const InvalidPointerRange &) {
     return {rocFileHipPointerRangeError, hipSuccess};
 }
 catch (const Hip::RuntimeError &e) {
@@ -218,10 +214,10 @@ try {
 catch (const DriverNotInitialized &) {
     return {rocFileDriverNotInitialized, hipSuccess};
 }
-catch (const buffer::NotRegistered &) {
+catch (const BufferNotRegistered &) {
     return {rocFileMemoryNotRegistered, hipSuccess};
 }
-catch (const buffer::OperationsOutstanding &) {
+catch (const BufferOperationsOutstanding &) {
     return {rocFileInternalError, hipSuccess};
 }
 catch (...) {
@@ -237,8 +233,8 @@ try {
     HIPFILE_WARN_NO_EXIT_DTOR_ON
 
     auto [file, buffer] = Context<DriverState>::get()->getFileAndBuffer(fh, buffer_base, size, 0);
-    int                               score{-1};
-    std::shared_ptr<backend::Backend> backend{};
+    int                      score{-1};
+    std::shared_ptr<Backend> backend{};
 
     for (const auto &_backend : backends) {
         auto _score = _backend->score(file, buffer, size, file_offset, buffer_offset);
@@ -265,13 +261,13 @@ catch (const DriverNotInitialized &) {
 catch (rocFileError_t e) {
     return -e.err;
 }
-catch (const buffer::InvalidMemoryType &) {
+catch (const InvalidMemoryType &) {
     return -rocFileHipMemoryTypeInvalid;
 }
 catch (const std::invalid_argument &) {
     return -rocFileInvalidValue;
 }
-catch (const file::NotRegistered &) {
+catch (const FileNotRegistered &) {
     return -rocFileHandleNotRegistered;
 }
 catch (const Hip::RuntimeError &e) {
@@ -411,8 +407,7 @@ rocFileBatchIOSubmit(rocFileBatchHandle_t batch_idp, unsigned nr, rocFileIOParam
 try {
     (void)flags; // Unused at this time.
 
-    std::shared_ptr<batch::IBatchContext> batch_context =
-        Context<DriverState>::get()->getBatchContext(batch_idp);
+    std::shared_ptr<IBatchContext> batch_context = Context<DriverState>::get()->getBatchContext(batch_idp);
     batch_context->submit_operations(iocbp, nr);
 
     return {rocFileSuccess, hipSuccess};

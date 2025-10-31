@@ -10,5 +10,5 @@
 void
 rocFileEnsureDriverInitPrivate()
 {
-    rocFile::context::Context<rocFile::DriverState>::get()->ensureInitialized();
+    rocFile::Context<rocFile::DriverState>::get()->ensureInitialized();
 }

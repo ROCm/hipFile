@@ -17,5 +17,5 @@
 ROCFILE_API
 void rocFileEnsureDriverInitPrivate();
 
-ssize_t rocFileIo(rocFile::io::IoType type, rocFileHandle_t fh, const void *buffer_base, size_t size,
+ssize_t rocFileIo(rocFile::IoType type, rocFileHandle_t fh, const void *buffer_base, size_t size,
                   off_t file_offset, off_t buffer_offset);

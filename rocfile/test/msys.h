@@ -14,7 +14,7 @@
 namespace rocFile {
 
 struct MSys : Sys {
-    context::ContextOverride<Sys> co;
+    ContextOverride<Sys> co;
     MSys() : co{this}
     {
     }

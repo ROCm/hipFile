@@ -16,10 +16,10 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace rocFile::batch {
+namespace rocFile {
 
-struct InvalidHandle : public std::invalid_argument {
-    InvalidHandle() : std::invalid_argument{"Invalid batch handle"}
+struct InvalidBatchHandle : public std::invalid_argument {
+    InvalidBatchHandle() : std::invalid_argument{"Invalid batch handle"}
     {
     }
 };
@@ -31,8 +31,8 @@ public:
     /// @param [in] params IO parameters
     /// @param [in] buffer Buffer corresponding to params->u.batch.devPtr_base
     /// @param [in] file File corresponding params->fh
-    BatchOperation(std::unique_ptr<const rocFileIOParams_t> params, std::shared_ptr<buffer::IBuffer> buffer,
-                   std::shared_ptr<file::IFile> file);
+    BatchOperation(std::unique_ptr<const rocFileIOParams_t> params, std::shared_ptr<IBuffer> buffer,
+                   std::shared_ptr<IFile> file);
 
 private:
     /// @brief A copy of the params provided by the application.
@@ -40,10 +40,10 @@ private:
     const std::unique_ptr<const rocFileIOParams_t> io_params;
 
     /// @brief A reference to the specified Buffer.
-    const std::shared_ptr<const buffer::IBuffer> buffer;
+    const std::shared_ptr<const IBuffer> buffer;
 
     /// @brief A reference to the specified registered File.
-    const std::shared_ptr<const file::IFile> file;
+    const std::shared_ptr<const IFile> file;
 };
 
 class IBatchContext {

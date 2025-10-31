@@ -39,13 +39,8 @@
 #include <vector>
 
 using namespace rocFile;
-using namespace rocFile::backend;
-using namespace rocFile::buffer;
-using namespace rocFile::io;
 using namespace testing;
 
-using rocFile::context::Context;
-using rocFile::file::IFile;
 using std::shared_ptr;
 using ::testing::Return;
 using ::testing::StrictMock;
@@ -175,7 +170,7 @@ TEST(RocFileFallbackBackend, FallbackBackendRejectsNonDeviceMemory)
     }
 }
 
-struct RocFileFallbackValidation : ::testing::TestWithParam<io::IoType> {
+struct RocFileFallbackValidation : ::testing::TestWithParam<IoType> {
 
     shared_ptr<IBuffer> buffer;
     shared_ptr<IFile>   file;
@@ -215,7 +210,7 @@ protected:
         io_type = GetParam();
     }
 
-    io::IoType io_type;
+    IoType io_type;
 };
 
 TEST_P(RocFileFallbackValidation, fallback_io_throws_on_negative_buffer_offset)
@@ -261,13 +256,13 @@ TEST_P(RocFileFallbackValidation, fallback_io_truncates_size_to_MAX_RW_COUNT)
 
     EXPECT_CALL(msys, mmap).WillOnce(testing::Return(reinterpret_cast<void *>(0xFEFEFEFE)));
     switch (io_type) {
-        case io::IoType::Read:
+        case IoType::Read:
             EXPECT_CALL(msys, pread)
                 .WillRepeatedly(testing::Invoke(
                     [](int, void *, size_t count, off_t) -> ssize_t { return static_cast<ssize_t>(count); }));
             EXPECT_CALL(mhip, hipMemcpy).WillRepeatedly(testing::Return());
             break;
-        case io::IoType::Write:
+        case IoType::Write:
             EXPECT_CALL(mhip, hipMemcpy).WillRepeatedly(testing::Return());
             EXPECT_CALL(mhip, hipStreamSynchronize).WillRepeatedly(testing::Return());
             EXPECT_CALL(msys, pwrite)
@@ -299,10 +294,10 @@ TEST_P(RocFileFallbackValidation, fallback_io_allocates_chunk_sized_host_bounce_
     EXPECT_CALL(msys, mmap(testing::_, chunk_size, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(ptr));
     switch (io_type) {
-        case io::IoType::Read:
+        case IoType::Read:
             EXPECT_CALL(msys, pread).WillOnce(testing::Return(0));
             break;
-        case io::IoType::Write:
+        case IoType::Write:
             EXPECT_CALL(mhip, hipMemcpy);
             EXPECT_CALL(mhip, hipStreamSynchronize);
             EXPECT_CALL(msys, pwrite).WillOnce(testing::Return(0));
@@ -315,7 +310,7 @@ TEST_P(RocFileFallbackValidation, fallback_io_allocates_chunk_sized_host_bounce_
 }
 
 INSTANTIATE_TEST_SUITE_P(FallbackValidationTests, RocFileFallbackValidation,
-                         ::testing::Values(io::IoType::Read, io::IoType::Write));
+                         ::testing::Values(IoType::Read, IoType::Write));
 
 struct RocFileWrite : public RocFileIO {
 
@@ -1114,7 +1109,7 @@ struct RocFileIoBackendSelectionParam : public ::testing::TestWithParam<IoType> 
 
 TEST_P(RocFileIoBackendSelectionParam, RocFileIoThrowsIfThereAreNoBackends)
 {
-    auto backends{std::vector<std::shared_ptr<rocFile::backend::Backend>>()};
+    auto backends{std::vector<std::shared_ptr<Backend>>()};
 
     EXPECT_CALL(mds, getFileAndBuffer(handle, buffer, io_size, flags))
         .WillOnce(Return(file_buffer_pair{mfile, mbuffer}));
@@ -1136,7 +1131,7 @@ TEST_P(RocFileIoBackendSelectionParam, RocFileIoThrowsIfThereAreNoBackends)
 
 TEST_P(RocFileIoBackendSelectionParam, RocFileIoThrowsIfAllBackendsRejectTheIO)
 {
-    std::vector<std::shared_ptr<rocFile::backend::Backend>> backends{mbe1, mbe2, mbe3};
+    std::vector<std::shared_ptr<Backend>> backends{mbe1, mbe2, mbe3};
 
     EXPECT_CALL(mds, getFileAndBuffer(handle, buffer, io_size, flags))
         .WillOnce(Return(file_buffer_pair{mfile, mbuffer}));
@@ -1164,7 +1159,7 @@ TEST_P(RocFileIoBackendSelectionParam, RocFileIoThrowsIfAllBackendsRejectTheIO)
 
 TEST_P(RocFileIoBackendSelectionParam, RocFileIoIssuesIoToHighestScoringBackend)
 {
-    std::vector<std::shared_ptr<rocFile::backend::Backend>> backends{mbe1, mbe2, mbe3};
+    std::vector<std::shared_ptr<Backend>> backends{mbe1, mbe2, mbe3};
 
     EXPECT_CALL(mds, getFileAndBuffer(handle, buffer, io_size, flags))
         .WillOnce(Return(file_buffer_pair{mfile, mbuffer}));

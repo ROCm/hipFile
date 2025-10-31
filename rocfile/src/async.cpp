@@ -10,8 +10,7 @@
 #include <memory>
 #include <syslog.h>
 
-using namespace rocFile::async;
-using rocFile::context::Context;
+namespace rocFile {
 
 AsyncMonitor::AsyncMonitor() : is_finished{false}
 {
@@ -78,9 +77,9 @@ AsyncMonitor::completion_thread()
     }
 }
 
-AsyncOp::AsyncOp(io::IoType _io_type, std::shared_ptr<file::IFile> _file,
-                 std::shared_ptr<buffer::IBuffer> _buffer, std::shared_ptr<stream::IStream> _stream,
-                 size_t *_size, off_t *_file_offset, off_t *_buffer_offset, ssize_t *_bytes_transferred)
+AsyncOp::AsyncOp(IoType _io_type, std::shared_ptr<IFile> _file, std::shared_ptr<IBuffer> _buffer,
+                 std::shared_ptr<IStream> _stream, size_t *_size, off_t *_file_offset, off_t *_buffer_offset,
+                 ssize_t *_bytes_transferred)
     : io_type{_io_type}, file{_file}, buffer{_buffer}, stream{_stream},
 
       size{stream->fixedIOSize() ? std::variant<size_t, size_t *>{*_size}
@@ -95,4 +94,6 @@ AsyncOp::AsyncOp(io::IoType _io_type, std::shared_ptr<file::IFile> _file,
 
 AsyncOp::~AsyncOp()
 {
+}
+
 }

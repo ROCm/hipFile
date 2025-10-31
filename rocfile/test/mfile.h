@@ -16,7 +16,7 @@
 
 namespace rocFile {
 
-class MFile : public file::IFile {
+class MFile : public IFile {
 public:
     MOCK_METHOD(rocFileHandle_t, getHandle, (), (const override));
     MOCK_METHOD(int, getFd, (), (const override));
@@ -26,7 +26,7 @@ public:
     MOCK_METHOD(std::optional<MountInfo>, getMountInfo, (), (const override));
 };
 
-class MFileMap : public file::FileMap {
+class MFileMap : public FileMap {
 public:
     MFileMap()
     {
@@ -35,7 +35,7 @@ public:
                 (int fd, struct stat &fstat, int _status_flags, std::optional<MountInfo> mountinfo),
                 (override));
     MOCK_METHOD(void, deregisterFile, (rocFileHandle_t fh), (override));
-    MOCK_METHOD(std::shared_ptr<file::IFile>, getFile, (rocFileHandle_t), (override));
+    MOCK_METHOD(std::shared_ptr<IFile>, getFile, (rocFileHandle_t), (override));
     MOCK_METHOD(void, clear, (), (override));
 };
 

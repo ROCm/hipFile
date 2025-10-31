@@ -18,14 +18,14 @@
 #include <variant>
 #include <vector>
 
-namespace rocFile::async {
+namespace rocFile {
 
 class AsyncOp {
 public:
-    const io::IoType                   io_type;
-    std::shared_ptr<file::IFile>       file;
-    std::shared_ptr<buffer::IBuffer>   buffer;
-    std::shared_ptr<stream::IStream>   stream;
+    const IoType                       io_type;
+    std::shared_ptr<IFile>             file;
+    std::shared_ptr<IBuffer>           buffer;
+    std::shared_ptr<IStream>           stream;
     std::variant<size_t, size_t *>     size;
     std::variant<const off_t, off_t *> file_offset;
     std::variant<const off_t, off_t *> buffer_offset;
@@ -37,8 +37,8 @@ public:
     AsyncOp &&operator=(AsyncOp &&)     = delete;
     virtual ~AsyncOp();
 
-    AsyncOp(io::IoType ioType, std::shared_ptr<file::IFile> file, std::shared_ptr<buffer::IBuffer> buffer,
-            std::shared_ptr<stream::IStream> stream, size_t *size, off_t *file_offset, off_t *buffer_offset,
+    AsyncOp(IoType ioType, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer,
+            std::shared_ptr<IStream> stream, size_t *size, off_t *file_offset, off_t *buffer_offset,
             ssize_t *bytes_transferred);
 };
 

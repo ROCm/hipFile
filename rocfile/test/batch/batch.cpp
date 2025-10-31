@@ -26,10 +26,6 @@ using ::testing::StrictMock;
 using ::testing::Throw;
 
 using namespace rocFile;
-using rocFile::batch::BatchContext;
-using rocFile::batch::BatchContextMap;
-using rocFile::batch::BatchOperation;
-using rocFile::batch::IBatchContext;
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 
@@ -192,12 +188,12 @@ TEST_F(RocFileBatch, DestroyContext)
 
 TEST_F(RocFileBatch, DestroyMissingContext)
 {
-    ASSERT_THROW(batch_map.destroyContext(reinterpret_cast<rocFileBatchHandle_t>(1)), batch::InvalidHandle);
+    ASSERT_THROW(batch_map.destroyContext(reinterpret_cast<rocFileBatchHandle_t>(1)), InvalidBatchHandle);
 }
 
 TEST_F(RocFileBatch, DestroyNullptrContext)
 {
-    ASSERT_THROW(batch_map.destroyContext(nullptr), batch::InvalidHandle);
+    ASSERT_THROW(batch_map.destroyContext(nullptr), InvalidBatchHandle);
 }
 
 TEST_F(RocFileBatch, GetContext)
@@ -210,19 +206,19 @@ TEST_F(RocFileBatch, GetContext)
 
 TEST_F(RocFileBatch, GetNullptrContext)
 {
-    ASSERT_THROW(batch_map.get(nullptr), batch::InvalidHandle);
+    ASSERT_THROW(batch_map.get(nullptr), InvalidBatchHandle);
 }
 
 TEST_F(RocFileBatch, GetInvalidContext)
 {
-    ASSERT_THROW(batch_map.get(reinterpret_cast<rocFileBatchHandle_t>(0xBAC00001)), batch::InvalidHandle);
+    ASSERT_THROW(batch_map.get(reinterpret_cast<rocFileBatchHandle_t>(0xBAC00001)), InvalidBatchHandle);
 }
 
 TEST_F(RocFileBatch, GetDestroyedContext)
 {
     rocFileBatchHandle_t handle = batch_map.createContext(1);
     batch_map.destroyContext(handle);
-    ASSERT_THROW(batch_map.get(handle), batch::InvalidHandle);
+    ASSERT_THROW(batch_map.get(handle), InvalidBatchHandle);
 }
 
 struct RocFileBatchContext : public RocFileUnopened {
@@ -296,14 +292,14 @@ TEST_F(RocFileBatchContext, SubmitOverCapacityOverMultipleSubmissions)
 
 TEST_F(RocFileBatchContext, SubmitSingleBadBuffer)
 {
-    EXPECT_CALL(*mock_driver_state, getFileAndBuffer).WillOnce(Throw(buffer::NotRegistered()));
-    ASSERT_THROW(_context->submit_operations(&io_params, 1), buffer::NotRegistered);
+    EXPECT_CALL(*mock_driver_state, getFileAndBuffer).WillOnce(Throw(BufferNotRegistered()));
+    ASSERT_THROW(_context->submit_operations(&io_params, 1), BufferNotRegistered);
 }
 
 TEST_F(RocFileBatchContext, SubmitSingleBadFileHandle)
 {
-    EXPECT_CALL(*mock_driver_state, getFileAndBuffer).WillOnce(Throw(file::NotRegistered()));
-    ASSERT_THROW(_context->submit_operations(&io_params, 1), file::NotRegistered);
+    EXPECT_CALL(*mock_driver_state, getFileAndBuffer).WillOnce(Throw(FileNotRegistered()));
+    ASSERT_THROW(_context->submit_operations(&io_params, 1), FileNotRegistered);
 }
 
 // BatchOperation is not mocked.

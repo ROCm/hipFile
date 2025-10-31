@@ -16,7 +16,7 @@ using std::shared_ptr;
 using std::transform;
 using std::vector;
 
-namespace rocFile::file {
+namespace rocFile {
 
 rocFileHandle_t
 IFile::getHandle() const
@@ -64,7 +64,7 @@ FileMap::getFile(rocFileHandle_t fh)
 {
     auto itr = from_fh.find(fh);
     if (from_fh.end() == itr) {
-        throw NotRegistered();
+        throw FileNotRegistered();
     }
 
     return itr->second;
@@ -74,7 +74,7 @@ rocFileHandle_t
 FileMap::registerFile(int fd, struct stat &fstat, int status_flags, optional<MountInfo> mountinfo)
 {
     if (from_fd.end() != from_fd.find(fd)) {
-        throw file::AlreadyRegistered();
+        throw FileAlreadyRegistered();
     }
 
     auto file                  = std::shared_ptr<IFile>(new File(fd, fstat, status_flags, mountinfo));
@@ -90,11 +90,11 @@ FileMap::deregisterFile(rocFileHandle_t fh)
     auto itr = from_fh.find(fh);
 
     if (from_fh.end() == itr) {
-        throw NotRegistered();
+        throw FileNotRegistered();
     }
 
     if (2 < itr->second.use_count()) {
-        throw file::OperationsOutstanding();
+        throw FileOperationsOutstanding();
     }
 
     from_fd.erase(itr->second->getFd());

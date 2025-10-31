@@ -8,9 +8,7 @@
 #include "hipfile-warnings.h"
 #include <gtest/gtest.h>
 
-using namespace rocFile::context;
-
-using rocFile::Hip;
+using namespace rocFile;
 
 // Put tests inside the macros to suppress the global constructor
 // warnings

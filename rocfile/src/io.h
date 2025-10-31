@@ -4,7 +4,7 @@
  */
 #pragma once
 
-namespace rocFile::io {
+namespace rocFile {
 
 enum class IoType {
     Read,

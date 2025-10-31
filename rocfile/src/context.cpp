@@ -9,7 +9,7 @@
 #include "state.h"
 #include "sys.h"
 
-namespace rocFile::context {
+namespace rocFile {
 
 RocFileInit::RocFileInit()
 {

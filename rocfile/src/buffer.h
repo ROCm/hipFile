@@ -13,18 +13,18 @@
 #include <stdexcept>
 #include <unordered_map>
 
-namespace rocFile::buffer {
+namespace rocFile {
 
 /// @brief Buffer is currently registered
-struct AlreadyRegistered : public std::runtime_error {
-    AlreadyRegistered() : std::runtime_error("Already registered")
+struct BufferAlreadyRegistered : public std::runtime_error {
+    BufferAlreadyRegistered() : std::runtime_error("Buffer already registered")
     {
     }
 };
 
 /// @brief Buffer is not currently registered
-struct NotRegistered : public std::runtime_error {
-    NotRegistered() : std::runtime_error("Not registered")
+struct BufferNotRegistered : public std::runtime_error {
+    BufferNotRegistered() : std::runtime_error("Buffer not registered")
     {
     }
 };
@@ -44,8 +44,8 @@ struct InvalidPointerRange : public std::runtime_error {
 };
 
 /// @brief Buffer has outstanding operations
-struct OperationsOutstanding : public std::runtime_error {
-    OperationsOutstanding() : std::runtime_error("Operations outstanding")
+struct BufferOperationsOutstanding : public std::runtime_error {
+    BufferOperationsOutstanding() : std::runtime_error("Buffer operations outstanding")
     {
     }
 };

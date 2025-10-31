@@ -6,9 +6,9 @@
 
 #include "async.h"
 
-namespace rocFile::backend {
+namespace rocFile {
 
-struct AsyncOpFallback : async::AsyncOp {
+struct AsyncOpFallback : AsyncOp {
     ssize_t     bytes_transferred_internal;
     void *const gpu_buffer;
     void       *bounce_buffer_dev_ptr;
@@ -17,9 +17,9 @@ private:
     std::unique_ptr<void, void (*)(void *)> bounce_buffer;
 
 public:
-    AsyncOpFallback(io::IoType ioType, std::shared_ptr<file::IFile> file,
-                    std::shared_ptr<buffer::IBuffer> buffer, std::shared_ptr<stream::IStream> stream,
-                    size_t *size, off_t *fileOffset, off_t *bufferOffset, ssize_t *bytesTransferred);
+    AsyncOpFallback(IoType ioType, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer,
+                    std::shared_ptr<IStream> stream, size_t *size, off_t *fileOffset, off_t *bufferOffset,
+                    ssize_t *bytesTransferred);
 
     void *bounceBufferHostPtr();
     void *devPtr();

@@ -18,7 +18,6 @@
 
 using namespace rocFile;
 
-using rocFile::stream::IStream;
 using ::testing::StrictMock;
 
 // Put tests inside the macros to suppress the global constructor
@@ -39,10 +38,10 @@ struct RocFileStream : public ::testing::Test {
     {
         nonnull_stream = reinterpret_cast<hipStream_t>(1);
     }
-    StrictMock<MHip>  mhip;
-    StrictMock<MSys>  msys;
-    hipStream_t       nonnull_stream;
-    stream::StreamMap stream_map;
+    StrictMock<MHip> mhip;
+    StrictMock<MSys> msys;
+    hipStream_t      nonnull_stream;
+    StreamMap        stream_map;
 };
 
 struct RocFileStreamValidParams

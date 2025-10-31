@@ -8,7 +8,7 @@
 #include <memory>
 #include <unordered_map>
 
-namespace rocFile::stream {
+namespace rocFile {
 
 class IStream {
 public:

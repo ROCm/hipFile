@@ -15,7 +15,7 @@
 
 namespace rocFile {
 
-class MBuffer : public buffer::IBuffer {
+class MBuffer : public IBuffer {
 public:
     MOCK_METHOD(void *, getBuffer, (), (const override));
     MOCK_METHOD(size_t, getLength, (), (const override));
@@ -23,15 +23,15 @@ public:
     MOCK_METHOD(hipMemoryType, getType, (), (const override));
 };
 
-class MBufferMap : public buffer::BufferMap {
+class MBufferMap : public BufferMap {
 public:
     MBufferMap()
     {
     }
     MOCK_METHOD(void, registerBuffer, (const void *bufptr, size_t length, int flags), (override));
     MOCK_METHOD(void, deregisterBuffer, (const void *bufptr), (override));
-    MOCK_METHOD(std::shared_ptr<buffer::IBuffer>, getBuffer, (const void *bufptr), (override));
-    MOCK_METHOD(std::shared_ptr<buffer::IBuffer>, getBuffer, (const void *bufptr, size_t length, int flags),
+    MOCK_METHOD(std::shared_ptr<IBuffer>, getBuffer, (const void *bufptr), (override));
+    MOCK_METHOD(std::shared_ptr<IBuffer>, getBuffer, (const void *bufptr, size_t length, int flags),
                 (override));
     MOCK_METHOD(void, clear, (), (override));
 };

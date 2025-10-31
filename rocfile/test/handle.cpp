@@ -22,9 +22,6 @@
 
 using namespace rocFile;
 
-using rocFile::context::Context;
-using rocFile::file::IFile;
-
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::Throw;
@@ -88,7 +85,7 @@ TEST_F(RocFileHandle, register_handle_internal_linux_fd_already_registered)
     EXPECT_CALL(msys, fcntl).Times(2);
     EXPECT_CALL(mlibmounthelper, getMountInfo).Times(2);
     ASSERT_NE(Context<DriverState>::get()->registerFile(fd), nullptr);
-    ASSERT_THROW(Context<DriverState>::get()->registerFile(fd), file::AlreadyRegistered);
+    ASSERT_THROW(Context<DriverState>::get()->registerFile(fd), FileAlreadyRegistered);
 }
 
 TEST_F(RocFileHandle, register_handle_linux_fd)
@@ -210,7 +207,7 @@ TEST_F(RocFileHandle, register_handle_userspace_fs_not_supported)
 TEST_F(RocFileHandle, deregister_handle_internal_throws_if_not_registered)
 {
     ASSERT_THROW(Context<DriverState>::get()->deregisterFile(reinterpret_cast<rocFileHandle_t>(0xdeadbeef)),
-                 file::NotRegistered);
+                 FileNotRegistered);
 }
 
 TEST_F(RocFileHandle, deregister_handle_returns_error_if_not_registered)
@@ -228,7 +225,7 @@ TEST_F(RocFileHandle, deregister_handle_internal)
     EXPECT_CALL(mlibmounthelper, getMountInfo);
     auto fh = Context<DriverState>::get()->registerFile(0xBADF00D);
     Context<DriverState>::get()->deregisterFile(fh);
-    ASSERT_THROW(Context<DriverState>::get()->deregisterFile(fh), file::NotRegistered);
+    ASSERT_THROW(Context<DriverState>::get()->deregisterFile(fh), FileNotRegistered);
 }
 
 TEST_F(RocFileHandle, deregister_handle)
@@ -261,7 +258,7 @@ TEST_F(RocFileHandle, deregister_handle_internal_fails_when_operations_are_ousta
     auto fh = Context<DriverState>::get()->registerFile(0xBADF00D);
     {
         auto file = Context<DriverState>::get()->getFile(fh);
-        ASSERT_THROW(Context<DriverState>::get()->deregisterFile(fh), file::OperationsOutstanding);
+        ASSERT_THROW(Context<DriverState>::get()->deregisterFile(fh), FileOperationsOutstanding);
     }
     Context<DriverState>::get()->deregisterFile(fh);
 }

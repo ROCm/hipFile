@@ -9,15 +9,14 @@
 
 #include <gmock/gmock.h>
 
-namespace rocFile::backend {
+namespace rocFile {
 
 struct MBackend : Backend {
-    MOCK_METHOD(int, score,
-                (std::shared_ptr<file::IFile>, std::shared_ptr<buffer::IBuffer>, size_t, off_t, off_t),
+    MOCK_METHOD(int, score, (std::shared_ptr<IFile>, std::shared_ptr<IBuffer>, size_t, off_t, off_t),
                 (const override));
     MOCK_METHOD(ssize_t, io,
-                (rocFile::io::IoType type, std::shared_ptr<file::IFile>, std::shared_ptr<buffer::IBuffer>,
-                 size_t, off_t, off_t),
+                (rocFile::IoType type, std::shared_ptr<IFile>, std::shared_ptr<IBuffer>, size_t, off_t,
+                 off_t),
                 (override));
 };
 

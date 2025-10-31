@@ -11,7 +11,7 @@
 #include <mutex>
 #endif
 
-namespace rocFile::context {
+namespace rocFile {
 
 template <typename T> struct ContextOverride;
 

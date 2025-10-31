@@ -11,7 +11,7 @@
 #include <sys/mman.h>
 #include <syslog.h>
 
-using rocFile::Sys;
+namespace rocFile {
 
 template <typename ExceptionType, typename L, typename R>
 static inline R
@@ -68,4 +68,6 @@ int
 Sys::fcntl(int fd, int op, uintptr_t arg) const
 {
     return throwOn<Sys::RuntimeError>(-1, ::fcntl(fd, op, arg));
+}
+
 }

@@ -10,24 +10,23 @@
 #include <syslog.h>
 #include <memory>
 
-using namespace rocFile::backend;
-using rocFile::context::Context;
+using namespace rocFile;
 
 static void
 hipHostDeleter(void *buffer)
 {
     try {
-        Context<rocFile::Hip>::get()->hipHostFree(buffer);
+        Context<Hip>::get()->hipHostFree(buffer);
     }
     catch (...) {
-        Context<rocFile::Sys>::get()->syslog(LOG_CRIT, "Error freeing pinned host memory.");
+        Context<Sys>::get()->syslog(LOG_CRIT, "Error freeing pinned host memory.");
     }
 }
 
-AsyncOpFallback::AsyncOpFallback(io::IoType _io_type, std::shared_ptr<file::IFile> _file,
-                                 std::shared_ptr<buffer::IBuffer> _buffer,
-                                 std::shared_ptr<stream::IStream> _stream, size_t *_size, off_t *_file_offset,
-                                 off_t *_buffer_offset, ssize_t *_bytes_transferred)
+AsyncOpFallback::AsyncOpFallback(IoType _io_type, std::shared_ptr<IFile> _file,
+                                 std::shared_ptr<IBuffer> _buffer, std::shared_ptr<IStream> _stream,
+                                 size_t *_size, off_t *_file_offset, off_t *_buffer_offset,
+                                 ssize_t *_bytes_transferred)
     : AsyncOp{_io_type, _file, _buffer, _stream, _size, _file_offset, _buffer_offset, _bytes_transferred},
       bytes_transferred_internal{0}, gpu_buffer{buffer->getBuffer()}, bounce_buffer_dev_ptr{nullptr},
       bounce_buffer{nullptr, [](void *addr) { (void)addr; }}

@@ -10,7 +10,6 @@
 #include <stdexcept>
 
 using namespace rocFile;
-using namespace rocFile::context;
 
 LibMount::~LibMount()
 {

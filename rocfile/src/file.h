@@ -15,25 +15,25 @@
 #include <sys/stat.h>
 #include <unordered_map>
 
-namespace rocFile::file {
+namespace rocFile {
 
 /// @brief File is not registered
-struct NotRegistered : public std::runtime_error {
-    NotRegistered() : std::runtime_error("Not registered")
+struct FileNotRegistered : public std::runtime_error {
+    FileNotRegistered() : std::runtime_error("File not registered")
     {
     }
 };
 
 /// @brief File is already registered
-struct AlreadyRegistered : public std::runtime_error {
-    AlreadyRegistered() : std::runtime_error("Already registered")
+struct FileAlreadyRegistered : public std::runtime_error {
+    FileAlreadyRegistered() : std::runtime_error("File already registered")
     {
     }
 };
 
 /// @brief File has operations outstanding
-struct OperationsOutstanding : public std::runtime_error {
-    OperationsOutstanding() : std::runtime_error("Operations outstanding")
+struct FileOperationsOutstanding : public std::runtime_error {
+    FileOperationsOutstanding() : std::runtime_error("File operations outstanding")
     {
     }
 };

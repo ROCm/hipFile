@@ -18,11 +18,6 @@
 #include <shared_mutex>
 #include <stdexcept>
 
-using rocFile::buffer::IBuffer;
-using rocFile::context::Context;
-using rocFile::file::IFile;
-using rocFile::stream::IStream;
-
 using std::shared_lock;
 using std::shared_mutex;
 using std::shared_ptr;
@@ -30,13 +25,12 @@ using std::unique_lock;
 
 namespace rocFile {
 
-DriverState::DriverState()
-    : ref_count{0}, backends{std::shared_ptr<backend::Backend>(new backend::Fallback{})}
+DriverState::DriverState() : ref_count{0}, backends{std::shared_ptr<Backend>(new Fallback{})}
 {
-    this->file_map   = std::make_unique<file::FileMap>();
-    this->batch_map  = std::make_unique<batch::BatchContextMap>();
-    this->buffer_map = std::make_unique<buffer::BufferMap>();
-    this->stream_map = std::make_unique<stream::StreamMap>();
+    this->file_map   = std::make_unique<FileMap>();
+    this->batch_map  = std::make_unique<BatchContextMap>();
+    this->buffer_map = std::make_unique<BufferMap>();
+    this->stream_map = std::make_unique<StreamMap>();
 }
 
 DriverState::~DriverState()
@@ -59,7 +53,7 @@ DriverState::destroyBatchContext(rocFileBatchHandle_t handle)
     batch_map->destroyContext(handle);
 }
 
-std::shared_ptr<batch::IBatchContext>
+std::shared_ptr<IBatchContext>
 DriverState::getBatchContext(rocFileBatchHandle_t handle)
 {
     return batch_map->get(handle);
@@ -283,7 +277,7 @@ DriverState::ensureInitialized()
     }
 }
 
-std::vector<std::shared_ptr<backend::Backend>>
+std::vector<std::shared_ptr<Backend>>
 DriverState::getBackends() const
 {
     return backends;

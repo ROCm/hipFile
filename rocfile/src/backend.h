@@ -16,7 +16,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-namespace rocFile::backend {
+namespace rocFile {
 
 // The maximum number of bytes that can be transferred in a single read() or
 // write() system call. Mirrors kernel's MAX_RW_COUNT
@@ -39,7 +39,7 @@ struct Backend {
     /// @param file_offset    Offset from the start of the file
     /// @param buffer_offset  Offset from the start of the buffer
     /// @return
-    virtual int score(std::shared_ptr<file::IFile> file, std::shared_ptr<buffer::IBuffer> buffer, size_t size,
+    virtual int score(std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
                       off_t file_offset, off_t buffer_offset) const = 0;
 
     /// @brief Perform a read or write operation
@@ -54,9 +54,8 @@ struct Backend {
     /// @return Number of bytes transferred, negative on error
     ///
     /// @throws Hip::RuntimeError Sys::RuntimeError
-    virtual ssize_t io(rocFile::io::IoType type, std::shared_ptr<file::IFile> file,
-                       std::shared_ptr<buffer::IBuffer> buffer, size_t size, off_t file_offset,
-                       off_t buffer_offset) = 0;
+    virtual ssize_t io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
+                       off_t file_offset, off_t buffer_offset) = 0;
 };
 
 }

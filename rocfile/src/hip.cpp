@@ -10,9 +10,7 @@
 #include <cstdlib>
 #include <system_error>
 
-using namespace rocFile;
-using namespace rocFile::io;
-using namespace rocFile::context;
+namespace rocFile {
 
 static void *
 hipGetProcAddressHelper(const char *symbol)
@@ -25,7 +23,7 @@ catch (...) {
 }
 
 hipAmdFileRead_t
-rocFile::getHipAmdFileReadPtr()
+getHipAmdFileReadPtr()
 {
     static hipAmdFileRead_t hipAmdFileReadPtr{
         reinterpret_cast<hipAmdFileRead_t>(hipGetProcAddressHelper("hipAmdFileRead"))};
@@ -33,7 +31,7 @@ rocFile::getHipAmdFileReadPtr()
 }
 
 hipAmdFileWrite_t
-rocFile::getHipAmdFileWritePtr()
+getHipAmdFileWritePtr()
 {
     static hipAmdFileWrite_t hipAmdFileWritePtr{
         reinterpret_cast<hipAmdFileRead_t>(hipGetProcAddressHelper("hipAmdFileWrite"))};
@@ -159,4 +157,6 @@ Hip::hipAmdFileWrite(hipAmdFileHandle_t handle, void *devicePtr, uint64_t size, 
     }
 
     return bytes_written;
+}
+
 }

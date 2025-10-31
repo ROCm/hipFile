@@ -26,9 +26,6 @@
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 
 using namespace rocFile;
-using async::AsyncMonitor;
-using async::AsyncOp;
-using backend::AsyncOpFallback;
 using std::shared_ptr;
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -104,7 +101,7 @@ TEST_P(RocFileAsyncOpStreamParams, asyncOp_construction_has_correct_variants)
     off_t  file_offset       = 0;
     off_t  buffer_offset     = 0;
     off_t  bytes_transferred = 0;
-    auto   op = std::make_shared<AsyncOp>(io::IoType::Read, file, buffer, stream, &size, &file_offset,
+    auto   op = std::make_shared<AsyncOp>(IoType::Read, file, buffer, stream, &size, &file_offset,
                                           &buffer_offset, &bytes_transferred);
 
     // Unfixed flags will be pointers
@@ -142,7 +139,7 @@ TEST_F(RocFileAsyncOp, AsyncOpFallback_new_uses_pinned_host_memory)
     EXPECT_CALL(mhip, hipHostFree(Eq(bounce_buffer.get())));
     EXPECT_CALL(mhip, hipHostFree(Eq(op_data.get())));
     auto op = std::shared_ptr<AsyncOpFallback>(new AsyncOpFallback{
-        io::IoType::Read, file, buffer, stream, &size, &file_offset, &buffer_offset, &bytes_transferred});
+        IoType::Read, file, buffer, stream, &size, &file_offset, &buffer_offset, &bytes_transferred});
 }
 
 TEST_F(RocFileAsyncOp, AsyncOpFallback_new_failure_throws_bad_alloc)
@@ -153,7 +150,7 @@ TEST_F(RocFileAsyncOp, AsyncOpFallback_new_failure_throws_bad_alloc)
     off_t  bytes_transferred = 0;
     auto   op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
     EXPECT_CALL(mhip, hipHostMalloc).WillOnce(Throw(Hip::RuntimeError(hipErrorOutOfMemory)));
-    EXPECT_THROW(std::shared_ptr<AsyncOpFallback>(new AsyncOpFallback{io::IoType::Read, file, buffer, stream,
+    EXPECT_THROW(std::shared_ptr<AsyncOpFallback>(new AsyncOpFallback{IoType::Read, file, buffer, stream,
                                                                       &size, &file_offset, &buffer_offset,
                                                                       &bytes_transferred}),
                  std::bad_alloc);
@@ -170,7 +167,7 @@ TEST_F(RocFileAsyncOp, AsyncOpFallback_bounce_alloc_failure_throws)
         .WillOnce(Return(op_data.get()))
         .WillOnce(Throw(Hip::RuntimeError(hipErrorOutOfMemory)));
     EXPECT_CALL(mhip, hipHostFree(Eq(op_data.get())));
-    EXPECT_THROW(std::shared_ptr<AsyncOpFallback>(new AsyncOpFallback{io::IoType::Read, file, buffer, stream,
+    EXPECT_THROW(std::shared_ptr<AsyncOpFallback>(new AsyncOpFallback{IoType::Read, file, buffer, stream,
                                                                       &size, &file_offset, &buffer_offset,
                                                                       &bytes_transferred}),
                  Hip::RuntimeError);
@@ -191,7 +188,7 @@ TEST_F(RocFileAsyncOp, AsyncOpFallback_bounce_buffer_deleter_failure_calls_syslo
     EXPECT_CALL(mhip, hipHostFree(Eq(op_data.get())));
     EXPECT_CALL(msys, syslog);
     auto op = std::shared_ptr<AsyncOpFallback>(new AsyncOpFallback{
-        io::IoType::Read, file, buffer, stream, &size, &file_offset, &buffer_offset, &bytes_transferred});
+        IoType::Read, file, buffer, stream, &size, &file_offset, &buffer_offset, &bytes_transferred});
 }
 
 TEST_F(RocFileAsyncOp, AsyncOpFallback_delete_failure_calls_syslog)
@@ -209,7 +206,7 @@ TEST_F(RocFileAsyncOp, AsyncOpFallback_delete_failure_calls_syslog)
         .WillOnce(Throw(Hip::RuntimeError(hipErrorInvalidValue)));
     EXPECT_CALL(msys, syslog);
     auto op = std::shared_ptr<AsyncOpFallback>(new AsyncOpFallback{
-        io::IoType::Read, file, buffer, stream, &size, &file_offset, &buffer_offset, &bytes_transferred});
+        IoType::Read, file, buffer, stream, &size, &file_offset, &buffer_offset, &bytes_transferred});
 }
 
 struct RocFileAsyncOpFallbackFunctions : public RocFileAsyncOp {
@@ -219,7 +216,7 @@ struct RocFileAsyncOpFallbackFunctions : public RocFileAsyncOp {
         //  AsyncOpFallback
         EXPECT_CALL(mhip, hipHostMalloc).WillOnce(Return(bounce_buffer.get()));
         EXPECT_CALL(mhip, hipHostGetDevicePointer).WillOnce(Return(bounce_buffer_dev_ptr));
-        op = std::make_shared<AsyncOpFallback>(io::IoType::Read, file, buffer, stream, &size, &file_offset,
+        op = std::make_shared<AsyncOpFallback>(IoType::Read, file, buffer, stream, &size, &file_offset,
                                                &buffer_offset, &bytes_transferred);
     }
     ~RocFileAsyncOpFallbackFunctions() override
@@ -253,7 +250,7 @@ TEST_F(RocFileAsyncMonitor, addOp_and_completeOp_with_valid_params_works)
     off_t  file_offset       = 0;
     off_t  buffer_offset     = 0;
     off_t  bytes_transferred = 0;
-    auto   op = std::make_shared<AsyncOp>(io::IoType::Read, file, buffer, stream, &size, &file_offset,
+    auto   op = std::make_shared<AsyncOp>(IoType::Read, file, buffer, stream, &size, &file_offset,
                                           &buffer_offset, &bytes_transferred);
 
     monitor.addOp(op);
@@ -271,7 +268,7 @@ TEST_F(RocFileAsyncMonitor, addOp_without_completeOp_prints_error_on_AsyncMonito
     off_t  file_offset       = 0;
     off_t  buffer_offset     = 0;
     off_t  bytes_transferred = 0;
-    auto   op = std::make_unique<AsyncOp>(io::IoType::Read, file, buffer, stream, &size, &file_offset,
+    auto   op = std::make_unique<AsyncOp>(IoType::Read, file, buffer, stream, &size, &file_offset,
                                           &buffer_offset, &bytes_transferred);
     monitor.addOp(std::move(op));
     EXPECT_CALL(msys, syslog);

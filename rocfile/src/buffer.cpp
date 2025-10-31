@@ -18,13 +18,11 @@
 #include <utility>
 #include <vector>
 
-using rocFile::Hip;
-using rocFile::context::Context;
 using std::shared_ptr;
 using std::transform;
 using std::vector;
 
-namespace rocFile::buffer {
+namespace rocFile {
 
 static bool
 isValidBufferRegion(void *ptr, size_t length)
@@ -57,11 +55,11 @@ Buffer::Buffer(const void *_buffer, size_t _length, int _flags)
     }
 
     if (type != hipMemoryTypeDevice) {
-        throw buffer::InvalidMemoryType();
+        throw InvalidMemoryType();
     }
 
     if (!isValidBufferRegion(buffer, length)) {
-        throw buffer::InvalidPointerRange();
+        throw InvalidPointerRange();
     }
 }
 
@@ -93,7 +91,7 @@ void
 BufferMap::registerBuffer(const void *buf, size_t length, int flags)
 {
     if (from_ptr.end() != from_ptr.find(buf)) {
-        throw buffer::AlreadyRegistered();
+        throw BufferAlreadyRegistered();
     }
 
     auto buffer   = std::shared_ptr<IBuffer>(new Buffer(buf, length, flags));
@@ -105,11 +103,11 @@ BufferMap::deregisterBuffer(const void *buf)
 {
     auto itr = from_ptr.find(buf);
     if (from_ptr.end() == itr) {
-        throw buffer::NotRegistered();
+        throw BufferNotRegistered();
     }
 
     if (1 < itr->second.use_count()) {
-        throw buffer::OperationsOutstanding();
+        throw BufferOperationsOutstanding();
     }
 
     from_ptr.erase(buf);
@@ -120,7 +118,7 @@ BufferMap::getBuffer(const void *buf)
 {
     auto itr = from_ptr.find(buf);
     if (from_ptr.end() == itr) {
-        throw buffer::NotRegistered();
+        throw BufferNotRegistered();
     }
 
     return itr->second;

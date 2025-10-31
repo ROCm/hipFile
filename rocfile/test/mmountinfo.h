@@ -13,7 +13,7 @@
 namespace rocFile {
 
 struct MLibMount : LibMount {
-    context::ContextOverride<LibMount> co;
+    ContextOverride<LibMount> co;
 
     MLibMount() : co{this}
     {
@@ -30,7 +30,7 @@ struct MLibMount : LibMount {
 };
 
 struct MLibMountHelper : LibMountHelper {
-    context::ContextOverride<LibMountHelper> co;
+    ContextOverride<LibMountHelper> co;
 
     MLibMountHelper() : co{this}
     {

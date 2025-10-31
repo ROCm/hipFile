@@ -86,7 +86,7 @@ TEST_F(RocFileUnit, TestRocFileBatchIOSubmitBadHandle)
     rocFileIOParams_t              io_param;
     std::shared_ptr<MBatchContext> mock_b_context = std::make_shared<MBatchContext>();
 
-    EXPECT_CALL(mock_state, getBatchContext).WillOnce(Throw(batch::InvalidHandle()));
+    EXPECT_CALL(mock_state, getBatchContext).WillOnce(Throw(InvalidBatchHandle()));
     EXPECT_CALL(*mock_b_context, submit_operations).Times(0);
 
     auto           result          = rocFileBatchIOSubmit(b_handle, 1, &io_param, 0);

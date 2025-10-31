@@ -11,11 +11,7 @@
 #include <sys/mman.h>
 
 using namespace rocFile;
-using namespace rocFile::backend;
 
-using rocFile::buffer::IBuffer;
-using rocFile::context::Context;
-using rocFile::file::IFile;
 using std::min;
 using std::shared_ptr;
 using std::unique_ptr;
@@ -23,8 +19,8 @@ using std::unique_ptr;
 static const size_t DefaultChunkSize = 16 * 1024 * 1024;
 
 int
-Fallback::score(std::shared_ptr<file::IFile> file, std::shared_ptr<buffer::IBuffer> buffer, size_t size,
-                off_t file_offset, off_t buffer_offset) const
+Fallback::score(std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size, off_t file_offset,
+                off_t buffer_offset) const
 {
     (void)buffer_offset;
     (void)file;
@@ -34,17 +30,17 @@ Fallback::score(std::shared_ptr<file::IFile> file, std::shared_ptr<buffer::IBuff
 }
 
 ssize_t
-Fallback::io(io::IoType type, std::shared_ptr<file::IFile> file, std::shared_ptr<buffer::IBuffer> buffer,
-             size_t size, off_t file_offset, off_t buffer_offset)
+Fallback::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
+             off_t file_offset, off_t buffer_offset)
 {
     return io(type, file, buffer, size, file_offset, buffer_offset, DefaultChunkSize);
 }
 
 ssize_t
-Fallback::io(io::IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
+Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
              off_t file_offset, off_t buffer_offset, size_t chunk_size)
 {
-    size = min(size, rocFile::backend::MAX_RW_COUNT);
+    size = min(size, rocFile::MAX_RW_COUNT);
 
     if ((buffer_offset < 0) || (buffer->getLength() <= static_cast<size_t>(buffer_offset)) ||
         (buffer->getLength() - static_cast<size_t>(buffer_offset) < size)) {
@@ -74,14 +70,14 @@ Fallback::io(io::IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buf
             static_cast<size_t>(total_io_bytes));
         try {
             switch (io_type) {
-                case io::IoType::Read:
+                case IoType::Read:
                     io_bytes = Context<Sys>::get()->pread(file->getFd(), bounce_buffer.get(), count, offset);
                     if (io_bytes > 0) {
                         Context<Hip>::get()->hipMemcpy(device_buffer_position, bounce_buffer.get(),
                                                        static_cast<size_t>(io_bytes), hipMemcpyHostToDevice);
                     }
                     break;
-                case io::IoType::Write:
+                case IoType::Write:
                     Context<Hip>::get()->hipMemcpy(bounce_buffer.get(), device_buffer_position, count,
                                                    hipMemcpyDeviceToHost);
                     Context<Hip>::get()->hipStreamSynchronize(nullptr);

@@ -8,7 +8,7 @@
 
 namespace rocFile {
 
-class MStream : public stream::IStream {
+class MStream : public IStream {
 public:
     MOCK_METHOD(hipStream_t, getHipStream, (), (const override));
     MOCK_METHOD(bool, fixedBufferOffset, (), (const override));

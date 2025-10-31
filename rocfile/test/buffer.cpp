@@ -24,8 +24,6 @@
 
 using namespace rocFile;
 
-using rocFile::buffer::Buffer;
-using rocFile::context::Context;
 using ::testing::StrictMock;
 
 // Put tests inside the macros to suppress the global constructor
@@ -71,8 +69,7 @@ TEST_F(RocFileBuffer, register_internal_not_device_memory)
             hipPointerAttribute_t attrs;
             attrs.type = memoryType;
             EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
-            ASSERT_THROW(Context<DriverState>::get()->registerBuffer(nonnull_ptr, 0, 0),
-                         buffer::InvalidMemoryType);
+            ASSERT_THROW(Context<DriverState>::get()->registerBuffer(nonnull_ptr, 0, 0), InvalidMemoryType);
         }
     }
 }
@@ -114,7 +111,7 @@ TEST_F(RocFileBuffer, register_internal_already_registered)
     StrictMock<MHip> mhip;
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
     ASSERT_EQ(rocFileBufRegister(nonnull_ptr, 0, 0), ROCFILE_SUCCESS);
-    ASSERT_THROW(Context<DriverState>::get()->registerBuffer(nonnull_ptr, 0, 0), buffer::AlreadyRegistered);
+    ASSERT_THROW(Context<DriverState>::get()->registerBuffer(nonnull_ptr, 0, 0), BufferAlreadyRegistered);
 }
 
 TEST_F(RocFileBuffer, register_already_registered)
@@ -170,7 +167,7 @@ TEST_F(RocFileBuffer, registerOverflowingRangeReturnsError)
 
 TEST_F(RocFileBuffer, deregister_internal_not_registered)
 {
-    ASSERT_THROW(Context<DriverState>::get()->deregisterBuffer(nonnull_ptr), buffer::NotRegistered);
+    ASSERT_THROW(Context<DriverState>::get()->deregisterBuffer(nonnull_ptr), BufferNotRegistered);
 }
 
 TEST_F(RocFileBuffer, deregister_not_registered)
@@ -200,7 +197,7 @@ TEST_F(RocFileBuffer, deregister_internal_duplicate_deregister)
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
     Context<DriverState>::get()->registerBuffer(nonnull_ptr, 0, 0);
     Context<DriverState>::get()->deregisterBuffer(nonnull_ptr);
-    ASSERT_THROW(Context<DriverState>::get()->deregisterBuffer(nonnull_ptr), buffer::NotRegistered);
+    ASSERT_THROW(Context<DriverState>::get()->deregisterBuffer(nonnull_ptr), BufferNotRegistered);
 }
 
 TEST_F(RocFileBuffer, deregister_duplicate_deregister)
@@ -219,8 +216,7 @@ TEST_F(RocFileBuffer, deregister_internal_get_prevents_deregister)
     Context<DriverState>::get()->registerBuffer(nonnull_ptr, 0, 0);
     {
         auto buffer = Context<DriverState>::get()->getBuffer(nonnull_ptr);
-        ASSERT_THROW(Context<DriverState>::get()->deregisterBuffer(nonnull_ptr),
-                     buffer::OperationsOutstanding);
+        ASSERT_THROW(Context<DriverState>::get()->deregisterBuffer(nonnull_ptr), BufferOperationsOutstanding);
     }
     Context<DriverState>::get()->deregisterBuffer(nonnull_ptr);
 }
@@ -239,7 +235,7 @@ TEST_F(RocFileBuffer, deregister_get_prevents_deregister)
 
 TEST_F(RocFileBuffer, get_not_registered)
 {
-    ASSERT_THROW(Context<DriverState>::get()->getBuffer(nonnull_ptr), buffer::NotRegistered);
+    ASSERT_THROW(Context<DriverState>::get()->getBuffer(nonnull_ptr), BufferNotRegistered);
 }
 
 TEST_F(RocFileBuffer, get_internal_after_register)
@@ -264,7 +260,7 @@ TEST_F(RocFileBuffer, get_internal_after_deregister)
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
     Context<DriverState>::get()->registerBuffer(nonnull_ptr, 0, 0);
     Context<DriverState>::get()->deregisterBuffer(nonnull_ptr);
-    ASSERT_THROW(Context<DriverState>::get()->getBuffer(nonnull_ptr), buffer::NotRegistered);
+    ASSERT_THROW(Context<DriverState>::get()->getBuffer(nonnull_ptr), BufferNotRegistered);
 }
 
 TEST_F(RocFileBuffer, get_after_deregister)
@@ -273,7 +269,7 @@ TEST_F(RocFileBuffer, get_after_deregister)
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
     ASSERT_EQ(rocFileBufRegister(nonnull_ptr, 0, 0), ROCFILE_SUCCESS);
     ASSERT_EQ(rocFileBufDeregister(nonnull_ptr), ROCFILE_SUCCESS);
-    ASSERT_THROW(Context<DriverState>::get()->getBuffer(nonnull_ptr), buffer::NotRegistered);
+    ASSERT_THROW(Context<DriverState>::get()->getBuffer(nonnull_ptr), BufferNotRegistered);
 }
 
 TEST_F(RocFileBuffer, get_buffer_makes_temporary_buffer)

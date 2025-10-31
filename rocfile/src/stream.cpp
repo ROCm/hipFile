@@ -12,9 +12,7 @@
 
 #include <memory>
 
-using rocFile::context::Context;
-
-namespace rocFile::stream {
+namespace rocFile {
 
 Stream::Stream(const hipStream_t _hip_stream, uint32_t flags)
     : hip_stream{_hip_stream}, fixed_buf_offset{(flags & ROCFILE_STREAM_FIXED_BUF_OFFSET) != 0},

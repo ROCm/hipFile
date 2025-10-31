@@ -26,14 +26,14 @@ struct DriverNotInitialized : public std::runtime_error {
 };
 
 struct file_buffer_pair {
-    std::shared_ptr<rocFile::file::IFile>     file;
-    std::shared_ptr<rocFile::buffer::IBuffer> buffer;
+    std::shared_ptr<IFile>   file;
+    std::shared_ptr<IBuffer> buffer;
 };
 
 struct file_buffer_stream_tuple {
-    std::shared_ptr<rocFile::file::IFile>     file;
-    std::shared_ptr<rocFile::buffer::IBuffer> buffer;
-    std::shared_ptr<rocFile::stream::IStream> stream;
+    std::shared_ptr<IFile>   file;
+    std::shared_ptr<IBuffer> buffer;
+    std::shared_ptr<IStream> stream;
 };
 
 // rocFile "state"
@@ -72,7 +72,7 @@ public:
     /// @brief Get a batch context
     /// @param [in] handle The opaque handle associated with a batch context
     /// @return A batch context
-    virtual std::shared_ptr<batch::IBatchContext> getBatchContext(rocFileBatchHandle_t handle);
+    virtual std::shared_ptr<IBatchContext> getBatchContext(rocFileBatchHandle_t handle);
 
     //
     // Buffer interface
@@ -91,7 +91,7 @@ public:
     /// @brief Look up a registered buffer using the buffer pointer
     /// @param [in] buf Buffer pointer
     /// @return A registered buffer
-    virtual std::shared_ptr<rocFile::buffer::IBuffer> getBuffer(const void *buf);
+    virtual std::shared_ptr<IBuffer> getBuffer(const void *buf);
 
     /// @brief Look up a registered buffer. Returns a temporary unregistered
     ///        buffer (of size length, using flags) if no matching buffer is found.
@@ -99,7 +99,7 @@ public:
     /// @param [in] length Buffer length
     /// @param [in] flags Buffer flags (unused)
     /// @return A registered or temporary unregistered buffer
-    virtual std::shared_ptr<rocFile::buffer::IBuffer> getBuffer(const void *buf, size_t length, int flags);
+    virtual std::shared_ptr<IBuffer> getBuffer(const void *buf, size_t length, int flags);
 
     //
     // File interface
@@ -116,8 +116,9 @@ public:
 
     /// @brief Look up a file given a rocFileHandle_t
     /// @param [in] fh The file handle to lookup the file with
-    /// @return If file handle is valid, return a shared pointer to the file, otherwise throw NotRegistered.
-    virtual std::shared_ptr<rocFile::file::IFile> getFile(rocFileHandle_t fh);
+    /// @return If file handle is valid, return a shared pointer to the file, otherwise throw
+    /// FileNotRegistered.
+    virtual std::shared_ptr<IFile> getFile(rocFileHandle_t fh);
 
     //
     // Stream interface
@@ -135,7 +136,7 @@ public:
     // @brief Look up a stream given a hipStream_t
     // @param [in] hip_stream A valid hipStream
     // @return Return a shared pointer to the Stream
-    virtual std::shared_ptr<rocFile::stream::IStream> getStream(hipStream_t hip_stream);
+    virtual std::shared_ptr<IStream> getStream(hipStream_t hip_stream);
 
     //
     // Buffer and file calls
@@ -195,7 +196,7 @@ public:
 
     /// @brief Get the backends that can service IO requests
     /// @return A collection of backends that can service IO requests
-    virtual std::vector<std::shared_ptr<backend::Backend>> getBackends() const;
+    virtual std::vector<std::shared_ptr<Backend>> getBackends() const;
 
     //
     // Misc
@@ -221,22 +222,22 @@ private:
     int64_t ref_count;
 
     // Allows Context to manage DriverState.
-    friend struct context::Context<DriverState>;
+    friend struct Context<DriverState>;
 
     // Manages the driver's File objects
-    std::unique_ptr<rocFile::file::FileMap> file_map;
+    std::unique_ptr<FileMap> file_map;
 
     // Manages the allocated Batch Context's
-    std::unique_ptr<batch::BatchContextMap> batch_map;
+    std::unique_ptr<BatchContextMap> batch_map;
 
     // Manages the driver's Buffer objects
-    std::unique_ptr<rocFile::buffer::BufferMap> buffer_map;
+    std::unique_ptr<BufferMap> buffer_map;
 
     // Manages the driver's Stream objects
-    std::unique_ptr<rocFile::stream::StreamMap> stream_map;
+    std::unique_ptr<StreamMap> stream_map;
 
     // Backends available to service IO requests
-    const std::vector<std::shared_ptr<backend::Backend>> backends;
+    const std::vector<std::shared_ptr<Backend>> backends;
 
     /// Mutex to protect the state
     mutable std::shared_mutex state_mutex;

@@ -45,7 +45,7 @@ thread_function(int id)
     constexpr int N_PRELOAD = 10;  // # of handles to load before cycling
     constexpr int CAPACITY  = 64;  // Arbitrary
 
-    auto bcm = batch::BatchContextMap{};
+    auto bcm = BatchContextMap{};
 
     vector<rocFileBatchHandle_t> handles;
 
