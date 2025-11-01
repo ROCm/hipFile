@@ -6,7 +6,11 @@ include(AISAddExecutable)
 include(AISUseGTest)
 
 set(SHARED_SOURCE_FILES
-    "${CMAKE_SOURCE_DIR}/shared/magic-word.cpp"
+    "${CMAKE_SOURCE_DIR}/shared/test/magic-word.cpp"
+)
+
+set(SHARED_TEST_INCLUDE_PATH
+    "${CMAKE_SOURCE_DIR}/shared/test/"
 )
 
 # These tests do not require a HIP capable GPU.
@@ -26,6 +30,7 @@ set(SYSTEM_TEST_SOURCE_FILES
 set(TEST_SYSINCLS
     ${HIPFILE_INCLUDE_PATH}
     ${HIPFILE_TEST_PATH}
+    ${SHARED_TEST_INCLUDE_PATH}
 )
 
 if(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
