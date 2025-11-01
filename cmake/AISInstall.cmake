@@ -36,6 +36,12 @@ if(BUILD_ROCFILE OR BUILD_HIPFILE)
         )
     endif()
 
+    # Always install the hipfile-types.h file
+    rocm_install(
+        FILES ${CMAKE_SOURCE_DIR}/shared/hipfile-types.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    )
+
     # rocm_package_add_dependencies() line should go here
     # when we have dependencies
 

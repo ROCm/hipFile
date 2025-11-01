@@ -40,7 +40,7 @@ struct Backend {
     /// @param buffer_offset  Offset from the start of the buffer
     /// @return
     virtual int score(std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
-                      off_t file_offset, off_t buffer_offset) const = 0;
+                      hoff_t file_offset, hoff_t buffer_offset) const = 0;
 
     /// @brief Perform a read or write operation
     ///
@@ -55,7 +55,7 @@ struct Backend {
     ///
     /// @throws Hip::RuntimeError Sys::RuntimeError
     virtual ssize_t io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
-                       off_t file_offset, off_t buffer_offset) = 0;
+                       hoff_t file_offset, hoff_t buffer_offset) = 0;
 };
 
 }

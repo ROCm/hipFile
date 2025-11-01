@@ -98,24 +98,31 @@ struct RocFileAsyncOpStreamParams
 TEST_P(RocFileAsyncOpStreamParams, asyncOp_construction_has_correct_variants)
 {
     size_t size              = 100;
+<<<<<<< HEAD
     off_t  file_offset       = 0;
     off_t  buffer_offset     = 0;
     off_t  bytes_transferred = 0;
     auto   op = std::make_shared<AsyncOp>(IoType::Read, file, buffer, stream, &size, &file_offset,
+=======
+    hoff_t file_offset       = 0;
+    hoff_t buffer_offset     = 0;
+    hoff_t bytes_transferred = 0;
+    auto   op = std::make_shared<AsyncOp>(io::IoType::Read, file, buffer, stream, &size, &file_offset,
+>>>>>>> 1ff39d2 (rocFile: Use platform-independent hoff_t)
                                           &buffer_offset, &bytes_transferred);
 
     // Unfixed flags will be pointers
     if (flags & ROCFILE_STREAM_FIXED_BUF_OFFSET) {
-        EXPECT_NO_THROW(std::get<const off_t>(op->buffer_offset));
+        EXPECT_NO_THROW(std::get<const hoff_t>(op->buffer_offset));
     }
     else {
-        EXPECT_NO_THROW(std::get<off_t *>(op->buffer_offset));
+        EXPECT_NO_THROW(std::get<hoff_t *>(op->buffer_offset));
     }
     if (flags & ROCFILE_STREAM_FIXED_FILE_OFFSET) {
-        EXPECT_NO_THROW(std::get<const off_t>(op->file_offset));
+        EXPECT_NO_THROW(std::get<const hoff_t>(op->file_offset));
     }
     else {
-        EXPECT_NO_THROW(std::get<off_t *>(op->file_offset));
+        EXPECT_NO_THROW(std::get<hoff_t *>(op->file_offset));
     }
     if (flags & ROCFILE_STREAM_FIXED_FILE_SIZE) {
         EXPECT_NO_THROW(std::get<size_t>(op->size));
@@ -129,9 +136,9 @@ INSTANTIATE_TEST_SUITE_P(StreamSuite, RocFileAsyncOpStreamParams, rocfileFlagsPo
 TEST_F(RocFileAsyncOp, AsyncOpFallback_new_uses_pinned_host_memory)
 {
     size_t size              = 100;
-    off_t  file_offset       = 0;
-    off_t  buffer_offset     = 0;
-    off_t  bytes_transferred = 0;
+    hoff_t file_offset       = 0;
+    hoff_t buffer_offset     = 0;
+    hoff_t bytes_transferred = 0;
     auto   op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
     auto   bounce_buffer     = std::shared_ptr<void>(new uint8_t[size]);
     EXPECT_CALL(mhip, hipHostMalloc).WillOnce(Return(op_data.get())).WillOnce(Return(bounce_buffer.get()));
@@ -145,9 +152,9 @@ TEST_F(RocFileAsyncOp, AsyncOpFallback_new_uses_pinned_host_memory)
 TEST_F(RocFileAsyncOp, AsyncOpFallback_new_failure_throws_bad_alloc)
 {
     size_t size              = 100;
-    off_t  file_offset       = 0;
-    off_t  buffer_offset     = 0;
-    off_t  bytes_transferred = 0;
+    hoff_t file_offset       = 0;
+    hoff_t buffer_offset     = 0;
+    hoff_t bytes_transferred = 0;
     auto   op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
     EXPECT_CALL(mhip, hipHostMalloc).WillOnce(Throw(Hip::RuntimeError(hipErrorOutOfMemory)));
     EXPECT_THROW(std::shared_ptr<AsyncOpFallback>(new AsyncOpFallback{IoType::Read, file, buffer, stream,
@@ -159,9 +166,9 @@ TEST_F(RocFileAsyncOp, AsyncOpFallback_new_failure_throws_bad_alloc)
 TEST_F(RocFileAsyncOp, AsyncOpFallback_bounce_alloc_failure_throws)
 {
     size_t size              = 100;
-    off_t  file_offset       = 0;
-    off_t  buffer_offset     = 0;
-    off_t  bytes_transferred = 0;
+    hoff_t file_offset       = 0;
+    hoff_t buffer_offset     = 0;
+    hoff_t bytes_transferred = 0;
     auto   op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
     EXPECT_CALL(mhip, hipHostMalloc)
         .WillOnce(Return(op_data.get()))
@@ -176,9 +183,9 @@ TEST_F(RocFileAsyncOp, AsyncOpFallback_bounce_alloc_failure_throws)
 TEST_F(RocFileAsyncOp, AsyncOpFallback_bounce_buffer_deleter_failure_calls_syslog)
 {
     size_t size              = 100;
-    off_t  file_offset       = 0;
-    off_t  buffer_offset     = 0;
-    off_t  bytes_transferred = 0;
+    hoff_t file_offset       = 0;
+    hoff_t buffer_offset     = 0;
+    hoff_t bytes_transferred = 0;
     auto   op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
     auto   bounce_buffer     = std::shared_ptr<void>(new uint8_t[size]);
     EXPECT_CALL(mhip, hipHostMalloc).WillOnce(Return(op_data.get())).WillOnce(Return(bounce_buffer.get()));
@@ -194,9 +201,9 @@ TEST_F(RocFileAsyncOp, AsyncOpFallback_bounce_buffer_deleter_failure_calls_syslo
 TEST_F(RocFileAsyncOp, AsyncOpFallback_delete_failure_calls_syslog)
 {
     size_t size              = 100;
-    off_t  file_offset       = 0;
-    off_t  buffer_offset     = 0;
-    off_t  bytes_transferred = 0;
+    hoff_t file_offset       = 0;
+    hoff_t buffer_offset     = 0;
+    hoff_t bytes_transferred = 0;
     auto   op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
     auto   bounce_buffer     = std::shared_ptr<void>(new uint8_t[size]);
     EXPECT_CALL(mhip, hipHostMalloc).WillOnce(Return(op_data.get())).WillOnce(Return(bounce_buffer.get()));
@@ -225,9 +232,9 @@ struct RocFileAsyncOpFallbackFunctions : public RocFileAsyncOp {
     }
     void                            *bounce_buffer_dev_ptr = reinterpret_cast<void *>(0xDECDECDE);
     size_t                           size                  = 100;
-    off_t                            file_offset           = 0;
-    off_t                            buffer_offset         = 0;
-    off_t                            bytes_transferred     = 0;
+    hoff_t                           file_offset           = 0;
+    hoff_t                           buffer_offset         = 0;
+    hoff_t                           bytes_transferred     = 0;
     std::shared_ptr<void>            bounce_buffer;
     std::shared_ptr<AsyncOpFallback> op;
 };
@@ -247,9 +254,9 @@ TEST_F(RocFileAsyncOpFallbackFunctions, devPtr_calls_hipHostGetDevicePointer)
 TEST_F(RocFileAsyncMonitor, addOp_and_completeOp_with_valid_params_works)
 {
     size_t size              = 100;
-    off_t  file_offset       = 0;
-    off_t  buffer_offset     = 0;
-    off_t  bytes_transferred = 0;
+    hoff_t file_offset       = 0;
+    hoff_t buffer_offset     = 0;
+    hoff_t bytes_transferred = 0;
     auto   op = std::make_shared<AsyncOp>(IoType::Read, file, buffer, stream, &size, &file_offset,
                                           &buffer_offset, &bytes_transferred);
 
@@ -265,9 +272,9 @@ TEST_F(RocFileAsyncMonitor, completeOp_with_invalid_op_throws)
 TEST_F(RocFileAsyncMonitor, addOp_without_completeOp_prints_error_on_AsyncMonitor_destruction)
 {
     size_t size              = 100;
-    off_t  file_offset       = 0;
-    off_t  buffer_offset     = 0;
-    off_t  bytes_transferred = 0;
+    hoff_t file_offset       = 0;
+    hoff_t buffer_offset     = 0;
+    hoff_t bytes_transferred = 0;
     auto   op = std::make_unique<AsyncOp>(IoType::Read, file, buffer, stream, &size, &file_offset,
                                           &buffer_offset, &bytes_transferred);
     monitor.addOp(std::move(op));

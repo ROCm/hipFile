@@ -14,6 +14,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <hipfile-types.h>
+
 #if defined(__GNUC__)
 #define ROCFILE_API __attribute__((visibility("default")))
 #else
@@ -405,15 +407,15 @@ typedef struct rocFileFSOps {
     /*!
      * Get the assigned priority of a RDMA device. If -1, there is no preference.
      */
-    int (*getRDMADevicePriority)(void *handle, char *, size_t, off_t, struct sockaddr *hostaddr);
+    int (*getRDMADevicePriority)(void *handle, char *, size_t, hoff_t, struct sockaddr *hostaddr);
     /*!
      * Read from the remote filesystem. If NULL, use the Linux VFS.
      */
-    ssize_t (*read)(void *handle, char *, size_t, off_t, rocFileRDMAInfo_t *);
+    ssize_t (*read)(void *handle, char *, size_t, hoff_t, rocFileRDMAInfo_t *);
     /*!
      * Write to the remote filesystem. If NULL, use the Linux VFS.
      */
-    ssize_t (*write)(void *handle, const char *, size_t, off_t, rocFileRDMAInfo_t *);
+    ssize_t (*write)(void *handle, const char *, size_t, hoff_t, rocFileRDMAInfo_t *);
 } rocFileFSOps_t;
 
 /*!
@@ -521,8 +523,8 @@ rocFileError_t rocFileBufDeregister(const void *buffer_base);
  * @return else:    Negative value of the related rocFileOpError_t
  */
 ROCFILE_API
-ssize_t rocFileRead(rocFileHandle_t fh, void *buffer_base, size_t size, off_t file_offset,
-                    off_t buffer_offset);
+ssize_t rocFileRead(rocFileHandle_t fh, void *buffer_base, size_t size, hoff_t file_offset,
+                    hoff_t buffer_offset);
 
 /*!
  * @brief Synchronously write data from a GPU buffer to a file
@@ -539,8 +541,8 @@ ssize_t rocFileRead(rocFileHandle_t fh, void *buffer_base, size_t size, off_t fi
  * @return else:    Negative value of the related rocFileOpError_t
  */
 ROCFILE_API
-ssize_t rocFileWrite(rocFileHandle_t fh, const void *buffer_base, size_t size, off_t file_offset,
-                     off_t buffer_offset);
+ssize_t rocFileWrite(rocFileHandle_t fh, const void *buffer_base, size_t size, hoff_t file_offset,
+                     hoff_t buffer_offset);
 
 // ***********************************************************************
 //  GPU IO DRIVER API
@@ -832,8 +834,8 @@ rocFileError_t rocFileBatchIODestroy(rocFileBatchHandle_t batch_idp);
  * @return A rocFile error
  */
 ROCFILE_API
-rocFileError_t rocFileReadAsync(rocFileHandle_t fh, void *buffer_base, size_t *size_p, off_t *file_offset_p,
-                                off_t *buffer_offset_p, ssize_t *bytes_read_p, hipStream_t stream);
+rocFileError_t rocFileReadAsync(rocFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
+                                hoff_t *buffer_offset_p, ssize_t *bytes_read_p, hipStream_t stream);
 
 /*!
  * @brief Perform an asynchronous write to a stream
@@ -851,8 +853,8 @@ rocFileError_t rocFileReadAsync(rocFileHandle_t fh, void *buffer_base, size_t *s
  * @return A rocFile error
  */
 ROCFILE_API
-rocFileError_t rocFileWriteAsync(rocFileHandle_t fh, void *buffer_base, size_t *size_p, off_t *file_offset_p,
-                                 off_t *buffer_offset_p, ssize_t *bytes_written_p, hipStream_t stream);
+rocFileError_t rocFileWriteAsync(rocFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
+                                 hoff_t *buffer_offset_p, ssize_t *bytes_written_p, hipStream_t stream);
 
 /*!
  * @brief Register a stream to be used by for asynchronous GPU IO

@@ -225,8 +225,8 @@ catch (...) {
 }
 
 ssize_t
-rocFileIo(IoType type, rocFileHandle_t fh, const void *buffer_base, size_t size, off_t file_offset,
-          off_t buffer_offset)
+rocFileIo(IoType type, rocFileHandle_t fh, const void *buffer_base, size_t size, hoff_t file_offset,
+          hoff_t buffer_offset)
 try {
     HIPFILE_WARN_NO_EXIT_DTOR_OFF
     static const auto backends{Context<DriverState>::get()->getBackends()};
@@ -282,13 +282,14 @@ catch (...) {
 }
 
 ssize_t
-rocFileRead(rocFileHandle_t fh, void *buffer_base, size_t size, off_t file_offset, off_t buffer_offset)
+rocFileRead(rocFileHandle_t fh, void *buffer_base, size_t size, hoff_t file_offset, hoff_t buffer_offset)
 {
     return rocFileIo(IoType::Read, fh, buffer_base, size, file_offset, buffer_offset);
 }
 
 ssize_t
-rocFileWrite(rocFileHandle_t fh, const void *buffer_base, size_t size, off_t file_offset, off_t buffer_offset)
+rocFileWrite(rocFileHandle_t fh, const void *buffer_base, size_t size, hoff_t file_offset,
+             hoff_t buffer_offset)
 {
     return rocFileIo(IoType::Write, fh, buffer_base, size, file_offset, buffer_offset);
 }
@@ -458,8 +459,8 @@ catch (...) {
 }
 
 rocFileError_t
-rocFileReadAsync(rocFileHandle_t fh, void *buffer_base, size_t *size_p, off_t *file_offset_p,
-                 off_t *buffer_offset_p, ssize_t *bytes_read_p, hipStream_t stream)
+rocFileReadAsync(rocFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
+                 hoff_t *buffer_offset_p, ssize_t *bytes_read_p, hipStream_t stream)
 try {
     if (Context<DriverState>::get()->getRefCount() == 0) {
         return {rocFileDriverNotInitialized, hipSuccess};
@@ -480,8 +481,8 @@ catch (...) {
 }
 
 rocFileError_t
-rocFileWriteAsync(rocFileHandle_t fh, void *buffer_base, size_t *size_p, off_t *file_offset_p,
-                  off_t *buffer_offset_p, ssize_t *bytes_written_p, hipStream_t stream)
+rocFileWriteAsync(rocFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
+                  hoff_t *buffer_offset_p, ssize_t *bytes_written_p, hipStream_t stream)
 try {
     if (Context<DriverState>::get()->getRefCount() == 0) {
         return {rocFileDriverNotInitialized, hipSuccess};

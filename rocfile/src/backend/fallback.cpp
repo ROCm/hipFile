@@ -19,8 +19,13 @@ using std::unique_ptr;
 static const size_t DefaultChunkSize = 16 * 1024 * 1024;
 
 int
+<<<<<<< HEAD
 Fallback::score(std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size, off_t file_offset,
                 off_t buffer_offset) const
+=======
+Fallback::score(std::shared_ptr<file::IFile> file, std::shared_ptr<buffer::IBuffer> buffer, size_t size,
+                hoff_t file_offset, hoff_t buffer_offset) const
+>>>>>>> 1ff39d2 (rocFile: Use platform-independent hoff_t)
 {
     (void)buffer_offset;
     (void)file;
@@ -31,14 +36,14 @@ Fallback::score(std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, si
 
 ssize_t
 Fallback::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
-             off_t file_offset, off_t buffer_offset)
+             hoff_t file_offset, hoff_t buffer_offset)
 {
     return io(type, file, buffer, size, file_offset, buffer_offset, DefaultChunkSize);
 }
 
 ssize_t
 Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
-             off_t file_offset, off_t buffer_offset, size_t chunk_size)
+             hoff_t file_offset, hoff_t buffer_offset, size_t chunk_size)
 {
     size = min(size, rocFile::MAX_RW_COUNT);
 
