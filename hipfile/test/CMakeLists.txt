@@ -72,23 +72,3 @@ gtest_discover_tests(
     WORKING_DIRECTORY ${AIS_TEST_DIR}
     PROPERTIES LABELS system
 )
-
-# Temporary Test Files
-# Can be deleted once proper testing added
-# ----------------------------------------
-ais_add_executable(
-    NAME test_hipfile_basic
-    SRCS test-hipfile.cpp
-    DEPS hipfile_shared
-)
-ais_add_executable(
-    NAME test_hipfile_batch
-    SRCS test-hipfile-batch.cpp
-    DEPS hipfile_shared
-)
-# ----------------------------------------
-
-# These need setup and command-line options (TBD)
-#add_test(NAME test_hipfile_basic COMMAND test_hipfile_basic)
-#add_test(NAME test_hipfile_batch COMMAND test_hipfile_batch)
-# ----------------------------------------
