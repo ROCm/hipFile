@@ -69,4 +69,4 @@ public:
     virtual std::optional<MountInfo> getMountInfo(dev_t dev) const;
 };
 
-} // namespace rocfile
+}

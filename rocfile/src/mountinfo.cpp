@@ -9,7 +9,7 @@
 #include <cstring>
 #include <stdexcept>
 
-using namespace rocFile;
+namespace rocFile {
 
 LibMount::~LibMount()
 {
@@ -116,4 +116,6 @@ LibMountHelper::getMountInfo(dev_t dev) const
 
     libmount->mnt_free_context(mnt_ctx);
     return std::make_optional(mountinfo);
+}
+
 }
