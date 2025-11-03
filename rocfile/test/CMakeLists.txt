@@ -5,6 +5,14 @@
 include(AISAddExecutable)
 include(AISUseGTest)
 
+set(SHARED_SOURCE_FILES
+    "${CMAKE_SOURCE_DIR}/shared/test/magic-word.cpp"
+)
+
+set(SHARED_TEST_INCLUDE_PATH
+    "${CMAKE_SOURCE_DIR}/shared/test/"
+)
+
 set(TEST_SOURCE_FILES
     async.cpp
     batch/batch.cpp
@@ -18,14 +26,20 @@ set(TEST_SOURCE_FILES
     mountinfo.cpp
     rocfile.cpp
     stream.cpp
-    "${CMAKE_SOURCE_DIR}/shared/magic-word.cpp"
+)
+
+set(TEST_SYSINCLS
+    ${ROCFILE_SOURCE_PATH}
+    ${ROCFILE_INCLUDE_PATH}
+    ${ROCFILE_TEST_PATH}
+    ${SHARED_TEST_INCLUDE_PATH}
 )
 
 ais_add_executable(
     NAME rocfile_tests
     DEPS rocfile_shared
-    SRCS ${TEST_SOURCE_FILES}
-    SYSINCLS ${ROCFILE_SOURCE_PATH} ${ROCFILE_INCLUDE_PATH} ${ROCFILE_TEST_PATH}
+    SRCS ${TEST_SOURCE_FILES} ${SHARED_SOURCE_FILES}
+    SYSINCLS ${TEST_SYSINCLS}
 )
 target_compile_options(rocfile_tests PRIVATE "-UNDEBUG")
 
