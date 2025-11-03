@@ -18,7 +18,7 @@ private:
 
 public:
     AsyncOpFallback(IoType ioType, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer,
-                    std::shared_ptr<IStream> stream, size_t *size, off_t *fileOffset, off_t *bufferOffset,
+                    std::shared_ptr<IStream> stream, size_t *size, hoff_t *fileOffset, hoff_t *bufferOffset,
                     ssize_t *bytesTransferred);
 
     void *bounceBufferHostPtr();

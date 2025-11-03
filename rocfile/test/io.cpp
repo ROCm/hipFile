@@ -76,8 +76,8 @@ rand_fill(std::vector<uint8_t> &v)
 // bytes in expected starting at expected offset. Also ensure that all other
 // bytes in buffer are zero.
 static bool
-contains_expected_data(std::vector<uint8_t> &buffer, off_t buffer_offset, std::vector<uint8_t> &expected,
-                       off_t expected_offset, size_t count)
+contains_expected_data(std::vector<uint8_t> &buffer, hoff_t buffer_offset, std::vector<uint8_t> &expected,
+                       hoff_t expected_offset, size_t count)
 {
     if (buffer_offset < 0 || buffer.size() < static_cast<size_t>(buffer_offset) + count) {
         throw std::invalid_argument("out of bounds: buffer");
@@ -87,7 +87,7 @@ contains_expected_data(std::vector<uint8_t> &buffer, off_t buffer_offset, std::v
         throw std::invalid_argument("out of bounds: expected");
     }
 
-    for (off_t i = 0; i < buffer_offset; i++) {
+    for (hoff_t i = 0; i < buffer_offset; i++) {
         if (buffer.data()[i] != 0) {
             return false;
         }
@@ -146,8 +146,8 @@ TEST(RocFileFallbackBackend, FallbackBackendIsBarelyWillingToHandleDeviceMemory)
     auto   mfile{std::make_shared<StrictMock<MFile>>()};
     auto   mbuffer{std::make_shared<StrictMock<MBuffer>>()};
     size_t io_size{2048};
-    off_t  file_offset{4096};
-    off_t  buffer_offset{1024};
+    hoff_t file_offset{4096};
+    hoff_t buffer_offset{1024};
 
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(hipMemoryTypeDevice));
 
@@ -158,8 +158,8 @@ TEST(RocFileFallbackBackend, FallbackBackendRejectsNonDeviceMemory)
 {
     auto   mfile{std::make_shared<StrictMock<MFile>>()};
     size_t io_size{2048};
-    off_t  file_offset{4096};
-    off_t  buffer_offset{1024};
+    hoff_t file_offset{4096};
+    hoff_t buffer_offset{1024};
 
     for (const auto memoryType : HipMemoryTypes) {
         if (memoryType != hipMemoryTypeDevice) {
@@ -224,7 +224,7 @@ TEST_P(RocFileFallbackValidation, fallback_io_throws_if_buffer_offset_is_out_of_
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
-    off_t            buffer_offset = static_cast<off_t>(buffer->getLength());
+    hoff_t           buffer_offset = static_cast<hoff_t>(buffer->getLength());
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, 0, buffer_offset, 4096), std::invalid_argument);
 }
 
@@ -233,7 +233,7 @@ TEST_P(RocFileFallbackValidation, fallback_io_throws_if_op_could_overrun_buffer)
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
     size_t           size          = 10;
-    off_t            buffer_offset = static_cast<off_t>(buffer->getLength()) - 9;
+    hoff_t           buffer_offset = static_cast<hoff_t>(buffer->getLength()) - 9;
     ASSERT_THROW(Fallback().io(io_type, file, buffer, size, 0, buffer_offset, 4096), std::invalid_argument);
 }
 
@@ -258,16 +258,18 @@ TEST_P(RocFileFallbackValidation, fallback_io_truncates_size_to_MAX_RW_COUNT)
     switch (io_type) {
         case IoType::Read:
             EXPECT_CALL(msys, pread)
-                .WillRepeatedly(testing::Invoke(
-                    [](int, void *, size_t count, off_t) -> ssize_t { return static_cast<ssize_t>(count); }));
+                .WillRepeatedly(testing::Invoke([](int, void *, size_t count, hoff_t) -> ssize_t {
+                    return static_cast<ssize_t>(count);
+                }));
             EXPECT_CALL(mhip, hipMemcpy).WillRepeatedly(testing::Return());
             break;
         case IoType::Write:
             EXPECT_CALL(mhip, hipMemcpy).WillRepeatedly(testing::Return());
             EXPECT_CALL(mhip, hipStreamSynchronize).WillRepeatedly(testing::Return());
             EXPECT_CALL(msys, pwrite)
-                .WillRepeatedly(testing::Invoke(
-                    [](int, void *, size_t count, off_t) -> ssize_t { return static_cast<ssize_t>(count); }));
+                .WillRepeatedly(testing::Invoke([](int, void *, size_t count, hoff_t) -> ssize_t {
+                    return static_cast<ssize_t>(count);
+                }));
             break;
         default:
             FAIL();
@@ -314,7 +316,7 @@ INSTANTIATE_TEST_SUITE_P(FallbackValidationTests, RocFileFallbackValidation,
 
 struct RocFileWrite : public RocFileIO {
 
-    ssize_t fake_pwrite(int fd, void *buf, size_t count, off_t offset)
+    ssize_t fake_pwrite(int fd, void *buf, size_t count, hoff_t offset)
     {
         (void)fd;
 
@@ -346,7 +348,7 @@ struct RocFileWrite : public RocFileIO {
     }
 
     // Test if the file contains the correct data
-    bool file_contains_expected_data(off_t file_offset, off_t buffer_offset, size_t count)
+    bool file_contains_expected_data(hoff_t file_offset, hoff_t buffer_offset, size_t count)
     {
         return contains_expected_data(file_data, file_offset, buffer_data, buffer_offset, count);
     }
@@ -542,7 +544,7 @@ TEST_F(RocFileWrite, fallback_write_to_empty_file_at_file_offset)
 
     size_t size        = 64 * 1024;
     size_t chunk_size  = 4096;
-    off_t  file_offset = 1024;
+    hoff_t file_offset = 1024;
 
     randomize_device_buffer();
     expect_fallback_write(mhip, msys);
@@ -558,7 +560,7 @@ TEST_F(RocFileWrite, fallback_write_to_empty_file_at_buffer_offset)
 
     size_t size          = 64 * 1024;
     size_t chunk_size    = 4096;
-    off_t  buffer_offset = 1024;
+    hoff_t buffer_offset = 1024;
 
     randomize_device_buffer();
     expect_fallback_write(mhip, msys);
@@ -574,8 +576,8 @@ TEST_F(RocFileWrite, fallback_write_to_empty_file_at_buffer_offset_file_offset)
 
     size_t size          = 64 * 1024;
     size_t chunk_size    = 4096;
-    off_t  buffer_offset = 1024;
-    off_t  file_offset   = 512;
+    hoff_t buffer_offset = 1024;
+    hoff_t file_offset   = 512;
 
     randomize_device_buffer();
     expect_fallback_write(mhip, msys);
@@ -603,7 +605,7 @@ TEST_F(RocFileWrite, fallback_write_to_file_subregion)
     StrictMock<MSys> msys;
 
     size_t file_length = buffer->getLength() * 2;
-    off_t  file_offset = buffer->getLength() / 2;
+    hoff_t file_offset = buffer->getLength() / 2;
     file_data.resize(file_length);
     randomize_device_buffer();
     expect_fallback_write(mhip, msys);
@@ -620,7 +622,7 @@ TEST_F(RocFileWrite, fallback_write_append_non_empty_small_file)
 
     file_data.resize(64);
     size_t size        = 64 * 1024;
-    off_t  file_offset = 64;
+    hoff_t file_offset = 64;
 
     randomize_device_buffer();
     expect_fallback_write(mhip, msys);
@@ -643,7 +645,7 @@ struct RocFileRead : public RocFileIO {
         rand_fill(file_data);
     }
 
-    ssize_t fake_pread(int fd, void *buf, size_t count, off_t offset)
+    ssize_t fake_pread(int fd, void *buf, size_t count, hoff_t offset)
     {
         (void)fd;
 
@@ -670,7 +672,7 @@ struct RocFileRead : public RocFileIO {
         return static_cast<ssize_t>(count);
     }
 
-    bool device_buffer_contains_expected_data(off_t file_offset, off_t buffer_offset, size_t count)
+    bool device_buffer_contains_expected_data(hoff_t file_offset, hoff_t buffer_offset, size_t count)
     {
         return contains_expected_data(buffer_data, buffer_offset, file_data, file_offset, count);
     }
@@ -806,8 +808,8 @@ TEST_F(RocFileRead, read_with_fallback_backend)
     init_file(file_length);
 
     size_t size          = buffer->getLength() / 2;
-    off_t  buffer_offset = buffer->getLength() / 4;
-    off_t  file_offset   = static_cast<off_t>(buffer->getLength());
+    hoff_t buffer_offset = buffer->getLength() / 4;
+    hoff_t file_offset   = static_cast<hoff_t>(buffer->getLength());
 
     expect_fallback_read(mhip, msys);
     ASSERT_EQ(rocFileRead(file->getHandle(), buffer->getBuffer(), size, file_offset, buffer_offset), size);
@@ -864,10 +866,10 @@ TEST_F(RocFileRead, fallback_read_handles_short_preads)
 
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(msys, pread)
-        .WillOnce(testing::Invoke([this](int fd, void *buf, size_t count, off_t offset) -> ssize_t {
+        .WillOnce(testing::Invoke([this](int fd, void *buf, size_t count, hoff_t offset) -> ssize_t {
             return this->fake_pread(fd, buf, count / 2, offset);
         }))
-        .WillRepeatedly(testing::Invoke([this](int fd, void *buf, size_t count, off_t offset) -> ssize_t {
+        .WillRepeatedly(testing::Invoke([this](int fd, void *buf, size_t count, hoff_t offset) -> ssize_t {
             return this->fake_pread(fd, buf, count, offset);
         }));
     EXPECT_CALL(mhip, hipMemcpy).WillRepeatedly(testing::Invoke(this, &RocFileRead::fake_hipMemcpy));
@@ -887,7 +889,7 @@ TEST_F(RocFileRead, fallback_read_handles_interrupted_pread)
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(msys, pread)
         .WillOnce(testing::Throw(Sys::RuntimeError(EINTR)))
-        .WillRepeatedly(testing::Invoke([this](int fd, void *buf, size_t count, off_t offset) -> ssize_t {
+        .WillRepeatedly(testing::Invoke([this](int fd, void *buf, size_t count, hoff_t offset) -> ssize_t {
             return this->fake_pread(fd, buf, count, offset);
         }));
     EXPECT_CALL(mhip, hipMemcpy).WillRepeatedly(testing::Invoke(this, &RocFileRead::fake_hipMemcpy));
@@ -970,7 +972,7 @@ TEST_F(RocFileRead, fallback_read_with_non_zero_file_offset)
 
     size_t file_length = buffer->getLength() * 3;
     init_file(file_length);
-    off_t file_offset = static_cast<off_t>(buffer->getLength());
+    hoff_t file_offset = static_cast<hoff_t>(buffer->getLength());
 
     expect_fallback_read(mhip, msys);
     ASSERT_EQ(buffer->getLength(),
@@ -985,7 +987,7 @@ TEST_F(RocFileRead, fallback_read_to_eof_with_non_zero_file_offset)
 
     size_t file_length = buffer->getLength() * 2;
     init_file(file_length);
-    off_t file_offset = static_cast<off_t>(buffer->getLength());
+    hoff_t file_offset = static_cast<hoff_t>(buffer->getLength());
 
     expect_fallback_read(mhip, msys);
     ASSERT_EQ(buffer->getLength(),
@@ -1000,7 +1002,7 @@ TEST_F(RocFileRead, fallback_read_past_eof_with_non_zero_file_offset)
 
     size_t file_length = buffer->getLength() * 2;
     init_file(file_length);
-    off_t file_offset = static_cast<off_t>(buffer->getLength()) + 1;
+    hoff_t file_offset = static_cast<hoff_t>(buffer->getLength()) + 1;
 
     expect_fallback_read(mhip, msys);
     ASSERT_EQ(buffer->getLength() - 1,
@@ -1015,7 +1017,7 @@ TEST_F(RocFileRead, fallback_read_can_read_single_byte_at_end_of_file)
 
     size_t file_length = buffer->getLength();
     init_file(file_length);
-    off_t file_offset = static_cast<off_t>(file_length) - 1;
+    hoff_t file_offset = static_cast<hoff_t>(file_length) - 1;
 
     expect_fallback_read(mhip, msys);
     ASSERT_EQ(1, Fallback().io(IoType::Read, file, buffer, buffer->getLength(), file_offset, 0));
@@ -1029,7 +1031,7 @@ TEST_F(RocFileRead, fallback_read_emtpy_file_with_non_zero_file_offset)
 
     size_t file_length = 0;
     init_file(file_length);
-    off_t file_offset = static_cast<off_t>(buffer->getLength());
+    hoff_t file_offset = static_cast<hoff_t>(buffer->getLength());
 
     expect_fallback_read(mhip, msys);
     ASSERT_EQ(0, Fallback().io(IoType::Read, file, buffer, buffer->getLength(), file_offset, 0));
@@ -1043,7 +1045,7 @@ TEST_F(RocFileRead, fallback_read_with_non_zero_buffer_offset)
 
     size_t file_length = buffer->getLength() * 2;
     init_file(file_length);
-    off_t buffer_offset = static_cast<off_t>(1);
+    hoff_t buffer_offset = static_cast<hoff_t>(1);
 
     expect_fallback_read(mhip, msys);
     ASSERT_EQ(buffer->getLength() - 1,
@@ -1058,7 +1060,7 @@ TEST_F(RocFileRead, fallback_read_can_read_into_last_byte_of_buffer)
 
     size_t file_length = buffer->getLength();
     init_file(file_length);
-    off_t buffer_offset = static_cast<off_t>(buffer->getLength() - 1);
+    hoff_t buffer_offset = static_cast<hoff_t>(buffer->getLength() - 1);
 
     expect_fallback_read(mhip, msys);
     ASSERT_EQ(1, Fallback().io(IoType::Read, file, buffer, 1, 0, buffer_offset));
@@ -1072,8 +1074,8 @@ TEST_F(RocFileRead, fallback_read_with_non_zero_buffer_offset_and_file_offset)
 
     size_t file_length = buffer->getLength();
     init_file(file_length);
-    off_t  file_offset   = 74;
-    off_t  buffer_offset = 97;
+    hoff_t file_offset   = 74;
+    hoff_t buffer_offset = 97;
     size_t read_size     = buffer->getLength() / 2;
 
     expect_fallback_read(mhip, msys);
@@ -1087,8 +1089,8 @@ struct RocFileIoBackendSelectionParam : public ::testing::TestWithParam<IoType> 
     rocFileHandle_t                       handle;
     void                                 *buffer;
     size_t                                io_size;
-    off_t                                 file_offset;
-    off_t                                 buffer_offset;
+    hoff_t                                file_offset;
+    hoff_t                                buffer_offset;
     int                                   flags;
     std::shared_ptr<StrictMock<MFile>>    mfile;
     std::shared_ptr<StrictMock<MBuffer>>  mbuffer;

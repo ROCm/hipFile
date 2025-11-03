@@ -12,11 +12,11 @@
 namespace rocFile {
 
 struct MBackend : Backend {
-    MOCK_METHOD(int, score, (std::shared_ptr<IFile>, std::shared_ptr<IBuffer>, size_t, off_t, off_t),
+    MOCK_METHOD(int, score, (std::shared_ptr<IFile>, std::shared_ptr<IBuffer>, size_t, hoff_t, hoff_t),
                 (const override));
     MOCK_METHOD(ssize_t, io,
-                (rocFile::IoType type, std::shared_ptr<IFile>, std::shared_ptr<IBuffer>, size_t, off_t,
-                 off_t),
+                (rocFile::IoType type, std::shared_ptr<IFile>, std::shared_ptr<IBuffer>, size_t, hoff_t,
+                 hoff_t),
                 (override));
 };
 

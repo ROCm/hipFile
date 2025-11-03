@@ -25,7 +25,7 @@ hipHostDeleter(void *buffer)
 
 AsyncOpFallback::AsyncOpFallback(IoType _io_type, std::shared_ptr<IFile> _file,
                                  std::shared_ptr<IBuffer> _buffer, std::shared_ptr<IStream> _stream,
-                                 size_t *_size, off_t *_file_offset, off_t *_buffer_offset,
+                                 size_t *_size, hoff_t *_file_offset, hoff_t *_buffer_offset,
                                  ssize_t *_bytes_transferred)
     : AsyncOp{_io_type, _file, _buffer, _stream, _size, _file_offset, _buffer_offset, _bytes_transferred},
       bytes_transferred_internal{0}, gpu_buffer{buffer->getBuffer()}, bounce_buffer_dev_ptr{nullptr},

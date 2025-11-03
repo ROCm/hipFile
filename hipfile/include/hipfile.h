@@ -14,6 +14,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <hipfile-types.h>
+
 #if defined(__GNUC__)
 #define HIPFILE_API __attribute__((visibility("default")))
 #else
@@ -84,20 +86,6 @@ extern "C" {
  * @ingroup core
  */
 #define HIPFILE_VERSION_PATCH 0
-
-// ***********************************************************************
-//  PLATFORM-INDEPENDENT TYPES
-// ***********************************************************************
-
-/*!
- * @brief Platform-independent offset type
- * @ingroup core
- */
-#ifndef _WIN32
-typedef off_t hoff_t;
-#else
-typedef __int64 hoff_t;
-#endif
 
 // ***********************************************************************
 //  ERROR HANDLING
