@@ -19,13 +19,8 @@ using std::unique_ptr;
 static const size_t DefaultChunkSize = 16 * 1024 * 1024;
 
 int
-<<<<<<< HEAD
-Fallback::score(std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size, off_t file_offset,
-                off_t buffer_offset) const
-=======
-Fallback::score(std::shared_ptr<file::IFile> file, std::shared_ptr<buffer::IBuffer> buffer, size_t size,
-                hoff_t file_offset, hoff_t buffer_offset) const
->>>>>>> 1ff39d2 (rocFile: Use platform-independent hoff_t)
+Fallback::score(std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size, hoff_t file_offset,
+                hoff_t buffer_offset) const
 {
     (void)buffer_offset;
     (void)file;

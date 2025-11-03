@@ -98,17 +98,10 @@ struct RocFileAsyncOpStreamParams
 TEST_P(RocFileAsyncOpStreamParams, asyncOp_construction_has_correct_variants)
 {
     size_t size              = 100;
-<<<<<<< HEAD
-    off_t  file_offset       = 0;
-    off_t  buffer_offset     = 0;
-    off_t  bytes_transferred = 0;
-    auto   op = std::make_shared<AsyncOp>(IoType::Read, file, buffer, stream, &size, &file_offset,
-=======
     hoff_t file_offset       = 0;
     hoff_t buffer_offset     = 0;
     hoff_t bytes_transferred = 0;
-    auto   op = std::make_shared<AsyncOp>(io::IoType::Read, file, buffer, stream, &size, &file_offset,
->>>>>>> 1ff39d2 (rocFile: Use platform-independent hoff_t)
+    auto   op = std::make_shared<AsyncOp>(IoType::Read, file, buffer, stream, &size, &file_offset,
                                           &buffer_offset, &bytes_transferred);
 
     // Unfixed flags will be pointers
