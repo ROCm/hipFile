@@ -132,15 +132,11 @@ try {
     }
 
     switch (descr->type) {
-        case rocFileHandleTypeOpaqueFD:
-            // Validate
-            if (descr->handle.fd < 0) {
-                return {rocFileInvalidValue, hipSuccess};
-            }
-
-            // Register
-            *fh = Context<DriverState>::get()->registerFile(descr->handle.fd);
+        case rocFileHandleTypeOpaqueFD: {
+            UnregisteredFile uf{descr->handle.fd};
+            *fh = Context<DriverState>::get()->registerFile(uf);
             return {rocFileSuccess, hipSuccess};
+        }
         case rocFileHandleTypeOpaqueWin32:
         case rocFileHandleTypeUserspaceFS:
         default:

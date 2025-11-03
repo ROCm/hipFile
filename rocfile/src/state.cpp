@@ -116,14 +116,8 @@ DriverState::getBuffer(const void *buf, size_t length, int flags)
 //
 
 rocFileHandle_t
-DriverState::registerFile(int fd)
+DriverState::registerFile(const UnregisteredFile &uf)
 {
-    // Get file information outside of the state mutex to avoid potentially
-    // stalling other IO threads
-    auto fstat{Context<Sys>::get()->fstat(fd)};
-    auto status_flags{Context<Sys>::get()->fcntl(fd, F_GETFL, 0)};
-    auto mountinfo{Context<LibMountHelper>::get()->getMountInfo(fstat.st_dev)};
-
     unique_lock<shared_mutex> ulock{state_mutex};
 
     // For NVIDIA cuFile compatibility, implicitly "initialize"
@@ -132,7 +126,7 @@ DriverState::registerFile(int fd)
         ref_count++;
     }
 
-    return file_map->registerFile(fd, fstat, status_flags, mountinfo);
+    return file_map->registerFile(uf);
 }
 
 void

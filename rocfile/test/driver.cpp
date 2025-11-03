@@ -19,8 +19,7 @@
 #include <cstdint>
 
 using namespace rocFile;
-
-using ::testing::StrictMock;
+using namespace testing;
 
 // Put tests inside the macros to suppress the global constructor
 // warnings
@@ -109,7 +108,8 @@ TEST_F(RocFileDriverAdmin, HandleRegisterBadFD)
 
     descr.handle.fd = -1;
     descr.type      = rocFileHandleTypeOpaqueFD;
-    descr.fs_ops    = nullptr;
+
+    EXPECT_CALL(msys, fstat).WillOnce(Throw(Sys::RuntimeError(EBADF)));
 
     ASSERT_EQ(rocFileUseCount(), 0);
     ASSERT_NE(rocFileHandleRegister(&handle, &descr), ROCFILE_SUCCESS);
