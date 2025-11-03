@@ -16,7 +16,8 @@ struct MBackend : Backend {
                 (const override));
     MOCK_METHOD(ssize_t, io,
                 (rocFile::IoType type, std::shared_ptr<IFile>, std::shared_ptr<IBuffer>, size_t, hoff_t,
-                 hoff_t), (override));
+                 hoff_t),
+                (override));
 };
 
 }

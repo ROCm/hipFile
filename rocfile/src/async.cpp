@@ -78,8 +78,8 @@ AsyncMonitor::completion_thread()
 }
 
 AsyncOp::AsyncOp(IoType _io_type, std::shared_ptr<IFile> _file, std::shared_ptr<IBuffer> _buffer,
-                 std::shared_ptr<IStream> _stream, size_t *_size, hoff_t *_file_offset, hoff_t *_buffer_offset,
-                 ssize_t *_bytes_transferred)
+                 std::shared_ptr<IStream> _stream, size_t *_size, hoff_t *_file_offset,
+                 hoff_t *_buffer_offset, ssize_t *_bytes_transferred)
     : io_type{_io_type}, file{_file}, buffer{_buffer}, stream{_stream},
 
       size{stream->fixedIOSize() ? std::variant<size_t, size_t *>{*_size}
