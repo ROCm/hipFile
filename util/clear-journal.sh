@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Copyright (c) Advanced Micro Devices, Inc. All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+
 
 set -x
 

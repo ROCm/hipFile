@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright (c) Advanced Micro Devices, Inc. All rights reserved.
+#
+# SPDX-License-Identifier: MIT
 
 # CI script that will highlight any issues clang-format complains about
 # as well as the diff of what needs to change.

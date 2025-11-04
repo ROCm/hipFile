@@ -1,5 +1,8 @@
 #! /usr/bin/env python3
-# [AMD INTERNAL ONLY]
+# Copyright (c) Advanced Micro Devices, Inc. All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+
 """
 SystemD approach if wanting to have this execute on startup:
 
