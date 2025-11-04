@@ -3,8 +3,10 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "context.h"
 #include "file.h"
 #include "state.h"
+#include "sys.h"
 
 #include <algorithm>
 #include <cstdlib>
