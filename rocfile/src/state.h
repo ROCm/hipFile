@@ -106,9 +106,9 @@ public:
     //
 
     /// @brief Registers a file. Files must be registered before they can be used with rocFile IO APIs
-    /// @param [in] fd An open file descriptor
+    /// @param [in] uf An unregistered file
     /// @return A handle to be used when calling rocFile IO APIs
-    virtual rocFileHandle_t registerFile(int fd);
+    virtual rocFileHandle_t registerFile(const UnregisteredFile &uf);
 
     /// @brief Deregisters the file associated with the provided file handle
     /// @param [in] fh The handle of the file to deregister

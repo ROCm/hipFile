@@ -38,6 +38,42 @@ struct FileOperationsOutstanding : public std::runtime_error {
     }
 };
 
+class UnregisteredFile {
+public:
+    /// @brief Construct an unregistered file
+    ///
+    /// During construction of an unregistered file, information about the file
+    /// is collected from the system.
+    ///
+    /// @param fd A valid file descriptor
+    UnregisteredFile(int fd);
+
+    /// @return Returns the file descriptor
+    int getFd() const noexcept;
+
+    /// @return Returns the information provided by fstat (2)
+    struct stat getStat() const noexcept;
+
+    /// @return Returns the flags provided by fcntl (2)
+    int getFlags() const noexcept;
+
+    /// @brief Returns information obtained from /proc/self/mountinfo
+    std::optional<MountInfo> getMountInfo() const noexcept;
+
+private:
+    /// @brief The file descriptor
+    int m_fd;
+
+    /// @brief Information provided by fstat (2)
+    struct stat m_stat;
+
+    /// @brief Flags provided by fcntl(2)
+    int m_flags;
+
+    /// @brief Information obtained from /proc/self/mountinfo
+    std::optional<MountInfo> m_mountinfo;
+};
+
 class IFile {
 public:
     virtual ~IFile() = default;
@@ -73,11 +109,9 @@ public:
     virtual std::optional<MountInfo> getMountInfo() const override;
 
 private:
-    /// @brief Construct a file object
-    /// @param fd The file descriptor for the file
-    /// @param fstat The struct stat value obtained by calling fstat(2) with fd
-    /// @param mountinfo Mount information for the filesystem backing fd
-    File(int fd, const struct stat &fstat, int status_flags, std::optional<MountInfo> mountinfo);
+    /// @brief Construct a registered file
+    /// @param uf An unregistered file
+    File(const UnregisteredFile &uf);
 
     /// @brief The file descriptor
     int fd;
@@ -109,13 +143,8 @@ public:
 
     /// @brief Registers a file. Files must be registered before they can be used with rocFile IO APIs
     /// @attention A unique_lock on RocFileMutex must be held
-    /// @param fd An open file descriptor
-    /// @param fstat The struct stat value obtained by calling fstat(2) with fd
-    /// @param status_flags The fd's status flags
-    /// @param mountinfo Mount information for the filesystem backing fd
-    /// @return A handle to be used when calling rocFile IO APIs
-    virtual rocFileHandle_t registerFile(int fd, struct stat &fstat, int status_flags,
-                                         std::optional<MountInfo> mountinfo);
+    /// @param uf An unregistered file
+    virtual rocFileHandle_t registerFile(const UnregisteredFile &uf);
 
     /// @brief Deregisters the file associated with the provided file handle
     /// @attention A unique_lock on RocFileMutex must be held

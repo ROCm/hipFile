@@ -31,9 +31,7 @@ public:
     MFileMap()
     {
     }
-    MOCK_METHOD(rocFileHandle_t, registerFile,
-                (int fd, struct stat &fstat, int _status_flags, std::optional<MountInfo> mountinfo),
-                (override));
+    MOCK_METHOD(rocFileHandle_t, registerFile, (const UnregisteredFile &uf), (override));
     MOCK_METHOD(void, deregisterFile, (rocFileHandle_t fh), (override));
     MOCK_METHOD(std::shared_ptr<IFile>, getFile, (rocFileHandle_t), (override));
     MOCK_METHOD(void, clear, (), (override));

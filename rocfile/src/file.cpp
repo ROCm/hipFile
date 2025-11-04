@@ -3,8 +3,10 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "context.h"
 #include "file.h"
 #include "state.h"
+#include "sys.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -18,14 +20,45 @@ using std::vector;
 
 namespace rocFile {
 
+UnregisteredFile::UnregisteredFile(int fd)
+    : m_fd(fd), m_stat{Context<Sys>::get()->fstat(fd)}, m_flags{Context<Sys>::get()->fcntl(fd, F_GETFL, 0)},
+      m_mountinfo{Context<LibMountHelper>::get()->getMountInfo(m_stat.st_dev)}
+{
+}
+
+int
+UnregisteredFile::getFd() const noexcept
+{
+    return m_fd;
+}
+
+struct stat
+UnregisteredFile::getStat() const noexcept
+{
+    return m_stat;
+}
+
+int
+UnregisteredFile::getFlags() const noexcept
+{
+    return m_flags;
+}
+
+optional<MountInfo>
+UnregisteredFile::getMountInfo() const noexcept
+{
+    return m_mountinfo;
+}
+
 rocFileHandle_t
 IFile::getHandle() const
 {
     return reinterpret_cast<rocFileHandle_t>(const_cast<IFile *>(this));
 }
 
-File::File(int _fd, const struct stat &fstat, int _status_flags, optional<MountInfo> _mountinfo)
-    : fd{_fd}, device{fstat.st_dev}, mode{fstat.st_mode}, status_flags{_status_flags}, mountinfo{_mountinfo}
+File::File(const UnregisteredFile &uf)
+    : fd{uf.getFd()}, device{uf.getStat().st_dev}, mode{uf.getStat().st_mode}, status_flags{uf.getFlags()},
+      mountinfo{uf.getMountInfo()}
 {
 }
 
@@ -71,14 +104,14 @@ FileMap::getFile(rocFileHandle_t fh)
 }
 
 rocFileHandle_t
-FileMap::registerFile(int fd, struct stat &fstat, int status_flags, optional<MountInfo> mountinfo)
+FileMap::registerFile(const UnregisteredFile &uf)
 {
-    if (from_fd.end() != from_fd.find(fd)) {
+    if (from_fd.end() != from_fd.find(uf.getFd())) {
         throw FileAlreadyRegistered();
     }
 
-    auto file                  = std::shared_ptr<IFile>(new File(fd, fstat, status_flags, mountinfo));
-    from_fd[fd]                = file;
+    auto file                  = std::shared_ptr<IFile>(new File(uf));
+    from_fd[file->getFd()]     = file;
     from_fh[file->getHandle()] = file;
 
     return file->getHandle();
