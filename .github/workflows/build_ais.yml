@@ -19,9 +19,12 @@ jobs:
     runs-on: [ubuntu-24.04]
     container: docker:28.5
     steps:
+      - name: Set the GHCR location for the AIS CI image
+        run: |
+          echo "CI_GHCR_URL=ghcr.io/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
       - name: Set AIS CI image environment variables
         run: |
-          echo "AIS_CI_DEV_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
+          echo "AIS_CI_DEV_IMAGE=${CI_GHCR_URL}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
             | sed 's|[^a-zA-Z0-9]|-|g')" >> "$GITHUB_ENV"
           echo "AIS_CI_LATEST_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}:latest" >> "$GITHUB_ENV"
           echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
@@ -47,8 +50,8 @@ jobs:
               ${{ env.AIS_CI_IMAGE_NAME }} Development Image for AIS CI using branch \
               ${{ github.head_ref }} for PR #${AIS_PR_NUMBER}. \
               PR URL: ${{ env.AIS_PR_BASE_URL }}/${AIS_PR_NUMBER}" \
-            --cache-to=type=registry,ref="${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:cache" \
-            --cache-from=type=registry,ref="${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:cache" \
+            --cache-to=type=registry,ref="${CI_GHCR_URL}/${{ env.AIS_CI_IMAGE_NAME }}_dev:cache" \
+            --cache-from=type=registry,ref="${CI_GHCR_URL}/${{ env.AIS_CI_IMAGE_NAME }}_dev:cache" \
             --push \
             -t ${AIS_CI_DEV_IMAGE} \
             ${GITHUB_WORKSPACE}
@@ -60,7 +63,7 @@ jobs:
         run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
       - name: Set AIS CI image environment variables
         run: |
-          echo "AIS_CI_DEV_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
+          echo "AIS_CI_DEV_IMAGE=${CI_GHCR_URL}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
             | sed 's|[^a-zA-Z0-9]|-|g')" >> "$GITHUB_ENV"
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{inputs.platform}}" >> "$GITHUB_ENV"
       - name: Fetching code repository...
@@ -170,7 +173,7 @@ jobs:
         run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
       - name: Set AIS CI image environment variables
         run: |
-          echo "AIS_CI_DEV_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
+          echo "AIS_CI_DEV_IMAGE=${CI_GHCR_URL}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
             | sed 's|[^a-zA-Z0-9]|-|g')" >> "$GITHUB_ENV"
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{inputs.platform}}" >> "$GITHUB_ENV"
       - name: Fetching code repository...
@@ -235,7 +238,7 @@ jobs:
         run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
       - name: Set AIS CI image environment variables
         run: |
-          echo "AIS_CI_DEV_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
+          echo "AIS_CI_DEV_IMAGE=${CI_GHCR_URL}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
             | sed 's|[^a-zA-Z0-9]|-|g')" >> "$GITHUB_ENV"
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{inputs.platform}}_nvidia" >> "$GITHUB_ENV"
       - name: Fetching code repository...
@@ -330,7 +333,7 @@ jobs:
         run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
       - name: Set AIS CI image environment variables
         run: |
-          echo "AIS_CI_DEV_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
+          echo "AIS_CI_DEV_IMAGE=${CI_GHCR_URL}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
             | sed 's|[^a-zA-Z0-9]|-|g')" >> "$GITHUB_ENV"
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{inputs.platform}}_nvidia" >> "$GITHUB_ENV"
       - name: Fetching code repository...
