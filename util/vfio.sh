@@ -1,4 +1,7 @@
 #!/bin/sh -e
+# Copyright (c) Advanced Micro Devices, Inc. All rights reserved.
+#
+# SPDX-License-Identifier: MIT
 
 # Binds devices to the vfio-pci driver. Requires root permissions.
 #

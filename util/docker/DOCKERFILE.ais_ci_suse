@@ -1,3 +1,7 @@
+# Copyright (c) Advanced Micro Devices, Inc. All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+
 ARG SUSE_MAJOR_VERSION=15
 ARG SUSE_VERSION=${SUSE_MAJOR_VERSION}.6
 FROM opensuse/leap:${SUSE_VERSION}

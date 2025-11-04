@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
+# Copyright (c) Advanced Micro Devices, Inc. All rights reserved.
 #
+# SPDX-License-Identifier: MIT
+
 # Recursively format all C & C++ sources and header files
 
 COMMAND="clang-format"

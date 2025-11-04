@@ -1,3 +1,7 @@
+# Copyright (c) Advanced Micro Devices, Inc. All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+
 ARG ROCKY_MAJOR_VERSION=9
 ARG ROCKY_VERSION=${ROCKY_MAJOR_VERSION}.6
 FROM rockylinux/rockylinux:${ROCKY_VERSION}-minimal
