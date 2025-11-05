@@ -3,6 +3,10 @@ run-name: Kicks off several AIS CI workflows for various platforms.
 on:
   pull_request:
     types: [opened, synchronize, reopened] # Defaults
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.github/CODEOWNERS'
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
