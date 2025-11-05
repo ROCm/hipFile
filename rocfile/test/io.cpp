@@ -154,19 +154,17 @@ TEST(RocFileFallbackBackend, FallbackBackendIsBarelyWillingToHandleDeviceMemory)
     ASSERT_EQ(Fallback().score(mfile, mbuffer, io_size, file_offset, buffer_offset), 0);
 }
 
-TEST(RocFileFallbackBackend, FallbackBackendRejectsNonDeviceMemory)
+TEST(RocFileFallbackBackend, FallbackBackendRejectsUnsupportedHipMemoryTypes)
 {
     auto   mfile{std::make_shared<StrictMock<MFile>>()};
     size_t io_size{2048};
     hoff_t file_offset{4096};
     hoff_t buffer_offset{1024};
 
-    for (const auto memoryType : HipMemoryTypes) {
-        if (memoryType != hipMemoryTypeDevice) {
-            auto mbuffer = std::make_shared<StrictMock<MBuffer>>();
-            EXPECT_CALL(*mbuffer, getType).WillOnce(Return(memoryType));
-            ASSERT_EQ(Fallback().score(mfile, mbuffer, io_size, file_offset, buffer_offset), -1);
-        }
+    for (const auto memoryType : UnsupportedHipMemoryTypes) {
+        auto mbuffer = std::make_shared<StrictMock<MBuffer>>();
+        EXPECT_CALL(*mbuffer, getType).WillOnce(Return(memoryType));
+        ASSERT_EQ(Fallback().score(mfile, mbuffer, io_size, file_offset, buffer_offset), -1);
     }
 }
 
@@ -372,21 +370,18 @@ TEST_F(RocFileWrite, write_handles_pointer_get_attributes_error)
     ASSERT_EQ(rocFileWrite(fh, nonnull_ptr, 0, 0, 0), -static_cast<ssize_t>(hipErrorUnknown));
 }
 
-TEST_F(RocFileWrite, write_handles_invalid_memory_type)
+TEST_F(RocFileWrite, write_handles_unsupported_hip_memory_type)
 {
     StrictMock<MSys> msys;
     EXPECT_CALL(msys, fstat);
     EXPECT_CALL(msys, fcntl);
     auto fh = Context<DriverState>::get()->registerFile(0xBADCAFE);
-    for (const auto memoryType : HipMemoryTypes) {
-        if (memoryType != hipMemoryTypeDevice) {
-            StrictMock<MHip>      mhip;
-            hipPointerAttribute_t attrs;
-            attrs.type = memoryType;
-            EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
-            ASSERT_EQ(rocFileWrite(fh, nonnull_ptr, 0, 0, 0),
-                      -static_cast<ssize_t>(rocFileHipMemoryTypeInvalid));
-        }
+    for (const auto memoryType : UnsupportedHipMemoryTypes) {
+        StrictMock<MHip>      mhip;
+        hipPointerAttribute_t attrs;
+        attrs.type = memoryType;
+        EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
+        ASSERT_EQ(rocFileWrite(fh, nonnull_ptr, 0, 0, 0), -static_cast<ssize_t>(rocFileHipMemoryTypeInvalid));
     }
 }
 
@@ -699,21 +694,18 @@ TEST_F(RocFileRead, read_handles_pointer_get_attributes_error)
     ASSERT_EQ(rocFileRead(fh, nonnull_ptr, 0, 0, 0), -static_cast<ssize_t>(hipErrorUnknown));
 }
 
-TEST_F(RocFileRead, read_handles_invalid_memory_type)
+TEST_F(RocFileRead, read_handles_unsupported_hip_memory_type)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
     EXPECT_CALL(msys, fstat);
     EXPECT_CALL(msys, fcntl);
     auto fh{Context<DriverState>::get()->registerFile(0xBADCAFE)};
-    for (const auto memoryType : HipMemoryTypes) {
-        if (memoryType != hipMemoryTypeDevice) {
-            hipPointerAttribute_t attrs;
-            attrs.type = memoryType;
-            EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
-            ASSERT_EQ(rocFileRead(fh, nonnull_ptr, 0, 0, 0),
-                      -static_cast<ssize_t>(rocFileHipMemoryTypeInvalid));
-        }
+    for (const auto memoryType : UnsupportedHipMemoryTypes) {
+        hipPointerAttribute_t attrs;
+        attrs.type = memoryType;
+        EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
+        ASSERT_EQ(rocFileRead(fh, nonnull_ptr, 0, 0, 0), -static_cast<ssize_t>(rocFileHipMemoryTypeInvalid));
     }
 }
 

@@ -47,43 +47,43 @@ struct RocFileBuffer : public RocFileOpened {
     void *nonnull_ptr;
 };
 
-TEST_F(RocFileBuffer, register_internal_device_memory)
+TEST_F(RocFileBuffer, register_internal_supported_hip_memory)
 {
-    StrictMock<MHip> mhip;
-    expect_buffer_registration(mhip, hipMemoryTypeDevice);
-    Context<DriverState>::get()->registerBuffer(nonnull_ptr, 0, 0);
-}
-
-TEST_F(RocFileBuffer, register_device_memory)
-{
-    StrictMock<MHip> mhip;
-    expect_buffer_registration(mhip, hipMemoryTypeDevice);
-    ASSERT_EQ(rocFileBufRegister(nonnull_ptr, 0, 0), ROCFILE_SUCCESS);
-}
-
-TEST_F(RocFileBuffer, register_internal_not_device_memory)
-{
-    for (const auto memoryType : HipMemoryTypes) {
-        if (memoryType != hipMemoryTypeDevice) {
-            StrictMock<MHip>      mhip;
-            hipPointerAttribute_t attrs;
-            attrs.type = memoryType;
-            EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
-            ASSERT_THROW(Context<DriverState>::get()->registerBuffer(nonnull_ptr, 0, 0), InvalidMemoryType);
-        }
+    for (const auto memoryType : SupportedHipMemoryTypes) {
+        StrictMock<MHip> mhip;
+        expect_buffer_registration(mhip, memoryType);
+        Context<DriverState>::get()->registerBuffer(nonnull_ptr, 0, 0);
     }
 }
 
-TEST_F(RocFileBuffer, register_not_device_memory)
+TEST_F(RocFileBuffer, register_supported_hip_memory)
 {
-    for (const auto memoryType : HipMemoryTypes) {
-        if (memoryType != hipMemoryTypeDevice) {
-            StrictMock<MHip>      mhip;
-            hipPointerAttribute_t attrs;
-            attrs.type = memoryType;
-            EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
-            ASSERT_EQ(rocFileBufRegister(nonnull_ptr, 0, 0), RocFileOpError(rocFileHipMemoryTypeInvalid));
-        }
+    for (const auto memoryType : SupportedHipMemoryTypes) {
+        StrictMock<MHip> mhip;
+        expect_buffer_registration(mhip, memoryType);
+        ASSERT_EQ(rocFileBufRegister(nonnull_ptr, 0, 0), ROCFILE_SUCCESS);
+    }
+}
+
+TEST_F(RocFileBuffer, register_internal_unsupported_hip_memory)
+{
+    for (const auto memoryType : UnsupportedHipMemoryTypes) {
+        StrictMock<MHip>      mhip;
+        hipPointerAttribute_t attrs;
+        attrs.type = memoryType;
+        EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
+        ASSERT_THROW(Context<DriverState>::get()->registerBuffer(nonnull_ptr, 0, 0), InvalidMemoryType);
+    }
+}
+
+TEST_F(RocFileBuffer, register_unsupported_hip_memory)
+{
+    for (const auto memoryType : UnsupportedHipMemoryTypes) {
+        StrictMock<MHip>      mhip;
+        hipPointerAttribute_t attrs;
+        attrs.type = memoryType;
+        EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
+        ASSERT_EQ(rocFileBufRegister(nonnull_ptr, 0, 0), RocFileOpError(rocFileHipMemoryTypeInvalid));
     }
 }
 

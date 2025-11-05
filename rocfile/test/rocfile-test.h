@@ -113,10 +113,15 @@ struct RocFileUnopened : public ::testing::Test {
 //  BUFFER FUNCTIONALITY
 // ***********************************************************************
 
-constexpr std::array<hipMemoryType, 6> HipMemoryTypes{
-    hipMemoryTypeArray,   hipMemoryTypeDevice,  hipMemoryTypeHost,
-    hipMemoryTypeManaged, hipMemoryTypeUnified, hipMemoryTypeUnregistered,
-};
-
 /// @brief Set up mocks for buffer registration
 void expect_buffer_registration(rocFile::MHip &mhip, hipMemoryType memory_type);
+
+// ***********************************************************************
+//  ENUM VALUE HELPERS
+// ***********************************************************************
+
+constexpr std::array<hipMemoryType, 1> SupportedHipMemoryTypes{hipMemoryTypeDevice};
+constexpr std::array<hipMemoryType, 5> UnsupportedHipMemoryTypes{
+    hipMemoryTypeArray,   hipMemoryTypeHost,         hipMemoryTypeManaged,
+    hipMemoryTypeUnified, hipMemoryTypeUnregistered,
+};
