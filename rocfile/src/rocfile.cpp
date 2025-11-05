@@ -21,6 +21,7 @@
 #include <memory>
 #include <stdexcept>
 #include <vector>
+#include <system_error>
 
 using namespace rocFile;
 
@@ -274,6 +275,10 @@ catch (const Hip::RuntimeError &e) {
 }
 catch (const Sys::RuntimeError &e) {
     errno = e.error;
+    return -1;
+}
+catch (const std::system_error &e) {
+    errno = e.code().value();
     return -1;
 }
 catch (...) {

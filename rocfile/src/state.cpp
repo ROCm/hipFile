@@ -4,6 +4,7 @@
  */
 
 #include "backend/fallback.h"
+#include "backend/fastpath.h"
 #include "batch/batch.h"
 #include "buffer.h"
 #include "file.h"
@@ -26,7 +27,7 @@ struct Backend;
 
 namespace rocFile {
 
-DriverState::DriverState() : ref_count{0}, backends{std::shared_ptr<Backend>(new Fallback{})}
+DriverState::DriverState() : ref_count{0}
 {
     this->file_map   = std::make_unique<FileMap>();
     this->batch_map  = std::make_unique<BatchContextMap>();
@@ -230,6 +231,17 @@ DriverState::incrRefCount()
     unique_lock<shared_mutex> ulock{state_mutex};
 
     ref_count++;
+
+    // If backends are added within DriverState's constructor we cannot test the
+    // behavior of getHipAmdFileReadPtr() and getHipAmdFileWritePtr() as the
+    // default DriverState is constructed before main in context.cpp as part of
+    // RocFileInit's constructor.
+    if (ref_count == 1 && backends.empty()) {
+        if (getHipAmdFileReadPtr() && getHipAmdFileWritePtr()) {
+            backends.emplace_back(new Fastpath{});
+        }
+        backends.emplace_back(new Fallback{});
+    }
 }
 
 void

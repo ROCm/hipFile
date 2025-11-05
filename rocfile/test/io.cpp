@@ -181,6 +181,11 @@ struct RocFileFallbackValidation : ::testing::TestWithParam<IoType> {
         StrictMock<MHip> mhip;
         StrictMock<MSys> msys;
 
+        // Fail the lookup for hipAmdFileRead & hipAmdFileWrite when the
+        // driver's reference count is bumped.
+        EXPECT_CALL(mhip, hipRuntimeGetVersion);
+        EXPECT_CALL(mhip, hipGetProcAddress(StrEq("hipAmdFileRead"), _, _, _));
+
         assert(rocFileDriverOpen() == ROCFILE_SUCCESS);
 
         expect_buffer_registration(mhip, hipMemoryTypeDevice);
