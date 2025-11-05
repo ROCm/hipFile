@@ -1,4 +1,8 @@
 # hipFile / rocFile
+
+> [!CAUTION] 
+> This release is an *early-access* software technology preview. Running production workloads is *not* recommended.
+
 AMD Infinity Storage library that supports IO directly to the GPU
 
 ## Building hipFile and rocFile
