@@ -2,8 +2,46 @@
 #
 # SPDX-License-Identifier: MIT
 
-FROM rocm/dev-ubuntu-24.04:6.4.1
-LABEL org.opencontainers.image.source=https://github.com/ROCm/rocs-internal
+ARG UBUNTU_CODENAME=noble
+FROM ubuntu:${UBUNTU_CODENAME}
+LABEL org.opencontainers.image.source=https://github.com/ROCm/hipFile
+ARG UBUNTU_CODENAME
+
+ARG ROCm_VERSION=6.4.2
+
+RUN apt update && \
+    apt install -y \
+    curl \
+    gpg
+
+# Setup AMD/ROCm Repositories (using AMD Ubuntu repo)
+# Method 1: Using amdgpu_install.deb - buggy
+# The ROCm repo works in mysterious ways in that someone visiting from
+# a browser can download a certain version, but a utility like curl will
+# not be allowed to download it. Sometimes we may need to just forcibly
+# specify the version to make this work...
+# ARG AMDGPU_INSTALL="amdgpu-install_7.1.70100-1_all.deb"
+# RUN : "${AMDGPU_INSTALL:=$( \
+#         curl -s https://repo.radeon.com/amdgpu-install/latest/ubuntu/${UBUNTU_CODENAME}/ | \
+#         grep -oP '(?<=href=")[^"]+' | \
+#         grep amdgpu-install)}" && \
+#     echo "AMDGPU_INSTALL is: ${AMDGPU_INSTALL}" && \
+#     curl https://repo.radeon.com/amdgpu-install/latest/ubuntu/${UBUNTU_CODENAME}/${AMDGPU_INSTALL} \
+#         -o amdgpu_install.deb && \
+#     apt install -y ./amdgpu_install.deb
+# Method 2: Manually create repo file.
+
+# Get ROCm GPG Key
+RUN curl -S https://repo.radeon.com/rocm/rocm.gpg.key | \
+    gpg --dearmor -o /etc/apt/keyrings/rocm.gpg
+
+RUN cat <<EOF > /etc/apt/sources.list.d/rocm.list
+deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/${ROCm_VERSION} ${UBUNTU_CODENAME} main
+EOF
+
+RUN cat <<EOF > /etc/apt/sources.list.d/amdgpu.list
+deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/${ROCm_VERSION}/ubuntu ${UBUNTU_CODENAME} main
+EOF
 
 # CI Dependencies
 RUN apt update && \
