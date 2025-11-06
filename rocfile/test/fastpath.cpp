@@ -34,7 +34,7 @@ operator==(const hipAmdFileHandle_t &lhs, const hipAmdFileHandle_t &rhs)
 }
 }
 
-// Provide defaut values for variables used in fastpath tests
+// Provide default values for variables used in fastpath tests
 struct FastpathTestBase {
     const size_t        DEFAULT_IO_SIZE{1024 * 1024};
     void *const         DEFAULT_BUFFER_ADDR{reinterpret_cast<void *>(0xCAFE000)};
