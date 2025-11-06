@@ -52,7 +52,7 @@ jobs:
             -t ${{ env.AIS_CI_IMAGE_NAME }}_dev \
             ${GITHUB_WORKSPACE}
       - name: Upload AIS CI image as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ env.AIS_CI_IMAGE_NAME }}_dev.tar
           path: ${{ github.workspace }}/${{ env.AIS_CI_IMAGE_NAME }}_dev.tar
@@ -79,7 +79,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Download AIS CI image artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: ${{ env.AIS_CI_IMAGE_NAME }}_dev.tar
           path: ${{ github.workspace }}
@@ -195,7 +195,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Download AIS CI image artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: ${{ env.AIS_CI_IMAGE_NAME }}_dev.tar
           path: ${{ github.workspace }}
@@ -266,7 +266,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Download AIS CI image artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: ${{ env.AIS_CI_IMAGE_NAME }}_dev.tar
           path: ${{ github.workspace }}
@@ -367,7 +367,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Download AIS CI image artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: ${{ env.AIS_CI_IMAGE_NAME }}_dev.tar
           path: ${{ github.workspace }}
