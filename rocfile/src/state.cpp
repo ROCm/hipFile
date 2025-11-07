@@ -232,17 +232,6 @@ DriverState::incrRefCount()
     unique_lock<shared_mutex> ulock{state_mutex};
 
     ref_count++;
-
-    // If backends are added within DriverState's constructor we cannot test the
-    // behavior of getHipAmdFileReadPtr() and getHipAmdFileWritePtr() as the
-    // default DriverState is constructed before main in context.cpp as part of
-    // RocFileInit's constructor.
-    if (ref_count == 1 && backends.empty()) {
-        if (getHipAmdFileReadPtr() && getHipAmdFileWritePtr()) {
-            backends.emplace_back(new Fastpath{});
-        }
-        backends.emplace_back(new Fallback{});
-    }
 }
 
 void
@@ -288,6 +277,15 @@ DriverState::ensureInitialized()
 std::vector<std::shared_ptr<Backend>>
 DriverState::getBackends() const
 {
+    static bool once = [&]() {
+        if (getHipAmdFileReadPtr() && getHipAmdFileWritePtr()) {
+            backends.emplace_back(new Fastpath{});
+        }
+        backends.emplace_back(new Fallback{});
+        return true;
+    }();
+    (void)once;
+
     return backends;
 }
 }
