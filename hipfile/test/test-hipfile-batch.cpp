@@ -13,15 +13,16 @@
 
 #include "hipfile-warnings.h"
 
-#include <hip/hip_runtime.h>
+#include <hip/hip_runtime_api.h>
 
 #include <cerrno>
 #include <cstdarg>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 
 #define MAX_BATCH_IO_OPS 16
 #define MAX_BUFFER_SIZE  4096
