@@ -12,13 +12,16 @@
  * Note: Currently SOURCE's size must be > 0 and a multiple of 4096.
  */
 
-#include <hip/hip_runtime.h>
 #include <hipfile.h>
+#include <hip/hip_runtime_api.h>
 
 #include <cerrno>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 /// @brief Open and register a file
