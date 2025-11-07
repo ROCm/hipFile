@@ -6,12 +6,13 @@
 #include "context.h"
 #include "file.h"
 #include "mountinfo.h"
-#include "state.h"
 #include "sys.h"
 
 #include <algorithm>
 #include <cstdlib>
-#include <mutex>
+#include <fcntl.h>
+#include <iterator>
+#include <utility>
 #include <vector>
 
 using std::optional;

@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include "hip.h"
-#include "io.h"
 #include "context.h"
+#include "hip.h"
 
 #include <cstdlib>
+#include <memory>
 #include <system_error>
 
 namespace rocFile {

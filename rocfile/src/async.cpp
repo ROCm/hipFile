@@ -5,10 +5,13 @@
 
 #include "async.h"
 #include "context.h"
+#include "stream.h"
 #include "sys.h"
 
 #include <memory>
+#include <stdexcept>
 #include <syslog.h>
+#include <utility>
 
 namespace rocFile {
 class IBuffer;

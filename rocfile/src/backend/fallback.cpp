@@ -3,11 +3,21 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "backend.h"
+#include "buffer.h"
 #include "context.h"
 #include "fallback.h"
-#include "rocfile.h"
+#include "file.h"
+#include "hip.h"
+#include "io.h"
+#include "sys.h"
 
-#include <limits>
+#include <algorithm>
+#include <cerrno>
+#include <cstdint>
+#include <hip/driver_types.h>
+#include <hip/hip_runtime_api.h>
+#include <stdexcept>
 #include <sys/mman.h>
 
 using namespace rocFile;
