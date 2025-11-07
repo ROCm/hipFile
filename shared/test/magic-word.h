@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <string>
 #include <unistd.h>
 
 static const char *message = "Ah ah ah, you didn't say the magic word!\n"
