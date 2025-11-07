@@ -23,7 +23,6 @@
 #include "state.h"
 #include "sys.h"
 
-#include <algorithm>
 #include <array>
 #include <cassert>
 #include <cerrno>

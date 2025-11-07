@@ -10,7 +10,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <hip/hip_runtime_api.h>
-#include <memory>
 
 using namespace rocFile;
 using namespace testing;

@@ -12,8 +12,6 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <gmock/gmock-actions.h>
-#include <gmock/gmock-nice-strict.h>
 #include <gtest/gtest.h>
 #include <hip/hip_runtime_api.h>
 #include <memory>

@@ -7,7 +7,6 @@
 #include "hip.h"
 
 #include <cstdlib>
-#include <memory>
 #include <system_error>
 
 namespace rocFile {

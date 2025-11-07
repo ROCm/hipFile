@@ -10,7 +10,6 @@
 
 #include <climits>
 #include <gtest/gtest.h>
-#include <limits>
 #include <memory>
 
 using namespace rocFile;
