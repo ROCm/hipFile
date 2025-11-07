@@ -6,7 +6,6 @@
 #include "backend/fallback.h"
 #include "batch/batch.h"
 #include "buffer.h"
-#include "mountinfo.h"
 #include "state.h"
 #include "sys.h"
 

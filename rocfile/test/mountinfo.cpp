@@ -7,6 +7,7 @@
 #include "mmountinfo.h"
 #include "mountinfo.h"
 
+#include <libmount/libmount.h>
 #include <sys/sysmacros.h>
 #include <gtest/gtest.h>
 

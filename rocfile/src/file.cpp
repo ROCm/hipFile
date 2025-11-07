@@ -5,6 +5,7 @@
 
 #include "context.h"
 #include "file.h"
+#include "mountinfo.h"
 #include "state.h"
 #include "sys.h"
 
