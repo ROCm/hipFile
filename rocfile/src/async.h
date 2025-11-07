@@ -4,10 +4,7 @@
  */
 #pragma once
 
-#include "buffer.h"
-#include "file.h"
-#include "io.h"
-#include "stream.h"
+#include "hipfile-types.h"
 
 #include <condition_variable>
 #include <memory>
@@ -17,6 +14,19 @@
 #include <unordered_map>
 #include <variant>
 #include <vector>
+
+namespace rocFile {
+class IBuffer;
+}
+namespace rocFile {
+class IFile;
+}
+namespace rocFile {
+class IStream;
+}
+namespace rocFile {
+enum class IoType;
+}
 
 namespace rocFile {
 

@@ -3,20 +3,20 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include "rocfile-test.h"
-
+#include "hipfile-warnings.h"
 #include "mhip.h"
 #include "mmountinfo.h"
 #include "msys.h"
-
 #include "rocfile.h"
-#include "rocfile-private.h"
+#include "rocfile-test.h"
+#include "sys.h"
 
-#include "hipfile-warnings.h"
-
-#include <gtest/gtest.h>
-
+#include <cerrno>
 #include <cstdint>
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <hip/hip_runtime_api.h>
+#include <memory>
 
 using namespace rocFile;
 using namespace testing;

@@ -5,6 +5,23 @@
 #pragma once
 
 #include "async.h"
+#include "hipfile-types.h"
+
+#include <memory>
+#include <sys/types.h>
+
+namespace rocFile {
+class IBuffer;
+}
+namespace rocFile {
+class IFile;
+}
+namespace rocFile {
+class IStream;
+}
+namespace rocFile {
+enum class IoType;
+}
 
 namespace rocFile {
 

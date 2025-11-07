@@ -19,10 +19,16 @@ function (ais_set_compiler_flags target)
         endif()
         set(compiler_id "${CMAKE_${language}_COMPILER_ID}")
         set(compiler_version "${CMAKE_${language}_COMPILER_VERSION}")
-        if(compiler_id STREQUAL "GNU" OR compiler_id STREQUAL "NVIDIA")
-            get_ais_gnu_warning_flags(compiler_flags compiler_version)
-        elseif(compiler_id STREQUAL "Clang")
-            get_ais_clang_warning_flags(compiler_flags compiler_version)
+
+        # Only use default flags with include-what-you-use. Otherwise you'll
+        # clutter the output with a lot of "unrecognized flags" warnings if
+        # there's mismatch between IWYU's clang and the compiler you are using.
+        if(NOT AIS_USE_IWYU)
+            if(compiler_id STREQUAL "GNU" OR compiler_id STREQUAL "NVIDIA")
+                get_ais_gnu_warning_flags(compiler_flags compiler_version)
+            elseif(compiler_id STREQUAL "Clang")
+                get_ais_clang_warning_flags(compiler_flags compiler_version)
+            endif()
         endif()
         target_compile_options(${target} PRIVATE $<$<COMPILE_LANG_AND_ID:${language},${compiler_id}>:${compiler_flags}>)
         if(BUILD_CODE_COVERAGE)

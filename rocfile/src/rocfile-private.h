@@ -5,8 +5,14 @@
 
 #pragma once
 
-#include "io.h"
+#include "hipfile-types.h"
 #include "rocfile.h"
+
+#include <sys/types.h>
+
+namespace rocFile {
+enum class IoType;
+}
 
 // NOTE: This is an internal API that we don't document, even though it's
 // "public" in the sense of being visible as a symbol in the deployed library

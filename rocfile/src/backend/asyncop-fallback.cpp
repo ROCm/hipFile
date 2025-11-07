@@ -3,12 +3,26 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "async.h"
 #include "asyncop-fallback.h"
+#include "buffer.h"
 #include "context.h"
+#include "hip.h"
 #include "sys.h"
 
-#include <syslog.h>
 #include <memory>
+#include <new>
+#include <syslog.h>
+
+namespace rocFile {
+class IFile;
+}
+namespace rocFile {
+class IStream;
+}
+namespace rocFile {
+enum class IoType;
+}
 
 using namespace rocFile;
 

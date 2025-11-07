@@ -5,9 +5,12 @@
 
 #pragma once
 
-#include <libmount/libmount.h>
 #include <optional>
 #include <sys/types.h>
+
+struct libmnt_context;
+struct libmnt_fs;
+struct libmnt_table;
 
 namespace rocFile {
 

@@ -6,13 +6,10 @@
 #include "backend/fallback.h"
 #include "batch/batch.h"
 #include "buffer.h"
-#include "mountinfo.h"
+#include "file.h"
 #include "state.h"
-#include "sys.h"
+#include "stream.h"
 
-#include "hipfile-warnings.h"
-
-#include <fcntl.h>
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
@@ -22,6 +19,10 @@ using std::shared_lock;
 using std::shared_mutex;
 using std::shared_ptr;
 using std::unique_lock;
+
+namespace rocFile {
+struct Backend;
+}
 
 namespace rocFile {
 

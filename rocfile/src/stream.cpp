@@ -8,9 +8,10 @@
 #include "sys.h"
 
 #include <hip/hip_runtime_api.h>
-#include <syslog.h>
-
 #include <memory>
+#include <syslog.h>
+#include <stdexcept>
+#include <utility>
 
 namespace rocFile {
 

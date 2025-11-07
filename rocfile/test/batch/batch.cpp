@@ -3,21 +3,24 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "batch/batch.h"
+#include "buffer.h"
+#include "file.h"
+#include "hipfile-warnings.h"
+#include "invalid-enum.h"
 #include "mbuffer.h"
 #include "mfile.h"
 #include "mstate.h"
-#include "rocfile-test.h"
-
-#include "batch/batch.h"
-#include "context.h"
-#include "hipfile-warnings.h"
-#include "invalid-enum.h"
 #include "rocfile.h"
+#include "rocfile-test.h"
 #include "state.h"
 
+#include <cstdio>
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
-
-#include <limits>
+#include <memory>
+#include <stdexcept>
+#include <utility>
 
 using ::testing::_;
 using ::testing::DoDefault;

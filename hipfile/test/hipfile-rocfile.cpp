@@ -5,12 +5,15 @@
 
 #include "hipfile.h"
 #include "hipfile-rocfile.h"
-#include "test-common.h"
-
 #include "hipfile-warnings.h"
 #include "invalid-enum.h"
+#include "rocfile.h"
+#include "test-common.h"
 
 #include <gtest/gtest.h>
+#include <hip/hip_runtime_api.h>
+#include <memory>
+#include <stdexcept>
 
 // Put tests inside the macros to suppress the global constructor
 // warnings

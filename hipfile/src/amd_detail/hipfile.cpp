@@ -4,17 +4,16 @@
  */
 
 #include "hipfile-rocfile.h"
+#include "hipfile-types.h"
 #include "hipfile.h"
-
 #include "rocfile.h"
 
-#include <hip/hip_runtime_api.h>
-
-#include <sys/types.h>
-
 #include <cerrno>
+#include <climits>
+#include <cstdint>
 #include <cstdlib>
-#include <limits>
+#include <hip/hip_runtime_api.h>
+#include <sys/types.h>
 #include <vector>
 
 using namespace std;

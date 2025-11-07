@@ -5,11 +5,10 @@
 
 #include "sys.h"
 
-#include <cstring>
 #include <fcntl.h>
-#include <libmount/libmount.h>
 #include <sys/mman.h>
 #include <syslog.h>
+#include <unistd.h>
 
 namespace rocFile {
 
