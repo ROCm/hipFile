@@ -7,9 +7,20 @@
 #include "mmountinfo.h"
 #include "mountinfo.h"
 
-#include <libmount/libmount.h>
-#include <sys/sysmacros.h>
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <libmount/libmount.h>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <sys/sysmacros.h>
+#include <sys/types.h>
+#include <tuple>
+#include <utility>
+
+struct libmnt_context;
+struct libmnt_fs;
+struct libmnt_table;
 
 using namespace rocFile;
 using namespace testing;

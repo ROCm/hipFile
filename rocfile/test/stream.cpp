@@ -8,13 +8,17 @@
 #include "msys.h"
 #include "rocfile.h"
 #include "rocfile-test.h"
-#include "state.h"
 #include "stream.h"
 
+#include <algorithm>
+#include <cstdint>
 #include <gmock/gmock-actions.h>
 #include <gmock/gmock-nice-strict.h>
 #include <gtest/gtest.h>
+#include <hip/hip_runtime_api.h>
 #include <memory>
+#include <stdexcept>
+#include <tuple>
 
 using namespace rocFile;
 
