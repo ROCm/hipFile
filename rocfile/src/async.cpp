@@ -11,6 +11,16 @@
 #include <syslog.h>
 
 namespace rocFile {
+class IBuffer;
+}
+namespace rocFile {
+class IFile;
+}
+namespace rocFile {
+enum class IoType;
+}
+
+namespace rocFile {
 
 AsyncMonitor::AsyncMonitor() : is_finished{false}
 {

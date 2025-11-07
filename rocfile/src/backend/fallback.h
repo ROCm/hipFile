@@ -10,6 +10,16 @@
 #include "io.h"
 
 namespace rocFile {
+class IBuffer;
+}
+namespace rocFile {
+class IFile;
+}
+namespace rocFile {
+enum class IoType;
+}
+
+namespace rocFile {
 
 struct Fallback : public Backend {
     virtual ~Fallback() override = default;

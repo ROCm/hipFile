@@ -17,6 +17,10 @@
 #include <vector>
 
 namespace rocFile {
+template <typename T> struct Context;
+}
+
+namespace rocFile {
 
 /// @brief The driver is not initialized
 struct DriverNotInitialized : public std::runtime_error {

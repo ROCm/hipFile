@@ -19,6 +19,19 @@
 #include <vector>
 
 namespace rocFile {
+class IBuffer;
+}
+namespace rocFile {
+class IFile;
+}
+namespace rocFile {
+class IStream;
+}
+namespace rocFile {
+enum class IoType;
+}
+
+namespace rocFile {
 
 class AsyncOp {
 public:

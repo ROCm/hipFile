@@ -8,6 +8,10 @@
 #include "io.h"
 #include "rocfile.h"
 
+namespace rocFile {
+enum class IoType;
+}
+
 // NOTE: This is an internal API that we don't document, even though it's
 // "public" in the sense of being visible as a symbol in the deployed library
 

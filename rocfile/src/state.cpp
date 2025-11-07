@@ -24,6 +24,10 @@ using std::shared_ptr;
 using std::unique_lock;
 
 namespace rocFile {
+struct Backend;
+}
+
+namespace rocFile {
 
 DriverState::DriverState() : ref_count{0}, backends{std::shared_ptr<Backend>(new Fallback{})}
 {

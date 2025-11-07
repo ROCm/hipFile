@@ -7,6 +7,19 @@
 #include "async.h"
 
 namespace rocFile {
+class IBuffer;
+}
+namespace rocFile {
+class IFile;
+}
+namespace rocFile {
+class IStream;
+}
+namespace rocFile {
+enum class IoType;
+}
+
+namespace rocFile {
 
 struct AsyncOpFallback : AsyncOp {
     ssize_t     bytes_transferred_internal;

@@ -17,6 +17,13 @@
 #include <unordered_set>
 
 namespace rocFile {
+class IBuffer;
+}
+namespace rocFile {
+class IFile;
+}
+
+namespace rocFile {
 
 struct InvalidBatchHandle : public std::invalid_argument {
     InvalidBatchHandle() : std::invalid_argument{"Invalid batch handle"}

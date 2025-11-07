@@ -10,6 +10,16 @@
 #include <syslog.h>
 #include <memory>
 
+namespace rocFile {
+class IFile;
+}
+namespace rocFile {
+class IStream;
+}
+namespace rocFile {
+enum class IoType;
+}
+
 using namespace rocFile;
 
 static void
