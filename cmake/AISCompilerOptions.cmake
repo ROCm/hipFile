@@ -34,6 +34,7 @@ function (ais_set_compiler_flags target)
         if(BUILD_CODE_COVERAGE)
             target_compile_options(${target} PRIVATE $<$<COMPILE_LANG_AND_ID:CXX,Clang>:-fprofile-instr-generate -fcoverage-mapping>)
             target_link_options(${target} PRIVATE $<$<COMPILE_LANG_AND_ID:CXX,Clang>:-fprofile-instr-generate>)
+            target_link_options(${target} PRIVATE $<$<COMPILE_LANG_AND_ID:HIP,Clang>:-fprofile-instr-generate>)
         endif()
     endforeach()
 
