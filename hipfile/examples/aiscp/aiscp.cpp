@@ -122,14 +122,16 @@ main(int argc, char *argv[])
     }
 
     nbytes = hipFileRead(src_handle, devbuf, file_size, 0, 0);
-    if (-1 == nbytes || file_size != static_cast<size_t>(nbytes)) {
-        fprintf(stderr, "Could not read from %s (%zd) (%s)\n", src_path, nbytes, strerror(errno));
+    if (nbytes < 0 || file_size != static_cast<size_t>(nbytes)) {
+        fprintf(stderr, "Could not read from %s (%zd) (%s)\n", src_path, nbytes,
+                IS_HIPFILE_ERR(nbytes) ? HIPFILE_ERRSTR(nbytes) : strerror(errno));
         goto free_devbuf;
     }
 
     nbytes = hipFileWrite(dst_handle, devbuf, file_size, 0, 0);
-    if (-1 == nbytes || file_size != static_cast<size_t>(nbytes)) {
-        fprintf(stderr, "Could not write to %s (%zd) (%s)\n", dst_path, nbytes, strerror(errno));
+    if (nbytes < 0 || file_size != static_cast<size_t>(nbytes)) {
+        fprintf(stderr, "Could not write to %s (%zd) (%s)\n", src_path, nbytes,
+                IS_HIPFILE_ERR(nbytes) ? HIPFILE_ERRSTR(nbytes) : strerror(errno));
         goto free_devbuf;
     }
 
