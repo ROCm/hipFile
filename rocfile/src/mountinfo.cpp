@@ -7,7 +7,12 @@
 #include "mountinfo.h"
 
 #include <cstring>
+#include <libmount/libmount.h>
 #include <stdexcept>
+
+struct libmnt_context;
+struct libmnt_fs;
+struct libmnt_table;
 
 namespace rocFile {
 

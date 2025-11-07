@@ -6,14 +6,12 @@
 #include "buffer.h"
 #include "context.h"
 #include "hip.h"
-#include "state.h"
-
-#include <cstdint>
-#include <hip/hip_runtime_api.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <cstdlib>
-#include <mutex>
+#include <hip/hip_runtime_api.h>
+#include <iterator>
 #include <stdexcept>
 #include <utility>
 #include <vector>

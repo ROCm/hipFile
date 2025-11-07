@@ -5,16 +5,20 @@
 
 #pragma once
 
-#include "buffer.h"
-#include "file.h"
 #include "rocfile.h"
 
 #include <memory>
-#include <mutex>
 #include <shared_mutex>
 #include <stdexcept>
 #include <unordered_map>
 #include <unordered_set>
+
+namespace rocFile {
+class IBuffer;
+}
+namespace rocFile {
+class IFile;
+}
 
 namespace rocFile {
 

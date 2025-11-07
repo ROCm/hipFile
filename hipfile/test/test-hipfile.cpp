@@ -11,15 +11,16 @@
 
 #include "hipfile.h"
 
-#include <hip/hip_runtime.h>
+#include <hip/hip_runtime_api.h>
 
 #include <cerrno>
 #include <cinttypes>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 
 void static print_drv_props(hipFileDriverProps_t hipfile_props)
 {

@@ -11,15 +11,18 @@
  * All tests in this file are expected to pass on a CPU-only node.
  */
 
-#include "mbatch.h"
-#include "mstate.h"
-#include "rocfile-test.h"
-
 #include "batch/batch.h"
 #include "hipfile-warnings.h"
+#include "mbatch.h"
+#include "mstate.h"
 #include "rocfile.h"
+#include "rocfile-test.h"
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <hip/hip_runtime_api.h>
+#include <memory>
+#include <stdexcept>
 
 using namespace rocFile;
 

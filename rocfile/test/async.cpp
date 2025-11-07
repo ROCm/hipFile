@@ -7,19 +7,26 @@
 #include "backend/asyncop-fallback.h"
 #include "hip.h"
 #include "hipfile-warnings.h"
+#include "io.h"
 #include "mbuffer.h"
 #include "mfile.h"
 #include "mhip.h"
 #include "mstream.h"
 #include "msys.h"
+#include "rocfile.h"
 
 #include <cstdint>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <gtest/gtest.h>
+#include <hip/hip_runtime_api.h>
 #include <memory>
+#include <new>
+#include <stdexcept>
+#include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <tuple>
+#include <utility>
 
 // Put tests inside the macros to suppress the global constructor
 // warnings

@@ -8,13 +8,10 @@
 #include <cerrno>
 #include <cstddef>
 #include <cstdint>
-#include <optional>
 #include <stdexcept>
 
-#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
 
 /* sys wraps system APIs used by rocFile which enables unit tests to mock system calls.
  *

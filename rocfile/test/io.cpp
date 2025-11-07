@@ -3,39 +3,42 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include "rocfile-test.h"
-
-#include "mbackend.h"
-#include "mbuffer.h"
-#include "mfile.h"
-#include "mhip.h"
-#include "mstate.h"
-#include "msys.h"
-
 #include "backend.h"
 #include "backend/fallback.h"
 #include "buffer.h"
 #include "context.h"
 #include "file.h"
 #include "hip.h"
-#include "rocfile-private.h"
-#include "rocfile.h"
-#include "state.h"
-
+#include "hipfile-types.h"
 #include "hipfile-warnings.h"
+#include "io.h"
+#include "mbackend.h"
+#include "mbuffer.h"
+#include "mfile.h"
+#include "mhip.h"
+#include "mstate.h"
+#include "msys.h"
+#include "rocfile.h"
+#include "rocfile-test.h"
+#include "state.h"
+#include "sys.h"
 
+#include <array>
+#include <cassert>
+#include <cerrno>
+#include <climits>
+#include <cstdint>
+#include <cstring>
+#include <fcntl.h>
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <hip/hip_runtime_api.h>
-
-#include <sys/mman.h>
-#include <sys/types.h>
-
-#include <cassert>
-#include <cstddef>
-#include <fcntl.h>
-#include <limits>
+#include <hip/driver_types.h>
 #include <memory>
 #include <stdexcept>
+#include <string>
+#include <sys/mman.h>
+#include <unistd.h>
 #include <vector>
 
 using namespace rocFile;

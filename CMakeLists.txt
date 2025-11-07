@@ -141,6 +141,11 @@ option(BUILD_CODE_COVERAGE "Build with code coverage flags (llvm C++ only)" OFF)
 #----------------------------------------------
 include(AISClangSafeBuffers)
 
+#----------------------------
+# include-what-you-use (IWYU)
+#----------------------------
+include(AISIWYU)
+
 #-------------------
 # Sanitizer options
 #-------------------

@@ -3,15 +3,14 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "context.h"
+#include "hipfile-warnings.h"
+#include "rocfile.h"
 #include "rocfile-test.h"
 
-#include "rocfile.h"
-
-#include "hipfile-warnings.h"
-
+#include <climits>
 #include <gtest/gtest.h>
-
-#include <limits>
+#include <memory>
 
 using namespace rocFile;
 

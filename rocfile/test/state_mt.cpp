@@ -8,19 +8,19 @@
 // Just run the program. It takes no special arguments.
 
 #include "context.h"
-#include "state.h"
-
 #include "rocfile.h"
-
-#include <hip/hip_runtime.h>
+#include "state.h"
 
 #include <array>
 #include <atomic>
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
+#include <hip/hip_runtime_api.h>
 #include <iostream>
 #include <mutex>
 #include <random>
+#include <string>
 #include <thread>
 #include <unistd.h>
 #include <utility>

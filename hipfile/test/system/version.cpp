@@ -7,7 +7,9 @@
 #include "hipfile-warnings.h"
 #include "test-common.h"
 
+#include <climits>
 #include <gtest/gtest.h>
+#include <memory>
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 

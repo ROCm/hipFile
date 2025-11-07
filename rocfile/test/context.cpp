@@ -6,7 +6,9 @@
 #include "context.h"
 #include "hip.h"
 #include "hipfile-warnings.h"
+
 #include <gtest/gtest.h>
+#include <memory>
 
 using namespace rocFile;
 

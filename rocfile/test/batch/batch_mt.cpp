@@ -9,7 +9,6 @@
 //
 
 #include "batch/batch.h"
-
 #include "rocfile.h"
 
 #include <array>
@@ -18,6 +17,7 @@
 #include <iostream>
 #include <mutex>
 #include <random>
+#include <string>
 #include <thread>
 #include <unistd.h>
 #include <utility>

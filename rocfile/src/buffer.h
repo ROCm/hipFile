@@ -5,11 +5,9 @@
 
 #pragma once
 
-#include "hip.h"
-
 #include <cstddef>
+#include <hip/hip_runtime_api.h>
 #include <memory>
-#include <shared_mutex>
 #include <stdexcept>
 #include <unordered_map>
 

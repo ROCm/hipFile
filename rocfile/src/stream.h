@@ -4,7 +4,8 @@
  */
 #pragma once
 
-#include "hip.h"
+#include <cstdint>
+#include <hip/hip_runtime_api.h>
 #include <memory>
 #include <unordered_map>
 

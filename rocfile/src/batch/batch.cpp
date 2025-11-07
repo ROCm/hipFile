@@ -4,18 +4,20 @@
  */
 
 #include "batch.h"
+#include "buffer.h"
 #include "context.h"
 #include "file.h"
+#include "rocfile.h"
 #include "state.h"
 
-#include "hipfile-warnings.h"
-#include "rocfile.h"
-
+#include <cstddef>
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
 #include <sstream>
+#include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace rocFile {

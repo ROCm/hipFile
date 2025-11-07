@@ -3,15 +3,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include "test-common.h"
-
 #include "hipfile-warnings.h"
 #include "invalid-enum.h"
 
 #include <gtest/gtest.h>
-#include <hip/hip_runtime.h>
-
-#include <ctime>
+#include <memory>
 
 using namespace std;
 
