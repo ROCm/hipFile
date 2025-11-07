@@ -6,8 +6,19 @@
 #pragma once
 
 #include "backend.h"
-#include "file.h"
-#include "io.h"
+
+#include <sys/types.h>
+#include <memory>
+
+namespace rocFile {
+class IBuffer;
+}
+namespace rocFile {
+class IFile;
+}
+namespace rocFile {
+enum class IoType;
+}
 
 namespace rocFile {
 

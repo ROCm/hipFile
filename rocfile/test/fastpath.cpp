@@ -3,19 +3,24 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "backend/fastpath.h"
+#include "hip.h"
+#include "hipfile-warnings.h"
+#include "io.h"
 #include "mbuffer.h"
 #include "mfile.h"
 #include "mhip.h"
 #include "rocfile-test.h"
 
-#include "backend/fastpath.h"
-#include "mountinfo.h"
-#include "buffer.h"
-#include "file.h"
-#include "hip.h"
-#include "io.h"
-
-#include <optional>
+#include <array>
+#include <errno.h>
+#include <fcntl.h>
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <hip/hip_runtime_api.h>
+#include <memory>
+#include <sys/types.h>
+#include <system_error>
 
 using namespace rocFile;
 using namespace testing;

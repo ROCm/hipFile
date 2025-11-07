@@ -3,12 +3,17 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "buffer.h"
 #include "context.h"
 #include "fastpath.h"
-#include "rocfile.h"
+#include "file.h"
+#include "hip.h"
+#include "io.h"
 
-#include <limits>
-#include <sys/mman.h>
+#include <fcntl.h>
+#include <hip/hip_runtime_api.h>
+#include <stdexcept>
+#include <stdint.h>
 
 using namespace rocFile;
 using namespace std;
