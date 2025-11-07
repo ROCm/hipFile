@@ -5,16 +5,12 @@
 
 #pragma once
 
+#include <hipfile-types.h>
 #include <hip/hip_runtime_api.h>
-
-#include <sys/socket.h>
-#include <sys/types.h>
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-
-#include <hipfile-types.h>
+#include <sys/types.h>
 
 #if defined(__GNUC__)
 #define ROCFILE_API __attribute__((visibility("default")))

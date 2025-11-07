@@ -4,10 +4,7 @@
  */
 #pragma once
 
-#include "buffer.h"
-#include "file.h"
-#include "io.h"
-#include "stream.h"
+#include "hipfile-types.h"
 
 #include <condition_variable>
 #include <memory>

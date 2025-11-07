@@ -8,12 +8,16 @@
 #include "backend.h"
 #include "batch/batch.h"
 #include "buffer.h"
-#include "context.h"
 #include "file.h"
+#include "rocfile.h"
 #include "stream.h"
 
+#include <cstddef>
+#include <cstdint>
+#include <hip/hip_runtime_api.h>
 #include <memory>
 #include <shared_mutex>
+#include <stdexcept>
 #include <vector>
 
 namespace rocFile {

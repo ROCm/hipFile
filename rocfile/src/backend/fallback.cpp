@@ -15,8 +15,8 @@
 #include <algorithm>
 #include <cerrno>
 #include <cstdint>
-#include <hip/driver_types.h>
 #include <hip/hip_runtime_api.h>
+#include <hip/driver_types.h>
 #include <stdexcept>
 #include <sys/mman.h>
 

@@ -5,8 +5,10 @@
 
 #pragma once
 
-#include "io.h"
+#include "hipfile-types.h"
 #include "rocfile.h"
+
+#include <sys/types.h>
 
 namespace rocFile {
 enum class IoType;

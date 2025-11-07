@@ -6,8 +6,10 @@
 #pragma once
 
 #include "backend.h"
-#include "file.h"
-#include "io.h"
+#include "hipfile-types.h"
+
+#include <memory>
+#include <sys/types.h>
 
 namespace rocFile {
 class IBuffer;
