@@ -5,7 +5,6 @@ on:
     types: [opened, synchronize, reopened] # Defaults
     paths-ignore:
       - '**.md'
-      - 'LICENSE'
       - '.github/CODEOWNERS'
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
