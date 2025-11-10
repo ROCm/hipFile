@@ -22,7 +22,7 @@ using namespace std;
  *  - The file has been opened with the O_DIRECT flag
  *  - file_offset is 4KiB aligned
  *  - buffer_offset is 4KiB aligned
- *  - size if a multiple of 4KiB
+ *  - size is a multiple of 4KiB
  *  - The buffer type is hipMemoryTypeDevice
  *
  * When using the fastpath the IO flows through the following
