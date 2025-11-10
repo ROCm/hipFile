@@ -6,6 +6,7 @@ set(ROCFILE_SOURCES
     async.cpp
     backend/asyncop-fallback.cpp
     backend/fallback.cpp
+    backend/fastpath.cpp
     batch/batch.cpp
     buffer.cpp
     context.cpp

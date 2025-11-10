@@ -3,3 +3,4 @@
 [codespell]
 check-hidden = true
 skip = ./.git
+ignore-words-list = hsa,

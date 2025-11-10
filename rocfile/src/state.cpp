@@ -4,9 +4,11 @@
  */
 
 #include "backend/fallback.h"
+#include "backend/fastpath.h"
 #include "batch/batch.h"
 #include "buffer.h"
 #include "file.h"
+#include "hip.h"
 #include "state.h"
 #include "stream.h"
 
@@ -26,7 +28,7 @@ struct Backend;
 
 namespace rocFile {
 
-DriverState::DriverState() : ref_count{0}, backends{std::shared_ptr<Backend>(new Fallback{})}
+DriverState::DriverState() : ref_count{0}
 {
     this->file_map   = std::make_unique<FileMap>();
     this->batch_map  = std::make_unique<BatchContextMap>();
@@ -275,6 +277,15 @@ DriverState::ensureInitialized()
 std::vector<std::shared_ptr<Backend>>
 DriverState::getBackends() const
 {
+    static bool once = [&]() {
+        if (getHipAmdFileReadPtr() && getHipAmdFileWritePtr()) {
+            backends.emplace_back(new Fastpath{});
+        }
+        backends.emplace_back(new Fallback{});
+        return true;
+    }();
+    (void)once;
+
     return backends;
 }
 }

@@ -245,7 +245,7 @@ private:
     std::unique_ptr<StreamMap> stream_map;
 
     // Backends available to service IO requests
-    const std::vector<std::shared_ptr<Backend>> backends;
+    mutable std::vector<std::shared_ptr<Backend>> backends;
 
     /// Mutex to protect the state
     mutable std::shared_mutex state_mutex;

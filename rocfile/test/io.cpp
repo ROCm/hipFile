@@ -121,6 +121,11 @@ struct RocFileIO : public RocFileOpened {
         StrictMock<MHip> mhip;
         StrictMock<MSys> msys;
 
+        // Initialize DriverState::backends
+        EXPECT_CALL(mhip, hipRuntimeGetVersion);
+        EXPECT_CALL(mhip, hipGetProcAddress(StrEq("hipAmdFileRead"), _, _, _));
+        Context<DriverState>::get()->getBackends();
+
         expect_buffer_registration(mhip, hipMemoryTypeDevice);
         Context<DriverState>::get()->registerBuffer(buffer_data.data(), buffer_data.size(), 0);
         buffer = Context<DriverState>::get()->getBuffer(buffer_data.data());
