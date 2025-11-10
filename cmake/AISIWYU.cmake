@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 #-----------------------------------------------------------------------------
-# Option to add the include-what-you-use tool
+# Option to use the include-what-you-use tool
 #
 # When this option is enabled, compilation will emit IWYU suggestions.
 #-----------------------------------------------------------------------------

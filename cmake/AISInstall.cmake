@@ -3,8 +3,6 @@
 # SPDX-License-Identifier: MIT
 
 # Install hipFile and rocFile
-#
-# TODO: Rework this to use CPack
 
 # From the rocm-cmake repo
 include(ROCMInstallTargets)
@@ -59,7 +57,7 @@ if(BUILD_ROCFILE OR BUILD_HIPFILE)
     )
 
     # CPack license setup
-    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE.md")
     set(CPACK_RPM_PACKAGE_LICENSE "MIT")
 
     # Create the package
