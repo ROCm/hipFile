@@ -2,6 +2,7 @@
  *
  * SPDX-License-Identifier: MIT
  */
+// This is just a test.
 
 #pragma once
 
