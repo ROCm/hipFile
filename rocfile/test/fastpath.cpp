@@ -13,7 +13,7 @@
 #include "rocfile-test.h"
 
 #include <array>
-#include <errno.h>
+#include <cerrno>
 #include <fcntl.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -303,7 +303,7 @@ TEST_P(FastpathIoParam, IoReturnsBytesTransferredShort)
               nbytes);
 }
 
-// Ensure hip errors thrown by Hip::hipAmdFileRead/Hip::hipAmdFileWtite are not masked
+// Ensure hip errors thrown by Hip::hipAmdFileRead/Hip::hipAmdFileWrite are not masked
 TEST_P(FastpathIoParam, IoDoesNotMaskHipRuntimeError)
 {
     StrictMock<MHip> mhip;
@@ -326,7 +326,7 @@ TEST_P(FastpathIoParam, IoDoesNotMaskHipRuntimeError)
                  Hip::RuntimeError);
 }
 
-// Ensure hip errors thrown by Hip::hipAmdFileRead/Hip::hipAmdFileWtite are not masked
+// Ensure hip errors thrown by Hip::hipAmdFileRead/Hip::hipAmdFileWrite are not masked
 TEST_P(FastpathIoParam, IoDoesNotMaskSystemError)
 {
     StrictMock<MHip> mhip;

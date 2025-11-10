@@ -7,8 +7,8 @@
 
 #include "backend.h"
 
-#include <sys/types.h>
 #include <memory>
+#include <sys/types.h>
 
 namespace rocFile {
 class IBuffer;
@@ -25,11 +25,11 @@ namespace rocFile {
 struct Fastpath : public Backend {
     virtual ~Fastpath() override = default;
 
-    int score(std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size, off_t file_offset,
-              off_t buffer_offset) const override;
+    int score(std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size, hoff_t file_offset,
+              hoff_t buffer_offset) const override;
 
     ssize_t io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
-               off_t file_offset, off_t buffer_offset) override;
+               hoff_t file_offset, hoff_t buffer_offset) override;
 };
 
 }

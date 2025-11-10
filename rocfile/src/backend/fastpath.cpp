@@ -10,18 +10,19 @@
 #include "hip.h"
 #include "io.h"
 
+#include <cstdint>
 #include <fcntl.h>
 #include <hip/hip_runtime_api.h>
 #include <stdexcept>
-#include <stdint.h>
 
 using namespace rocFile;
 using namespace std;
 
 /* The fastpath backend is used when:
  *  - The file has been opened with the O_DIRECT flag
- *  - IO is 4K aligned (size, file_offset, buffer_offset)
- *      - This requirement will be relaxed in the future
+ *  - file_offset is 4KiB aligned
+ *  - buffer_offset is 4KiB aligned
+ *  - size if a multiple of 4KiB
  *  - The buffer type is hipMemoryTypeDevice
  *
  * When using the fastpath the IO flows through the following
@@ -113,8 +114,8 @@ using namespace std;
  */
 
 int
-Fastpath::score(shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size, off_t file_offset,
-                off_t buffer_offset) const
+Fastpath::score(shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size, hoff_t file_offset,
+                hoff_t buffer_offset) const
 {
     bool accept_io{true};
 
@@ -133,8 +134,8 @@ Fastpath::score(shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
 }
 
 ssize_t
-Fastpath::io(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size, off_t file_offset,
-             off_t buffer_offset)
+Fastpath::io(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size, hoff_t file_offset,
+             hoff_t buffer_offset)
 {
     void *devptr{reinterpret_cast<void *>(reinterpret_cast<intptr_t>(buffer->getBuffer()) + buffer_offset)};
     hipAmdFileHandle_t handle{};
