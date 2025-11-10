@@ -401,8 +401,9 @@ jobs:
         if: ${{ always() }}
         run: |
           docker stop ${AIS_CONTAINER_NAME}
-  Run_hipFile_NVIDIA:
-    uses: ./.github/workflows/hipfile-nvidia.yml
-    needs: build_AIS_image
-    with:
-      platform: ${{inputs.platform}}
+### Disable until NVIDIA runners come back
+#  Run_hipFile_NVIDIA:
+#    uses: ./.github/workflows/hipfile-nvidia.yml
+#    needs: build_AIS_image
+#    with:
+#      platform: ${{inputs.platform}}
