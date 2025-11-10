@@ -39,12 +39,14 @@ while getopts "b:ch" o; do
     esac
 done
 
-readarray -d '' COV_FILES < <(find "$BUILD_DIR" -name "*.profraw" -print0)
-if [ ${#COV_FILES[@]} -eq 0 ]; then
+COV_FILES="$BUILD_DIR/coverage-files.txt"
+
+find "$BUILD_DIR" -name "*.profraw" >"$COV_FILES"
+if [ ! -s "$COV_FILES" ]; then
     echo "No coverage files found" >>/dev/stderr
     exit 1
 fi
 
-llvm-profdata merge -output="$BUILD_DIR"/coverage.profdata "${COV_FILES[@]}"
+llvm-profdata merge -output="$BUILD_DIR"/coverage.profdata --input-files="$COV_FILES"
 llvm-cov report "$COLOR_ARG" -instr-profile="$BUILD_DIR"/coverage.profdata -object="$BUILD_DIR"/rocfile/src/librocfile.so -object="$BUILD_DIR"/hipfile/src/amd_detail/libhipfile.so >"$BUILD_DIR"/coverage-report.txt
 llvm-cov show "$COLOR_ARG" -instr-profile="$BUILD_DIR"/coverage.profdata -object="$BUILD_DIR"/rocfile/src/librocfile.so -object="$BUILD_DIR"/hipfile/src/amd_detail/libhipfile.so >"$BUILD_DIR"/coverage-lines.txt
