@@ -1,0 +1,69 @@
+name: AIS_build_CI_image
+run-name: Build the Docker image for AIS CI.
+env:
+  AIS_DOCKER_REGISTRY: ghcr.io/rocm/hipfile
+  AIS_PR_BASE_URL: https://github.com/ROCm/hipFile/pull
+on:
+  workflow_call:
+    inputs:
+      platform:
+        required: true
+        type: string
+    outputs:
+      new_ci_image:
+        description: The full name & tag of the newly built image.
+        value: ${{ jobs.build_AIS_image.outputs.new_ci_image}}
+      image_tag:
+        description: "Temporary: Just the tag of the new image."
+        value: ${{ jobs.build_AIS_image.outputs.image_tag }}
+permissions:
+  contents: read
+  packages: write
+jobs:
+  build_AIS_image:
+    env:
+      AIS_CI_IMAGE_NAME: ais_ci_${{ inputs.platform }}
+    runs-on: [ubuntu-24.04]
+    container: docker:28.5
+    outputs:
+      new_ci_image: ${{ steps.ci-image.outputs.AIS_CI_IMAGE }}
+      image_tag: ${{ steps.ci-image.outputs.AIS_CI_IMAGE_TAG }}
+      # image_tag is a bit hacky. GitHub does not support separating outputs
+      # from a workflow run in a matrix. The last workflow to run will set the
+      # output value. `image_tag` is constant across matrix jobs so this is fine.
+    steps:
+      - name: Set CI environment variables
+        run: |
+          echo "AIS_CI_IMAGE_TAG=$(echo ${{ github.ref }} | sed 's|[^a-zA-Z0-9]|-|g')" >> "${GITHUB_ENV}"
+          echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "${GITHUB_ENV}"
+      - name: Set target AIS CI Image
+        id: ci-image
+        run: |
+          echo "AIS_CI_IMAGE_TAG=${AIS_CI_IMAGE_TAG}" >> ${GITHUB_OUTPUT}
+          echo "AIS_CI_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME}}:${AIS_CI_IMAGE_TAG}" \
+            >> "${GITHUB_OUTPUT}"
+      - name: Fetching code repository...
+        uses: actions/checkout@v5
+      - name: Authenticating to GitHub Container Registry.
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup Docker Builder
+        uses: docker/setup-buildx-action@v3.11.1
+        with:
+          name: ais-builder
+          driver: docker-container
+          cache-binary: false # True uses the GHA Cache Backend.
+      - name: Build base image for AIS CI
+        run: |
+          docker buildx build \
+            -f ${GITHUB_WORKSPACE}/util/docker/DOCKERFILE.${{ env.AIS_CI_IMAGE_NAME }} \
+            --label "org.opencontainers.image.description= \
+              ${{ env.AIS_CI_IMAGE_NAME }} Development Image for AIS CI using branch \
+              ${{ github.head_ref }} for PR #${AIS_PR_NUMBER}. \
+              PR URL: ${{ env.AIS_PR_BASE_URL }}/${AIS_PR_NUMBER}" \
+            --push \
+            -t ${{ steps.ci-image.outputs.AIS_CI_IMAGE }} \
+            ${GITHUB_WORKSPACE}

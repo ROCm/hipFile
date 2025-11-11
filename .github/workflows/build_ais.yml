@@ -8,53 +8,18 @@ env:
 on:
   workflow_call:
     inputs:
+      ci_image:
+        required: true
+        type: string
       platform:
         required: true
         type: string
 permissions:
   contents: read
-  packages: write
+  packages: read
 jobs:
-  build_AIS_image:
-    runs-on: [ubuntu-24.04]
-    container: docker:28.5
-    steps:
-      - name: Set AIS CI image environment variables
-        run: |
-          echo "AIS_CI_DEV_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
-            | sed 's|[^a-zA-Z0-9]|-|g')" >> "$GITHUB_ENV"
-          echo "AIS_CI_LATEST_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}:latest" >> "$GITHUB_ENV"
-          echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
-      - name: Fetching code repository...
-        uses: actions/checkout@v5
-      - name: Authenticating to GitHub Container Registry.
-        uses: docker/login-action@v3.6.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Setup Docker Builder
-        uses: docker/setup-buildx-action@v3.11.1
-        with:
-          name: ais-builder
-          driver: docker-container
-          cache-binary: false # True uses the GHA Cache Backend.
-      - name: Build base image for AIS CI
-        run: |
-          docker buildx build \
-            -f ${GITHUB_WORKSPACE}/util/docker/DOCKERFILE.${{ env.AIS_CI_IMAGE_NAME }} \
-            --label "org.opencontainers.image.description= \
-              ${{ env.AIS_CI_IMAGE_NAME }} Development Image for AIS CI using branch \
-              ${{ github.head_ref }} for PR #${AIS_PR_NUMBER}. \
-              PR URL: ${{ env.AIS_PR_BASE_URL }}/${AIS_PR_NUMBER}" \
-            --cache-to=type=registry,ref="${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:cache" \
-            --cache-from=type=registry,ref="${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:cache" \
-            --push \
-            -t ${AIS_CI_DEV_IMAGE} \
-            ${GITHUB_WORKSPACE}
   compile_on_AMD:
     runs-on: [ubuntu-24.04]
-    needs: build_AIS_image
     steps:
       - name: Get PR number and store it as a environment variable
         run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
@@ -83,7 +48,7 @@ jobs:
             -v ${GITHUB_WORKSPACE}:/mnt/ais:ro \
             -v ${{ env.AIS_MOUNT_PATH }}:/mnt/ais-fs \
             --name ${AIS_CONTAINER_NAME} \
-            ${AIS_CI_DEV_IMAGE}
+            ${{ inputs.ci_image }}
       - name: Make copy of the code repository and create build directories
         # Single quotes necessary to ensure string/command substitutions happen
         # in the container and not on the host.
@@ -158,7 +123,6 @@ jobs:
           docker stop ${AIS_CONTAINER_NAME}
   compile_on_AMD_other:
     runs-on: [ubuntu-24.04]
-    needs: build_AIS_image
     strategy:
       fail-fast: false
       matrix:
@@ -190,7 +154,7 @@ jobs:
             -v ${GITHUB_WORKSPACE}:/mnt/ais:ro \
             -v ${{ env.AIS_MOUNT_PATH }}:/mnt/ais-fs \
             --name ${AIS_CONTAINER_NAME} \
-            ${AIS_CI_DEV_IMAGE}
+            ${{ inputs.ci_image }}
       - name: Make copy of the code repository and create build directories
         run: |
           docker exec \
@@ -261,7 +225,7 @@ jobs:
             -v ${GITHUB_WORKSPACE}:/mnt/ais:ro \
             -v ${{ env.AIS_MOUNT_PATH }}:/mnt/ais-fs \
             --name ${AIS_CONTAINER_NAME} \
-            ${AIS_CI_DEV_IMAGE}
+            ${{ inputs.ci_image }}
       - name: Make copy of the code repository and create build directories
         run: |
           docker exec \
@@ -318,7 +282,6 @@ jobs:
           docker stop ${AIS_CONTAINER_NAME}
   compile_on_NVIDIA:
     runs-on: [ubuntu-24.04]
-    needs: build_AIS_image
     strategy:
       fail-fast: false
       matrix:
@@ -353,7 +316,7 @@ jobs:
             -v ${GITHUB_WORKSPACE}:/mnt/ais:ro \
             -v ${{ env.AIS_MOUNT_PATH }}:/mnt/ais-fs \
             --name ${AIS_CONTAINER_NAME} \
-            ${AIS_CI_DEV_IMAGE}
+            ${{ inputs.ci_image }}
       - name: Make copy of the code repository and create build directories
         run: |
           docker exec \

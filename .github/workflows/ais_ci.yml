@@ -6,11 +6,57 @@ on:
     paths-ignore:
       - '**.md'
       - '.github/CODEOWNERS'
+permissions:
+  contents: read
+  packages: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  AIS_CI_Pre-check:
+    outputs:
+      changed_dockerfile: ${{ steps.ci-flags.outputs.changed_dockerfile }}
+    runs-on: [ubuntu-24.04]
+    steps:
+      - name: Fetching code repository...
+        uses: actions/checkout@v5
+      - name: Git fetch base ref
+        run: git fetch origin ${{ github.base_ref }}
+      - name: Set CI Flags
+        id: ci-flags
+        run: |
+          echo "changed_dockerfile=$(./util/files-changed.sh origin/${{ github.base_ref }} HEAD 'util/docker/DOCKERFILE.*')" >> ${GITHUB_OUTPUT}
+  build_AIS_CI_image:
+    if: ${{ needs.AIS_CI_Pre-check.outputs.changed_dockerfile == '1' }}
+    needs: AIS_CI_Pre-check
+    strategy:
+      fail-fast: false
+      matrix:
+        supported_platforms:
+          - rocky
+          - suse
+          - ubuntu
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/build_ais_ci_image.yml
+    with:
+      platform: ${{ matrix.supported_platforms }}
   AIS_CI:
+    # Run after build_AIS_CI_image but only if build_AIS_CI_image passed or was skipped.
+    # always() check needed otherwise success() implicitly added.
+    if: >-
+      ${{
+        always() &&
+        (
+          needs.build_AIS_CI_image.result == 'skipped' ||
+          (
+            needs['AIS_CI_Pre-check'].outputs.changed_dockerfile == '1' &&
+            needs.build_AIS_CI_image.result == 'success'
+          )
+        )
+      }}
+    needs: [AIS_CI_Pre-check, build_AIS_CI_image]
     strategy:
       fail-fast: false
       matrix:
@@ -20,4 +66,21 @@ jobs:
           - suse
     uses: ./.github/workflows/build_ais.yml
     with:
+      # Use the new CI image if it was built. Otherwise, use the default image.
+      # Note: The image tag is being used instead of the full image:tag name
+      #       due to a limitation in GitHub for providing outputs from
+      #       jobs run within a matrix. The image tag used here is constant
+      #       across platforms, so it at least works for this situation.
+      ci_image: >-
+        ${{
+          format(
+            'ghcr.io/rocm/hipfile/ais_ci_{0}:{1}',
+            matrix.supported_platforms,
+            (
+              needs.AIS_CI_Pre-check.outputs.changed_dockerfile == '1' &&
+              needs.build_AIS_CI_image.outputs.image_tag ||
+              'latest'
+            )
+          )
+        }}
       platform: ${{matrix.supported_platforms}}
