@@ -12,11 +12,19 @@
  */
 
 #include "batch/batch.h"
+#include "context.h"
+#include "hip.h"
 #include "hipfile-warnings.h"
+#include "io.h"
 #include "mbatch.h"
+#include "mhip.h"
+#include "mmountinfo.h"
 #include "mstate.h"
-#include "rocfile.h"
+#include "msys.h"
+#include "rocfile-private.h"
 #include "rocfile-test.h"
+#include "rocfile.h"
+#include "state.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -25,10 +33,7 @@
 #include <stdexcept>
 
 using namespace rocFile;
-
-using ::testing::Return;
-using ::testing::StrictMock;
-using ::testing::Throw;
+using namespace testing;
 
 // Put tests inside the macros to suppress the global constructor
 // warnings
@@ -109,5 +114,37 @@ TEST_F(RocFileUnit, TestRocFileBatchIOSubmitBadArgument)
     auto result = rocFileBatchIOSubmit(b_handle, 1, &io_param, 0);
     ASSERT_EQ(result, ROCFILE_INVALID_VALUE);
 }
+
+/// @brief Test rocFileIO function
+struct RocFileIoParam : public TestWithParam<IoType> {
+    rocFileHandle_t file_handle{};
+    const void     *unreg_bufptr{reinterpret_cast<void *>(0xFACEFEED)};
+
+    RocFileIoParam()
+    {
+        {
+            StrictMock<MSys>            msys;
+            StrictMock<MLibMountHelper> mlmh;
+            expect_file_registration(msys, mlmh);
+            file_handle = Context<DriverState>::get()->registerFile(0x0BADCAFE);
+        }
+
+        {
+            StrictMock<MHip> mhip;
+            EXPECT_CALL(mhip, hipRuntimeGetVersion);
+            EXPECT_CALL(mhip, hipGetProcAddress(StrEq("hipAmdFileRead"), _, _, _));
+            Context<DriverState>::get()->getBackends();
+        }
+    }
+};
+
+TEST_P(RocFileIoParam, RocFileIoHandlesHipPointerGetAttributesError)
+{
+    StrictMock<MHip> mhip;
+    EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
+    ASSERT_EQ(rocFileIo(GetParam(), file_handle, unreg_bufptr, 0, 0, 0), -hipErrorUnknown);
+}
+
+INSTANTIATE_TEST_SUITE_P(RocFileIo, RocFileIoParam, Values(IoType::Read, IoType::Write));
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON
