@@ -174,6 +174,12 @@ TEST_P(RocFileIoParam, RocFileIoHandlesInvalidRegisteredBufferLength)
               -static_cast<ssize_t>(rocFileInvalidValue));
 }
 
+TEST_P(RocFileIoParam, RocFileIoHandlesInvalidFileHandle)
+{
+    auto invalid_handle{reinterpret_cast<rocFileHandle_t>(0xdeadbeef)};
+    ASSERT_EQ(rocFileIo(GetParam(), invalid_handle, bufptr, 0, 0, 0), -rocFileHandleNotRegistered);
+}
+
 INSTANTIATE_TEST_SUITE_P(RocFileIo, RocFileIoParam, Values(IoType::Read, IoType::Write));
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

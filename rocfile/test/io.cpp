@@ -368,14 +368,6 @@ struct RocFileWrite : public RocFileIO {
     void *nonnull_ptr = reinterpret_cast<void *>(0x1);
 };
 
-TEST_F(RocFileWrite, write_rejects_invalid_file_handle)
-{
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-    auto             fh = reinterpret_cast<rocFileHandle_t>(0xdeadbeef);
-    ASSERT_EQ(rocFileWrite(fh, nonnull_ptr, 0, 0, 0), -rocFileHandleNotRegistered);
-}
-
 TEST_F(RocFileWrite, write_handles_mmap_error)
 {
     StrictMock<MHip> mhip;
@@ -651,14 +643,6 @@ struct RocFileRead : public RocFileIO {
 
     void *nonnull_ptr = reinterpret_cast<void *>(0x1);
 };
-
-TEST_F(RocFileRead, read_rejects_invalid_file_handle)
-{
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-    auto             fh = reinterpret_cast<rocFileHandle_t>(0xdeadbeef);
-    ASSERT_EQ(rocFileRead(fh, nullptr, 0, 0, 0), -rocFileHandleNotRegistered);
-}
 
 TEST_F(RocFileRead, read_handles_invalid_argument)
 {
