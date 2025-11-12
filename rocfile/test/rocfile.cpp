@@ -26,11 +26,13 @@
 #include "rocfile.h"
 #include "state.h"
 
+#include <array>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <hip/hip_runtime_api.h>
 #include <memory>
 #include <stdexcept>
+#include <sys/types.h>
 
 using namespace rocFile;
 using namespace testing;
@@ -143,6 +145,18 @@ TEST_P(RocFileIoParam, RocFileIoHandlesHipPointerGetAttributesError)
     StrictMock<MHip> mhip;
     EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
     ASSERT_EQ(rocFileIo(GetParam(), file_handle, unreg_bufptr, 0, 0, 0), -hipErrorUnknown);
+}
+
+TEST_P(RocFileIoParam, RocFileIoHandlesUnsupportedHipMemoryType)
+{
+    for (const auto memoryType : UnsupportedHipMemoryTypes) {
+        StrictMock<MHip>      mhip;
+        hipPointerAttribute_t attrs{};
+        attrs.type = memoryType;
+        EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
+        ASSERT_EQ(rocFileIo(GetParam(), file_handle, unreg_bufptr, 0, 0, 0),
+                  -static_cast<ssize_t>(rocFileHipMemoryTypeInvalid));
+    }
 }
 
 INSTANTIATE_TEST_SUITE_P(RocFileIo, RocFileIoParam, Values(IoType::Read, IoType::Write));
