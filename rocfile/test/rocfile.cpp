@@ -120,6 +120,8 @@ TEST_F(RocFileUnit, TestRocFileBatchIOSubmitBadArgument)
 /// @brief Test rocFileIO function
 struct RocFileIoParam : public TestWithParam<IoType> {
     rocFileHandle_t file_handle{};
+    void           *bufptr{reinterpret_cast<void *>(0xDEC0DE)};
+    size_t          buflen{4096};
     const void     *unreg_bufptr{reinterpret_cast<void *>(0xFACEFEED)};
 
     RocFileIoParam()
@@ -129,6 +131,12 @@ struct RocFileIoParam : public TestWithParam<IoType> {
             StrictMock<MLibMountHelper> mlmh;
             expect_file_registration(msys, mlmh);
             file_handle = Context<DriverState>::get()->registerFile(0x0BADCAFE);
+        }
+
+        {
+            StrictMock<MHip> mhip;
+            expect_buffer_registration(mhip, hipMemoryTypeDevice);
+            Context<DriverState>::get()->registerBuffer(bufptr, buflen, 0);
         }
 
         {
@@ -157,6 +165,13 @@ TEST_P(RocFileIoParam, RocFileIoHandlesUnsupportedHipMemoryType)
         ASSERT_EQ(rocFileIo(GetParam(), file_handle, unreg_bufptr, 0, 0, 0),
                   -static_cast<ssize_t>(rocFileHipMemoryTypeInvalid));
     }
+}
+
+TEST_P(RocFileIoParam, RocFileIoHandlesInvalidRegisteredBufferLength)
+{
+    StrictMock<MHip> mhip;
+    ASSERT_EQ(rocFileIo(GetParam(), file_handle, bufptr, buflen + 1, 0, 0),
+              -static_cast<ssize_t>(rocFileInvalidValue));
 }
 
 INSTANTIATE_TEST_SUITE_P(RocFileIo, RocFileIoParam, Values(IoType::Read, IoType::Write));
