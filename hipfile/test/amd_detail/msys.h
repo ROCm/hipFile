@@ -32,5 +32,7 @@ struct MSys : Sys {
                 (const override));
 
     MOCK_METHOD(int, fcntl, (int fd, int op, uintptr_t arg), (const override));
+
+    MOCK_METHOD(char *, getenv, (const char *name), (const, noexcept, override));
 };
 }

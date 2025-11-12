@@ -78,4 +78,10 @@ Sys::statx(int dirfd, const char *pathname, int flags, unsigned int mask) const
     return statxbuf;
 }
 
+char *
+Sys::getenv(const char *name) const noexcept
+{
+    return ::getenv(name);
+}
+
 }

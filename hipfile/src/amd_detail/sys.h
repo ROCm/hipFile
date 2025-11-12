@@ -38,6 +38,8 @@ struct Sys {
 
     virtual int fcntl(int fd, int op, uintptr_t arg) const;
 
+    virtual char *getenv(const char *name) const noexcept;
+
     struct RuntimeError : public std::runtime_error {
         /// The value of errno when RuntimeError was thrown
         int error;
