@@ -6,12 +6,9 @@
 #include "hipfile-cufile.h"
 
 #include <climits>
+#include <cuda.h>
 #include <hip/hip_runtime_api.h>
 #include <stdexcept>
-
-#ifdef __HIP_PLATFORM_NVIDIA__
-#include <cuda.h>
-#endif
 
 hipFileOpError_t
 toHipFileOpError(CUfileOpError cu_status)
