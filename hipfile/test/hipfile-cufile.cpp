@@ -5,12 +5,19 @@
 
 #include "hipfile.h"
 #include "hipfile-cufile.h"
-#include "test-common.h"
-
 #include "hipfile-warnings.h"
 #include "invalid-enum.h"
+#include "test-common.h"
 
 #include <gtest/gtest.h>
+#include <hip/hip_runtime_api.h>
+#include <memory>
+#include <stdexcept>
+
+#ifdef __HIP_PLATFORM_NVIDIA__
+#include <cuda.h>
+#include <cufile.h>
+#endif
 
 // Put tests inside the macros to suppress the global constructor
 // warnings

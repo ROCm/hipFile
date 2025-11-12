@@ -18,6 +18,10 @@
 #include <time.h>
 #include <vector>
 
+#ifdef __HIP_PLATFORM_NVIDIA__
+#include <driver_types.h>
+#endif
+
 using namespace std;
 
 extern SystemTestOptions test_env;
