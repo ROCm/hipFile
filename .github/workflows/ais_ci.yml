@@ -1,17 +1,14 @@
 name: AIS_CI
-run-name: Kicks off several AIS CI workflows for various platforms.
+run-name: Main CI workflow to coordinate jobs for a single platform.
 on:
-  pull_request:
-    types: [opened, synchronize, reopened] # Defaults
-    paths-ignore:
-      - '**.md'
-      - '.github/CODEOWNERS'
+  workflow_call:
+    inputs:
+      platform:
+        required: true
+        type: string
 permissions:
   contents: read
   packages: read
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 jobs:
   AIS_CI_Pre-check:
     outputs:
@@ -29,19 +26,12 @@ jobs:
   build_AIS_CI_image:
     if: ${{ needs.AIS_CI_Pre-check.outputs.changed_dockerfile == '1' }}
     needs: AIS_CI_Pre-check
-    strategy:
-      fail-fast: false
-      matrix:
-        supported_platforms:
-          - rocky
-          - suse
-          - ubuntu
     permissions:
       contents: read
       packages: write
     uses: ./.github/workflows/build_ais_ci_image.yml
     with:
-      platform: ${{ matrix.supported_platforms }}
+      platform: ${{ inputs.platform }}
   AIS_CI:
     # Run after build_AIS_CI_image but only if build_AIS_CI_image passed or was skipped.
     # always() check needed otherwise success() implicitly added.
@@ -57,30 +47,13 @@ jobs:
         )
       }}
     needs: [AIS_CI_Pre-check, build_AIS_CI_image]
-    strategy:
-      fail-fast: false
-      matrix:
-        supported_platforms:
-          - ubuntu
-          - rocky
-          - suse
     uses: ./.github/workflows/build_ais.yml
     with:
-      # Use the new CI image if it was built. Otherwise, use the default image.
-      # Note: The image tag is being used instead of the full image:tag name
-      #       due to a limitation in GitHub for providing outputs from
-      #       jobs run within a matrix. The image tag used here is constant
-      #       across platforms, so it at least works for this situation.
+      # If Dockerfile changed, use the new CI image. Otherwise, use 'latest'.
       ci_image: >-
         ${{
-          format(
-            'ghcr.io/rocm/hipfile/ais_ci_{0}:{1}',
-            matrix.supported_platforms,
-            (
-              needs.AIS_CI_Pre-check.outputs.changed_dockerfile == '1' &&
-              needs.build_AIS_CI_image.outputs.image_tag ||
-              'latest'
-            )
-          )
+          needs.AIS_CI_Pre-check.outputs.changed_dockerfile == '1' &&
+          needs.build_AIS_CI_image.outputs.ci_image ||
+          format('ghcr.io/rocm/hipfile/ais_ci_{0}:latest', inputs.platform)
         }}
-      platform: ${{matrix.supported_platforms}}
+      platform: ${{ inputs.platform }}
