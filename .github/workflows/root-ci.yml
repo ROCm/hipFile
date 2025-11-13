@@ -1,4 +1,4 @@
-name: AIS_CI
+name: CI
 run-name: Kicks off several AIS CI workflows for various platforms.
 
 # In particular, this root workflow's only purpose is to allow

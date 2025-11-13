@@ -1,4 +1,4 @@
-name: update_AIS_CI
+name: update_CI_image
 run-name: Update latest CI image
 on:
   pull_request_target: # A.K.A. This is a privileged action. See `pull_request`.

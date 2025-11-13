@@ -32,7 +32,7 @@ jobs:
     uses: ./.github/workflows/build-ais-ci-image.yml
     with:
       platform: ${{ inputs.platform }}
-  AIS_CI:
+  build_and_test:
     # Run after build_AIS_CI_image but only if build_AIS_CI_image passed or was skipped.
     # always() check needed otherwise success() implicitly added.
     if: >-

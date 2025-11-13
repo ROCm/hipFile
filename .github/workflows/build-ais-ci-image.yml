@@ -1,4 +1,4 @@
-name: AIS_build_CI_image
+name: new_CI_image
 run-name: Build the Docker image for AIS CI.
 env:
   AIS_DOCKER_REGISTRY: ghcr.io/rocm/hipfile
