@@ -2,9 +2,6 @@ name: AIS # Mono-workflow - May be advantageous to split up
 run-name: Build, Test, and Analyze AIS
 env:
   AIS_MOUNT_PATH: /mnt/ais/ext4
-  AIS_DOCKER_REGISTRY: ghcr.io/rocm/hipfile
-  AIS_CI_IMAGE_NAME: ais_ci_${{inputs.platform}}
-  AIS_PR_BASE_URL: https://github.com/ROCm/hipFile/pull
 on:
   workflow_call:
     inputs:
@@ -25,8 +22,6 @@ jobs:
         run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
       - name: Set AIS CI image environment variables
         run: |
-          echo "AIS_CI_DEV_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
-            | sed 's|[^a-zA-Z0-9]|-|g')" >> "$GITHUB_ENV"
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{inputs.platform}}" >> "$GITHUB_ENV"
       - name: Fetching code repository...
         uses: actions/checkout@v5
@@ -134,8 +129,6 @@ jobs:
         run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
       - name: Set AIS CI image environment variables
         run: |
-          echo "AIS_CI_DEV_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
-            | sed 's|[^a-zA-Z0-9]|-|g')" >> "$GITHUB_ENV"
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{inputs.platform}}" >> "$GITHUB_ENV"
       - name: Fetching code repository...
         uses: actions/checkout@v5
@@ -199,8 +192,6 @@ jobs:
         run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
       - name: Set AIS CI image environment variables
         run: |
-          echo "AIS_CI_DEV_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
-            | sed 's|[^a-zA-Z0-9]|-|g')" >> "$GITHUB_ENV"
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{inputs.platform}}_nvidia" >> "$GITHUB_ENV"
       - name: Fetching code repository...
         uses: actions/checkout@v5
@@ -293,8 +284,6 @@ jobs:
         run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
       - name: Set AIS CI image environment variables
         run: |
-          echo "AIS_CI_DEV_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME }}_dev:$(echo ${{ github.ref }} \
-            | sed 's|[^a-zA-Z0-9]|-|g')" >> "$GITHUB_ENV"
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{inputs.platform}}_nvidia" >> "$GITHUB_ENV"
       - name: Fetching code repository...
         uses: actions/checkout@v5
