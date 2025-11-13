@@ -1,0 +1,59 @@
+name: update_AIS_CI
+run-name: Update latest CI image
+on:
+  pull_request_target: # A.K.A. This is a privileged action. See `pull_request`.
+    types:
+      - closed # CAUTION: Includes un-merged PR's.
+    branches:
+      - develop
+  workflow_dispatch:
+    # Requires write access to trigger.
+
+permissions:
+  contents: read
+  packages: write
+jobs:
+  update_AIS_CI_image:
+    env:
+      AIS_DOCKER_REGISTRY: ghcr.io/rocm/hipfile
+      AIS_CI_IMAGE_NAME: ais_ci_${{ matrix.supported_platforms }}
+    if: ${{ github.event.pull_request.merged == true }}
+    runs-on: [ubuntu-24.04]
+    container: docker:28.5
+    strategy:
+      matrix:
+        supported_platforms:
+          - rocky
+          - suse
+          - ubuntu
+    steps:
+      - name: Fetching code repository...
+        uses: actions/checkout@v5
+      - name: Authenticating to GitHub Container Registry.
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set target AIS CI Image
+        id: ci-image
+        run: |
+          echo "AIS_CI_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME}}:latest" \
+            >> "${GITHUB_OUTPUT}"
+      - name: Setup Docker Builder
+        uses: docker/setup-buildx-action@v3.11.1
+        with:
+          name: ais-builder
+          driver: docker-container
+          cache-binary: false # True uses the GHA Cache Backend.
+      # We won't use the cache from the previous image.
+      # This lets us semi-regularly pull in package updates automatically.
+      - name: Build & Push latest image for AIS CI
+        run: |
+          docker buildx build \
+            -f ${GITHUB_WORKSPACE}/util/docker/DOCKERFILE.${{ env.AIS_CI_IMAGE_NAME }} \
+            --label "org.opencontainers.image.description= \
+              Latest AIS CI Image for ${{ matrix.supported_platforms }}." \
+            --push \
+            -t ${{ steps.ci-image.outputs.AIS_CI_IMAGE }} \
+            ${GITHUB_WORKSPACE}
