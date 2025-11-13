@@ -60,6 +60,8 @@ jobs:
               ${{ env.AIS_CI_IMAGE_NAME }} Development Image for AIS CI using branch \
               ${{ github.head_ref }} for PR #${AIS_PR_NUMBER}. \
               PR URL: ${{ env.AIS_PR_BASE_URL }}/${AIS_PR_NUMBER}" \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            --cache-from=type=registry,ref=${{ steps.ci-image.outputs.AIS_CI_IMAGE }} \
             --push \
             -t ${{ steps.ci-image.outputs.AIS_CI_IMAGE }} \
             ${GITHUB_WORKSPACE}
