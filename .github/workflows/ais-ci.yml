@@ -29,7 +29,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    uses: ./.github/workflows/build_ais_ci_image.yml
+    uses: ./.github/workflows/build-ais-ci-image.yml
     with:
       platform: ${{ inputs.platform }}
   AIS_CI:
@@ -47,7 +47,7 @@ jobs:
         )
       }}
     needs: [AIS_CI_Pre-check, build_AIS_CI_image]
-    uses: ./.github/workflows/build_ais.yml
+    uses: ./.github/workflows/build-ais.yml
     with:
       # If Dockerfile changed, use the new CI image. Otherwise, use 'latest'.
       ci_image: >-

@@ -28,6 +28,6 @@ jobs:
           - rocky
           - suse
           - ubuntu
-    uses: ./.github/workflows/ais_ci.yml
+    uses: ./.github/workflows/ais-ci.yml
     with:
       platform: ${{ matrix.supported_platforms }}
