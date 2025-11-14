@@ -48,13 +48,13 @@ expect_file_registration(MSys &msys, MLibMountHelper &mlibmounthelper, struct st
     EXPECT_CALL(mlibmounthelper, getMountInfo).WillOnce(Return(mountinfo));
 }
 
-struct RocFileHandle : public RocFileOpened {};
+struct RocFileHandle : public RocFileOpened {
+    StrictMock<MSys>            msys;
+    StrictMock<MLibMountHelper> mlibmounthelper;
+};
 
 TEST_F(RocFileHandle, register_handle_internal_linux_fd)
 {
-    StrictMock<MSys>            msys;
-    StrictMock<MLibMountHelper> mlibmounthelper;
-
     int fd{0xBADF00D};
 
     expect_file_registration(msys, mlibmounthelper);
@@ -63,9 +63,6 @@ TEST_F(RocFileHandle, register_handle_internal_linux_fd)
 
 TEST_F(RocFileHandle, file_initialization)
 {
-    StrictMock<MSys>            msys;
-    StrictMock<MLibMountHelper> mlibmounthelper;
-
     int         fd{0x12345678};
     int         status_flags{0x789ABCDE};
     struct stat fstat;
@@ -91,9 +88,6 @@ TEST_F(RocFileHandle, file_initialization)
 
 TEST_F(RocFileHandle, register_handle_internal_linux_fd_already_registered)
 {
-    StrictMock<MSys>            msys;
-    StrictMock<MLibMountHelper> mlibmounthelper;
-
     int fd{0xBADF00D};
     expect_file_registration(msys, mlibmounthelper);
     ASSERT_NE(Context<DriverState>::get()->registerFile(fd), nullptr);
@@ -103,9 +97,6 @@ TEST_F(RocFileHandle, register_handle_internal_linux_fd_already_registered)
 
 TEST_F(RocFileHandle, register_handle_linux_fd)
 {
-    StrictMock<MSys>            msys;
-    StrictMock<MLibMountHelper> mlibmounthelper;
-
     rocFileHandle_t fh{};
     rocFileDescr_t  rfd{};
 
@@ -120,9 +111,6 @@ TEST_F(RocFileHandle, register_handle_linux_fd)
 // If the fstat() fails during file registration return rocfileInternalError
 TEST_F(RocFileHandle, RocfileHandleRegisterFstatError)
 {
-    StrictMock<MSys>            msys;
-    StrictMock<MLibMountHelper> mlibmounthelper;
-
     rocFileHandle_t fh{};
     rocFileDescr_t  rfd{};
     rfd.type      = rocFileHandleTypeOpaqueFD;
@@ -136,9 +124,6 @@ TEST_F(RocFileHandle, RocfileHandleRegisterFstatError)
 // If the fcntl() fails during file registration return rocfileInternalError
 TEST_F(RocFileHandle, RocfileHandleRegisterFcntlError)
 {
-    StrictMock<MSys>            msys;
-    StrictMock<MLibMountHelper> mlibmounthelper;
-
     rocFileHandle_t fh{};
     rocFileDescr_t  rfd{};
     rfd.type      = rocFileHandleTypeOpaqueFD;
@@ -153,9 +138,6 @@ TEST_F(RocFileHandle, RocfileHandleRegisterFcntlError)
 // If getting mount information fails during file registration return rocfileInternalError
 TEST_F(RocFileHandle, RocfileHandleRegisterLibMountError)
 {
-    StrictMock<MSys>            msys;
-    StrictMock<MLibMountHelper> mlibmounthelper;
-
     rocFileHandle_t fh{};
     rocFileDescr_t  rfd{};
     rfd.type      = rocFileHandleTypeOpaqueFD;
@@ -170,9 +152,6 @@ TEST_F(RocFileHandle, RocfileHandleRegisterLibMountError)
 
 TEST_F(RocFileHandle, register_handle_linux_fd_already_registered)
 {
-    StrictMock<MSys>            msys;
-    StrictMock<MLibMountHelper> mlibmounthelper;
-
     rocFileHandle_t fh{};
     rocFileDescr_t  rfd{};
 
@@ -188,9 +167,6 @@ TEST_F(RocFileHandle, register_handle_linux_fd_already_registered)
 
 TEST_F(RocFileHandle, register_handle_windows_handle_not_supported)
 {
-    StrictMock<MSys>            msys;
-    StrictMock<MLibMountHelper> mlibmounthelper;
-
     rocFileHandle_t fh{};
     rocFileDescr_t  rfd{};
 
@@ -202,9 +178,6 @@ TEST_F(RocFileHandle, register_handle_windows_handle_not_supported)
 
 TEST_F(RocFileHandle, register_handle_userspace_fs_not_supported)
 {
-    StrictMock<MSys>            msys;
-    StrictMock<MLibMountHelper> mlibmounthelper;
-
     rocFileHandle_t fh{};
     rocFileDescr_t  rfd{};
 
@@ -228,8 +201,6 @@ TEST_F(RocFileHandle, deregister_handle_returns_error_if_not_registered)
 
 TEST_F(RocFileHandle, deregister_handle_internal)
 {
-    StrictMock<MSys>            msys;
-    StrictMock<MLibMountHelper> mlibmounthelper;
     expect_file_registration(msys, mlibmounthelper);
     auto fh = Context<DriverState>::get()->registerFile(0xBADF00D);
     Context<DriverState>::get()->deregisterFile(fh);
@@ -238,9 +209,6 @@ TEST_F(RocFileHandle, deregister_handle_internal)
 
 TEST_F(RocFileHandle, deregister_handle)
 {
-    StrictMock<MSys>            msys;
-    StrictMock<MLibMountHelper> mlibmounthelper;
-
     rocFileHandle_t fh{};
     rocFileDescr_t  rfd{};
 
@@ -255,9 +223,6 @@ TEST_F(RocFileHandle, deregister_handle)
 
 TEST_F(RocFileHandle, deregister_handle_internal_fails_when_operations_are_oustanding)
 {
-    StrictMock<MSys>            msys;
-    StrictMock<MLibMountHelper> mlibmounthelper;
-
     expect_file_registration(msys, mlibmounthelper);
     auto fh = Context<DriverState>::get()->registerFile(0xBADF00D);
     {
@@ -269,9 +234,6 @@ TEST_F(RocFileHandle, deregister_handle_internal_fails_when_operations_are_ousta
 
 TEST_F(RocFileHandle, deregister_handle_fails_when_operations_are_oustanding)
 {
-    StrictMock<MSys>            msys;
-    StrictMock<MLibMountHelper> mlibmounthelper;
-
     rocFileHandle_t fh{};
     rocFileDescr_t  rfd{};
 
