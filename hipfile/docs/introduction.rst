@@ -9,10 +9,3 @@ were set when building the library, respectively.
 
 The documentation for hipFile is somewhat sparse as it's a very thin layer.
 For API details, see AMD's rocFile or NVIDIA's cuFile API documentation.
-
-Modifying CUDA code for hipFile
--------------------------------
-Until the hipify tool has been updated to handle hipFile, the distribution
-will contain a source patch to hipify that can be used to transform cuFile
-code to the hipFile API. Please see the `README.md` included with the patch
-for instructions.
