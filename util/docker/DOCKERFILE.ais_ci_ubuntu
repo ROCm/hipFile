@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 FROM rocm/dev-ubuntu-24.04:6.4.1
-LABEL org.opencontainers.image.source=https://github.com/ROCm/rocs-internal
+LABEL org.opencontainers.image.source=https://github.com/ROCm/hipFile
 
 # CI Dependencies
 RUN apt update && \

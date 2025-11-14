@@ -5,7 +5,7 @@
 ARG SUSE_MAJOR_VERSION=15
 ARG SUSE_VERSION=${SUSE_MAJOR_VERSION}.6
 FROM opensuse/leap:${SUSE_VERSION}
-LABEL org.opencontainers.image.source=https://github.com/ROCm/rocs-internal
+LABEL org.opencontainers.image.source=https://github.com/ROCm/hipFile
 ARG SUSE_MAJOR_VERSION
 ARG SUSE_VERSION
 ARG ROCm_VERSION=6.4.2

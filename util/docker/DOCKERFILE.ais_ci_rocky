@@ -5,7 +5,7 @@
 ARG ROCKY_MAJOR_VERSION=9
 ARG ROCKY_VERSION=${ROCKY_MAJOR_VERSION}.6
 FROM rockylinux/rockylinux:${ROCKY_VERSION}-minimal
-LABEL org.opencontainers.image.source=https://github.com/ROCm/rocs-internal
+LABEL org.opencontainers.image.source=https://github.com/ROCm/hipFile
 # Brings ROCKY_VERSION in-scope
 ARG ROCKY_MAJOR_VERSION
 ARG ROCKY_VERSION
