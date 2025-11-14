@@ -6,5 +6,10 @@
 ### Changed
 
 ### Removed
+* The hipify patch was removed. You can get hipify with hipFile support at https://github.com/derobins/HIPIFY/tree/hipFile.
+
+### Limitations
+* The batch API calls are not supported w/ a rocFile backend
+* The async API calls are not supported w/ a rocFile backend
 
 ### Known issues
