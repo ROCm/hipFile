@@ -16,6 +16,7 @@
 #include "mbuffer.h"
 #include "mfile.h"
 #include "mhip.h"
+#include "mmountinfo.h"
 #include "mstate.h"
 #include "msys.h"
 #include "rocfile.h"
@@ -118,8 +119,9 @@ struct RocFileIO : public RocFileOpened {
 
     RocFileIO() : buffer_data(1024 * 1024)
     {
-        StrictMock<MHip> mhip;
-        StrictMock<MSys> msys;
+        StrictMock<MHip>            mhip;
+        StrictMock<MSys>            msys;
+        StrictMock<MLibMountHelper> mlibmounthelper;
 
         // Initialize DriverState::backends
         EXPECT_CALL(mhip, hipRuntimeGetVersion);
@@ -130,8 +132,7 @@ struct RocFileIO : public RocFileOpened {
         Context<DriverState>::get()->registerBuffer(buffer_data.data(), buffer_data.size(), 0);
         buffer = Context<DriverState>::get()->getBuffer(buffer_data.data());
 
-        EXPECT_CALL(msys, fstat);
-        EXPECT_CALL(msys, fcntl);
+        expect_file_registration(msys, mlibmounthelper);
         file = Context<DriverState>::get()->getFile(Context<DriverState>::get()->registerFile(0xBADF00D));
     }
 
@@ -183,8 +184,9 @@ struct RocFileFallbackValidation : ::testing::TestWithParam<IoType> {
 
     RocFileFallbackValidation()
     {
-        StrictMock<MHip> mhip;
-        StrictMock<MSys> msys;
+        StrictMock<MHip>            mhip;
+        StrictMock<MSys>            msys;
+        StrictMock<MLibMountHelper> mlibmounthelper;
 
         assert(rocFileDriverOpen() == ROCFILE_SUCCESS);
 
@@ -193,8 +195,7 @@ struct RocFileFallbackValidation : ::testing::TestWithParam<IoType> {
         Context<DriverState>::get()->registerBuffer(buf, 4096, 0);
         buffer = Context<DriverState>::get()->getBuffer(buf);
 
-        EXPECT_CALL(msys, fstat);
-        EXPECT_CALL(msys, fcntl);
+        expect_file_registration(msys, mlibmounthelper);
         file = Context<DriverState>::get()->getFile(Context<DriverState>::get()->registerFile(0xBADF00D));
     }
 
@@ -369,10 +370,10 @@ struct RocFileWrite : public RocFileIO {
 
 TEST_F(RocFileWrite, write_handles_pointer_get_attributes_error)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-    EXPECT_CALL(msys, fstat);
-    EXPECT_CALL(msys, fcntl);
+    StrictMock<MHip>            mhip;
+    StrictMock<MSys>            msys;
+    StrictMock<MLibMountHelper> mlibmounthelper;
+    expect_file_registration(msys, mlibmounthelper);
     auto fh{Context<DriverState>::get()->registerFile(0xBADCAFE)};
     EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
     ASSERT_EQ(rocFileWrite(fh, nonnull_ptr, 0, 0, 0), -static_cast<ssize_t>(hipErrorUnknown));
@@ -380,9 +381,10 @@ TEST_F(RocFileWrite, write_handles_pointer_get_attributes_error)
 
 TEST_F(RocFileWrite, write_handles_unsupported_hip_memory_type)
 {
-    StrictMock<MSys> msys;
-    EXPECT_CALL(msys, fstat);
-    EXPECT_CALL(msys, fcntl);
+    StrictMock<MSys>            msys;
+    StrictMock<MLibMountHelper> mlibmounthelper;
+
+    expect_file_registration(msys, mlibmounthelper);
     auto fh = Context<DriverState>::get()->registerFile(0xBADCAFE);
     for (const auto memoryType : UnsupportedHipMemoryTypes) {
         StrictMock<MHip>      mhip;
@@ -395,13 +397,13 @@ TEST_F(RocFileWrite, write_handles_unsupported_hip_memory_type)
 
 TEST_F(RocFileWrite, write_handles_invalid_length_of_registered_buffer)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-    size_t           buffer_length = 0;
+    StrictMock<MHip>            mhip;
+    StrictMock<MSys>            msys;
+    StrictMock<MLibMountHelper> mlibmounthelper;
+    size_t                      buffer_length = 0;
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
     Context<DriverState>::get()->registerBuffer(nonnull_ptr, buffer_length, 0);
-    EXPECT_CALL(msys, fstat);
-    EXPECT_CALL(msys, fcntl);
+    expect_file_registration(msys, mlibmounthelper);
     auto fh{Context<DriverState>::get()->registerFile(0xBADCAFE)};
     ASSERT_EQ(rocFileWrite(fh, nonnull_ptr, buffer_length + 1, 0, 0),
               -static_cast<ssize_t>(rocFileInvalidValue));
@@ -693,10 +695,10 @@ struct RocFileRead : public RocFileIO {
 
 TEST_F(RocFileRead, read_handles_pointer_get_attributes_error)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-    EXPECT_CALL(msys, fstat);
-    EXPECT_CALL(msys, fcntl);
+    StrictMock<MHip>            mhip;
+    StrictMock<MSys>            msys;
+    StrictMock<MLibMountHelper> mlibmounthelper;
+    expect_file_registration(msys, mlibmounthelper);
     auto fh{Context<DriverState>::get()->registerFile(0xBADCAFE)};
     EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
     ASSERT_EQ(rocFileRead(fh, nonnull_ptr, 0, 0, 0), -static_cast<ssize_t>(hipErrorUnknown));
@@ -704,10 +706,10 @@ TEST_F(RocFileRead, read_handles_pointer_get_attributes_error)
 
 TEST_F(RocFileRead, read_handles_unsupported_hip_memory_type)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-    EXPECT_CALL(msys, fstat);
-    EXPECT_CALL(msys, fcntl);
+    StrictMock<MHip>            mhip;
+    StrictMock<MSys>            msys;
+    StrictMock<MLibMountHelper> mlibmounthelper;
+    expect_file_registration(msys, mlibmounthelper);
     auto fh{Context<DriverState>::get()->registerFile(0xBADCAFE)};
     for (const auto memoryType : UnsupportedHipMemoryTypes) {
         hipPointerAttribute_t attrs;
@@ -719,10 +721,10 @@ TEST_F(RocFileRead, read_handles_unsupported_hip_memory_type)
 
 TEST_F(RocFileRead, read_handles_invalid_length_of_registered_buffer)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-    EXPECT_CALL(msys, fstat);
-    EXPECT_CALL(msys, fcntl);
+    StrictMock<MHip>            mhip;
+    StrictMock<MSys>            msys;
+    StrictMock<MLibMountHelper> mlibmounthelper;
+    expect_file_registration(msys, mlibmounthelper);
     auto   fh{Context<DriverState>::get()->registerFile(0xBADCAFE)};
     size_t buffer_length{0};
     expect_buffer_registration(mhip, hipMemoryTypeDevice);

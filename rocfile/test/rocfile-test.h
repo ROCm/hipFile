@@ -8,17 +8,17 @@
 // Common rocFile test functionality
 
 #include "magic-word.h"
-#include "rocfile-test.h"
-
 #include "mhip.h"
-
+#include "mmountinfo.h"
+#include "msys.h"
+#include "rocfile-test.h"
 #include "rocfile.h"
-
-#include <gtest/gtest.h>
-#include <hip/hip_runtime_api.h>
 
 #include <array>
 #include <cassert>
+#include <gtest/gtest.h>
+#include <hip/hip_runtime_api.h>
+#include <optional>
 
 // ***********************************************************************
 //  ERRORS AND ERROR HANDLING
@@ -115,6 +115,21 @@ struct RocFileUnopened : public ::testing::Test {
 
 /// @brief Set up mocks for buffer registration
 void expect_buffer_registration(rocFile::MHip &mhip, hipMemoryType memory_type);
+
+// ***********************************************************************
+//  FILE FUNCTIONALITY
+// ***********************************************************************
+
+/// @brief Setup mocks for file registration
+///
+/// Mock methods will return default values
+void expect_file_registration(rocFile::MSys &msys, rocFile::MLibMountHelper &mlibmounthelper);
+
+/// @brief Setup mocks for file registration
+///
+/// Mock methods will return the specified values
+void expect_file_registration(rocFile::MSys &msys, rocFile::MLibMountHelper &mlibmounthelper,
+                              struct stat statbuf, int fcntl_flags, rocFile::MountInfo mountinfo);
 
 // ***********************************************************************
 //  ENUM VALUE HELPERS

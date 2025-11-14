@@ -63,9 +63,7 @@ TEST_F(RocFileDriverAdmin, HandleRegisterInitsDriver)
     descr.fs_ops    = nullptr;
 
     ASSERT_EQ(rocFileUseCount(), 0);
-    EXPECT_CALL(msys, fstat);
-    EXPECT_CALL(msys, fcntl);
-    EXPECT_CALL(mlibmounthelper, getMountInfo);
+    expect_file_registration(msys, mlibmounthelper);
     ASSERT_EQ(rocFileHandleRegister(&handle, &descr), ROCFILE_SUCCESS);
     ASSERT_EQ(rocFileUseCount(), 1);
 }
@@ -85,9 +83,7 @@ TEST_F(RocFileDriverAdmin, HandleRegisterGoodFD)
     descr.type      = rocFileHandleTypeOpaqueFD;
     descr.fs_ops    = nullptr;
 
-    EXPECT_CALL(msys, fstat);
-    EXPECT_CALL(msys, fcntl);
-    EXPECT_CALL(mlibmounthelper, getMountInfo);
+    expect_file_registration(msys, mlibmounthelper);
 
     ASSERT_EQ(rocFileUseCount(), 0);
     ASSERT_EQ(rocFileHandleRegister(&handle, &descr), ROCFILE_SUCCESS);
@@ -151,15 +147,13 @@ TEST_F(RocFileDriverAdmin, CloseDeregistersFile)
     descr.type      = rocFileHandleTypeOpaqueFD;
     descr.fs_ops    = nullptr;
 
-    EXPECT_CALL(msys, fstat).Times(2);
-    EXPECT_CALL(msys, fcntl).Times(2);
-    EXPECT_CALL(mlibmounthelper, getMountInfo).Times(2);
-
     ASSERT_EQ(rocFileUseCount(), 0);
+    expect_file_registration(msys, mlibmounthelper);
     ASSERT_EQ(rocFileHandleRegister(&handle, &descr), ROCFILE_SUCCESS);
     ASSERT_EQ(rocFileUseCount(), 1);
     ASSERT_EQ(rocFileDriverClose(), ROCFILE_SUCCESS);
     ASSERT_EQ(rocFileUseCount(), 0);
+    expect_file_registration(msys, mlibmounthelper);
     ASSERT_EQ(rocFileHandleRegister(&handle, &descr), ROCFILE_SUCCESS);
     ASSERT_EQ(rocFileUseCount(), 1);
 }
