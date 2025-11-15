@@ -17,7 +17,7 @@ if [ $# -eq 1 ]; then
 fi
 
 echo ""
-echo "bin/format_source <version>"
+echo "format-source <version>"
 echo ""
 echo "Format the C and C++ source using clang-format. The <version>"
 echo "parameter is optional and can be used to force a specific"
