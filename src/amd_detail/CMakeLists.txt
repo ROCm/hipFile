@@ -19,6 +19,7 @@ set(HIPFILE_SOURCES
     file-descriptor.cpp
     hip.cpp
     hipfile.cpp
+    io.cpp
     mountinfo.cpp
     state.cpp
     stream.cpp
