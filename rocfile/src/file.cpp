@@ -23,7 +23,10 @@ using std::vector;
 namespace rocFile {
 
 UnregisteredFile::UnregisteredFile(int fd)
-    : m_fd(fd), m_stat{Context<Sys>::get()->fstat(fd)}, m_flags{Context<Sys>::get()->fcntl(fd, F_GETFL, 0)},
+    : m_fd(fd), m_stat{Context<Sys>::get()->fstat(fd)},
+      m_stx{Context<Sys>::get()->statx(fd, "", AT_EMPTY_PATH,
+                                       STATX_BASIC_STATS | STATX_MNT_ID | STATX_DIOALIGN)},
+      m_flags{Context<Sys>::get()->fcntl(fd, F_GETFL, 0)},
       m_mountinfo{Context<LibMountHelper>::get()->getMountInfo(m_stat.st_dev)}
 {
 }
@@ -38,6 +41,12 @@ struct stat
 UnregisteredFile::getStat() const noexcept
 {
     return m_stat;
+}
+
+struct statx
+UnregisteredFile::getStatx() const noexcept
+{
+    return m_stx;
 }
 
 int
@@ -59,8 +68,8 @@ IFile::getHandle() const
 }
 
 File::File(const UnregisteredFile &uf)
-    : fd{uf.getFd()}, device{uf.getStat().st_dev}, mode{uf.getStat().st_mode}, status_flags{uf.getFlags()},
-      mountinfo{uf.getMountInfo()}
+    : fd{uf.getFd()}, device{uf.getStat().st_dev}, mode{uf.getStat().st_mode}, stx{uf.getStatx()},
+      status_flags{uf.getFlags()}, mountinfo{uf.getMountInfo()}
 {
 }
 
@@ -80,6 +89,12 @@ mode_t
 File::getMode() const
 {
     return mode;
+}
+
+const struct statx &
+File::getStatx() const noexcept
+{
+    return stx;
 }
 
 int

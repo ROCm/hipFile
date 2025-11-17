@@ -54,6 +54,9 @@ public:
     /// @return Returns the information provided by fstat (2)
     struct stat getStat() const noexcept;
 
+    /// @return Returns the information provided by statx (2)
+    struct statx getStatx() const noexcept;
+
     /// @return Returns the flags provided by fcntl (2)
     int getFlags() const noexcept;
 
@@ -66,6 +69,9 @@ private:
 
     /// @brief Information provided by fstat (2)
     struct stat m_stat;
+
+    /// @brief Information provided by statx (2)
+    struct statx m_stx;
 
     /// @brief Flags provided by fcntl(2)
     int m_flags;
@@ -82,11 +88,12 @@ public:
     /// @return The handle for this file
     virtual rocFileHandle_t getHandle() const;
 
-    virtual int                      getFd() const          = 0;
-    virtual dev_t                    getDevice() const      = 0;
-    virtual mode_t                   getMode() const        = 0;
-    virtual int                      getStatusFlags() const = 0;
-    virtual std::optional<MountInfo> getMountInfo() const   = 0;
+    virtual int                      getFd() const             = 0;
+    virtual dev_t                    getDevice() const         = 0;
+    virtual mode_t                   getMode() const           = 0;
+    virtual const struct statx      &getStatx() const noexcept = 0;
+    virtual int                      getStatusFlags() const    = 0;
+    virtual std::optional<MountInfo> getMountInfo() const      = 0;
 };
 
 class File : public IFile {
@@ -105,6 +112,7 @@ public:
     virtual int                      getFd() const override;
     virtual dev_t                    getDevice() const override;
     virtual mode_t                   getMode() const override;
+    virtual const struct statx      &getStatx() const noexcept override;
     virtual int                      getStatusFlags() const override;
     virtual std::optional<MountInfo> getMountInfo() const override;
 
@@ -125,6 +133,9 @@ private:
     ///
     /// Specifies the file type (regular file, block device, ...) and mode. See fstat(2) and inode(7)
     mode_t mode;
+
+    /// @brief File status information obtained from statx (2)
+    struct statx stx;
 
     /// @brief The file's status flags. See fcntl(2)
     ///

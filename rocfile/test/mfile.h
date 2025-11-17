@@ -22,6 +22,7 @@ public:
     MOCK_METHOD(int, getFd, (), (const override));
     MOCK_METHOD(dev_t, getDevice, (), (const override));
     MOCK_METHOD(mode_t, getMode, (), (const override));
+    MOCK_METHOD(const struct statx &, getStatx, (), (const, noexcept, override));
     MOCK_METHOD(int, getStatusFlags, (), (const override));
     MOCK_METHOD(std::optional<MountInfo>, getMountInfo, (), (const override));
 };

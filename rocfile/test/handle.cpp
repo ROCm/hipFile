@@ -35,15 +35,17 @@ void
 expect_file_registration(MSys &msys, MLibMountHelper &mlibmounthelper)
 {
     EXPECT_CALL(msys, fstat);
+    EXPECT_CALL(msys, statx);
     EXPECT_CALL(msys, fcntl(_, F_GETFL, 0));
     EXPECT_CALL(mlibmounthelper, getMountInfo);
 }
 
 void
-expect_file_registration(MSys &msys, MLibMountHelper &mlibmounthelper, struct stat statbuf, int fcntl_flags,
-                         MountInfo mountinfo)
+expect_file_registration(MSys &msys, MLibMountHelper &mlibmounthelper, struct stat statbuf,
+                         struct statx stxbuf, int fcntl_flags, MountInfo mountinfo)
 {
     EXPECT_CALL(msys, fstat).WillOnce(Return(statbuf));
+    EXPECT_CALL(msys, statx).WillOnce(Return(stxbuf));
     EXPECT_CALL(msys, fcntl(_, F_GETFL, 0)).WillOnce(Return(fcntl_flags));
     EXPECT_CALL(mlibmounthelper, getMountInfo).WillOnce(Return(mountinfo));
 }
@@ -63,23 +65,28 @@ TEST_F(RocFileHandle, register_handle_internal_linux_fd)
 
 TEST_F(RocFileHandle, file_initialization)
 {
-    int         fd{0x12345678};
-    int         status_flags{0x789ABCDE};
+    int          fd{0x12345678};
+    int          status_flags{0x789ABCDE};
+    struct statx stxbuf;
+    stxbuf.stx_dev_major = 0x12345678;
+    stxbuf.stx_dev_minor = 0x87654321;
+    stxbuf.stx_mode      = 0xFEDC;
     struct stat fstat;
-    fstat.st_dev  = makedev(0x12345678, 0x87654321);
-    fstat.st_mode = 0xFEDCBA98;
+    fstat.st_dev  = makedev(stxbuf.stx_dev_major, stxbuf.stx_dev_minor);
+    fstat.st_mode = stxbuf.stx_mode;
+
     MountInfo mountinfo;
     mountinfo.type                         = FilesystemType::ext4;
     mountinfo.options.ext4.journaling_mode = ExtJournalingMode::ordered;
 
-    expect_file_registration(msys, mlibmounthelper, fstat, status_flags, mountinfo);
+    expect_file_registration(msys, mlibmounthelper, fstat, stxbuf, status_flags, mountinfo);
     auto fh{Context<DriverState>::get()->registerFile(fd)};
     auto file{Context<DriverState>::get()->getFile(fh)};
 
     EXPECT_EQ(fh, file->getHandle());
     EXPECT_EQ(fd, file->getFd());
-    EXPECT_EQ(fstat.st_dev, file->getDevice());
-    EXPECT_EQ(fstat.st_mode, file->getMode());
+    EXPECT_EQ(makedev(stxbuf.stx_dev_major, stxbuf.stx_dev_minor), file->getDevice());
+    EXPECT_EQ(stxbuf.stx_mode, file->getMode());
     EXPECT_EQ(status_flags, file->getStatusFlags());
     EXPECT_EQ(mountinfo.type, file->getMountInfo().value().type);
     EXPECT_EQ(mountinfo.options.ext4.journaling_mode,
@@ -130,6 +137,7 @@ TEST_F(RocFileHandle, RocfileHandleRegisterFcntlError)
     rfd.handle.fd = 0xBADF00D;
 
     EXPECT_CALL(msys, fstat);
+    EXPECT_CALL(msys, statx);
     EXPECT_CALL(msys, fcntl).WillOnce(Throw(Sys::RuntimeError(EBADF)));
 
     ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), RocFileOpError(rocFileInternalError));
@@ -144,6 +152,7 @@ TEST_F(RocFileHandle, RocfileHandleRegisterLibMountError)
     rfd.handle.fd = 0xBADF00D;
 
     EXPECT_CALL(msys, fstat);
+    EXPECT_CALL(msys, statx);
     EXPECT_CALL(msys, fcntl);
     EXPECT_CALL(mlibmounthelper, getMountInfo).WillOnce(Throw(std::runtime_error("error from test")));
 
