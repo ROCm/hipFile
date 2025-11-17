@@ -28,6 +28,8 @@ struct MSys : Sys {
     MOCK_METHOD(void, syslog, (int priority, const char *msg), (const override));
 
     MOCK_METHOD(struct stat, fstat, (int fd), (const override));
+    MOCK_METHOD(struct statx, statx, (int dirfd, const char *pathname, int flags, unsigned int mask),
+                (const override));
 
     MOCK_METHOD(int, fcntl, (int fd, int op, uintptr_t arg), (const override));
 };

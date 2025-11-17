@@ -8,8 +8,8 @@
 #include <cerrno>
 #include <cstddef>
 #include <cstdint>
+#include <fcntl.h>
 #include <stdexcept>
-
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -33,7 +33,8 @@ struct Sys {
 
     virtual void syslog(int priority, const char *msg) const;
 
-    virtual struct stat fstat(int fd) const;
+    virtual struct stat  fstat(int fd) const;
+    virtual struct statx statx(int dirfd, const char *pathname, int flags, unsigned int mask) const;
 
     virtual int fcntl(int fd, int op, uintptr_t arg) const;
 

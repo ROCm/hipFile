@@ -69,4 +69,12 @@ Sys::fcntl(int fd, int op, uintptr_t arg) const
     return throwOn<Sys::RuntimeError>(-1, ::fcntl(fd, op, arg));
 }
 
+struct statx
+Sys::statx(int dirfd, const char *pathname, int flags, unsigned int mask) const
+{
+    struct statx statxbuf;
+    throwOn<Sys::RuntimeError>(-1, ::statx(dirfd, pathname, flags, mask, &statxbuf));
+    return statxbuf;
+}
+
 }
