@@ -6,6 +6,8 @@
 
 #include "stream.h"
 
+#include <mutex>
+
 namespace hipFile {
 
 class MStream : public IStream {
@@ -15,6 +17,7 @@ public:
     MOCK_METHOD(bool, fixedFileOffset, (), (const, override));
     MOCK_METHOD(bool, fixedIOSize, (), (const, override));
     MOCK_METHOD(bool, pageAligned, (), (const, override));
+    MOCK_METHOD(std::unique_lock<std::mutex>, getLock, (), (override));
 };
 
 }

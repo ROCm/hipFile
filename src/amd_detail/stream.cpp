@@ -10,6 +10,7 @@
 
 #include <hip/hip_runtime_api.h>
 #include <memory>
+#include <mutex>
 #include <syslog.h>
 #include <stdexcept>
 #include <utility>
@@ -52,6 +53,11 @@ bool
 Stream::pageAligned() const
 {
     return page_aligned;
+}
+std::unique_lock<std::mutex>
+Stream::getLock()
+{
+    return std::unique_lock<std::mutex>{mutex};
 }
 
 void
