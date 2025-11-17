@@ -129,8 +129,7 @@ void expect_file_registration(rocFile::MSys &msys, rocFile::MLibMountHelper &mli
 ///
 /// Mock methods will return the specified values
 void expect_file_registration(rocFile::MSys &msys, rocFile::MLibMountHelper &mlibmounthelper,
-                              struct stat statbuf, struct statx stxbuf, int fcntl_flags,
-                              rocFile::MountInfo mountinfo);
+                              struct statx stxbuf, int fcntl_flags, rocFile::MountInfo mountinfo);
 
 // ***********************************************************************
 //  ENUM VALUE HELPERS

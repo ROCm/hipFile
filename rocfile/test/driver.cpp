@@ -105,7 +105,7 @@ TEST_F(RocFileDriverAdmin, HandleRegisterBadFD)
     descr.handle.fd = -1;
     descr.type      = rocFileHandleTypeOpaqueFD;
 
-    EXPECT_CALL(msys, fstat).WillOnce(Throw(Sys::RuntimeError(EBADF)));
+    EXPECT_CALL(msys, statx).WillOnce(Throw(Sys::RuntimeError(EBADF)));
 
     ASSERT_EQ(rocFileUseCount(), 0);
     ASSERT_NE(rocFileHandleRegister(&handle, &descr), ROCFILE_SUCCESS);
