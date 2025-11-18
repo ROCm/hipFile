@@ -42,7 +42,7 @@
 ## Testing Conventions
 
 * All new functionality introduced MUST include tests of the feature
-    * This chould include unit tests, system tests, and integration tests
+    * This could include unit tests, system tests, and integration tests
     * These tests MUST be automatable
 * Bugfixes MUST include a proof-of-concept test that fails before the fix and passes after
 
