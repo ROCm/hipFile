@@ -1,19 +1,14 @@
 # hipFile Development Utilities
 
-## clear-journal.sh
-
-Clears systemd's journal.
-
 ## files-changed.sh
+
+Determines if important files changed. Used by CI.
 
 ## format-source.sh
 
-## full-clang-lint.sh
-
-## iterate-fio-jobs.sh
+Formats applicable source in the repo using a specific version
+of `clang-format`. Run it from the root.
 
 ## llvm-coverage.sh
 
-## setup-nvmeof.py
-
-## vfio.sh
+Code coverage script used by CI.
