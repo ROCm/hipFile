@@ -33,7 +33,7 @@
 
 ### Shell scripts
 
-* All shell scripts should be run through [shellcheck](https://www.shellcheck.net/) and report no issues
+* All shell scripts should be run through [ShellCheck](https://www.shellcheck.net/) and report no issues
 * Use `#!/usr/bin/env bash` as a platform-independent shebang line
 * bash-isms are allowed, within reason
 
