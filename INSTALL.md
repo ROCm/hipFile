@@ -10,6 +10,11 @@ If CMake can't find hipcc/nvcc, you can set `-DCMAKE_HIP_COMPILER=<path>`
 
 Targeting NVIDIA requires CUfile to be installed
 
+### Prerequisites
+
+> [!NOTE]
+> hipFile relies on the unreleased [ROCm 7.2](https://github.com/ROCm/TheRock) libraries and associated [amdgpu](https://github.com/ROCm/amdgpu) drivers. We will update the install instructions when these are released.
+
 ### Configure
 
 You do not need to set the `HIP_PLATFORM` environment variable, as
