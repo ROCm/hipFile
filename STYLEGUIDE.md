@@ -4,7 +4,11 @@
 ### Organization
 ### Naming
 
+* Use hyphens instead of underscores in filenames
+
 ## Formatting
+
+* Code must meet the requirements of our options to `clang-format`
 
 ## Naming Conventions
 
@@ -12,9 +16,26 @@
 
 ## Header Guidelines
 
+* Headers should follow [include-what-you-use](https://include-what-you-use.org/) guidelines
+* Use `#pragma once` instead of include guards
+* Place local headers (quoted) ahead of system headers (brackets), with each block in alphabetical order
+* Public headers MUST have Doxygen markup for all public symbols
+* Private headers should have Doxygen markup flagged with `@internal`
+
 ## Language Features and Idioms
-### C++
-### C
+
+### C/C++
+
+* C++17 and C11 are supported
+* Use modern C++ idioms
+* Do not use GNU extensions
+* Code should be platform-independent
+
+### Shell scripts
+
+* All shell scripts should be run through [shellcheck](https://www.shellcheck.net/) and report no issues
+* Use `#!/usr/bin/env bash` as a platform-independent shebang line
+* bash-isms are allowed, within reason 
 
 ## Error Handling
 
