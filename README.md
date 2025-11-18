@@ -17,12 +17,12 @@ documentation.
 
 We've created a fork of [ROCm/HIPIFY](https://github.com/ROCm/HIPIFY) at
 [derobins/HIPIFY](https://github.com/derobins/HIPIFY). Changes to support
-hipFile can be found in the hipFile branch. Please note that this branch
+hipFile can be found in the `hipFile` branch. Please note that this branch
 is a work in progress and may not be fully functional.
 
 ### fio support
 
 We've created a fork of [axboe/fio](https://github.com/axboe/fio) at
 [ROCm/fio](https://github.com/ROCm/fio). Changes to support a
-libhipfile engine can be found in the hipFile branch. Please note
+libhipfile engine can be found in the `hipFile` branch. Please note
 that this fork is a work in progress and may not be fully functional.
