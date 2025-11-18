@@ -23,7 +23,7 @@ be deleted after the feature has been merged to `develop`. Any feature
 branches which are not merged to `develop`, but should be kept around
 for posterity, will be renamed `feature` --> `inactive`.
 
-Although we encourage using forks for development, you will sometimes
+External developers must use forks for development. You will sometimes
 see branches from AMD staff named `<user>/<branch>`. These will be
 very short-lived.
 
