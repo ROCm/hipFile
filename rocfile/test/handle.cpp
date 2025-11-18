@@ -19,11 +19,10 @@
 #include <fcntl.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <linux/stat.h>
 #include <memory>
 #include <optional>
 #include <stdexcept>
-#include <sys/stat.h>
-#include <sys/sysmacros.h>
 
 using namespace rocFile;
 using namespace testing;

@@ -5,6 +5,7 @@
 
 #include "sys.h"
 
+#include <bits/statx-generic.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <syslog.h>

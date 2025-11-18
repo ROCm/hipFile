@@ -8,7 +8,7 @@
 #include <cerrno>
 #include <cstddef>
 #include <cstdint>
-#include <fcntl.h>
+#include <linux/stat.h>
 #include <stdexcept>
 #include <sys/stat.h>
 #include <sys/types.h>

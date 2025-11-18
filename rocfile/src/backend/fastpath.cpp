@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <fcntl.h>
 #include <hip/hip_runtime_api.h>
+#include <linux/stat.h>
 #include <stdexcept>
 
 using namespace rocFile;

@@ -8,11 +8,10 @@
 #include "rocfile.h"
 #include "mountinfo.h"
 
+#include <linux/stat.h>
 #include <memory>
 #include <optional>
 #include <stdexcept>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <unordered_map>
 
 namespace rocFile {

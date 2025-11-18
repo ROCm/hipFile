@@ -18,6 +18,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <hip/hip_runtime_api.h>
+#include <linux/stat.h>
 #include <memory>
 #include <sys/types.h>
 #include <system_error>
