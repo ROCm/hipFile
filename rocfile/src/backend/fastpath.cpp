@@ -20,9 +20,10 @@ using namespace std;
 
 /* The fastpath backend is used when:
  *  - The file has been opened with the O_DIRECT flag
- *  - file_offset is 4KiB aligned
- *  - buffer_offset is 4KiB aligned
- *  - size is a multiple of 4KiB
+ *  - statx indicates the file descriptor supports direct IO (see statx (2))
+ *  - file_offset is a multiple of stx_dio_offset_align (see statx (2))
+ *  - buffer_offset is a multiple of stx_dio_mem_align (see statx (2))
+ *  - size is a multiple of stx_dio_offset_align (see statx (2))
  *  - The buffer type is hipMemoryTypeDevice
  *
  * When using the fastpath the IO flows through the following
@@ -126,9 +127,12 @@ Fastpath::score(shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
     accept_io &= 0 <= file_offset;
     accept_io &= 0 <= buffer_offset;
 
-    accept_io &= !(size & 0xFFF);
-    accept_io &= !(file_offset & 0xFFF);
-    accept_io &= !(buffer_offset & 0xFFF);
+    const struct statx &stx{file->getStatx()};
+    accept_io &= !!(stx.stx_mask & STATX_DIOALIGN);
+    accept_io &= stx.stx_dio_offset_align && stx.stx_dio_mem_align;
+    accept_io &= !(size & (stx.stx_dio_offset_align - 1));
+    accept_io &= !(file_offset & (stx.stx_dio_offset_align - 1));
+    accept_io &= !(buffer_offset & (stx.stx_dio_mem_align - 1));
 
     return accept_io ? 100 : -1;
 }
