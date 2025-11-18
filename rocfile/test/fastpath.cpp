@@ -14,6 +14,7 @@
 
 #include <array>
 #include <cerrno>
+#include <cstdint>
 #include <fcntl.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -32,6 +33,14 @@ HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 static int       SCORE_ACCEPT{100};
 static const int SCORE_REJECT{-1};
 
+#if defined(STATX_DIOALIGN)
+static uint32_t DEFAULT_MEM_ALIGN{4};
+static uint32_t DEFAULT_OFFSET_ALIGN{512};
+#else
+static uint32_t DEFAULT_MEM_ALIGN{4096};
+static uint32_t DEFAULT_OFFSET_ALIGN{4096};
+#endif
+
 namespace rocFile {
 inline bool
 operator==(const hipAmdFileHandle_t &lhs, const hipAmdFileHandle_t &rhs)
@@ -42,27 +51,29 @@ operator==(const hipAmdFileHandle_t &lhs, const hipAmdFileHandle_t &rhs)
 
 // Provide default values for variables used in fastpath tests
 struct FastpathTestBase {
-    const size_t              DEFAULT_IO_SIZE{1024 * 1024};
-    void *const               DEFAULT_BUFFER_ADDR{reinterpret_cast<void *>(0x600DB10C)};
-    const off_t               DEFAULT_BUFFER_OFFSET{512};
-    const hipMemoryType       DEFAULT_BUFFER_TYPE{hipMemoryTypeDevice};
-    const int                 DEFAULT_FILE_DESCRIPTOR{7};
-    const int                 DEFAULT_FILE_FLAGS{O_DIRECT};
-    const off_t               DEFAULT_FILE_OFFSET{8192};
-    static const struct statx DEFAULT_STATX;
+    const size_t        DEFAULT_IO_SIZE{1024 * 1024};
+    void *const         DEFAULT_BUFFER_ADDR{reinterpret_cast<void *>(0x600DB10C)};
+    const off_t         DEFAULT_BUFFER_OFFSET{512};
+    const hipMemoryType DEFAULT_BUFFER_TYPE{hipMemoryTypeDevice};
+    const int           DEFAULT_FILE_DESCRIPTOR{7};
+    const int           DEFAULT_FILE_FLAGS{O_DIRECT};
+    const off_t         DEFAULT_FILE_OFFSET{8192};
+    const struct statx  DEFAULT_STATX {
+        []() {
+            struct statx stx {};
+#if defined(STATX_DIOALIGN)
+            stx.stx_mask             = STATX_DIOALIGN;
+            stx.stx_dio_mem_align    = DEFAULT_MEM_ALIGN;
+            stx.stx_dio_offset_align = DEFAULT_OFFSET_ALIGN;
+#endif
+            return stx;
+        }()
+    };
 
     // Buffer and file mocks used to setup expectations
     shared_ptr<StrictMock<MFile>>   mfile{make_shared<StrictMock<MFile>>()};
     shared_ptr<StrictMock<MBuffer>> mbuffer{make_shared<StrictMock<MBuffer>>()};
 };
-
-const struct statx FastpathTestBase::DEFAULT_STATX = []() {
-    struct statx stx;
-    stx.stx_mask             = STATX_DIOALIGN;
-    stx.stx_dio_mem_align    = 4;
-    stx.stx_dio_offset_align = 512;
-    return stx;
-}();
 
 struct FastpathTest : public FastpathTestBase, public Test {};
 
@@ -92,8 +103,7 @@ TEST_F(FastpathTest, ScoreRejectsNegativeAlignedFileOffset)
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
 
-    ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE,
-                               -static_cast<hoff_t>(DEFAULT_STATX.stx_dio_offset_align),
+    ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, -static_cast<hoff_t>(DEFAULT_OFFSET_ALIGN),
                                DEFAULT_BUFFER_OFFSET),
               SCORE_REJECT);
 }
@@ -105,7 +115,7 @@ TEST_F(FastpathTest, ScoreRejectsNegativeAlignedBufferOffset)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_BUFFER_OFFSET,
-                               -static_cast<hoff_t>(DEFAULT_STATX.stx_dio_offset_align)),
+                               -static_cast<hoff_t>(DEFAULT_MEM_ALIGN)),
               SCORE_REJECT);
 }
 
@@ -151,10 +161,8 @@ TEST_P(FastpathAlignedIoSizesParam, Score)
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathAlignedIoSizesParam,
-                         Values(FastpathTestBase::DEFAULT_STATX.stx_dio_offset_align * 0,
-                                FastpathTestBase::DEFAULT_STATX.stx_dio_offset_align * 1,
-                                FastpathTestBase::DEFAULT_STATX.stx_dio_offset_align * 2,
-                                FastpathTestBase::DEFAULT_STATX.stx_dio_offset_align * 3));
+                         Values(DEFAULT_OFFSET_ALIGN * 0, DEFAULT_OFFSET_ALIGN * 1, DEFAULT_OFFSET_ALIGN * 2,
+                                DEFAULT_OFFSET_ALIGN * 3));
 
 struct FastpathUnalignedIoSizesParam : public FastpathTestBase, public TestWithParam<size_t> {};
 
@@ -169,10 +177,8 @@ TEST_P(FastpathUnalignedIoSizesParam, Score)
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathUnalignedIoSizesParam,
-                         Values(FastpathTestBase::DEFAULT_STATX.stx_dio_offset_align * 0 + 1,
-                                FastpathTestBase::DEFAULT_STATX.stx_dio_offset_align * 1 - 1,
-                                FastpathTestBase::DEFAULT_STATX.stx_dio_offset_align * 2 + 1,
-                                FastpathTestBase::DEFAULT_STATX.stx_dio_offset_align * 3 - 1));
+                         Values(DEFAULT_OFFSET_ALIGN * 0 + 1, DEFAULT_OFFSET_ALIGN * 1 - 1,
+                                DEFAULT_OFFSET_ALIGN * 2 + 1, DEFAULT_OFFSET_ALIGN * 3 - 1));
 
 struct FastpathAlignedFileOffsetsParam : public FastpathTestBase, public TestWithParam<hoff_t> {};
 
@@ -187,10 +193,8 @@ TEST_P(FastpathAlignedFileOffsetsParam, Score)
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathAlignedFileOffsetsParam,
-                         Values(FastpathTestBase::DEFAULT_STATX.stx_dio_offset_align * 0,
-                                FastpathTestBase::DEFAULT_STATX.stx_dio_offset_align * 1,
-                                FastpathTestBase::DEFAULT_STATX.stx_dio_offset_align * 2,
-                                FastpathTestBase::DEFAULT_STATX.stx_dio_offset_align * 3));
+                         Values(DEFAULT_OFFSET_ALIGN * 0, DEFAULT_OFFSET_ALIGN * 1, DEFAULT_OFFSET_ALIGN * 2,
+                                DEFAULT_OFFSET_ALIGN * 3));
 
 /// @brief Tests negative and unaligned file offsets
 struct FastpathUnalignedFileOffsetsParam : public FastpathTestBase, public TestWithParam<hoff_t> {};
@@ -206,10 +210,8 @@ TEST_P(FastpathUnalignedFileOffsetsParam, Score)
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathUnalignedFileOffsetsParam,
-                         Values(FastpathTestBase::DEFAULT_STATX.stx_dio_offset_align * 0 + 1,
-                                FastpathTestBase::DEFAULT_STATX.stx_dio_offset_align * 1 - 1,
-                                FastpathTestBase::DEFAULT_STATX.stx_dio_offset_align * 2 + 1,
-                                FastpathTestBase::DEFAULT_STATX.stx_dio_offset_align * 3 - 1));
+                         Values(DEFAULT_OFFSET_ALIGN * 0 + 1, DEFAULT_OFFSET_ALIGN * 1 - 1,
+                                DEFAULT_OFFSET_ALIGN * 2 + 1, DEFAULT_OFFSET_ALIGN * 3 - 1));
 
 struct FastpathAlignedBufferOffsetsParam : public FastpathTestBase, public TestWithParam<hoff_t> {};
 
@@ -224,10 +226,8 @@ TEST_P(FastpathAlignedBufferOffsetsParam, Score)
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathAlignedBufferOffsetsParam,
-                         Values(FastpathTestBase::DEFAULT_STATX.stx_dio_mem_align * 0,
-                                FastpathTestBase::DEFAULT_STATX.stx_dio_mem_align * 1,
-                                FastpathTestBase::DEFAULT_STATX.stx_dio_mem_align * 2,
-                                FastpathTestBase::DEFAULT_STATX.stx_dio_mem_align * 3));
+                         Values(DEFAULT_MEM_ALIGN * 0, DEFAULT_MEM_ALIGN * 1, DEFAULT_MEM_ALIGN * 2,
+                                DEFAULT_MEM_ALIGN * 3));
 
 /// @brief Tests negative and unaligned buffer offsets
 struct FastpathUnalignedBufferOffsetsParam : public FastpathTestBase, public TestWithParam<hoff_t> {};
@@ -243,10 +243,8 @@ TEST_P(FastpathUnalignedBufferOffsetsParam, Score)
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathUnalignedBufferOffsetsParam,
-                         Values(FastpathTestBase::DEFAULT_STATX.stx_dio_mem_align * 0 + 1,
-                                FastpathTestBase::DEFAULT_STATX.stx_dio_mem_align * 1 - 1,
-                                FastpathTestBase::DEFAULT_STATX.stx_dio_mem_align * 2 + 1,
-                                FastpathTestBase::DEFAULT_STATX.stx_dio_mem_align * 3 - 1));
+                         Values(DEFAULT_MEM_ALIGN * 0 + 1, DEFAULT_MEM_ALIGN * 1 - 1,
+                                DEFAULT_MEM_ALIGN * 2 + 1, DEFAULT_MEM_ALIGN * 3 - 1));
 
 struct FastpathIoParam : public FastpathTestBase, public TestWithParam<IoType> {};
 

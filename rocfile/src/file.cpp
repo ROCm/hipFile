@@ -24,8 +24,13 @@ using std::vector;
 namespace rocFile {
 
 UnregisteredFile::UnregisteredFile(int fd)
-    : m_fd(fd),
-      m_stx{Context<Sys>::get()->statx(fd, "", AT_EMPTY_PATH, STATX_TYPE | STATX_MODE | STATX_DIOALIGN)},
+    : m_fd(fd), m_stx{Context<Sys>::get()->statx(fd, "", AT_EMPTY_PATH,
+#if defined(STATX_DIOALIGN)
+                                                 STATX_TYPE | STATX_MODE | STATX_DIOALIGN
+#else
+                                                 STATX_TYPE | STATX_MODE
+#endif
+                                                 )},
       m_flags{Context<Sys>::get()->fcntl(fd, F_GETFL, 0)},
       m_mountinfo{
           Context<LibMountHelper>::get()->getMountInfo(makedev(m_stx.stx_dev_major, m_stx.stx_dev_minor))}
