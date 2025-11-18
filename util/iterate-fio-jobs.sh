@@ -76,10 +76,10 @@ for ioengine in "${fio_ioengines[@]}"; do
                 fio_cmd+="--ioengine=${ioengine} --${_gpu_io_param}=${_gpu_io_value} --gpu_dev_ids=0 "
                 fio_cmd+="--bs=${size} > ${fio_single_job_results_path} &"
                 #echo "fio invocation: ${fio_cmd}"
-                eval $fio_cmd
+                eval "$fio_cmd"
                 FIO_PID=$!
                 echo "FIO_PID: ${FIO_PID}"
-                pidstat_output=$(pidstat -u -p ${FIO_PID} 1 $((${fio_runtime}+${fio_ramptime})))
+                pidstat_output=$(pidstat -u -p ${FIO_PID} 1 $((fio_runtime + fio_ramptime)))
                 pidstat_output=$(echo "${pidstat_output}" | awk 'NR > 3 && !/Average:/ {print}')
                 pidstat_copy_results+="${pidstat_output}\n\n"
                 wait ${FIO_PID}
@@ -90,12 +90,12 @@ for ioengine in "${fio_ioengines[@]}"; do
                     continue
                 fi
                 fio_output=$(<${fio_single_job_results_path})
-                read_bw=$(echo ${fio_output} | jq '.jobs[0].read.bw_bytes')
-                read_lat=$(echo ${fio_output} | jq '.jobs[0].read.lat_ns.mean')
-                write_bw=$(echo ${fio_output} | jq '.jobs[0].write.bw_bytes')
-                write_lat=$(echo ${fio_output} | jq '.jobs[0].write.lat_ns.mean')
-                usr_cpu=$(echo ${fio_output} | jq '.jobs[0].usr_cpu')
-                sys_cpu=$(echo ${fio_output} | jq '.jobs[0].sys_cpu')
+                read_bw=$(echo "${fio_output}" | jq '.jobs[0].read.bw_bytes')
+                read_lat=$(echo "${fio_output}" | jq '.jobs[0].read.lat_ns.mean')
+                write_bw=$(echo "${fio_output}" | jq '.jobs[0].write.bw_bytes')
+                write_lat=$(echo "${fio_output}" | jq '.jobs[0].write.lat_ns.mean')
+                usr_cpu=$(echo "${fio_output}" | jq '.jobs[0].usr_cpu')
+                sys_cpu=$(echo "${fio_output}" | jq '.jobs[0].sys_cpu')
                 total_cpu=$(echo "scale=2; ${usr_cpu} + ${sys_cpu}" | bc) # Add two FP numbers together, precision of 2.
                 if [ "${read_bw}" -eq 0 ]; then
                     write_bw_gib=$(echo "scale=8; ${write_bw} / 2^30" | bc)

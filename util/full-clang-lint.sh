@@ -16,13 +16,13 @@ fi
 WORKING_DIRECTORY=$1
 ERROR_FOUND=0
 
-for file_to_lint in $(find ${WORKING_DIRECTORY} -type f \( -name "*.c" -or -name "*.h" \));
+for file_to_lint in $(find "${WORKING_DIRECTORY}" -type f \( -name "*.c" -or -name "*.h" \));
 do
-        clang-format --Werror --dry-run --style=file ${file_to_lint}
+        clang-format --Werror --dry-run --style=file "${file_to_lint}"
         if [[ $? -ne 0 ]];
         then
                 ERROR_FOUND=1
-                clang-format --Werror --style=file ${file_to_lint} | diff -u -p --color ${file_to_lint} -
+                clang-format --Werror --style=file "${file_to_lint}" | diff -u -p --color "${file_to_lint}" -
                 echo -e "\n"
         fi
 done
