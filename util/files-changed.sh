@@ -16,14 +16,14 @@ CHECK_PATTERN=$3
 FILES_CHANGED=0
 
 changed_files=()
-if ! diff_output="$(git diff --name-only ${BASE_REF} ${HEAD_REF})"; then
-    echo ${diff_output}
+if ! diff_output="$(git diff --name-only "${BASE_REF}" "${HEAD_REF}")"; then
+    echo "${diff_output}"
     exit 1
 fi
 mapfile -t changed_files <<< "${diff_output}"
 
 for changed_file in "${changed_files[@]}"; do
-    if [[ "${changed_file}" == ${CHECK_PATTERN} ]]; then
+    if [[ "${changed_file}" == "${CHECK_PATTERN}" ]]; then
          FILES_CHANGED=1
     fi
 done
