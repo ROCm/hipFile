@@ -44,7 +44,7 @@ library versions. Release branches are not kept in sync with
 `develop` and just contain cherry-picks of bug and performance
 fixes.
 
-Bugfixing should take place on 'develop' and be cherry-picked to
+Bugfixing should take place on `develop` and be cherry-picked to
 any branches that are being maintained. The only exception to this
 is when a bug is only present on a release branch.
 
