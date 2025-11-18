@@ -4,7 +4,7 @@ Thank you for contributing! This guide outlines the development workflow,
 contribution standards, and best practices when working on hipFile.
 
 [!NOTE] The ROCm libraries are transitioning to a monorepo system called
-[TheRock](https://github.com/ROCm/TheRock). hipFile has not yet been
+[TheRock](https://github.com/ROCm/TheRock). hipFile has not been
 incorporated into this yet.
 
 ## Development Setup
