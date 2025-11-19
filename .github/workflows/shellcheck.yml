@@ -1,0 +1,13 @@
+# Run ShellCheck (https://www.shellcheck.net/) over all shell scripts
+# in the repository
+name: ShellCheck
+on: pull_request
+permissions:
+  contents: read
+jobs:
+  shellcheck:
+    name: Run ShellCheck over shell scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 #v4.1.7
+      - uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 #v2.0.0
