@@ -9,7 +9,7 @@ if(AIS_BUILD_THREAD_SANITIZERS)
     message(WARNING "TSAN has known problems with higher levels of entropy, try using `sudo sysctl vm.mmap_rnd_bits=28` if you encounter errors concerning unexpected memory mappings.")
 endif()
 
-function (ais_add_sanitizers target)
+function(ais_add_sanitizers target)
     if(AIS_BUILD_SANITIZERS AND AIS_BUILD_THREAD_SANITIZERS)
         message(FATAL_ERROR "AIS_BUILD_SANITIZERS is not compatible with AIS_BUILD_THREAD_SANITIZERS")
     endif()

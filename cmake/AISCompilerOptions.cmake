@@ -7,7 +7,7 @@
 include(AISClangCompilerOptions)
 include(AISGNUCompilerOptions)
 
-function (ais_set_compiler_flags target)
+function(ais_set_compiler_flags target)
     get_target_property(sources ${target} SOURCES)
     foreach(source IN LISTS sources)
         get_source_file_property(language ${source} LANGUAGE)

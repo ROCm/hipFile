@@ -28,7 +28,7 @@ if(BUILD_ROCFILE OR BUILD_HIPFILE)
         )
     endif()
     if(BUILD_HIPFILE)
-       rocm_install(
+        rocm_install(
             DIRECTORY ${CMAKE_SOURCE_DIR}/hipfile/include/
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         )

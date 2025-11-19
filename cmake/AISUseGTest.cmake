@@ -23,7 +23,7 @@ endif()
 
 include(GoogleTest)
 
-function (ais_gtest_discover_tests target)
+function(ais_gtest_discover_tests target)
     cmake_language(CALL gtest_discover_tests ${ARGV})
 
     if(BUILD_CODE_COVERAGE)
