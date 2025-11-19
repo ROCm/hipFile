@@ -9,5 +9,5 @@ template <typename Enum>
 constexpr Enum
 invalidEnum(int value)
 {
-    return static_cast<Enum>(value);
+    return static_cast<Enum>(value); // NOLINT
 }
