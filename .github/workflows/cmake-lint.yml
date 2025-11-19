@@ -10,12 +10,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 #v4.1.7
 
-      - name: Set up Python
-        run: |
-          python3 -m venv venv
-          source venv/bin/activate
-          pip3 install --upgrade pip
-          pip3 install cmake-lint
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.x'
+
+      - name: Set up cmake-lint
+        run: pip install cmake-lint
 
       - name: Lint all CMake files
         run: |
