@@ -26,7 +26,7 @@
 
 ### CMake
 * We use CMake 3.x (see the root `CMakeLists.txt` for the specific version) and have not moved to 4.x yet
-* Use modern CMake (e.g.; 3.x) paradigms and avoid "legacy CMake"
+* Use modern CMake (e.g., 3.x) paradigms and avoid "legacy CMake"
 
 ### C/C++
 
