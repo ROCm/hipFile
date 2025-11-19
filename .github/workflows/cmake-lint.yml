@@ -27,5 +27,5 @@ jobs:
           fi
           echo "Linting the following files:"
           echo "$FILES"
-          cmake-lint "$FILES"
+          echo "$FILES" | xargs cmake-lint
 
