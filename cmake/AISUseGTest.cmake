@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: MIT
 
 include(FetchContent)
+
+# lint_cmake: -readability/wonkycase
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/releases/download/v1.17.0/googletest-1.17.0.tar.gz
@@ -13,7 +15,9 @@ FetchContent_Declare(
 
 set(INSTALL_GTEST OFF CACHE BOOL "Don't install gtest.")
 set(GTEST_HAS_ABSL OFF CACHE BOOL "Don't use abseil for GTest.")
+
 FetchContent_MakeAvailable(googletest)
+# lint_cmake: +readability/wonkycase
 
 if(rocm-cmake_SOURCE_DIR)
     message(STATUS "Using fetched googletest.")
@@ -23,7 +27,7 @@ endif()
 
 include(GoogleTest)
 
-function (ais_gtest_discover_tests target)
+function(ais_gtest_discover_tests target)
     cmake_language(CALL gtest_discover_tests ${ARGV})
 
     if(BUILD_CODE_COVERAGE)

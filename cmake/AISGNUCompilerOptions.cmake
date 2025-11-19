@@ -9,7 +9,7 @@
 function(get_ais_gnu_warning_flags outvar compiler_version)
 
     # Warning flags for g++ 9 and earlier
-    set(flags 
+    set(flags
         # Basic "high" warning levels
         -Wall
         -Wextra

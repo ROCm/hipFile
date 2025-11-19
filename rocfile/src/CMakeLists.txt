@@ -26,6 +26,6 @@ ais_add_libraries(
     DETAIL   amd
     SRCS     ${ROCFILE_SOURCES}
     LIBINCL  ${ROCFILE_INCLUDE_PATH}
-    SYSINCLS ${ROCFILE_SOURCE_PATH} 
+    SYSINCLS ${ROCFILE_SOURCE_PATH}
     LIBS     mount
 )

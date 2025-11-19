@@ -4,6 +4,7 @@
 
 include(FetchContent)
 
+# lint_cmake: -readability/wonkycase
 FetchContent_Declare(
     rocm-cmake
     URL https://github.com/ROCm/rocm-cmake/archive/refs/tags/rocm-6.4.3.tar.gz
@@ -13,6 +14,7 @@ FetchContent_Declare(
     FIND_PACKAGE_ARGS NAMES ROCmCMakeBuildTools
 )
 FetchContent_MakeAvailable(rocm-cmake)
+# lint_cmake: +readability/wonkycase
 
 if(rocm-cmake_SOURCE_DIR)
     message(STATUS "Using fetched rocm-cmake.")
