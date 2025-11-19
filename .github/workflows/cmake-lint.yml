@@ -14,4 +14,3 @@ jobs:
         with:
           source: ". cmake docs hipfile hipfile/src/amd_detail hipfile/src/nvidia_detail hipfile/test rocfile rocfile/src rocfile/test"
           exclude: "thirdparty external"
-          config: true
