@@ -103,13 +103,17 @@ TEST_F(RocFileStream, deregister_with_unregistered_stream_throws)
     ASSERT_THROW(stream_map.deregisterStream(nonnull_stream), std::invalid_argument);
 }
 
-TEST_F(RocFileStream, destructor_with_streams_in_use_logs)
+TEST(RocFileStreamDestructor, destructor_with_streams_in_use_logs)
 {
-    stream_map.registerStream(reinterpret_cast<hipStream_t>(1), 0);
-    EXPECT_CALL(msys, syslog);
-    std::shared_ptr<IStream> *stream =
-        new std::shared_ptr<IStream>(stream_map.getStream(reinterpret_cast<hipStream_t>(1)));
-    (void)stream;
+    StrictMock<MHip>         mhip;
+    StrictMock<MSys>         msys;
+    std::shared_ptr<IStream> stream;
+    {
+        StreamMap stream_map;
+        stream_map.registerStream(reinterpret_cast<hipStream_t>(1), 0);
+        EXPECT_CALL(msys, syslog);
+        stream = stream_map.getStream(reinterpret_cast<hipStream_t>(1));
+    }
 }
 
 struct RocFileStreamExternal : public RocFileOpened {
