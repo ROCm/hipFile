@@ -23,7 +23,7 @@ jobs:
           FILES=$(find . -type f \( -name "CMakeLists.txt" -o -name "*.cmake" \))
           if [ -z "$FILES" ]; then
             echo "No CMake files found!"
-            exit -1
+            exit 1
           fi
           echo "Linting the following files:"
           echo "$FILES"
