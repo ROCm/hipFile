@@ -3,4 +3,6 @@
 [codespell]
 check-hidden = true
 skip = ./.git
-ignore-words-list = hsa,
+
+# thirdparty is an option in the cmake-lint action
+ignore-words-list = hsa,thirdparty
