@@ -11,4 +11,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 #v4.1.7
-      - uses: ludeeus/action-shellcheck@8b8e6e6e2c1b7e6cfa2a8b1b3e6b7e6e6e6e6e6e #v2.0.0
+      - uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 #v2.0.0
