@@ -1,0 +1,17 @@
+# Run cmake-lint over all our CMake files
+# Includes CMakeLists.txt and all files in /cmake
+name: cmake-lint
+on: pull_request
+permissions:
+  contents: read
+jobs:
+  format-check:
+    name: Run cmake-lint over CMake code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 #v4.1.7
+      - uses: neg-c/cmake-format-action@ba83660ac46d64c12ca96f39478dcde7680a52bf #v0.1
+      with:
+        source: ". cmake docs hipfile hipfile/src/amd_detail hipfile/src/nvidia_detail hipfile/test rocfile rocfile/src rocfile/test"
+        exclude: "thirdparty external"
+        config: true
