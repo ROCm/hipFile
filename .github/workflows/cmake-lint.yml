@@ -1,0 +1,30 @@
+# Run cmake-lint over all the repo's CMake files
+name: cmake-lint
+on: pull_request
+permissions:
+  contents: read
+jobs:
+  cmake-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 #v4.1.7
+
+      - name: Set up Python
+        run: |
+          python3 -m venv venv
+          source venv/vin/activate
+          pip3 install --upgrade pip
+          pip3 install cmake-lint
+
+      - name: Lint all CMake files
+        run: |
+          FILES=$(find . -type f \( -name "CMakeLists.txt" -o -name "*.cmake" \))
+          if [ -z "$FILES" ]; then
+            echo "No CMake files found!"
+            exit -1
+          fi
+          echo "Linting the following files:"
+          echo "$FILES"
+          cmake-lint "$FILES"
+
