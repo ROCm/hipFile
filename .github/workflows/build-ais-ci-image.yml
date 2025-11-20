@@ -38,6 +38,8 @@ jobs:
         run: |
           echo "AIS_CI_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME}}:${AIS_CI_IMAGE_TAG}" \
             >> "${GITHUB_OUTPUT}"
+          echo "AIS_CI_LATEST_CACHE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME}}:latest-cache" \
+            >> "${GITHUB_OUTPUT}"
       - name: Fetching code repository...
         uses: actions/checkout@v5
       - name: Authenticating to GitHub Container Registry.
@@ -62,6 +64,7 @@ jobs:
               PR URL: ${{ env.AIS_PR_BASE_URL }}/${AIS_PR_NUMBER}" \
             --build-arg BUILDKIT_INLINE_CACHE=1 \
             --cache-from=type=registry,ref=${{ steps.ci-image.outputs.AIS_CI_IMAGE }} \
+            --cache-from=type=registry,ref=${{ steps.ci-image.outcome.AIS_CI_LATEST_CACHE }} \
             --push \
             -t ${{ steps.ci-image.outputs.AIS_CI_IMAGE }} \
             ${GITHUB_WORKSPACE}
