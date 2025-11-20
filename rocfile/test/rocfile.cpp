@@ -26,6 +26,7 @@
 #include "rocfile-test.h"
 #include "rocfile.h"
 #include "state.h"
+#include "sys.h"
 
 #include <array>
 #include <gmock/gmock.h>
@@ -180,6 +181,15 @@ TEST_P(RocFileIoParam, RocFileIoHandlesInvalidFileHandle)
 {
     auto invalid_handle{reinterpret_cast<rocFileHandle_t>(0xdeadbeef)};
     ASSERT_EQ(rocFileIo(GetParam(), invalid_handle, bufptr, 0, 0, 0, mbackends), -rocFileHandleNotRegistered);
+}
+
+TEST_P(RocFileIoParam, RocFileIoHandlesSysRuntimeError)
+{
+    EXPECT_CALL(*mbackend, score).WillOnce(Return(1));
+    EXPECT_CALL(*mbackend, io).WillOnce(Throw(Sys::RuntimeError(EBADFD)));
+    errno = 0;
+    ASSERT_EQ(rocFileIo(GetParam(), file_handle, bufptr, buflen, 0, 0, mbackends), -1);
+    ASSERT_EQ(errno, EBADFD);
 }
 
 INSTANTIATE_TEST_SUITE_P(RocFileIo, RocFileIoParam, Values(IoType::Read, IoType::Write));

@@ -368,15 +368,6 @@ struct RocFileWrite : public RocFileIO {
     void *nonnull_ptr = reinterpret_cast<void *>(0x1);
 };
 
-TEST_F(RocFileWrite, write_handles_mmap_error)
-{
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    EXPECT_CALL(msys, mmap).WillOnce(testing::Throw(Sys::RuntimeError()));
-    ASSERT_EQ(rocFileWrite(file->getHandle(), buffer->getBuffer(), 4096, 0, 0), -1);
-}
-
 TEST_F(RocFileWrite, write_handles_hipMemcpy_error)
 {
     StrictMock<MHip> mhip;
@@ -399,22 +390,6 @@ TEST_F(RocFileWrite, write_handles_hipstreamsynchronize_error)
     EXPECT_CALL(mhip, hipStreamSynchronize).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
     EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
     ASSERT_EQ(rocFileWrite(file->getHandle(), buffer->getBuffer(), 4096, 0, 0), -hipErrorUnknown);
-}
-
-TEST_F(RocFileWrite, write_handles_pwrite_error)
-{
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    const int pwrite_error = EBADF;
-
-    EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
-    EXPECT_CALL(mhip, hipMemcpy).WillOnce(testing::Invoke(this, &RocFileWrite::fake_hipMemcpy));
-    EXPECT_CALL(mhip, hipStreamSynchronize);
-    EXPECT_CALL(msys, pwrite).WillOnce(testing::Throw(Sys::RuntimeError(pwrite_error)));
-    EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
-    ASSERT_EQ(rocFileWrite(file->getHandle(), buffer->getBuffer(), 4096, 0, 0), -1);
-    ASSERT_EQ(errno, pwrite_error);
 }
 
 TEST_F(RocFileWrite, write_with_fallback_backend)
@@ -663,29 +638,6 @@ TEST_F(RocFileRead, fallback_read_handles_zero_sized_read)
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
     ASSERT_EQ(0, Fallback().io(IoType::Read, file, buffer, 0, 0, 0));
-}
-
-TEST_F(RocFileRead, read_handles_mmap_error)
-{
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    EXPECT_CALL(msys, mmap).WillOnce(testing::Throw(Sys::RuntimeError()));
-    ASSERT_EQ(rocFileRead(file->getHandle(), buffer->getBuffer(), 4096, 0, 0), -1);
-}
-
-TEST_F(RocFileRead, read_handles_pread_error)
-{
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    const int pread_error = EBADF;
-
-    EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
-    EXPECT_CALL(msys, pread).WillOnce(testing::Throw(Sys::RuntimeError(pread_error)));
-    EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
-    ASSERT_EQ(rocFileRead(file->getHandle(), buffer->getBuffer(), 4096, 0, 0), -1);
-    ASSERT_EQ(errno, pread_error);
 }
 
 TEST_F(RocFileRead, read_handles_hipMemcpy_error)
