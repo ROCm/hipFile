@@ -2,7 +2,15 @@
 
 ## Building hipFile and rocFile
 
-Supported compilers: amdclang++, clang++, g++
+> [!NOTE]
+> hipFile is alpha software that has undergone testing on limited hardware. It may not work on your system at this time.
+
+Supported hardware:
+* hipFile should work with the [GPUs that ROCm supports](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/system-requirements.html)
+* Storage is currently limited to local NVMe drives
+* hipFile has only been tested on AMD CPUs/systems
+
+Supported compilers: amdclang++ (preferred), clang++, g++
 
 Supported platforms: Linux (Windows may be supported in a future release)
 
