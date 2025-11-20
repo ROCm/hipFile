@@ -24,10 +24,6 @@ jobs:
     container: docker:28.5
     outputs:
       new_ci_image: ${{ steps.ci-image.outputs.AIS_CI_IMAGE }}
-      image_tag: ${{ steps.ci-image.outputs.AIS_CI_IMAGE_TAG }}
-      # image_tag is a bit hacky. GitHub does not support separating outputs
-      # from a workflow run in a matrix. The last workflow to run will set the
-      # output value. `image_tag` is constant across matrix jobs so this is fine.
     steps:
       - name: Set CI environment variables
         run: |
