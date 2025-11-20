@@ -10,7 +10,7 @@ Supported hardware:
 * Storage is currently limited to local NVMe drives
 * hipFile has only been tested on AMD CPUs/systems
 
-Supported compilers: clang++, g++
+Supported compilers: amdclang++ (preferred), clang++, g++
 
 Supported platforms: Linux (Windows may be supported in a future release)
 
