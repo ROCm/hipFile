@@ -41,7 +41,7 @@ template <typename T> struct Context {
 
 private:
     /// @brief Set a context to temporarily override the default
-    /// @param _current A pointer to the new context
+    /// @param _replacement A pointer to the replacement context
     static void override(T *_replacement)
     {
         std::lock_guard<std::mutex> lock{m};

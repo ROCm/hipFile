@@ -160,9 +160,7 @@ public:
     /// Like the buffer getter, this function emits a temporary unregistered buffer
     /// (of size length, using flags) if no matching buffer is found.
     ///
-    /// @param [out] outFile File object
     /// @param [in]  fh      File handle
-    /// @param [out] outBuf  Registered or temporary unregistered Buffer object
     /// @param [in]  buf     Buffer pointer
     /// @param [in]  length  Buffer length
     /// @param [in]  flags   Buffer flags (unused)

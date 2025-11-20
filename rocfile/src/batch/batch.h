@@ -70,8 +70,8 @@ public:
 
     ///
     /// @brief Submit one or more operations to this Context.
-    /// @param [in] ops Pointer to the operations to enqueue.
-    /// @param [in] num_ops Number of operations to enqueue.
+    /// @param [in] params     Pointer to the operations to enqueue.
+    /// @param [in] num_params Number of operations to enqueue.
     ///
     /// @note This is an All or None operation. If one submitted operation is not valid, no operations
     ///       will be submitted.
@@ -107,13 +107,13 @@ public:
 
     /*!
      * @brief Destroy a batch context and release all associated resources
-     * @param batch_handle The handle for the batch context to destroy
+     * @param handle The handle for the batch context to destroy
      */
     void destroyContext(rocFileBatchHandle_t handle);
 
     /*!
      * @brief Get a batch context
-     * @param  batch_handle The opaque handle associated with a batch context
+     * @param handle The opaque handle associated with a batch context
      * @return A batch context
      */
     std::shared_ptr<IBatchContext> get(rocFileBatchHandle_t handle);
