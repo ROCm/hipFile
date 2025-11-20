@@ -192,6 +192,13 @@ TEST_P(RocFileIoParam, RocFileIoHandlesSysRuntimeError)
     ASSERT_EQ(errno, EBADFD);
 }
 
+TEST_P(RocFileIoParam, RocFileIoHandlesHipRuntimeError)
+{
+    EXPECT_CALL(*mbackend, score).WillOnce(Return(1));
+    EXPECT_CALL(*mbackend, io).WillOnce(Throw(Hip::RuntimeError(hipErrorUnknown)));
+    ASSERT_EQ(rocFileIo(GetParam(), file_handle, bufptr, buflen, 0, 0, mbackends), -hipErrorUnknown);
+}
+
 TEST_P(RocFileIoParam, RocFileIoHandlesInvalidArgumentError)
 {
     EXPECT_CALL(*mbackend, score).WillOnce(Return(1));

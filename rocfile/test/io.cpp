@@ -368,30 +368,6 @@ struct RocFileWrite : public RocFileIO {
     void *nonnull_ptr = reinterpret_cast<void *>(0x1);
 };
 
-TEST_F(RocFileWrite, write_handles_hipMemcpy_error)
-{
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
-    EXPECT_CALL(mhip, hipMemcpy).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
-    EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
-    ASSERT_EQ(rocFileWrite(file->getHandle(), buffer->getBuffer(), buffer->getLength(), 0, 0),
-              -hipErrorUnknown);
-}
-
-TEST_F(RocFileWrite, write_handles_hipstreamsynchronize_error)
-{
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
-    EXPECT_CALL(mhip, hipMemcpy);
-    EXPECT_CALL(mhip, hipStreamSynchronize).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
-    EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
-    ASSERT_EQ(rocFileWrite(file->getHandle(), buffer->getBuffer(), 4096, 0, 0), -hipErrorUnknown);
-}
-
 TEST_F(RocFileWrite, write_with_fallback_backend)
 {
     StrictMock<MHip> mhip;
@@ -626,22 +602,6 @@ TEST_F(RocFileRead, fallback_read_handles_zero_sized_read)
     StrictMock<MSys> msys;
     expect_fallback_read(mhip, msys);
     ASSERT_EQ(0, Fallback().io(IoType::Read, file, buffer, 0, 0, 0));
-}
-
-TEST_F(RocFileRead, read_handles_hipMemcpy_error)
-{
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t file_length = buffer->getLength();
-    init_file(file_length);
-
-    EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
-    EXPECT_CALL(msys, pread).WillRepeatedly(testing::Invoke(this, &RocFileRead::fake_pread));
-    EXPECT_CALL(mhip, hipMemcpy).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
-    EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
-    ASSERT_EQ(rocFileRead(file->getHandle(), buffer->getBuffer(), buffer->getLength(), 0, 0),
-              -hipErrorUnknown);
 }
 
 TEST_F(RocFileRead, read_with_fallback_backend)
