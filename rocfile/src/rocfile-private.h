@@ -5,10 +5,13 @@
 
 #pragma once
 
+#include "backend.h"
 #include "hipfile-types.h"
 #include "rocfile.h"
 
+#include <memory>
 #include <sys/types.h>
+#include <vector>
 
 namespace rocFile {
 enum class IoType;
@@ -24,4 +27,5 @@ ROCFILE_API
 void rocFileEnsureDriverInitPrivate();
 
 ssize_t rocFileIo(rocFile::IoType type, rocFileHandle_t fh, const void *buffer_base, size_t size,
-                  hoff_t file_offset, hoff_t buffer_offset);
+                  hoff_t file_offset, hoff_t buffer_offset,
+                  const std::vector<std::shared_ptr<rocFile::Backend>> &backends);
