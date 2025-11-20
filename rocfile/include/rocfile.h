@@ -975,8 +975,9 @@ rocFileError_t rocFileGetParameterBool(rocFileBoolConfigParameter_t param, bool 
  * @brief Get the value of a string configuration parameter
  * @ingroup core
  *
- * @param param The configuration parameter
- * @param value The location to store the value of the configuration parameter
+ * @param param    The configuration parameter
+ * @param desc_str The location to store the value of the configuration parameter
+ * @param len      The length of the desc_str parameter
  *
  * @return rocFileSuccess
  */
@@ -1011,8 +1012,8 @@ rocFileError_t rocFileSetParameterBool(rocFileBoolConfigParameter_t param, bool 
  * @brief Set the value of a string configuration parameter
  * @ingroup core
  *
- * @param param The configuration parameter
- * @param value The value of the configuration parameter
+ * @param param    The configuration parameter
+ * @param desc_str The value of the configuration parameter
  *
  * @return rocFileSuccess
  */

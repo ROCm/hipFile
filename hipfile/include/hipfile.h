@@ -1103,8 +1103,9 @@ hipFileError_t hipFileGetParameterBool(hipFileBoolConfigParameter_t param, bool 
  * @brief Get the value of a string configuration parameter
  * @ingroup core
  *
- * @param param The configuration parameter
- * @param value The location to store the value of the configuration parameter
+ * @param param    The configuration parameter
+ * @param desc_str The location to store the value of the configuration parameter
+ * @param len      The length of the desc_str parameter
  *
  * @return hipFileSuccess
  * @return hipFileInvalidValue If param is invalid
@@ -1153,8 +1154,8 @@ hipFileError_t hipFileSetParameterBool(hipFileBoolConfigParameter_t param, bool 
  * @brief Set the value of a string configuration parameter
  * @ingroup core
  *
- * @param param The configuration parameter
- * @param value The value of the configuration parameter
+ * @param param    The configuration parameter
+ * @param desc_str The value of the configuration parameter
  *
  * @return hipFileSuccess
  * @return hipFileInvalidValue If param is invalid
