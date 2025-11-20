@@ -38,7 +38,7 @@ struct Backend {
     /// @param size           The IO request's size
     /// @param file_offset    Offset from the start of the file
     /// @param buffer_offset  Offset from the start of the buffer
-    /// @return
+    /// @return The eagerness "score"
     virtual int score(std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
                       hoff_t file_offset, hoff_t buffer_offset) const = 0;
 
