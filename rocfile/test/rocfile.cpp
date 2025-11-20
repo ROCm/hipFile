@@ -16,6 +16,7 @@
 #include "hip.h"
 #include "hipfile-warnings.h"
 #include "io.h"
+#include "mbackend.h"
 #include "mbatch.h"
 #include "mhip.h"
 #include "mmountinfo.h"
@@ -33,8 +34,14 @@
 #include <memory>
 #include <stdexcept>
 #include <sys/types.h>
+#include <vector>
+
+namespace rocFile {
+struct Backend;
+}
 
 using namespace rocFile;
+using namespace std;
 using namespace testing;
 
 // Put tests inside the macros to suppress the global constructor
@@ -119,10 +126,12 @@ TEST_F(RocFileUnit, TestRocFileBatchIOSubmitBadArgument)
 
 /// @brief Test rocFileIO function
 struct RocFileIoParam : public TestWithParam<IoType> {
-    rocFileHandle_t file_handle{};
-    void           *bufptr{reinterpret_cast<void *>(0xDEC0DE)};
-    size_t          buflen{4096};
-    const void     *unreg_bufptr{reinterpret_cast<void *>(0xFACEFEED)};
+    rocFileHandle_t                  file_handle{};
+    void                            *bufptr{reinterpret_cast<void *>(0xDEC0DE)};
+    size_t                           buflen{4096};
+    const void                      *unreg_bufptr{reinterpret_cast<void *>(0xFACEFEED)};
+    shared_ptr<StrictMock<MBackend>> mbackend{make_shared<StrictMock<MBackend>>()};
+    vector<shared_ptr<Backend>>      mbackends{mbackend};
 
     RocFileIoParam()
     {
@@ -138,13 +147,6 @@ struct RocFileIoParam : public TestWithParam<IoType> {
             expect_buffer_registration(mhip, hipMemoryTypeDevice);
             Context<DriverState>::get()->registerBuffer(bufptr, buflen, 0);
         }
-
-        {
-            StrictMock<MHip> mhip;
-            EXPECT_CALL(mhip, hipRuntimeGetVersion);
-            EXPECT_CALL(mhip, hipGetProcAddress(StrEq("hipAmdFileRead"), _, _, _));
-            Context<DriverState>::get()->getBackends();
-        }
     }
 };
 
@@ -152,7 +154,7 @@ TEST_P(RocFileIoParam, RocFileIoHandlesHipPointerGetAttributesError)
 {
     StrictMock<MHip> mhip;
     EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
-    ASSERT_EQ(rocFileIo(GetParam(), file_handle, unreg_bufptr, 0, 0, 0), -hipErrorUnknown);
+    ASSERT_EQ(rocFileIo(GetParam(), file_handle, unreg_bufptr, 0, 0, 0, mbackends), -hipErrorUnknown);
 }
 
 TEST_P(RocFileIoParam, RocFileIoHandlesUnsupportedHipMemoryType)
@@ -162,7 +164,7 @@ TEST_P(RocFileIoParam, RocFileIoHandlesUnsupportedHipMemoryType)
         hipPointerAttribute_t attrs{};
         attrs.type = memoryType;
         EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
-        ASSERT_EQ(rocFileIo(GetParam(), file_handle, unreg_bufptr, 0, 0, 0),
+        ASSERT_EQ(rocFileIo(GetParam(), file_handle, unreg_bufptr, 0, 0, 0, mbackends),
                   -static_cast<ssize_t>(rocFileHipMemoryTypeInvalid));
     }
 }
@@ -170,14 +172,14 @@ TEST_P(RocFileIoParam, RocFileIoHandlesUnsupportedHipMemoryType)
 TEST_P(RocFileIoParam, RocFileIoHandlesInvalidRegisteredBufferLength)
 {
     StrictMock<MHip> mhip;
-    ASSERT_EQ(rocFileIo(GetParam(), file_handle, bufptr, buflen + 1, 0, 0),
+    ASSERT_EQ(rocFileIo(GetParam(), file_handle, bufptr, buflen + 1, 0, 0, mbackends),
               -static_cast<ssize_t>(rocFileInvalidValue));
 }
 
 TEST_P(RocFileIoParam, RocFileIoHandlesInvalidFileHandle)
 {
     auto invalid_handle{reinterpret_cast<rocFileHandle_t>(0xdeadbeef)};
-    ASSERT_EQ(rocFileIo(GetParam(), invalid_handle, bufptr, 0, 0, 0), -rocFileHandleNotRegistered);
+    ASSERT_EQ(rocFileIo(GetParam(), invalid_handle, bufptr, 0, 0, 0, mbackends), -rocFileHandleNotRegistered);
 }
 
 INSTANTIATE_TEST_SUITE_P(RocFileIo, RocFileIoParam, Values(IoType::Read, IoType::Write));
