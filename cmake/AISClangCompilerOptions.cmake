@@ -35,7 +35,7 @@ function(get_ais_clang_warning_flags outvar compiler_version)
         -Wthread-safety
 
         # Turn this on later (generates a lot of noise now)
-        -Wdocumentation
+        #-Wdocumentation
 
         # Avoid things that will cause problems on Windows
         -Wmicrosoft
