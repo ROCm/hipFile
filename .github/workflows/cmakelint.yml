@@ -1,6 +1,10 @@
 # Run cmakelint over all the repo's CMake files
 name: cmakelint
-on: pull_request
+on:
+  pull_request:
+    paths:
+      - '**.cmake'
+      - 'CMakeLists.txt'
 permissions:
   contents: read
 jobs:
