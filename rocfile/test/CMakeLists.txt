@@ -51,7 +51,7 @@ target_link_libraries(rocfile_tests PRIVATE GTest::gtest_main)
 
 ais_gtest_discover_tests(
     rocfile_tests
-    PROPERTIES LABELS unit
+    PROPERTIES "LABELS;unit;LABELS;rocfile"
     TEST_LIST rocfile_unit_tests
 )
 
@@ -71,7 +71,7 @@ add_test(
     NAME state_mt_test
     COMMAND gdb --batch --quiet -ex run -ex "thread apply all bt full" --return-child-result --args $<TARGET_FILE:state_mt>
 )
-set_tests_properties(state_mt_test PROPERTIES LABELS stress)
+set_tests_properties(state_mt_test PROPERTIES LABELS "stress;rocfile")
 
 ais_add_executable(
     NAME batch_mt
@@ -83,4 +83,4 @@ add_test(
     NAME batch_mt_test
     COMMAND gdb --batch --quiet -ex run -ex "thread apply all bt full" --return-child-result --args $<TARGET_FILE:batch_mt>
 )
-set_tests_properties(batch_mt_test PROPERTIES LABELS stress)
+set_tests_properties(batch_mt_test PROPERTIES LABELS "stress;rocfile")

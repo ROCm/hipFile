@@ -62,7 +62,7 @@ endif()
 
 ais_gtest_discover_tests(
     hipfile_tests
-    PROPERTIES LABELS unit
+    PROPERTIES "LABELS;unit;LABELS;hipfile"
     TEST_LIST hipfile_unit_tests
 )
 
@@ -82,7 +82,7 @@ gtest_discover_tests(
     hipfile_system_tests
     EXTRA_ARGS --ais-capable-dir ${AIS_CAPABLE_DIR}
     WORKING_DIRECTORY ${AIS_CAPABLE_DIR}
-    PROPERTIES LABELS system
+    PROPERTIES "LABELS;system;LABELS;hipfile"
 )
 
 # Temporary Test Files
