@@ -620,20 +620,6 @@ struct RocFileRead : public RocFileIO {
     void *nonnull_ptr = reinterpret_cast<void *>(0x1);
 };
 
-TEST_F(RocFileRead, read_handles_invalid_argument)
-{
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    // Negative file offset
-    ASSERT_EQ(rocFileRead(file->getHandle(), buffer->getBuffer(), 4096, -1, 0), -rocFileInvalidValue);
-    // Negative buffer offset
-    ASSERT_EQ(rocFileRead(file->getHandle(), buffer->getBuffer(), 4096, 0, -1), -rocFileInvalidValue);
-    // Buffer overrun
-    ASSERT_EQ(rocFileRead(file->getHandle(), buffer->getBuffer(), buffer->getLength(), 0, 1),
-              -rocFileInvalidValue);
-}
-
 TEST_F(RocFileRead, fallback_read_handles_zero_sized_read)
 {
     StrictMock<MHip> mhip;

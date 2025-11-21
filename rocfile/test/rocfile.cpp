@@ -192,6 +192,13 @@ TEST_P(RocFileIoParam, RocFileIoHandlesSysRuntimeError)
     ASSERT_EQ(errno, EBADFD);
 }
 
+TEST_P(RocFileIoParam, RocFileIoHandlesInvalidArgumentError)
+{
+    EXPECT_CALL(*mbackend, score).WillOnce(Return(1));
+    EXPECT_CALL(*mbackend, io).WillOnce(Throw(std::invalid_argument("")));
+    ASSERT_EQ(rocFileIo(GetParam(), file_handle, bufptr, buflen, 0, 0, mbackends), -rocFileInvalidValue);
+}
+
 INSTANTIATE_TEST_SUITE_P(RocFileIo, RocFileIoParam, Values(IoType::Read, IoType::Write));
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON
