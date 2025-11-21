@@ -603,7 +603,10 @@ TEST_F(FallbackRead, fallback_read_handles_zero_sized_read)
     ASSERT_EQ(0, Fallback().io(IoType::Read, file, buffer, 0, 0, 0));
 }
 
-TEST_F(FallbackRead, read_with_fallback_backend)
+/// @brief Test reading from a region within the file
+///
+/// [SOF.....[....REGION....]....EOF]
+TEST_F(FallbackRead, ReadFromRegionWithinFile)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -616,7 +619,7 @@ TEST_F(FallbackRead, read_with_fallback_backend)
     hoff_t file_offset   = static_cast<hoff_t>(buffer->getLength());
 
     expect_fallback_read(mhip, msys);
-    ASSERT_EQ(rocFileRead(file->getHandle(), buffer->getBuffer(), size, file_offset, buffer_offset), size);
+    ASSERT_EQ(Fallback().io(IoType::Read, file, buffer, size, file_offset, buffer_offset), size);
     ASSERT_TRUE(device_buffer_contains_expected_data(file_offset, buffer_offset, size));
 }
 
