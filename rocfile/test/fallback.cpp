@@ -177,12 +177,12 @@ TEST(RocFileFallbackBackend, FallbackBackendRejectsUnsupportedHipMemoryTypes)
     }
 }
 
-struct RocFileFallbackValidation : ::testing::TestWithParam<IoType> {
+struct FallbackParam : ::testing::TestWithParam<IoType> {
 
     shared_ptr<IBuffer> buffer;
     shared_ptr<IFile>   file;
 
-    RocFileFallbackValidation()
+    FallbackParam()
     {
         StrictMock<MHip>            mhip;
         StrictMock<MSys>            msys;
@@ -199,7 +199,7 @@ struct RocFileFallbackValidation : ::testing::TestWithParam<IoType> {
         file = Context<DriverState>::get()->getFile(Context<DriverState>::get()->registerFile(0xBADF00D));
     }
 
-    ~RocFileFallbackValidation() override
+    ~FallbackParam() override
     {
         // Drop the references to the file & buffer so that they can be
         // deregistered in rocFileDriverClose()
@@ -220,14 +220,14 @@ protected:
     IoType io_type;
 };
 
-TEST_P(RocFileFallbackValidation, fallback_io_throws_on_negative_buffer_offset)
+TEST_P(FallbackParam, fallback_io_throws_on_negative_buffer_offset)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, 0, -1, 4096), std::invalid_argument);
 }
 
-TEST_P(RocFileFallbackValidation, fallback_io_throws_if_buffer_offset_is_out_of_bounds)
+TEST_P(FallbackParam, fallback_io_throws_if_buffer_offset_is_out_of_bounds)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -235,7 +235,7 @@ TEST_P(RocFileFallbackValidation, fallback_io_throws_if_buffer_offset_is_out_of_
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, 0, buffer_offset, 4096), std::invalid_argument);
 }
 
-TEST_P(RocFileFallbackValidation, fallback_io_throws_if_op_could_overrun_buffer)
+TEST_P(FallbackParam, fallback_io_throws_if_op_could_overrun_buffer)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -244,14 +244,14 @@ TEST_P(RocFileFallbackValidation, fallback_io_throws_if_op_could_overrun_buffer)
     ASSERT_THROW(Fallback().io(io_type, file, buffer, size, 0, buffer_offset, 4096), std::invalid_argument);
 }
 
-TEST_P(RocFileFallbackValidation, fallback_io_throws_on_negative_file_offset)
+TEST_P(FallbackParam, fallback_io_throws_on_negative_file_offset)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, -1, 0, 4096), std::invalid_argument);
 }
 
-TEST_P(RocFileFallbackValidation, fallback_io_truncates_size_to_MAX_RW_COUNT)
+TEST_P(FallbackParam, fallback_io_truncates_size_to_MAX_RW_COUNT)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -286,7 +286,7 @@ TEST_P(RocFileFallbackValidation, fallback_io_truncates_size_to_MAX_RW_COUNT)
     ASSERT_EQ(MAX_RW_COUNT, Fallback().io(io_type, file, big_buffer, SIZE_MAX, 0, 0, 16 * 1024 * 1024));
 }
 
-TEST_P(RocFileFallbackValidation, fallback_io_throws_on_bounce_buffer_allocation_failure)
+TEST_P(FallbackParam, fallback_io_throws_on_bounce_buffer_allocation_failure)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -294,7 +294,7 @@ TEST_P(RocFileFallbackValidation, fallback_io_throws_on_bounce_buffer_allocation
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 4096, 0, 0, 4096), Sys::RuntimeError);
 }
 
-TEST_P(RocFileFallbackValidation, fallback_io_allocates_chunk_sized_host_bounce_buffer)
+TEST_P(FallbackParam, fallback_io_allocates_chunk_sized_host_bounce_buffer)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -318,8 +318,7 @@ TEST_P(RocFileFallbackValidation, fallback_io_allocates_chunk_sized_host_bounce_
     ASSERT_EQ(0, Fallback().io(io_type, file, buffer, 4096, 0, 0, chunk_size));
 }
 
-INSTANTIATE_TEST_SUITE_P(FallbackValidationTests, RocFileFallbackValidation,
-                         ::testing::Values(IoType::Read, IoType::Write));
+INSTANTIATE_TEST_SUITE_P(Fallback, FallbackParam, ::testing::Values(IoType::Read, IoType::Write));
 
 struct RocFileWrite : public RocFileIO {
 
