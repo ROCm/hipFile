@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - '**.cmake'
-      - 'CMakeLists.txt'
+      - '**/CMakeLists.txt'
 permissions:
   contents: read
 jobs:
