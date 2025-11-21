@@ -70,17 +70,13 @@ Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer,
         throw std::invalid_argument("IO could overflow buffer");
     }
 
-    if (size == 0) {
-        return 0;
-    }
-
     auto ptr     = Context<Sys>::get()->mmap(nullptr, chunk_size, PROT_READ | PROT_WRITE,
                                              MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     auto deleter = [&](void *addr) { Context<Sys>::get()->munmap(addr, chunk_size); };
     unique_ptr<void, decltype(deleter)> bounce_buffer{ptr, deleter};
 
     ssize_t total_io_bytes = 0;
-    while (static_cast<size_t>(total_io_bytes) < size) {
+    do {
         auto    count                  = min(chunk_size, size - static_cast<size_t>(total_io_bytes));
         auto    offset                 = file_offset + total_io_bytes;
         ssize_t io_bytes               = 0;
@@ -117,7 +113,7 @@ Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer,
         if (io_bytes == 0) {
             break;
         }
-    }
+    } while (static_cast<size_t>(total_io_bytes) < size);
 
     return total_io_bytes;
 }

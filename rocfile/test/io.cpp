@@ -411,6 +411,7 @@ TEST_F(RocFileWrite, fallback_write_handles_zero_sized_write)
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
 
+    expect_fallback_write(mhip, msys);
     ASSERT_EQ(0, Fallback().io(IoType::Write, file, buffer, 0, 0, 0));
 }
 
@@ -637,6 +638,7 @@ TEST_F(RocFileRead, fallback_read_handles_zero_sized_read)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
+    expect_fallback_read(mhip, msys);
     ASSERT_EQ(0, Fallback().io(IoType::Read, file, buffer, 0, 0, 0));
 }
 
