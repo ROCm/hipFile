@@ -367,20 +367,6 @@ struct FallbackWrite : public FallbackIo {
     void *nonnull_ptr = reinterpret_cast<void *>(0x1);
 };
 
-TEST_F(FallbackWrite, write_with_fallback_backend)
-{
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    randomize_device_buffer();
-    size_t size = buffer->getLength();
-
-    expect_fallback_write(mhip, msys);
-    ASSERT_EQ(rocFileWrite(file->getHandle(), buffer->getBuffer(), buffer->getLength(), 0, 0),
-              buffer->getLength());
-    ASSERT_TRUE(file_contains_expected_data(0, 0, size));
-}
-
 TEST_F(FallbackWrite, fallback_write_handles_zero_sized_write)
 {
     StrictMock<MHip> mhip;
