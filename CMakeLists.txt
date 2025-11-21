@@ -195,7 +195,7 @@ else()
     message(NOTICE "find_package did NOT find hip")
 endif()
 
-# Find the CUfile library and headers on NVIDIA
+# Find the cuFile library and headers on NVIDIA
 if(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
     find_package(CUDAToolkit REQUIRED)
 
@@ -210,7 +210,7 @@ if(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
     find_library(CUFILE_LIBRARY cufile PATHS ${CUDAToolkit_LIBRARY_DIR})
 
     if(NOT CUFILE_LIBRARY)
-        message(FATAL_ERROR "CUfile library not found")
+        message(FATAL_ERROR "cuFile library not found")
     endif()
 endif()
 
