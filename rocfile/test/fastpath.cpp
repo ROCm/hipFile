@@ -163,8 +163,7 @@ TEST_P(FastpathAlignedIoSizesParam, Score)
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathAlignedIoSizesParam,
-                         Values(DEFAULT_OFFSET_ALIGN * 0, DEFAULT_OFFSET_ALIGN * 1, DEFAULT_OFFSET_ALIGN * 2,
-                                DEFAULT_OFFSET_ALIGN * 3));
+                         Values(-DEFAULT_OFFSET_ALIGN, 0, DEFAULT_OFFSET_ALIGN));
 
 struct FastpathUnalignedIoSizesParam : public FastpathTestBase, public TestWithParam<size_t> {};
 
@@ -179,8 +178,7 @@ TEST_P(FastpathUnalignedIoSizesParam, Score)
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathUnalignedIoSizesParam,
-                         Values(DEFAULT_OFFSET_ALIGN * 0 + 1, DEFAULT_OFFSET_ALIGN * 1 - 1,
-                                DEFAULT_OFFSET_ALIGN * 2 + 1, DEFAULT_OFFSET_ALIGN * 3 - 1));
+                         Values(-DEFAULT_OFFSET_ALIGN + 1, 1, DEFAULT_OFFSET_ALIGN - 1));
 
 struct FastpathAlignedFileOffsetsParam : public FastpathTestBase, public TestWithParam<hoff_t> {};
 
@@ -195,10 +193,8 @@ TEST_P(FastpathAlignedFileOffsetsParam, Score)
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathAlignedFileOffsetsParam,
-                         Values(DEFAULT_OFFSET_ALIGN * 0, DEFAULT_OFFSET_ALIGN * 1, DEFAULT_OFFSET_ALIGN * 2,
-                                DEFAULT_OFFSET_ALIGN * 3));
+                         Values(-DEFAULT_OFFSET_ALIGN, 0, DEFAULT_OFFSET_ALIGN));
 
-/// @brief Tests negative and unaligned file offsets
 struct FastpathUnalignedFileOffsetsParam : public FastpathTestBase, public TestWithParam<hoff_t> {};
 
 TEST_P(FastpathUnalignedFileOffsetsParam, Score)
@@ -212,8 +208,7 @@ TEST_P(FastpathUnalignedFileOffsetsParam, Score)
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathUnalignedFileOffsetsParam,
-                         Values(DEFAULT_OFFSET_ALIGN * 0 + 1, DEFAULT_OFFSET_ALIGN * 1 - 1,
-                                DEFAULT_OFFSET_ALIGN * 2 + 1, DEFAULT_OFFSET_ALIGN * 3 - 1));
+                         Values(-DEFAULT_OFFSET_ALIGN + 1, 1, DEFAULT_OFFSET_ALIGN - 1));
 
 struct FastpathAlignedBufferOffsetsParam : public FastpathTestBase, public TestWithParam<hoff_t> {};
 
@@ -228,8 +223,7 @@ TEST_P(FastpathAlignedBufferOffsetsParam, Score)
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathAlignedBufferOffsetsParam,
-                         Values(DEFAULT_MEM_ALIGN * 0, DEFAULT_MEM_ALIGN * 1, DEFAULT_MEM_ALIGN * 2,
-                                DEFAULT_MEM_ALIGN * 3));
+                         Values(-DEFAULT_MEM_ALIGN, 0, DEFAULT_MEM_ALIGN));
 
 /// @brief Tests negative and unaligned buffer offsets
 struct FastpathUnalignedBufferOffsetsParam : public FastpathTestBase, public TestWithParam<hoff_t> {};
@@ -245,8 +239,7 @@ TEST_P(FastpathUnalignedBufferOffsetsParam, Score)
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathUnalignedBufferOffsetsParam,
-                         Values(DEFAULT_MEM_ALIGN * 0 + 1, DEFAULT_MEM_ALIGN * 1 - 1,
-                                DEFAULT_MEM_ALIGN * 2 + 1, DEFAULT_MEM_ALIGN * 3 - 1));
+                         Values(-DEFAULT_MEM_ALIGN + 1, 1, DEFAULT_MEM_ALIGN - 1));
 
 struct FastpathIoParam : public FastpathTestBase, public TestWithParam<IoType> {
 

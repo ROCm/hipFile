@@ -130,9 +130,6 @@ Fastpath::score(shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
 
     accept_io &= buffer->getType() == hipMemoryTypeDevice;
 
-    accept_io &= 0 <= file_offset;
-    accept_io &= 0 <= buffer_offset;
-
 #if defined(STATX_DIOALIGN)
     const struct statx &stx{file->getStatx()};
     accept_io &= !!(stx.stx_mask & STATX_DIOALIGN);
