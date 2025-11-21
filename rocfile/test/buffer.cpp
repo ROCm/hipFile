@@ -123,10 +123,6 @@ TEST_F(RocFileBuffer, register_already_registered)
 
 TEST_F(RocFileBuffer, registerNullPointerReturnsError)
 {
-    StrictMock<MHip>      mhip;
-    hipPointerAttribute_t attrs;
-    attrs.type = hipMemoryTypeDevice;
-    EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
     ASSERT_EQ(rocFileBufRegister(nullptr, 0x10000, 0), RocFileOpError(rocFileInvalidValue));
 }
 

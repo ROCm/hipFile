@@ -45,16 +45,18 @@ isValidBufferRegion(void *ptr, size_t length)
 }
 
 Buffer::Buffer(const void *_buffer, size_t _length, int _flags)
-    : buffer{const_cast<void *>(_buffer)}, length{_length}, flags{_flags},
-      type{Context<Hip>::get()->hipPointerGetAttributes(buffer).type}
+    : buffer{const_cast<void *>(_buffer)}, length{_length}, flags{_flags}
 {
     if (!buffer) {
         throw std::invalid_argument("Buffer pointer cannot be null.");
     }
 
-    if (type != hipMemoryTypeDevice) {
+    hipPointerAttribute_t _attrs = Context<Hip>::get()->hipPointerGetAttributes(buffer);
+    if (_attrs.type != hipMemoryTypeDevice) {
         throw InvalidMemoryType();
     }
+    type   = _attrs.type;
+    gpu_id = _attrs.device;
 
     if (!isValidBufferRegion(buffer, length)) {
         throw InvalidPointerRange();
@@ -83,6 +85,12 @@ hipMemoryType
 Buffer::getType() const
 {
     return type;
+}
+
+int
+Buffer::getGpuId() const
+{
+    return gpu_id;
 }
 
 void

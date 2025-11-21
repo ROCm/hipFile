@@ -56,6 +56,7 @@ public:
     virtual size_t        getLength() const = 0;
     virtual int           getFlags() const  = 0;
     virtual hipMemoryType getType() const   = 0;
+    virtual int           getGpuId() const  = 0;
 };
 
 class Buffer : public IBuffer {
@@ -75,6 +76,7 @@ public:
     virtual size_t        getLength() const override;
     virtual int           getFlags() const override;
     virtual hipMemoryType getType() const override;
+    virtual int           getGpuId() const override;
 
 private:
     /// @brief Creates a buffer.
@@ -94,6 +96,9 @@ private:
 
     /// @brief Memory type
     hipMemoryType type;
+
+    /// @brief Gpu ID
+    int gpu_id;
 
     friend class BufferMap;
 };
