@@ -320,7 +320,7 @@ TEST_P(FallbackParam, fallback_io_allocates_chunk_sized_host_bounce_buffer)
 
 INSTANTIATE_TEST_SUITE_P(Fallback, FallbackParam, ::testing::Values(IoType::Read, IoType::Write));
 
-struct RocFileWrite : public FallbackIo {
+struct FallbackWrite : public FallbackIo {
 
     ssize_t fake_pwrite(int fd, void *buf, size_t count, hoff_t offset)
     {
@@ -347,9 +347,9 @@ struct RocFileWrite : public FallbackIo {
     void expect_fallback_write(MHip &mhip, MSys &msys)
     {
         EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
-        EXPECT_CALL(mhip, hipMemcpy).WillRepeatedly(testing::Invoke(this, &RocFileWrite::fake_hipMemcpy));
+        EXPECT_CALL(mhip, hipMemcpy).WillRepeatedly(testing::Invoke(this, &FallbackWrite::fake_hipMemcpy));
         EXPECT_CALL(mhip, hipStreamSynchronize).WillRepeatedly(testing::Return());
-        EXPECT_CALL(msys, pwrite).WillRepeatedly(testing::Invoke(this, &RocFileWrite::fake_pwrite));
+        EXPECT_CALL(msys, pwrite).WillRepeatedly(testing::Invoke(this, &FallbackWrite::fake_pwrite));
         EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
     }
 
@@ -367,7 +367,7 @@ struct RocFileWrite : public FallbackIo {
     void *nonnull_ptr = reinterpret_cast<void *>(0x1);
 };
 
-TEST_F(RocFileWrite, write_with_fallback_backend)
+TEST_F(FallbackWrite, write_with_fallback_backend)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -381,7 +381,7 @@ TEST_F(RocFileWrite, write_with_fallback_backend)
     ASSERT_TRUE(file_contains_expected_data(0, 0, size));
 }
 
-TEST_F(RocFileWrite, fallback_write_handles_zero_sized_write)
+TEST_F(FallbackWrite, fallback_write_handles_zero_sized_write)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -390,7 +390,7 @@ TEST_F(RocFileWrite, fallback_write_handles_zero_sized_write)
     ASSERT_EQ(0, Fallback().io(IoType::Write, file, buffer, 0, 0, 0));
 }
 
-TEST_F(RocFileWrite, fallback_write_throws_on_pwrite_exception)
+TEST_F(FallbackWrite, fallback_write_throws_on_pwrite_exception)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -404,7 +404,7 @@ TEST_F(RocFileWrite, fallback_write_throws_on_pwrite_exception)
     ASSERT_THROW(Fallback().io(IoType::Write, file, buffer, buffer->getLength(), 0, 0), Sys::RuntimeError);
 }
 
-TEST_F(RocFileWrite, fallback_write_throws_on_hipmemcpy_failure)
+TEST_F(FallbackWrite, fallback_write_throws_on_hipmemcpy_failure)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -416,7 +416,7 @@ TEST_F(RocFileWrite, fallback_write_throws_on_hipmemcpy_failure)
     ASSERT_THROW(Fallback().io(IoType::Write, file, buffer, buffer->getLength(), 0, 0), Hip::RuntimeError);
 }
 
-TEST_F(RocFileWrite, fallback_write_throws_on_hipstreamsynchronize_error)
+TEST_F(FallbackWrite, fallback_write_throws_on_hipstreamsynchronize_error)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -429,7 +429,7 @@ TEST_F(RocFileWrite, fallback_write_throws_on_hipstreamsynchronize_error)
     ASSERT_THROW(Fallback().io(IoType::Write, file, buffer, buffer->getLength(), 0, 0), Hip::RuntimeError);
 }
 
-TEST_F(RocFileWrite, fallback_write_to_empty_file)
+TEST_F(FallbackWrite, fallback_write_to_empty_file)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -444,7 +444,7 @@ TEST_F(RocFileWrite, fallback_write_to_empty_file)
     ASSERT_TRUE(file_contains_expected_data(0, 0, size));
 }
 
-TEST_F(RocFileWrite, fallback_write_to_empty_file_at_file_offset)
+TEST_F(FallbackWrite, fallback_write_to_empty_file_at_file_offset)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -460,7 +460,7 @@ TEST_F(RocFileWrite, fallback_write_to_empty_file_at_file_offset)
     ASSERT_TRUE(file_contains_expected_data(file_offset, 0, size));
 }
 
-TEST_F(RocFileWrite, fallback_write_to_empty_file_at_buffer_offset)
+TEST_F(FallbackWrite, fallback_write_to_empty_file_at_buffer_offset)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -476,7 +476,7 @@ TEST_F(RocFileWrite, fallback_write_to_empty_file_at_buffer_offset)
     ASSERT_TRUE(file_contains_expected_data(0, buffer_offset, size));
 }
 
-TEST_F(RocFileWrite, fallback_write_to_empty_file_at_buffer_offset_file_offset)
+TEST_F(FallbackWrite, fallback_write_to_empty_file_at_buffer_offset_file_offset)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -493,7 +493,7 @@ TEST_F(RocFileWrite, fallback_write_to_empty_file_at_buffer_offset_file_offset)
     ASSERT_TRUE(file_contains_expected_data(file_offset, buffer_offset, size));
 }
 
-TEST_F(RocFileWrite, fallback_write_overwite_entire_file)
+TEST_F(FallbackWrite, fallback_write_overwite_entire_file)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -506,7 +506,7 @@ TEST_F(RocFileWrite, fallback_write_overwite_entire_file)
     ASSERT_TRUE(file_contains_expected_data(0, 0, file_data.size()));
 }
 
-TEST_F(RocFileWrite, fallback_write_to_file_subregion)
+TEST_F(FallbackWrite, fallback_write_to_file_subregion)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -522,7 +522,7 @@ TEST_F(RocFileWrite, fallback_write_to_file_subregion)
     ASSERT_TRUE(file_contains_expected_data(file_offset, 0, buffer->getLength()));
 }
 
-TEST_F(RocFileWrite, fallback_write_append_non_empty_small_file)
+TEST_F(FallbackWrite, fallback_write_append_non_empty_small_file)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
