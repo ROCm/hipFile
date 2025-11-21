@@ -1,5 +1,5 @@
-# Run cmake-lint over all the repo's CMake files
-name: cmake-lint
+# Run cmakelint over all the repo's CMake files
+name: cmakelint
 on: pull_request
 permissions:
   contents: read
