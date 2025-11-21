@@ -102,13 +102,6 @@ extern "C" {
  * errno is likely to have been set.
  *
  * @note ROCFILE_BASE_ERR + 21 and 32 are intentionally omitted.
- *
- * @internal
- * - cuFile omits error codes 5021 & 5032
- * - CU_FILE_CUDA_*           -> rocFileHip*    (GPU Driver error)
- * - CU_FILE_DRIVER_*         -> rocFileDriver* (NVFS Driver error)
- * - CU_FILE_NVFS_(DRIVER_)?* -> rocFileDriver* (NVFS Driver error)
- * @endinternal
  */
 typedef enum rocFileOpError {
     rocFileSuccess                 = 0,                     //!< rocFile success
@@ -249,8 +242,8 @@ typedef struct __ROCFILE_NODISCARD rocFileError {
 //  GPU IO DRIVER API
 // ***********************************************************************
 
-/* TODO: See this section in hipfile.h for a discussion about the
- *       following enums.
+/* See this section in hipfile.h for a discussion about the
+ * following enums.
  */
 
 /*!
@@ -287,11 +280,6 @@ typedef enum rocFileDriverControlFlags {
 /*!
  * @brief GPU IO Transport & Features supported by the system
  * @ingroup driver
- *
- * @internal
- * - Circa cuFile 1.13 (CUDA 12.8), the batch, async, and parallel IO APIs
- *   are listed as experimental/unsupported
- * @endinternal
  */
 typedef enum rocFileFeatureFlags {
     rocFileDynRoutingSupported = 0, //!< RDMA dynamic routing is supported
@@ -303,14 +291,6 @@ typedef enum rocFileFeatureFlags {
 /*!
  * @brief GPU IO configuration
  * @ingroup driver
- *
- * @internal
- * Some of these members could be configurable through setting their values
- * in a future rocFile.json configuration file, or at runtime through the
- * appropriate rocFile function.
- * @endinternal
- *
- * TODO: Reconsider the IO size types
  */
 typedef struct rocFileDriverProps {
     /*!
@@ -380,16 +360,6 @@ typedef struct rocFileRDMAInfo {
 /*!
  * @brief IO operations for RDMA filesystems
  * @ingroup file
- *
- * @internal
- * - cuFile has intentionally omitted names for some of the parameters.
- * - Need to better understand the purpose of this function before should feel
- *   comfortable publishing it. If we don't need it for the first release,
- *   perhaps it should be removed.
- * TODO:
- * - typedef the function pointers so we can more easily add Doxygen
- *   for the parameters
- * @endinternal
  */
 typedef struct rocFileFSOps {
     /*!

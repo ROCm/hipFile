@@ -102,13 +102,6 @@ extern "C" {
  * errno is likely to have been set.
  *
  * @note HIPFILE_BASE_ERR + 21 and 32 are intentionally omitted.
- *
- * @internal
- * - cuFile omits error codes 5021 & 5032
- * - CU_FILE_CUDA_*           -> hipFileHip*    (GPU Driver error)
- * - CU_FILE_DRIVER_*         -> hipFileDriver* (NVFS Driver error)
- * - CU_FILE_NVFS_(DRIVER_)?* -> hipFileDriver* (NVFS Driver error)
- * @endinternal
  */
 typedef enum hipFileOpError {
     hipFileSuccess                 = 0,                     //!< hipFile operation completed successfully
@@ -250,15 +243,15 @@ typedef struct __HIPFILE_NODISCARD hipFileError {
 // ***********************************************************************
 
 /*
- * TODO: Most of the enums in this defgroup indicate that their intended
- *       use is as flags, which is impossible if the consecutive values in
- *       cufile.h are used. Note the flag fields in hipFileDriverProps_t.nvfs.
- *       The documentation in cufile.h is also incomplete and many of the
- *       structs/enums are poorly documented, if at all. It may require some
- *       experimentation to figure out how the fields are supposed to work.
+ * Most of the enums in this defgroup indicate that their intended
+ * use is as flags, which is impossible if the consecutive values in
+ * cufile.h are used. Note the flag fields in hipFileDriverProps_t.nvfs.
+ * The documentation in cufile.h is also incomplete and many of the
+ * structs/enums are poorly documented, if at all. It may require some
+ * experimentation to figure out how the fields are supposed to work.
  *
- *       The ideal solution is probably going to involve replacing the
- *       enums with named collections of #defined bitwise flags.
+ * The ideal solution is probably going to involve replacing the
+ * enums with named collections of #defined bitwise flags.
  */
 
 /*!
@@ -295,11 +288,6 @@ typedef enum hipFileDriverControlFlags {
 /*!
  * @brief GPU IO Transport & Features supported by the system
  * @ingroup driver
- *
- * @internal
- * - Circa cuFile 1.13 (CUDA 12.8), the batch, async, and parallel IO APIs
- *   are listed as experimental/unsupported
- * @endinternal
  */
 typedef enum hipFileFeatureFlags {
     hipFileDynRoutingSupported = 0, //!< RDMA dynamic routing is supported
@@ -311,14 +299,6 @@ typedef enum hipFileFeatureFlags {
 /*!
  * @brief GPU IO configuration
  * @ingroup driver
- *
- * @internal
- * Some of these members could be configurable through setting their values
- * in a future hipFile.json configuration file, or at runtime through the
- * appropriate hipFile function.
- * @endinternal
- *
- * TODO: Reconsider the IO size types
  */
 typedef struct hipFileDriverProps {
     /*!
@@ -390,16 +370,6 @@ typedef struct hipFileRDMAInfo {
 /*!
  * @brief IO operations for RDMA filesystems
  * @ingroup file
- *
- * @internal
- * - cuFile has intentionally omitted names for some of the parameters.
- * - Need to better understand the purpose of this function before should feel
- *   comfortable publishing it. If we don't need it for the first release,
- *   perhaps it should be removed.
- * TODO:
- * - typedef the function pointers so we can more easily add Doxygen
- *   for the parameters
- * @endinternal
  */
 typedef struct hipFileFSOps {
     /*!
@@ -714,12 +684,6 @@ hipFileError_t hipFileDriverSetMaxPinnedMemSize(size_t max_pinned_size);
 /*!
  * @brief The direction of data movement in a batch IO request
  * @ingroup batch
- *
- * @internal
- * - Originally CUFILE_READ -> hipFileRead, CUFILE_WRITE -> hipFileWrite.
- *   This conflicts with the existing hipFileRead() & hipFileWrite() functions.
- *   To keep the camelCase style for enums consistent, we are renaming these
- *   enums slightly to remove this conflict.
  */
 typedef enum hipFileOpcode {
     hipFileBatchRead  = 0, //!< Read batch IO operation
@@ -792,14 +756,6 @@ typedef void *hipFileBatchHandle_t;
  *
  * @return hipFileSuccess
  * @return hipFileInternalError
- *
- * @internal
- * TODO:
- * - We need to figure out the rules for the maximum number param nr.
- *   e.g., does the entire batch handle need to be re-initialized when the
- *   max number of requests is reached? Or is this the maximum number
- *   of queued requests at a given time? If yes, when does a slot get freed?
- * @endinternal
  */
 HIPFILE_API
 hipFileError_t hipFileBatchIOSetUp(hipFileBatchHandle_t *batch_idp, unsigned max_nr);
@@ -817,11 +773,6 @@ hipFileError_t hipFileBatchIOSetUp(hipFileBatchHandle_t *batch_idp, unsigned max
  *
  * @return hipFileSuccess
  * @return hipFileInternalError
- *
- * @internal
- * TODO:
- * - We should further describe the rules for how batch IO requests are handled.
- * @endinternal
  */
 HIPFILE_API
 hipFileError_t hipFileBatchIOSubmit(hipFileBatchHandle_t batch_idp, unsigned nr, hipFileIOParams_t *iocbp,
@@ -913,11 +864,6 @@ void hipFileBatchIODestroy(hipFileBatchHandle_t batch_idp);
  * @return hipFileDriverError
  * @return hipFileHipDriverError
  * @return hipFileInvalidValue
- *
- * @internal
- * - NVIDIA docs are unclear about the conditions that might set hipFileDriverError and
- *   hipFileHipDriverError
- * @endinternal
  */
 HIPFILE_API
 hipFileError_t hipFileReadAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
@@ -940,11 +886,6 @@ hipFileError_t hipFileReadAsync(hipFileHandle_t fh, void *buffer_base, size_t *s
  * @return hipFileDriverError
  * @return hipFileHipDriverError
  * @return hipFileInvalidValue
- *
- * @internal
- * - NVIDIA docs are unclear about the conditions that might set hipFileDriverError and
- *   hipFileHipDriverError
- * @endinternal
  */
 HIPFILE_API
 hipFileError_t hipFileWriteAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
