@@ -31,5 +31,5 @@ jobs:
           fi
           echo "Linting the following files:"
           echo "$FILES"
-          cmakelint $FILES
+          cmakelint "$FILES"
 
