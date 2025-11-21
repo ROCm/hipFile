@@ -110,14 +110,14 @@ contains_expected_data(std::vector<uint8_t> &buffer, hoff_t buffer_offset, std::
     return true;
 }
 
-struct RocFileIO : public RocFileOpened {
+struct FallbackIo : public RocFileOpened {
 
     shared_ptr<IBuffer>  buffer;
     std::vector<uint8_t> buffer_data;
     shared_ptr<IFile>    file;
     std::vector<uint8_t> file_data;
 
-    RocFileIO() : buffer_data(1024 * 1024)
+    FallbackIo() : buffer_data(1024 * 1024)
     {
         StrictMock<MHip>            mhip;
         StrictMock<MSys>            msys;
@@ -136,7 +136,7 @@ struct RocFileIO : public RocFileOpened {
         file = Context<DriverState>::get()->getFile(Context<DriverState>::get()->registerFile(0xBADF00D));
     }
 
-    virtual ~RocFileIO() override
+    virtual ~FallbackIo() override
     {
         buffer.reset();
         file.reset();
@@ -320,7 +320,7 @@ TEST_P(FallbackParam, fallback_io_allocates_chunk_sized_host_bounce_buffer)
 
 INSTANTIATE_TEST_SUITE_P(Fallback, FallbackParam, ::testing::Values(IoType::Read, IoType::Write));
 
-struct RocFileWrite : public RocFileIO {
+struct RocFileWrite : public FallbackIo {
 
     ssize_t fake_pwrite(int fd, void *buf, size_t count, hoff_t offset)
     {
@@ -538,7 +538,7 @@ TEST_F(RocFileWrite, fallback_write_append_non_empty_small_file)
     ASSERT_TRUE(file_contains_expected_data(file_offset, 0, size));
 }
 
-struct RocFileRead : public RocFileIO {
+struct RocFileRead : public FallbackIo {
 
     void init_file(size_t length)
     {
