@@ -46,7 +46,18 @@ Options
 `cmake --build .`
 
 ### Run tests
-`ctest .`
+
+`ctest .` will run all tests.
+
+You can filter on test labels using the `-L` option. We currently have `hipfile` and `rocfile` labels for each library and `unit`, `system`, and `stress` labels for the different test types. Multiple `-L` options form an *and*. A `|` can be used for an *or*.
+
+`ctest . -L rocfile -L unit` runs all unit tests in the rocFile library.
+`ctest . -L 'system|unit'` runs all system or unit tests.
+
+You can filter on test names using the `-R` option. This option supports wildcards.
+
+`ctest . -R RocFileBuffer.get_buffer_makes_temporary_buffer` runs the specified test.
+`ctest . -R 'RocFileBuffer*'` runs all tests that start with RocFileBuffer.
 
 ### Install and package
 The hipFile and rocFile libraries can be installed with CMake. The default
