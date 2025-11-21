@@ -208,4 +208,115 @@ TEST_P(RocFileIoParam, RocFileIoHandlesInvalidArgumentError)
 
 INSTANTIATE_TEST_SUITE_P(RocFileIo, RocFileIoParam, Values(IoType::Read, IoType::Write));
 
+struct RocFileIoBackendSelectionParam : public ::testing::TestWithParam<IoType> {
+
+    IoType                                io_type;
+    rocFileHandle_t                       handle;
+    void                                 *buffer;
+    size_t                                io_size;
+    hoff_t                                file_offset;
+    hoff_t                                buffer_offset;
+    int                                   flags;
+    std::shared_ptr<StrictMock<MFile>>    mfile;
+    std::shared_ptr<StrictMock<MBuffer>>  mbuffer;
+    std::shared_ptr<StrictMock<MBackend>> mbe1;
+    std::shared_ptr<StrictMock<MBackend>> mbe2;
+    std::shared_ptr<StrictMock<MBackend>> mbe3;
+    StrictMock<MDriverState>              mds;
+
+    RocFileIoBackendSelectionParam()
+        : io_type{GetParam()}, handle{reinterpret_cast<rocFileHandle_t>(0xBADF00D)},
+          buffer{reinterpret_cast<void *>(0xDEADBEEF)}, io_size{1024}, file_offset{32}, buffer_offset{64},
+          flags{0}, mfile{std::make_shared<StrictMock<MFile>>()},
+          mbuffer{std::make_shared<StrictMock<MBuffer>>()}, mbe1{std::make_shared<StrictMock<MBackend>>()},
+          mbe2{std::make_shared<StrictMock<MBackend>>()}, mbe3{std::make_shared<StrictMock<MBackend>>()}
+    {
+    }
+};
+
+TEST_P(RocFileIoBackendSelectionParam, RocFileIoThrowsIfThereAreNoBackends)
+{
+    auto backends{std::vector<std::shared_ptr<Backend>>()};
+
+    EXPECT_CALL(mds, getFileAndBuffer(handle, buffer, io_size, flags))
+        .WillOnce(Return(file_buffer_pair{mfile, mbuffer}));
+    EXPECT_CALL(mds, getBackends).WillOnce(Return(backends));
+
+    switch (io_type) {
+        case IoType::Read:
+            ASSERT_EQ(rocFileRead(handle, buffer, io_size, file_offset, buffer_offset),
+                      -rocFileInternalError);
+            break;
+        case IoType::Write:
+            ASSERT_EQ(rocFileWrite(handle, buffer, io_size, file_offset, buffer_offset),
+                      -rocFileInternalError);
+            break;
+        default:
+            FAIL() << "Unhandled IO Type";
+    }
+}
+
+TEST_P(RocFileIoBackendSelectionParam, RocFileIoThrowsIfAllBackendsRejectTheIO)
+{
+    std::vector<std::shared_ptr<Backend>> backends{mbe1, mbe2, mbe3};
+
+    EXPECT_CALL(mds, getFileAndBuffer(handle, buffer, io_size, flags))
+        .WillOnce(Return(file_buffer_pair{mfile, mbuffer}));
+    EXPECT_CALL(mds, getBackends).WillOnce(Return(backends));
+    EXPECT_CALL(*mbe1, score(Eq(mfile), Eq(mbuffer), io_size, file_offset, buffer_offset))
+        .WillOnce(Return(-1));
+    EXPECT_CALL(*mbe2, score(Eq(mfile), Eq(mbuffer), io_size, file_offset, buffer_offset))
+        .WillOnce(Return(-1));
+    EXPECT_CALL(*mbe3, score(Eq(mfile), Eq(mbuffer), io_size, file_offset, buffer_offset))
+        .WillOnce(Return(-1));
+
+    switch (io_type) {
+        case IoType::Read:
+            ASSERT_EQ(rocFileRead(handle, buffer, io_size, file_offset, buffer_offset),
+                      -rocFileInternalError);
+            break;
+        case IoType::Write:
+            ASSERT_EQ(rocFileWrite(handle, buffer, io_size, file_offset, buffer_offset),
+                      -rocFileInternalError);
+            break;
+        default:
+            FAIL() << "Unhandled IO Type";
+    }
+}
+
+TEST_P(RocFileIoBackendSelectionParam, RocFileIoIssuesIoToHighestScoringBackend)
+{
+    std::vector<std::shared_ptr<Backend>> backends{mbe1, mbe2, mbe3};
+
+    EXPECT_CALL(mds, getFileAndBuffer(handle, buffer, io_size, flags))
+        .WillOnce(Return(file_buffer_pair{mfile, mbuffer}));
+    EXPECT_CALL(mds, getBackends).WillOnce(Return(backends));
+    EXPECT_CALL(*mbe1, score(Eq(mfile), Eq(mbuffer), io_size, file_offset, buffer_offset))
+        .WillOnce(Return(0));
+    EXPECT_CALL(*mbe2, score(Eq(mfile), Eq(mbuffer), io_size, file_offset, buffer_offset))
+        .WillOnce(Return(2));
+    EXPECT_CALL(*mbe3, score(Eq(mfile), Eq(mbuffer), io_size, file_offset, buffer_offset))
+        .WillOnce(Return(1));
+
+    switch (io_type) {
+        case IoType::Read:
+            EXPECT_CALL(*mbe2,
+                        io(Eq(IoType::Read), Eq(mfile), Eq(mbuffer), io_size, file_offset, buffer_offset))
+                .WillOnce(Return(io_size));
+            ASSERT_EQ(rocFileRead(handle, buffer, io_size, file_offset, buffer_offset), io_size);
+            break;
+        case IoType::Write:
+            EXPECT_CALL(*mbe2,
+                        io(Eq(IoType::Write), Eq(mfile), Eq(mbuffer), io_size, file_offset, buffer_offset))
+                .WillOnce(Return(io_size));
+            ASSERT_EQ(rocFileWrite(handle, buffer, io_size, file_offset, buffer_offset), io_size);
+            break;
+        default:
+            FAIL() << "Unhandled IO Type";
+    }
+}
+
+INSTANTIATE_TEST_SUITE_P(RocFileIoBackendSelection, RocFileIoBackendSelectionParam,
+                         ::testing::Values(IoType::Read, IoType::Write));
+
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON
