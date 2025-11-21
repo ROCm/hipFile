@@ -156,8 +156,25 @@ Fastpath::io(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, si
     void *devptr{reinterpret_cast<void *>(reinterpret_cast<intptr_t>(buffer->getBuffer()) + buffer_offset)};
     hipAmdFileHandle_t handle{};
     size_t             nbytes{};
+    size_t             buflen{buffer->getLength()};
 
     handle.fd = file->getFd();
+
+    if (file_offset < 0) {
+        throw std::invalid_argument("Negative file offset");
+    }
+
+    if (buffer_offset < 0) {
+        throw std::invalid_argument("Negative buffer offset");
+    }
+
+    if (buflen <= static_cast<size_t>(buffer_offset)) {
+        throw std::invalid_argument("Invalid buffer offset");
+    }
+
+    if (buflen - static_cast<size_t>(buffer_offset) < size) {
+        throw std::invalid_argument("IO could overflow buffer");
+    }
 
     switch (type) {
         case IoType::Read:
