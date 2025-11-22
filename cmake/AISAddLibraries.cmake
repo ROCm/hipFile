@@ -108,6 +108,10 @@ function(ais_add_libraries)
         endif()
         target_link_libraries(${target} PRIVATE hip::host)
 
+        # Add link options (mainly for hardening)
+        # Assumes a linker that understands ld flags
+        target_link_options(${target} PRIVATE "-Wl,-z,noexecstack")
+
         # Add the common include path
         target_include_directories(${target} PRIVATE "${CMAKE_SOURCE_DIR}/shared")
 
