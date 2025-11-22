@@ -1,7 +1,10 @@
 # Run ShellCheck (https://www.shellcheck.net/) over all shell scripts
 # in the repository
 name: ShellCheck
-on: pull_request
+on:
+  pull_request:
+    paths:
+      - '**.sh'
 permissions:
   contents: read
 jobs:
