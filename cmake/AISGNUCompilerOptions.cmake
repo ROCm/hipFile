@@ -84,6 +84,7 @@ function(get_ais_gnu_warning_flags outvar compiler_version)
     if(compiler_version VERSION_GREATER_EQUAL 12)
         set(flags
             # Misc warnings
+            -Wbidi-chars=any
             -Winterference-size
             -Wtrivial-auto-var-init
             ${flags}
