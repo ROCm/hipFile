@@ -55,9 +55,6 @@ function(get_ais_clang_warning_flags outvar compiler_version)
         # Turn on strict flex arrays (helps ASAN, _FORTIFY_SOURCE, etc.)
         -fstrict-flex-arrays=3
 
-        # Fortify source
-        -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3
-
         # Misc warnings
         #
         # This includes most warnings that are not enabled by default
