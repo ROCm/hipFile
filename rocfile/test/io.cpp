@@ -388,7 +388,7 @@ TEST_F(RocFileWrite, write_handles_unsupported_hip_memory_type)
     auto fh = Context<DriverState>::get()->registerFile(0xBADCAFE);
     for (const auto memoryType : UnsupportedHipMemoryTypes) {
         StrictMock<MHip>      mhip;
-        hipPointerAttribute_t attrs;
+        hipPointerAttribute_t attrs{};
         attrs.type = memoryType;
         EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
         ASSERT_EQ(rocFileWrite(fh, nonnull_ptr, 0, 0, 0), -static_cast<ssize_t>(rocFileHipMemoryTypeInvalid));
@@ -712,7 +712,7 @@ TEST_F(RocFileRead, read_handles_unsupported_hip_memory_type)
     expect_file_registration(msys, mlibmounthelper);
     auto fh{Context<DriverState>::get()->registerFile(0xBADCAFE)};
     for (const auto memoryType : UnsupportedHipMemoryTypes) {
-        hipPointerAttribute_t attrs;
+        hipPointerAttribute_t attrs{};
         attrs.type = memoryType;
         EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
         ASSERT_EQ(rocFileRead(fh, nonnull_ptr, 0, 0, 0), -static_cast<ssize_t>(rocFileHipMemoryTypeInvalid));
