@@ -89,10 +89,8 @@ function(get_ais_gnu_warning_flags outvar compiler_version)
             -Wtrivial-auto-var-init
             ${flags}
         )
-    endif()
 
-    # Only use _FORTIFY_SOURCE if the optimization level is -O2, -O3, or -Os
-    if(compiler_version VERSION_GREATER_EQUAL 12)
+        # Only use _FORTIFY_SOURCE if the optimization level is -O2, -O3, or -Os
         string(JOIN " " MYCXXFLAGS ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}})
         if(MYCXXFLAGS MATCHES "-O[2-3s]")
             set(flags
