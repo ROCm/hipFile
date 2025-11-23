@@ -16,7 +16,7 @@ If CMake can't find hipcc/nvcc, you can set `-DCMAKE_HIP_COMPILER=<path>`
 
 Supported platforms: Linux (Windows may be supported in a future release)
 
-Supported filesystems: ext4
+Supported filesystems: Only ext4 is supported at this time
 
 Targeting NVIDIA requires cuFile to be installed
 
