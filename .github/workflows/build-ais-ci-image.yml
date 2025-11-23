@@ -39,13 +39,13 @@ jobs:
       - name: Fetching code repository...
         uses: actions/checkout@v5
       - name: Authenticating to GitHub Container Registry.
-        uses: docker/login-action@v3.6.0
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup Docker Builder
-        uses: docker/setup-buildx-action@v3.11.1
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 #v3.11.1
         with:
           name: ais-builder
           driver: docker-container
