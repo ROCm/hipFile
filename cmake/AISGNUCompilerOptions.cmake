@@ -93,7 +93,7 @@ function(get_ais_gnu_warning_flags outvar compiler_version)
     # Only use _FORTIFY_SOURCE if the optimization level is -O2, -O3, or -Os
     if(compiler_version VERSION_GREATER_EQUAL 12)
         string(JOIN " " MYCXXFLAGS ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}})
-        if (MYCXXFLAGS MATCHES "-O[2-3s]")
+        if(MYCXXFLAGS MATCHES "-O[2-3s]")
             set(flags
                 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3
                 ${flags}
