@@ -48,6 +48,16 @@ function(get_ais_clang_warning_flags outvar compiler_version)
         -Wno-c++14-compat-pedantic
         -Wno-pre-c++17-compat-pedantic
 
+        # Turn on stack protection options
+        -fstack-clash-protection
+        -fstack-protector-strong
+
+        # Turn on strict flex arrays (helps ASAN, _FORTIFY_SOURCE, etc.)
+        -fstrict-flex-arrays=3
+
+        # Fortify source
+        -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3
+
         # Misc warnings
         #
         # This includes most warnings that are not enabled by default
@@ -74,6 +84,7 @@ function(get_ais_clang_warning_flags outvar compiler_version)
         -Wcomma
         -Wconditional-uninitialized
         -Wconsumed
+        -Wconversion
         #-Wcovered-switch-default (flags default labels where we handle all enum values)
         -Wcstring-format-directive
         -Wctad-maybe-unsupported
@@ -95,6 +106,7 @@ function(get_ais_clang_warning_flags outvar compiler_version)
         -Wformat=2
         -Wformat-non-iso
         -Wformat-pedantic
+        -Wformat-security
         -Wformat-type-confusion
         -Wfour-char-constants
         -Wfuse-ld-path
