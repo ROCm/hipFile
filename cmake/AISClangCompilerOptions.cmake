@@ -32,7 +32,11 @@ function(get_ais_clang_warning_flags outvar compiler_version)
         -Wdeprecated
 
         # Aggressively warn about thread-safety issues
+        # Requires markup: https://clang.llvm.org/docs/ThreadSafetyAnalysis.html
         -Wthread-safety
+        -Wthread-safety-beta
+        -Wthread-safety-negative
+        -Wthread-safety-verbose
 
         # Turn this on later (generates a lot of noise now)
         -Wdocumentation
@@ -50,10 +54,13 @@ function(get_ais_clang_warning_flags outvar compiler_version)
 
         # Turn on stack protection options
         -fstack-clash-protection
-        -fstack-protector-strong
+        -fstack-protector-strong    # Consider -all instead of -strong
 
         # Turn on strict flex arrays (helps ASAN, _FORTIFY_SOURCE, etc.)
         -fstrict-flex-arrays=3
+
+        # Initialize local variables with a pattern
+        -ftrivial-auto-var-init=pattern
 
         # Misc warnings
         #
@@ -123,8 +130,7 @@ function(get_ais_clang_warning_flags outvar compiler_version)
         -Wmax-tokens
         -Wmethod-signatures
         -Wmissing-include-dirs
-        #-Wmissing-noreturn # Generates spurious warnings due to unimplemented void
-                            # functions that always throw exceptions or terminate
+        -Wmissing-noreturn
         -Wmissing-prototypes
         -Wmissing-variable-declarations
         -Wnarrowing
@@ -163,6 +169,7 @@ function(get_ais_clang_warning_flags outvar compiler_version)
         -Wsuper-class-method-mismatch
         -Wswitch-default
         -Werror=switch-enum # To make sure we never miss a CUDA enum value
+        -Wtautological-constant-in-range-compare
         -Wtype-limits
         -Wunaligned-access
         -Wundeclared-selector
@@ -218,6 +225,10 @@ function(get_ais_clang_warning_flags outvar compiler_version)
 
     if(compiler_version VERSION_GREATER_EQUAL 21.0)
         set(flags
+            # Aggressively warn about thread-safety issues
+            # Requires markup: https://clang.llvm.org/docs/ThreadSafetyAnalysis.html
+            -Wthread-safety-pointer
+
             # Misc warnings
             -Wignored-base-class-qualifiers
             -Wshift-bool
