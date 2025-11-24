@@ -24,7 +24,7 @@ jobs:
         run: |
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{inputs.platform}}" >> "$GITHUB_ENV"
       - name: Fetching code repository...
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Authenticating to GitHub Container Registry
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3.6.0
         with:
@@ -131,7 +131,7 @@ jobs:
         run: |
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{inputs.platform}}" >> "$GITHUB_ENV"
       - name: Fetching code repository...
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Authenticating to GitHub Container Registry
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3.6.0
         with:
@@ -194,7 +194,7 @@ jobs:
         run: |
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{inputs.platform}}_nvidia" >> "$GITHUB_ENV"
       - name: Fetching code repository...
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Authenticating to GitHub Container Registry
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3.6.0
         with:
@@ -286,7 +286,7 @@ jobs:
         run: |
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{inputs.platform}}_nvidia" >> "$GITHUB_ENV"
       - name: Fetching code repository...
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Authenticating to GitHub Container Registry
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3.6.0
         with:
