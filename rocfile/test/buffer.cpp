@@ -32,7 +32,7 @@ HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 void
 expect_buffer_registration(MHip &mhip, hipMemoryType memory_type)
 {
-    hipPointerAttribute_t attrs;
+    hipPointerAttribute_t attrs{};
     attrs.type = memory_type;
     HipMemAddressRange range{reinterpret_cast<void *>(0x1), UINT64_MAX - 1};
     EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
@@ -68,7 +68,7 @@ TEST_F(RocFileBuffer, register_internal_unsupported_hip_memory)
 {
     for (const auto memoryType : UnsupportedHipMemoryTypes) {
         StrictMock<MHip>      mhip;
-        hipPointerAttribute_t attrs;
+        hipPointerAttribute_t attrs{};
         attrs.type = memoryType;
         EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
         ASSERT_THROW(Context<DriverState>::get()->registerBuffer(nonnull_ptr, 0, 0), InvalidMemoryType);
@@ -79,7 +79,7 @@ TEST_F(RocFileBuffer, register_unsupported_hip_memory)
 {
     for (const auto memoryType : UnsupportedHipMemoryTypes) {
         StrictMock<MHip>      mhip;
-        hipPointerAttribute_t attrs;
+        hipPointerAttribute_t attrs{};
         attrs.type = memoryType;
         EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
         ASSERT_EQ(rocFileBufRegister(nonnull_ptr, 0, 0), RocFileOpError(rocFileHipMemoryTypeInvalid));
@@ -131,7 +131,7 @@ TEST_F(RocFileBuffer, registerOversizeRangeReturnsError)
     StrictMock<MHip>   mhip;
     HipMemAddressRange range{nonnull_ptr, 100};
     EXPECT_CALL(mhip, hipMemGetAddressRange).WillOnce(testing::Return(range));
-    hipPointerAttribute_t attrs;
+    hipPointerAttribute_t attrs{};
     attrs.type = hipMemoryTypeDevice;
     EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
     ASSERT_EQ(rocFileBufRegister(reinterpret_cast<void *>(0x1), 101, 0),
@@ -142,7 +142,7 @@ TEST_F(RocFileBuffer, registerHipMemGetAddressRangeThrowReturnsError)
 {
     StrictMock<MHip> mhip;
     EXPECT_CALL(mhip, hipMemGetAddressRange).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorNotFound)));
-    hipPointerAttribute_t attrs;
+    hipPointerAttribute_t attrs{};
     attrs.type = hipMemoryTypeDevice;
     EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
     ASSERT_EQ(rocFileBufRegister(reinterpret_cast<void *>(0x1), 100, 0), RocFileOpError(rocFileInvalidValue));
@@ -153,7 +153,7 @@ TEST_F(RocFileBuffer, registerOverflowingRangeReturnsError)
     StrictMock<MHip>   mhip;
     HipMemAddressRange range{nonnull_ptr, 100};
     EXPECT_CALL(mhip, hipMemGetAddressRange).WillOnce(testing::Return(range));
-    hipPointerAttribute_t attrs;
+    hipPointerAttribute_t attrs{};
     attrs.type = hipMemoryTypeDevice;
     EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
     ASSERT_EQ(rocFileBufRegister(reinterpret_cast<void *>(0xFFFF0000), 0x10000, 0),
