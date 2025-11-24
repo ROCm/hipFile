@@ -48,7 +48,7 @@ function(ais_add_sanitizers target)
             target_compile_options(${target} PRIVATE ${integer_sanitize_flags})
             target_link_options(${target} PRIVATE ${integer_sanitize_flags})
         else()
-            message(WARNING "The integer sanitizer is only available on clang")
+            message(FATAL_ERROR "The integer sanitizer is only available on clang")
         endif()
     endif()
 
