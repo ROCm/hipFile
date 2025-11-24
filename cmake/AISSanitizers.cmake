@@ -38,8 +38,7 @@ function(ais_add_sanitizers target)
     # the process if undefined integer behaviour occurs (like
     # wrapping a signed integer).
     if(AIS_BUILD_INTEGER_SANITIZERS)
-        set(compiler_id "${CMAKE_CXX_COMPILER_ID}")
-        if(compiler_id STREQUAL "Clang")
+        if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             set(integer_sanitize_flags
                 -fsanitize=integer
                 -fsanitize-minimal-runtime
