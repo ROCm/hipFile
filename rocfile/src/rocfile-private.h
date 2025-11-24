@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "backend.h"
 #include "hipfile-types.h"
 #include "rocfile.h"
 
@@ -15,6 +14,7 @@
 
 namespace rocFile {
 enum class IoType;
+struct Backend;
 }
 
 // NOTE: This is an internal API that we don't document, even though it's

@@ -14,10 +14,13 @@
 #include "batch/batch.h"
 #include "context.h"
 #include "hip.h"
+#include "hipfile-types.h"
 #include "hipfile-warnings.h"
 #include "io.h"
 #include "mbackend.h"
 #include "mbatch.h"
+#include "mbuffer.h"
+#include "mfile.h"
 #include "mhip.h"
 #include "mmountinfo.h"
 #include "mstate.h"
@@ -29,6 +32,7 @@
 #include "sys.h"
 
 #include <array>
+#include <errno.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <hip/hip_runtime_api.h>

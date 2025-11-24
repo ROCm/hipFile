@@ -7,17 +7,14 @@
 #include "backend/fallback.h"
 #include "buffer.h"
 #include "context.h"
-#include "file.h"
 #include "hip.h"
 #include "hipfile-types.h"
 #include "hipfile-warnings.h"
 #include "io.h"
-#include "mbackend.h"
 #include "mbuffer.h"
 #include "mfile.h"
 #include "mhip.h"
 #include "mmountinfo.h"
-#include "mstate.h"
 #include "msys.h"
 #include "rocfile.h"
 #include "rocfile-test.h"
@@ -48,6 +45,10 @@ using namespace testing;
 using std::shared_ptr;
 using ::testing::Return;
 using ::testing::StrictMock;
+
+namespace rocFile {
+class IFile;
+}
 
 // Put tests inside the macros to suppress the global constructor
 // warnings
