@@ -5,6 +5,7 @@
 
 [![MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/ROCm/hipFile/develop/LICENSE.md)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11458/badge)](https://www.bestpractices.dev/projects/11458)
+[![CodeQL](https://github.com/ROCm/hipFile/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/ROCm/hipFile/actions/workflows/github-code-scanning/codeql)
 
 AMD Infinity Storage library that supports IO directly to the GPU
 
