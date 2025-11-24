@@ -43,7 +43,7 @@ function(ais_add_sanitizers target)
             set(integer_sanitize_flags
                 -fsanitize=integer
                 -fsanitize-minimal-runtime
-                -fno-sanitize-recover
+                -fno-sanitize-recover=integer
             )
             target_compile_options(${target} PRIVATE ${integer_sanitize_flags})
             target_link_options(${target} PRIVATE ${integer_sanitize_flags})
