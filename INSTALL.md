@@ -12,11 +12,13 @@ Supported hardware:
 
 Supported compilers: amdclang++ (preferred), clang++, g++
 
-Supported platforms: Linux (Windows may be supported in a future release)
-
 If CMake can't find hipcc/nvcc, you can set `-DCMAKE_HIP_COMPILER=<path>`
 
-Targeting NVIDIA requires CUfile to be installed
+Supported platforms: Linux (Windows may be supported in a future release)
+
+Supported filesystems: Only ext4 is supported at this time
+
+Targeting NVIDIA requires cuFile to be installed
 
 ### Prerequisites
 
