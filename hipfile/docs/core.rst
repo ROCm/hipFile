@@ -29,3 +29,18 @@ Any of the parameters can be ignored by passing in a NULL pointer.
 We do not provide a hipFile equivalent to cuFile's ``cuFileGetVersion()``
 via the ``hipify`` tool. This is because any logic involving the obtained
 version number would be platform-specific and have to be customized regardless.
+
+Parameter Getters and Setters
+-----------------------------
+Like cuFile, hipFile includes a set of functions for getting and setting library
+parameters. These comprise several API calls that get/set parameters
+of a particular type based on an enum selector (e.g., ``hipFileGetParameterSizeT()``).
+These API calls are all unsupported at this time and will return errors
+if called.
+
+* ``hipFileError_t hipFileGetParameterSizeT(hipFileSizeTConfigParameter_t param, size_t *value)``
+* ``hipFileError_t hipFileGetParameterBool(hipFileBoolConfigParameter_t param, bool *value)``
+* ``hipFileError_t hipFileGetParameterString(hipFileStringConfigParameter_t param, char *desc_str, int len)``
+* ``hipFileError_t hipFileSetParameterSizeT(hipFileSizeTConfigParameter_t param, size_t value)``
+* ``hipFileError_t hipFileSetParameterBool(hipFileBoolConfigParameter_t param, bool value)``
+* ``hipFileError_t hipFileSetParameterString(hipFileStringConfigParameter_t param, const char *desc_str)``

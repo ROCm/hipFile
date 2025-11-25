@@ -1,11 +1,20 @@
 Introduction
 ============
+In recent years, the demand for high-performance data movement between
+storage and GPU memory has grown rapidly, driven by the increasing
+scale of AI training, scientific simulations, and data analytics
+workloads. In response to this evolving need within heterogeneous
+computing environments, AMD introduces hipFile, a cuFile-equivalent
+API framework designed to enable direct data paths between NVMe
+devices and GPU memory, significantly reducing CPU overhead and
+improving IO throughput.
 
-hipFile is an AMD equivalent to NVIDIA's cuFile API. It is intendended
-to be a drop-in, easily HIPify-able replacement for cuFile. Like other
-HIP libraries, it transparently maps hipFile API calls to AMD's rocFile
-or NVIDIA's cuFile based on whether `__HIP_PLATFORM_AMD__` or `__HIP_PLATFORM_NVIDIA__`
-were set when building the library, respectively.
-
-The documentation for hipFile is somewhat sparse as it's a very thin layer.
-For API details, see AMD's rocFile or NVIDIA's cuFile API documentation.
+hipFile provides developers with an interface for performing
+high-performance IO operations between storage devices and AMD
+GPUs. By bypassing traditional CPU memory staging buffers,
+hipFile allows applications to achieve lower latency and higher
+bandwidth when transferring large datasets into GPU memory. This
+direct data path integration complements the broader ROCm stack
+- seamlessly interoperating with HIP kernels, HIP streams, and
+RDMA-enabled storage systems - to support end-to-end acceleration
+for IO-bound workflows.
