@@ -18,9 +18,9 @@ jobs:
   compile_on_AMD:
     runs-on: [ubuntu-24.04]
     steps:
-      - name: Get PR number and store it as a environment variable
+      - name: Set early AIS CI environment variables
         run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
-      - name: Set AIS CI image environment variables
+      - name: Set AIS CI container name
         run: |
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{ inputs.platform }}" >> "$GITHUB_ENV"
       - name: Fetching code repository...
@@ -125,11 +125,11 @@ jobs:
           - clang++
           - g++
     steps:
-      - name: Get PR number and store it as a environment variable
+      - name: Set early AIS CI environment variables
         run: |
           echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
           echo "AIS_SAFE_COMPILER_NAME=$(echo ${{ matrix.alternate_compilers}} | sed 's|[\+]|plus|g')" >> "$GITHUB_ENV"
-      - name: Set AIS CI image environment variables
+      - name: Set AIS CI container name
         run: |
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{ inputs.platform }}_${AIS_SAFE_COMPILER_NAME}" >> "$GITHUB_ENV"
       - name: Fetching code repository...
@@ -190,9 +190,9 @@ jobs:
     runs-on: [linux, AIS]
     needs: compile_on_AMD
     steps:
-      - name: Get PR number and store it as a environment variable
+      - name: Set early AIS CI environment variables
         run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
-      - name: Set AIS CI image environment variables
+      - name: Set AIS CI container name
         run: |
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{ inputs.platform }}" >> "$GITHUB_ENV"
       - name: Fetching code repository...
@@ -282,11 +282,11 @@ jobs:
           - g++
           - clang++
     steps:
-      - name: Get PR number and store it as a environment variable
+      - name: Set early AIS CI environment variables
         run: |
           echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
           echo "AIS_SAFE_COMPILER_NAME=$(echo ${{ matrix.supported_compilers }} | sed 's|[\+]|plus|g')" >> "$GITHUB_ENV"
-      - name: Set AIS CI image environment variables
+      - name: Set AIS CI container name
         run: |
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{ inputs.platform }}_${AIS_SAFE_COMPILER_NAME}" >> "$GITHUB_ENV"
       - name: Fetching code repository...
