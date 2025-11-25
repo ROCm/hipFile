@@ -37,6 +37,7 @@ Options
 |------|-------|-------|
 |AIS\_USE\_CLANG\_TIDY|OFF|Run the `clang-tidy` tool|
 |AIS\_USE\_IWYU|OFF|Run the `include-what-you-use` tool|
+|AIS\_WARN\_UNSAFE\_BUFFER\_OPS|ON|Scan code for unsafe buffer operations (clang only, OFF for others)|
 |BUILD\_AIS\_DOCS|OFF|Build API documentation (requires Doxygen)|
 |BUILD\_AISCP|ON|Build `aiscp` example program (OFF if no hipFile)|
 |BUILD\_CODE\_COVERAGE|OFF|Generate code coverage information when tests are run|
