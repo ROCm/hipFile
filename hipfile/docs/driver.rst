@@ -11,11 +11,11 @@ reference count drops to zero, the driver's data structures are cleaned up,
 including any open files, buffers, etc., which will be closed. The driver
 does not currently maintain significant state, so there is little need to be
 aggressive about closing the driver. All driver state will be properly
-closed when the phipess exits.
+closed when the process exits.
 
 The term "driver" is essentially synonymous with "library". The driver
 is implemented as a library singleton and it is not possible to have multiple
-drivers open in a single phipess.
+drivers open in a single process.
 
 The basic driver API calls:
 
