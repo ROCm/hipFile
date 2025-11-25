@@ -51,15 +51,7 @@ function(ais_add_docs_target AIS_DOC_PRETTY_NAME)
     add_dependencies(doc ${AIS_DOC_TARGET_NAME})
 endfunction()
 
-if(BUILD_HIPFILE)
-    ais_add_docs_target("hipFile")
-endif()
+ais_add_docs_target("hipFile")
 if(BUILD_ROCFILE)
-    ais_add_docs_target("rocFile")
-endif()
-# Allow building the docs when no library is selected
-# This builds ALL the API docs
-if(NOT BUILD_ROCFILE AND NOT BUILD_HIPFILE)
-    ais_add_docs_target("hipFile")
     ais_add_docs_target("rocFile")
 endif()

@@ -156,21 +156,19 @@ include(AISIWYU)
 #-------------------
 include(AISSanitizers)
 
-#----------------------------------
-# rocfile (default OFF for NVIDIA)
-#----------------------------------
+#-------------------
+# Platform defaults
+#-------------------
 if(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
-    set(BUILD_ROCFILE_DEFAULT OFF)
+    set(BUILD_ROCFILE OFF)
 else()
-    set(BUILD_ROCFILE_DEFAULT ON)
+    set(BUILD_ROCFILE ON)
 endif()
-option(BUILD_ROCFILE "Build rocfile library (AMD only)" ${BUILD_ROCFILE_DEFAULT})
 
-#---------
-# hipfile
-#---------
-option(BUILD_HIPFILE "Build hipfile library" ON)
-cmake_dependent_option(BUILD_AISCP "Build aiscp example program" ON "BUILD_HIPFILE" OFF)
+#-----------------------
+# aiscp example program
+#-----------------------
+option(BUILD_AISCP "Build aiscp example program" ON)
 
 #------
 # docs
@@ -221,12 +219,10 @@ endif()
 #-----------------------------------------------------------------------------
 # Subdirectories to configure/build
 #-----------------------------------------------------------------------------
-if(BUILD_ROCFILE AND CMAKE_HIP_PLATFORM STREQUAL "amd")
+if(BUILD_ROCFILE)
     add_subdirectory(rocfile)
 endif()
-if(BUILD_HIPFILE)
-    add_subdirectory(hipfile)
-endif()
+add_subdirectory(hipfile)
 if(BUILD_AIS_DOCS)
     add_subdirectory(docs)
 endif()

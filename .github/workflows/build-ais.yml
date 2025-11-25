@@ -325,8 +325,6 @@ jobs:
               cmake \
                 -DCMAKE_CXX_COMPILER=${{ matrix.supported_compilers }} \
                 -DCMAKE_CXX_FLAGS="-Werror" \
-                -DBUILD_ROCFILE=OFF \
-                -DBUILD_HIPFILE=ON \
                 -DCMAKE_HIP_PLATFORM=nvidia \
                 -DBUILD_AIS_DOCS=ON \
                 ..
