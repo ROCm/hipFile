@@ -310,15 +310,6 @@ catch (...) {
 }
 
 hipFileError_t
-hipFileGetBackendVersion(int *version)
-try {
-    return toHipFileError(cuFileGetVersion(version));
-}
-catch (...) {
-    return {hipFileInternalError, hipSuccess};
-}
-
-hipFileError_t
 hipFileGetParameterSizeT(hipFileSizeTConfigParameter_t param, size_t *value)
 try {
     return toHipFileError(cuFileGetParameterSizeT(toCUFileSizeTConfigParameter(param), value));

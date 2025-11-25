@@ -19,11 +19,12 @@ to integer values and will never contain text strings like "-patch1".
 rocFile also includes an API call for determining the library version at
 runtime:
 
-    ``rocFileError_t rocFileGetVersion(int *version)``
+This API call can be used to get the individual components of the version
+number.
 
-The returned version number uses the same formula as cuFile:
+    ``rocFileError_t rocFileGetVersion(unsigned *major, unsigned *minor, unsigned *patch)``
 
-    ``1000 * ROCFILE_MAJOR_VERSION + 10 * ROCFILE_MINOR_VERSION``
+Any of the parameters can be ignored by passing in a NULL pointer.
 
 Parameter Getters and Setters
 -----------------------------

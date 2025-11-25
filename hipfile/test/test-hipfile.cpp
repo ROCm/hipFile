@@ -63,9 +63,6 @@ main(int argc, char *argv[])
     uint64_t start_max_device_cache_size;
     uint64_t start_max_device_pinned_mem_size;
 
-    // hipFile Version
-    int hipfile_version;
-
     if (argc != 3) {
         fprintf(stderr, "Usage: %s FILE_IN FILE_OUT\n", argv[0]);
         exit(1);
@@ -242,17 +239,6 @@ main(int argc, char *argv[])
         fprintf(stderr, "WARN: max_device_pinned_mem_size unchanged.\n");
         fprintf(stderr, "      This is unusual, but not unexpected.\n");
     }
-
-    // Testing library version
-    err = hipFileGetBackendVersion(&hipfile_version);
-    if (err.err != hipFileSuccess) {
-        fprintf(stderr, "hipFileGetBackendVersion failed.\n");
-        fprintf(stderr, "hipFileError: %d\n", err.err);
-        fprintf(stderr, "hipError: %d\n", err.hip_drv_err);
-        rc = 1;
-        goto deregister_dbuf;
-    }
-    fprintf(stderr, "hipFileVersion: %d\n", hipfile_version);
 
 /**
  * Test cleanup.

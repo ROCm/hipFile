@@ -27,19 +27,6 @@ TEST(HipFileVersioning, Get)
 
     // NULL pointers should NOT produce errors
     ASSERT_EQ(hipFileGetVersion(nullptr, nullptr, nullptr), HIPFILE_SUCCESS);
-
-    // hipFileGetBackendVersion() succeeds and returns a value >= 0
-    //
-    // We can't reliably predict what the version number will be for
-    // an arbitrary library, but it probably won't be negative and
-    // checking for >= 0 ensures the -1 initialization value is
-    // overwritten.
-    int backend_version = -1;
-    ASSERT_EQ(hipFileGetBackendVersion(&backend_version), HIPFILE_SUCCESS);
-    ASSERT_GE(backend_version, 0);
-
-    // NULL pointer returns correct error
-    ASSERT_EQ(hipFileGetBackendVersion(nullptr), HipFileOpError(hipFileInvalidValue));
 }
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

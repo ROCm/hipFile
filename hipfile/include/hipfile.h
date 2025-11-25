@@ -939,23 +939,6 @@ hipFileError_t hipFileStreamDeregister(hipStream_t stream);
 HIPFILE_API
 hipFileError_t hipFileGetVersion(unsigned *major, unsigned *minor, unsigned *patch);
 
-/*!
- * @brief Get the version of the underlying library used by hipFile
- * @ingroup core
- *
- * @param [out] version The version of the underlying library
- *
- * @note Both cuFile and rocFile are represented by the following
- *       equation:
- *       `1000 * <MAJOR VERSION> + 10 * <MINOR VERSION>`
- *
- * @return hipFileSuccess
- * @return hipFileDriverVersionReadError
- * @return hipFileInvalidValue
- */
-HIPFILE_API
-hipFileError_t hipFileGetBackendVersion(int *version);
-
 // ***********************************************************************
 //  PROPERTIES API
 // ***********************************************************************
