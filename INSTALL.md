@@ -44,6 +44,13 @@ Options
 |BUILD\_ROCFILE|ON|Build the rocFile library (AMD only, OFF for NVIDIA)|
 |BUILD\_TESTING|ON|Build the test suite|
 
+Sanitizer options
+|Option|Default|Purpose|
+|------|-------|-------|
+|AIS\_BUILD\_SANITIZERS|OFF|Build with -fsanitize=address, leak, and undefined|
+|AIS\_BUILD\_INTEGER\_SANITIZERS|OFF|Build with -fsanitize=integer (clang only)|
+|AIS\_BUILD\_THREAD\_SANITIZERS|OFF|Build with -fsanitize=thread (not compatible with AIS\_BUILD\_SANITIZERS)|
+
 ### Build
 `cmake --build .`
 
