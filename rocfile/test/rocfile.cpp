@@ -32,7 +32,7 @@
 #include "sys.h"
 
 #include <array>
-#include <errno.h>
+#include <cerrno>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <hip/hip_runtime_api.h>
