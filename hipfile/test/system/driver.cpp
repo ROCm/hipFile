@@ -263,9 +263,6 @@ TEST_F(DriverNoInit, hipFileGetVersion)
     unsigned minor = UINT_MAX;
     unsigned patch = UINT_MAX;
     ASSERT_EQ(hipFileGetVersion(&major, &minor, &patch), HIPFILE_SUCCESS);
-
-    int version = -1;
-    ASSERT_EQ(hipFileGetBackendVersion(&version), HIPFILE_SUCCESS);
 }
 
 TEST_F(DriverNoInit, hipFileGetParameterSizeT)

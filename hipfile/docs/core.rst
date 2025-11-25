@@ -19,19 +19,13 @@ to integer values and will never contain text strings like "-patch1".
 hipFile also includes an API call for determining the library version at
 runtime:
 
+This API call can be used to get the individual components of the version
+number.
+
     ``hipFileError_t hipFileGetVersion(unsigned *major, unsigned *minor, unsigned *patch)``
 
 Any of the parameters can be ignored by passing in a NULL pointer.
 
-
-The Version of the Back-end Library
------------------------------------
-hipFile also includes an API call for determining the back-end library version
-(e.g., cuFile, rocFile) at runtime:
-
-    ``hipFileError_t hipFileGetBackendVersion(int *version)``
-
-The version number reported will depend on the underlying library. Currently,
-both cuFile and rocFile use the following formula:
-
-    ``1000 * <major version> + 10 * <minor version>``
+We do not provide a hipFile equivalent to cuFile's ``cuFileGetVersion()``
+via the ``hipify`` tool. This is because any logic involving the obtained
+version number would be platform-specific and have to be customized regardless.

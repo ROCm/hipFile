@@ -306,30 +306,6 @@ catch (...) {
 }
 
 hipFileError_t
-hipFileGetBackendVersion(int *version)
-try {
-    unsigned major = UINT_MAX;
-    unsigned minor = UINT_MAX;
-
-    if (version == nullptr) {
-        return {hipFileInvalidValue, hipSuccess};
-    }
-
-    auto result = rocFileGetVersion(&major, &minor, nullptr);
-    if (result.err != rocFileSuccess) {
-        return toHipFileError(result);
-    }
-
-    // This is the same algorithm as NVIDIA's
-    *version = static_cast<int>((major * 1000) + (minor * 10));
-
-    return {hipFileSuccess, hipSuccess};
-}
-catch (...) {
-    return {hipFileInternalError, hipSuccess};
-}
-
-hipFileError_t
 hipFileGetParameterSizeT(hipFileSizeTConfigParameter_t param, size_t *value)
 try {
     return toHipFileError(rocFileGetParameterSizeT(toRocFileSizeTConfigParameter(param), value));
