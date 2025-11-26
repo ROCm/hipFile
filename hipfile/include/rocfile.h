@@ -114,48 +114,6 @@ typedef struct __ROCFILE_NODISCARD rocFileError {
  */
 
 /*!
- * @brief Filesystems/storage protocols supported by GPU IO on this system
- * @ingroup driver
- *
- * @note Value 10 is reserved for YRCloudFile
- */
-typedef enum rocFileDriverStatusFlags {
-    rocFileLustreSupported       = 0, //!< Lustre is supported (UNSUPPORTED in rocFile)
-    rocFileWekaFSSupported       = 1, //!< Weka is supported (UNSUPPORTED in rocFile)
-    rocFileNFSSupported          = 2, //!< NFS is supported
-    rocFileGPFSSupported         = 3, //!< GPFS/IBM Storage Scale is supported (UNSUPPORTED in rocFile)
-    rocFileNVMeSupported         = 4, //!< Local NVMe is supported
-    rocFileNVMeoFSupported       = 5, //!< NVMeoF is supported
-    rocFileSCSISupported         = 6, //!< SCSI is supported (UNSUPPORTED in rocFile)
-    rocFileScaleFluxCSDSupported = 7, //!< ScaleFlux CSD is supported (UNSUPPORTED in rocFile)
-    rocFileNVMeshSupported       = 8, //!< NVMesh is supported (UNSUPPORTED in rocFile)
-    rocFileBeeGFSSupported       = 9, //!< BeeGFS is supported (UNSUPPORTED in rocFile)
-    /* 10 is reserved for YRCloudFile */
-    rocFileNVMeP2PSsupported = 11, //!< NVMeP2P is supported (UNSUPPORTED in rocFile)
-    rocFileScatefsSupported  = 12, //!< ScateFS is supported (UNSUPPORTED in rocFile)
-} rocFileDriverStatusFlags_t;
-
-/*!
- * @brief Control flags for passing to the GPU IO driver
- * @ingroup driver
- */
-typedef enum rocFileDriverControlFlags {
-    rocFileUsePollMode     = 0, //!< Enable polling for IO completion
-    rocFileAllowCompatMode = 1, //!< Allow GPU IO to fall back to POSIX IO
-} rocFileDriverControlFlags_t;
-
-/*!
- * @brief GPU IO Transport & Features supported by the system
- * @ingroup driver
- */
-typedef enum rocFileFeatureFlags {
-    rocFileDynRoutingSupported = 0, //!< RDMA dynamic routing is supported
-    rocFileBatchIOSupported    = 1, //!< Batch operations are supported
-    rocFileStreamsSupported    = 2, //!< Streams are supported
-    rocFileParallelIOSupported = 3, //!< Parallel IO is supported
-} rocFileFeatureFlags_t;
-
-/*!
  * @brief GPU IO configuration
  * @ingroup driver
  */
