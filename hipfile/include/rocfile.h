@@ -26,60 +26,6 @@ extern "C" {
 // ***********************************************************************
 
 /*!
- * @brief IO operations for RDMA filesystems
- * @ingroup file
- */
-typedef struct rocFileFSOps {
-    /*!
-     * Type of remote FS used. If NULL, use fstat to discover.
-     */
-    const char *(*fs_type)(void *handle);
-    /*!
-     * Get a list of host RDMA addresses. If NULL, use any address.
-     */
-    int (*getRDMADeviceList)(void *handle, struct sockaddr **hostaddrs);
-    /*!
-     * Get the assigned priority of a RDMA device. If -1, there is no preference.
-     */
-    int (*getRDMADevicePriority)(void *handle, char *, size_t, hoff_t, struct sockaddr *hostaddr);
-    /*!
-     * Read from the remote filesystem. If NULL, use the Linux VFS.
-     */
-    ssize_t (*read)(void *handle, char *, size_t, hoff_t, hipFileRDMAInfo_t *);
-    /*!
-     * Write to the remote filesystem. If NULL, use the Linux VFS.
-     */
-    ssize_t (*write)(void *handle, const char *, size_t, hoff_t, hipFileRDMAInfo_t *);
-} rocFileFSOps_t;
-
-/*!
- * @brief Type of file handle being used
- * @ingroup file
- */
-typedef enum rocFileFileHandleType {
-    rocFileHandleTypeOpaqueFD    = 1, //!< POSIX file descriptor
-    rocFileHandleTypeOpaqueWin32 = 2, //!< Windows HANDLE file handle
-    rocFileHandleTypeUserspaceFS = 3, //!< Userspace RDMA filesystem
-} rocFileFileHandleType_t;
-
-/*!
- * @brief Top-level structure for performing GPU IO
- * @ingroup file
- *
- *  rocFileHandleTypeOpaqueFD    -> handle.fd non-negative, fs_ops ignored
- *  rocFileHandleTypeOpaqueWin32 -> handle.hFile non-NULL, fs_ops ignored
- *  rocFileHandleTypeUserspaceFS -> handle.fd non-negative, fs_ops non-NULL
- */
-typedef struct rocFileDescr {
-    rocFileFileHandleType_t type; //!< Type of file handle being used
-    union {
-        int   fd;                 //!< POSIX file descriptor
-        void *hFile;              //!< Win32 HANDLE file handle
-    } handle;                     //!< Union containing the OS-specific file handle
-    const rocFileFSOps_t *fs_ops; //!< Userspace RDMA filesystem operations
-} rocFileDescr_t;
-
-/*!
  * @brief Registers an open file for GPU IO
  * @ingroup file
  *
@@ -93,7 +39,7 @@ typedef struct rocFileDescr {
  * @return A rocFile error
  */
 ROCFILE_API
-hipFileError_t rocFileHandleRegister(hipFileHandle_t *fh, rocFileDescr_t *descr);
+hipFileError_t rocFileHandleRegister(hipFileHandle_t *fh, hipFileDescr_t *descr);
 
 /*!
  * @brief Deregisters a file from GPU IO

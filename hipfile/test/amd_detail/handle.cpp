@@ -98,9 +98,9 @@ TEST_F(HipFileHandle, register_handle_internal_linux_fd_already_registered)
 TEST_F(HipFileHandle, register_handle_linux_fd)
 {
     hipFileHandle_t fh{};
-    rocFileDescr_t  rfd{};
+    hipFileDescr_t  rfd{};
 
-    rfd.type      = rocFileHandleTypeOpaqueFD;
+    rfd.type      = hipFileHandleTypeOpaqueFD;
     rfd.handle.fd = 0xBADF00D;
 
     expect_file_registration(msys, mlibmounthelper);
@@ -112,8 +112,8 @@ TEST_F(HipFileHandle, register_handle_linux_fd)
 TEST_F(HipFileHandle, RocfileHandleRegisterStatxError)
 {
     hipFileHandle_t fh{};
-    rocFileDescr_t  rfd{};
-    rfd.type      = rocFileHandleTypeOpaqueFD;
+    hipFileDescr_t  rfd{};
+    rfd.type      = hipFileHandleTypeOpaqueFD;
     rfd.handle.fd = 0xBADF00D;
 
     EXPECT_CALL(msys, statx).WillOnce(Throw(Sys::RuntimeError(EBADF)));
@@ -125,8 +125,8 @@ TEST_F(HipFileHandle, RocfileHandleRegisterStatxError)
 TEST_F(HipFileHandle, RocfileHandleRegisterFcntlError)
 {
     hipFileHandle_t fh{};
-    rocFileDescr_t  rfd{};
-    rfd.type      = rocFileHandleTypeOpaqueFD;
+    hipFileDescr_t  rfd{};
+    rfd.type      = hipFileHandleTypeOpaqueFD;
     rfd.handle.fd = 0xBADF00D;
 
     EXPECT_CALL(msys, statx);
@@ -139,8 +139,8 @@ TEST_F(HipFileHandle, RocfileHandleRegisterFcntlError)
 TEST_F(HipFileHandle, RocfileHandleRegisterLibMountError)
 {
     hipFileHandle_t fh{};
-    rocFileDescr_t  rfd{};
-    rfd.type      = rocFileHandleTypeOpaqueFD;
+    hipFileDescr_t  rfd{};
+    rfd.type      = hipFileHandleTypeOpaqueFD;
     rfd.handle.fd = 0xBADF00D;
 
     EXPECT_CALL(msys, statx);
@@ -153,9 +153,9 @@ TEST_F(HipFileHandle, RocfileHandleRegisterLibMountError)
 TEST_F(HipFileHandle, register_handle_linux_fd_already_registered)
 {
     hipFileHandle_t fh{};
-    rocFileDescr_t  rfd{};
+    hipFileDescr_t  rfd{};
 
-    rfd.type      = rocFileHandleTypeOpaqueFD;
+    rfd.type      = hipFileHandleTypeOpaqueFD;
     rfd.handle.fd = 0xBADF00D;
 
     expect_file_registration(msys, mlibmounthelper);
@@ -168,9 +168,9 @@ TEST_F(HipFileHandle, register_handle_linux_fd_already_registered)
 TEST_F(HipFileHandle, register_handle_windows_handle_not_supported)
 {
     hipFileHandle_t fh{};
-    rocFileDescr_t  rfd{};
+    hipFileDescr_t  rfd{};
 
-    rfd.type      = rocFileHandleTypeOpaqueWin32;
+    rfd.type      = hipFileHandleTypeOpaqueWin32;
     rfd.handle.fd = 0xBADF00D;
 
     ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileIONotSupported));
@@ -179,9 +179,9 @@ TEST_F(HipFileHandle, register_handle_windows_handle_not_supported)
 TEST_F(HipFileHandle, register_handle_userspace_fs_not_supported)
 {
     hipFileHandle_t fh{};
-    rocFileDescr_t  rfd{};
+    hipFileDescr_t  rfd{};
 
-    rfd.type      = rocFileHandleTypeUserspaceFS;
+    rfd.type      = hipFileHandleTypeUserspaceFS;
     rfd.handle.fd = 0xBADF00D;
 
     ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileIONotSupported));
@@ -210,9 +210,9 @@ TEST_F(HipFileHandle, deregister_handle_internal)
 TEST_F(HipFileHandle, deregister_handle)
 {
     hipFileHandle_t fh{};
-    rocFileDescr_t  rfd{};
+    hipFileDescr_t  rfd{};
 
-    rfd.type      = rocFileHandleTypeOpaqueFD;
+    rfd.type      = hipFileHandleTypeOpaqueFD;
     rfd.handle.fd = 0xBADF00D;
 
     expect_file_registration(msys, mlibmounthelper);
@@ -235,9 +235,9 @@ TEST_F(HipFileHandle, deregister_handle_internal_fails_when_operations_are_ousta
 TEST_F(HipFileHandle, deregister_handle_fails_when_operations_are_oustanding)
 {
     hipFileHandle_t fh{};
-    rocFileDescr_t  rfd{};
+    hipFileDescr_t  rfd{};
 
-    rfd.type      = rocFileHandleTypeOpaqueFD;
+    rfd.type      = hipFileHandleTypeOpaqueFD;
     rfd.handle.fd = 0xBADF00D;
 
     expect_file_registration(msys, mlibmounthelper);

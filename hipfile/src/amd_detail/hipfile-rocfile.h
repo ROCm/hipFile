@@ -17,10 +17,6 @@ hipFileIOEvents_t toHipFileIOEvents(const rocFileIOEvents_t &rf_io_event);
 
 // hipFile to rocFile ////////////////////////////////////////////////////////
 
-rocFileDescr_t toRocFileDescr(const hipFileDescr_t &fd);
-
-rocFileFileHandleType_t toRocFileFileHandleType(hipFileFileHandleType_t hf_type);
-
 rocFileIOParams_t toRocFileIOParams(const hipFileIOParams_t &hf_io_params);
 
 rocFileOpcode_t toRocFileOpcode(hipFileOpcode_t hf_opcode);

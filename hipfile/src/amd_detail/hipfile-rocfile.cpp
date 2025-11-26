@@ -7,48 +7,6 @@
 
 #include <stdexcept>
 
-rocFileFileHandleType_t
-toRocFileFileHandleType(hipFileFileHandleType_t hf_type)
-{
-    switch (hf_type) {
-        case hipFileHandleTypeOpaqueFD:
-            return rocFileHandleTypeOpaqueFD;
-        case hipFileHandleTypeOpaqueWin32:
-            return rocFileHandleTypeOpaqueWin32;
-        case hipFileHandleTypeUserspaceFS:
-            return rocFileHandleTypeUserspaceFS;
-        default:
-            throw std::invalid_argument("Invalid hipFileFileHandleType_t value");
-    }
-}
-
-rocFileDescr_t
-toRocFileDescr(const hipFileDescr_t &fd)
-{
-    rocFileDescr_t rfd;
-
-    rfd.fs_ops = reinterpret_cast<const rocFileFSOps_t *>(fd.fs_ops);
-
-    switch (fd.type) {
-        case hipFileHandleTypeOpaqueFD:
-            rfd.type      = rocFileHandleTypeOpaqueFD;
-            rfd.handle.fd = fd.handle.fd;
-            break;
-        case hipFileHandleTypeOpaqueWin32:
-            rfd.type         = rocFileHandleTypeOpaqueWin32;
-            rfd.handle.hFile = fd.handle.hFile;
-            break;
-        case hipFileHandleTypeUserspaceFS:
-            rfd.type      = rocFileHandleTypeUserspaceFS;
-            rfd.handle.fd = fd.handle.fd;
-            break;
-        default:
-            throw std::invalid_argument("Invalid hipFileFileHandleType_t value");
-    }
-
-    return rfd;
-}
-
 rocFileBatchMode
 toRocFileBatchMode(hipFileBatchMode_t hf_batch_mode)
 {

@@ -20,19 +20,7 @@ using namespace std;
 hipFileError_t
 hipFileHandleRegister(hipFileHandle_t *fh, hipFileDescr_t *descr)
 try {
-    hipFileHandle_t *rocfile_fh = fh;
-    hipFileError_t   status;
-
-    if (descr) {
-        auto rocfile_descr = toRocFileDescr(*descr);
-        status             = rocFileHandleRegister(rocfile_fh, &rocfile_descr);
-        descr->fs_ops      = reinterpret_cast<const hipFileFSOps_t *>(rocfile_descr.fs_ops);
-    }
-    else {
-        status = rocFileHandleRegister(rocfile_fh, nullptr);
-    }
-
-    return status;
+    return rocFileHandleRegister(fh, descr);
 }
 catch (...) {
     return {hipFileInternalError, hipSuccess};

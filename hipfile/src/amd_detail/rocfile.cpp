@@ -44,20 +44,20 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileHandleRegister(hipFileHandle_t *fh, rocFileDescr_t *descr)
+rocFileHandleRegister(hipFileHandle_t *fh, hipFileDescr_t *descr)
 try {
     if (fh == nullptr || descr == nullptr) {
         return {hipFileInvalidValue, hipSuccess};
     }
 
     switch (descr->type) {
-        case rocFileHandleTypeOpaqueFD: {
+        case hipFileHandleTypeOpaqueFD: {
             UnregisteredFile uf{descr->handle.fd};
             *fh = Context<DriverState>::get()->registerFile(uf);
             return {hipFileSuccess, hipSuccess};
         }
-        case rocFileHandleTypeOpaqueWin32:
-        case rocFileHandleTypeUserspaceFS:
+        case hipFileHandleTypeOpaqueWin32:
+        case hipFileHandleTypeUserspaceFS:
         default:
             return {hipFileIONotSupported, hipSuccess};
     }

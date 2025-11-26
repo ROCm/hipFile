@@ -56,10 +56,10 @@ TEST_F(HipFileDriverAdmin, HandleRegisterInitsDriver)
     StrictMock<MLibMountHelper> mlibmounthelper{};
 
     hipFileHandle_t handle{};
-    rocFileDescr_t  descr{};
+    hipFileDescr_t  descr{};
 
     descr.handle.fd = 1234;
-    descr.type      = rocFileHandleTypeOpaqueFD;
+    descr.type      = hipFileHandleTypeOpaqueFD;
     descr.fs_ops    = nullptr;
 
     ASSERT_EQ(hipFileUseCount(), 0);
@@ -77,10 +77,10 @@ TEST_F(HipFileDriverAdmin, HandleRegisterGoodFD)
     StrictMock<MLibMountHelper> mlibmounthelper{};
 
     hipFileHandle_t handle{};
-    rocFileDescr_t  descr{};
+    hipFileDescr_t  descr{};
 
     descr.handle.fd = 0;
-    descr.type      = rocFileHandleTypeOpaqueFD;
+    descr.type      = hipFileHandleTypeOpaqueFD;
     descr.fs_ops    = nullptr;
 
     expect_file_registration(msys, mlibmounthelper);
@@ -100,10 +100,10 @@ TEST_F(HipFileDriverAdmin, HandleRegisterBadFD)
     StrictMock<MLibMountHelper> mlibmounthelper{};
 
     hipFileHandle_t handle{};
-    rocFileDescr_t  descr{};
+    hipFileDescr_t  descr{};
 
     descr.handle.fd = -1;
-    descr.type      = rocFileHandleTypeOpaqueFD;
+    descr.type      = hipFileHandleTypeOpaqueFD;
 
     EXPECT_CALL(msys, statx).WillOnce(Throw(Sys::RuntimeError(EBADF)));
 
@@ -141,10 +141,10 @@ TEST_F(HipFileDriverAdmin, CloseDeregistersFile)
     StrictMock<MLibMountHelper> mlibmounthelper{};
 
     hipFileHandle_t handle{};
-    rocFileDescr_t  descr{};
+    hipFileDescr_t  descr{};
 
     descr.handle.fd = 1234;
-    descr.type      = rocFileHandleTypeOpaqueFD;
+    descr.type      = hipFileHandleTypeOpaqueFD;
     descr.fs_ops    = nullptr;
 
     ASSERT_EQ(hipFileUseCount(), 0);
