@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-// Multithreading stress test for rocFile's batch context map
+// Multithreading stress test for hipFile's batch context map
 //
 // Just run the program. It takes no special arguments.
 //

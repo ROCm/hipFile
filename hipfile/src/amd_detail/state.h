@@ -44,7 +44,7 @@ struct file_buffer_stream_tuple {
     std::shared_ptr<IStream> stream;
 };
 
-// rocFile "state"
+// hipFile "state"
 //
 // Important for:
 //
@@ -113,9 +113,9 @@ public:
     // File interface
     //
 
-    /// @brief Registers a file. Files must be registered before they can be used with rocFile IO APIs
+    /// @brief Registers a file. Files must be registered before they can be used with hipFile IO APIs
     /// @param [in] uf An unregistered file
-    /// @return A handle to be used when calling rocFile IO APIs
+    /// @return A handle to be used when calling hipFile IO APIs
     virtual hipFileHandle_t registerFile(const UnregisteredFile &uf);
 
     /// @brief Deregisters the file associated with the provided file handle
@@ -150,7 +150,7 @@ public:
     // Buffer and file calls
     //
     // These are for reducing the number of lock calls and are implemented
-    // as needed for the rocFile code
+    // as needed for the hipFile code
     //
 
     /// @brief Look up a file and registered buffer

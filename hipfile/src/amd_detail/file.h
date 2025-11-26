@@ -131,7 +131,7 @@ class FileMap {
 public:
     virtual ~FileMap();
 
-    /// @brief Registers a file. Files must be registered before they can be used with rocFile IO APIs
+    /// @brief Registers a file. Files must be registered before they can be used with hipFile IO APIs
     /// @attention A unique_lock on HipFileMutex must be held
     /// @param uf An unregistered file
     virtual hipFileHandle_t registerFile(const UnregisteredFile &uf);

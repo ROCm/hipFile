@@ -27,7 +27,7 @@ using ::testing::StrictMock;
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 
 static auto
-rocFileFlagsPowerSet()
+hipFileFlagsPowerSet()
 {
     return ::testing::Combine(::testing::Values(0, HIPFILE_STREAM_FIXED_BUF_OFFSET),
                               ::testing::Values(0, HIPFILE_STREAM_FIXED_FILE_OFFSET),
@@ -65,7 +65,7 @@ TEST_P(HipFileStreamValidParams, register_stream_valid_flags_internal)
     ASSERT_EQ(stream->getHipStream(), nonnull_stream);
 }
 
-INSTANTIATE_TEST_SUITE_P(StreamSuite, HipFileStreamValidParams, rocFileFlagsPowerSet());
+INSTANTIATE_TEST_SUITE_P(StreamSuite, HipFileStreamValidParams, hipFileFlagsPowerSet());
 
 TEST_F(HipFileStream, get_stream_with_unregistered_stream_works)
 {

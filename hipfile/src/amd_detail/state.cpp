@@ -187,7 +187,7 @@ DriverState::getStream(hipStream_t hip_stream)
 // Buffer and file calls
 //
 // These are for reducing the number of lock calls and are implemented
-// as needed for the rocFile code
+// as needed for the hipFile code
 //
 
 file_buffer_pair

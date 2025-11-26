@@ -44,7 +44,7 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileHandleRegister(hipFileHandle_t *fh, hipFileDescr_t *descr)
+hipFileHandleRegister(hipFileHandle_t *fh, hipFileDescr_t *descr)
 try {
     if (fh == nullptr || descr == nullptr) {
         return {hipFileInvalidValue, hipSuccess};
@@ -69,31 +69,22 @@ catch (...) {
     return handle_exception();
 }
 
-hipFileError_t
-rocFileHandleDeregister(hipFileHandle_t fh)
+void
+hipFileHandleDeregister(hipFileHandle_t fh)
 try {
     if (fh == nullptr) {
-        return {hipFileInvalidValue, hipSuccess};
+        return;
     }
 
     Context<DriverState>::get()->deregisterFile(fh);
-    return {hipFileSuccess, hipSuccess};
-}
-catch (const DriverNotInitialized &) {
-    return {hipFileDriverNotInitialized, hipSuccess};
-}
-catch (const FileOperationsOutstanding &) {
-    return {hipFileInternalError, hipSuccess};
-}
-catch (const FileNotRegistered &) {
-    return {hipFileHandleNotRegistered, hipSuccess};
+    return;
 }
 catch (...) {
-    return handle_exception();
+    return;
 }
 
 hipFileError_t
-rocFileBufRegister(const void *buffer_base, size_t length, int flags)
+hipFileBufRegister(const void *buffer_base, size_t length, int flags)
 try {
     Context<DriverState>::get()->registerBuffer(buffer_base, length, flags);
     return {hipFileSuccess, hipSuccess};
@@ -121,13 +112,15 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileBufDeregister(const void *buffer_base)
+hipFileBufDeregister(const void *buffer_base)
 try {
     Context<DriverState>::get()->deregisterBuffer(buffer_base);
     return {hipFileSuccess, hipSuccess};
 }
 catch (const DriverNotInitialized &) {
-    return {hipFileDriverNotInitialized, hipSuccess};
+    // Mimic cuFile and return hipFileDriverClosing instead
+    // of hipFileDrivernotInitialized
+    return {hipFileDriverClosing, hipSuccess};
 }
 catch (const BufferNotRegistered &) {
     return {hipFileMemoryNotRegistered, hipSuccess};
@@ -207,16 +200,32 @@ catch (...) {
 }
 
 ssize_t
-rocFileRead(hipFileHandle_t fh, void *buffer_base, size_t size, hoff_t file_offset, hoff_t buffer_offset)
+hipFileRead(hipFileHandle_t fh, void *buffer_base, size_t size, hoff_t file_offset, hoff_t buffer_offset)
 {
-    return hipFileIo(IoType::Read, fh, buffer_base, size, file_offset, buffer_offset, getCachedBackends());
+    auto result =
+        hipFileIo(IoType::Read, fh, buffer_base, size, file_offset, buffer_offset, getCachedBackends());
+
+    if (result == -hipFileDriverNotInitialized) {
+        // Match cuFile behaviour
+        errno  = EINVAL;
+        result = -1;
+    }
+    return result;
 }
 
 ssize_t
-rocFileWrite(hipFileHandle_t fh, const void *buffer_base, size_t size, hoff_t file_offset,
+hipFileWrite(hipFileHandle_t fh, const void *buffer_base, size_t size, hoff_t file_offset,
              hoff_t buffer_offset)
 {
-    return hipFileIo(IoType::Write, fh, buffer_base, size, file_offset, buffer_offset, getCachedBackends());
+    auto result =
+        hipFileIo(IoType::Write, fh, buffer_base, size, file_offset, buffer_offset, getCachedBackends());
+
+    if (result == -hipFileDriverNotInitialized) {
+        // Match cuFile behaviour
+        errno  = EINVAL;
+        result = -1;
+    }
+    return result;
 }
 
 hipFileError_t

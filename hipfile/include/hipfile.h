@@ -1110,5 +1110,3 @@ hipFileError_t hipFileSetParameterString(hipFileStringConfigParameter_t param, c
 #ifdef __cplusplus
 }
 #endif
-
-#include <rocfile.h>

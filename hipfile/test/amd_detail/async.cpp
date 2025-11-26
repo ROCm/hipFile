@@ -73,7 +73,7 @@ struct HipFileAsyncMonitor : HipFileAsyncOp {
 };
 
 static auto
-rocfileFlagsPowerSet()
+hipfileFlagsPowerSet()
 {
     return Combine(Values(0, HIPFILE_STREAM_FIXED_BUF_OFFSET), Values(0, HIPFILE_STREAM_FIXED_FILE_OFFSET),
                    Values(0, HIPFILE_STREAM_FIXED_FILE_SIZE), Values(0, HIPFILE_STREAM_PAGE_ALIGNED_INPUTS));
@@ -131,7 +131,7 @@ TEST_P(HipFileAsyncOpStreamParams, asyncOp_construction_has_correct_variants)
         EXPECT_NO_THROW(std::get<size_t *>(op->size));
     }
 }
-INSTANTIATE_TEST_SUITE_P(StreamSuite, HipFileAsyncOpStreamParams, rocfileFlagsPowerSet());
+INSTANTIATE_TEST_SUITE_P(StreamSuite, HipFileAsyncOpStreamParams, hipfileFlagsPowerSet());
 
 TEST_F(HipFileAsyncOp, AsyncOpFallback_new_uses_pinned_host_memory)
 {

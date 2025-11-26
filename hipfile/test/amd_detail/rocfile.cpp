@@ -4,8 +4,8 @@
  */
 
 /*
- * These tests are integration-level tests against the rocFile API.
- * They should test that the various rocFile modules are compatible with
+ * These tests are integration-level tests against the hipFile API.
+ * They should test that the various hipFile modules are compatible with
  * one another. Running IO is not intended to be guaranteed to run here.
  *
  * All tests in this file are expected to pass on a CPU-only node.
@@ -128,7 +128,7 @@ TEST_F(HipFileUnit, TestHipFileBatchIOSubmitBadArgument)
     ASSERT_EQ(result, HIPFILE_INVALID_VALUE);
 }
 
-/// @brief Test rocFileIO function
+/// @brief Test hipFileIO function
 struct HipFileIoParam : public TestWithParam<IoType> {
     hipFileHandle_t                  file_handle{};
     void                            *bufptr{reinterpret_cast<void *>(0xDEC0DE)};
@@ -247,11 +247,11 @@ TEST_P(HipFileIoBackendSelectionParam, HipFileIoThrowsIfThereAreNoBackends)
 
     switch (io_type) {
         case IoType::Read:
-            ASSERT_EQ(rocFileRead(handle, buffer, io_size, file_offset, buffer_offset),
+            ASSERT_EQ(hipFileRead(handle, buffer, io_size, file_offset, buffer_offset),
                       -hipFileInternalError);
             break;
         case IoType::Write:
-            ASSERT_EQ(rocFileWrite(handle, buffer, io_size, file_offset, buffer_offset),
+            ASSERT_EQ(hipFileWrite(handle, buffer, io_size, file_offset, buffer_offset),
                       -hipFileInternalError);
             break;
         default:
@@ -275,11 +275,11 @@ TEST_P(HipFileIoBackendSelectionParam, HipFileIoThrowsIfAllBackendsRejectTheIO)
 
     switch (io_type) {
         case IoType::Read:
-            ASSERT_EQ(rocFileRead(handle, buffer, io_size, file_offset, buffer_offset),
+            ASSERT_EQ(hipFileRead(handle, buffer, io_size, file_offset, buffer_offset),
                       -hipFileInternalError);
             break;
         case IoType::Write:
-            ASSERT_EQ(rocFileWrite(handle, buffer, io_size, file_offset, buffer_offset),
+            ASSERT_EQ(hipFileWrite(handle, buffer, io_size, file_offset, buffer_offset),
                       -hipFileInternalError);
             break;
         default:
@@ -306,13 +306,13 @@ TEST_P(HipFileIoBackendSelectionParam, HipFileIoIssuesIoToHighestScoringBackend)
             EXPECT_CALL(*mbe2,
                         io(Eq(IoType::Read), Eq(mfile), Eq(mbuffer), io_size, file_offset, buffer_offset))
                 .WillOnce(Return(io_size));
-            ASSERT_EQ(rocFileRead(handle, buffer, io_size, file_offset, buffer_offset), io_size);
+            ASSERT_EQ(hipFileRead(handle, buffer, io_size, file_offset, buffer_offset), io_size);
             break;
         case IoType::Write:
             EXPECT_CALL(*mbe2,
                         io(Eq(IoType::Write), Eq(mfile), Eq(mbuffer), io_size, file_offset, buffer_offset))
                 .WillOnce(Return(io_size));
-            ASSERT_EQ(rocFileWrite(handle, buffer, io_size, file_offset, buffer_offset), io_size);
+            ASSERT_EQ(hipFileWrite(handle, buffer, io_size, file_offset, buffer_offset), io_size);
             break;
         default:
             FAIL() << "Unhandled IO Type";

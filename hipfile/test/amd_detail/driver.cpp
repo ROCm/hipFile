@@ -27,7 +27,7 @@ HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 
 struct HipFileDriverAdmin : public HipFileUnopened {};
 
-// Ensure that rocFileOpen() and rocFileClose() increment and
+// Ensure that hipFileOpen() and hipFileClose() increment and
 // decrement the reference count
 TEST_F(HipFileDriverAdmin, OpenClose)
 {
@@ -48,7 +48,7 @@ TEST_F(HipFileDriverAdmin, OpenClose)
     ASSERT_EQ(hipFileUseCount(), 0);
 }
 
-// Ensure rocFileHandleRegister() initializes the driver
+// Ensure hipFileHandleRegister() initializes the driver
 // and DOES bump the reference count
 TEST_F(HipFileDriverAdmin, HandleRegisterInitsDriver)
 {
@@ -64,11 +64,11 @@ TEST_F(HipFileDriverAdmin, HandleRegisterInitsDriver)
 
     ASSERT_EQ(hipFileUseCount(), 0);
     expect_file_registration(msys, mlibmounthelper);
-    ASSERT_EQ(rocFileHandleRegister(&handle, &descr), HIPFILE_SUCCESS);
+    ASSERT_EQ(hipFileHandleRegister(&handle, &descr), HIPFILE_SUCCESS);
     ASSERT_EQ(hipFileUseCount(), 1);
 }
 
-// Ensure rocFileHandleRegister() handles a file descriptor
+// Ensure hipFileHandleRegister() handles a file descriptor
 // of zero (technically a legal POSIX value) and DOES bump
 // the reference count
 TEST_F(HipFileDriverAdmin, HandleRegisterGoodFD)
@@ -86,13 +86,13 @@ TEST_F(HipFileDriverAdmin, HandleRegisterGoodFD)
     expect_file_registration(msys, mlibmounthelper);
 
     ASSERT_EQ(hipFileUseCount(), 0);
-    ASSERT_EQ(rocFileHandleRegister(&handle, &descr), HIPFILE_SUCCESS);
+    ASSERT_EQ(hipFileHandleRegister(&handle, &descr), HIPFILE_SUCCESS);
     ASSERT_EQ(hipFileUseCount(), 1);
-    ASSERT_EQ(rocFileHandleDeregister(handle), HIPFILE_SUCCESS);
+    hipFileHandleDeregister(handle);
     ASSERT_EQ(hipFileUseCount(), 1);
 }
 
-// Ensure rocFileHandleRegister() fails when passed a negative file
+// Ensure hipFileHandleRegister() fails when passed a negative file
 // descriptor and does NOT bump the reference count
 TEST_F(HipFileDriverAdmin, HandleRegisterBadFD)
 {
@@ -108,12 +108,12 @@ TEST_F(HipFileDriverAdmin, HandleRegisterBadFD)
     EXPECT_CALL(msys, statx).WillOnce(Throw(Sys::RuntimeError(EBADF)));
 
     ASSERT_EQ(hipFileUseCount(), 0);
-    ASSERT_NE(rocFileHandleRegister(&handle, &descr), HIPFILE_SUCCESS);
+    ASSERT_NE(hipFileHandleRegister(&handle, &descr), HIPFILE_SUCCESS);
     ASSERT_EQ(hipFileUseCount(), 0);
 }
 
-// Ensure rocFileHandleDeregister() fails when passed a NULL or
-// unregistered pointer and does NOT bump the driver reference count
+// Ensure hipFileHandleDeregister() does NOT bump the driver reference
+// count when passed a NULL or unregistered pointer
 TEST_F(HipFileDriverAdmin, HandleDeregisterDoesNotInitDriver)
 {
     StrictMock<MSys>            msys{};
@@ -121,14 +121,14 @@ TEST_F(HipFileDriverAdmin, HandleDeregisterDoesNotInitDriver)
 
     // Check NULL
     ASSERT_EQ(hipFileUseCount(), 0);
-    ASSERT_NE(rocFileHandleDeregister(nullptr), HIPFILE_SUCCESS);
+    hipFileHandleDeregister(nullptr);
     ASSERT_EQ(hipFileUseCount(), 0);
 
     // Check unregistered handle
     hipFileHandle_t handle{};
 
     ASSERT_EQ(hipFileUseCount(), 0);
-    ASSERT_NE(rocFileHandleDeregister(handle), HIPFILE_SUCCESS);
+    hipFileHandleDeregister(handle);
     ASSERT_EQ(hipFileUseCount(), 0);
 }
 
@@ -149,12 +149,12 @@ TEST_F(HipFileDriverAdmin, CloseDeregistersFile)
 
     ASSERT_EQ(hipFileUseCount(), 0);
     expect_file_registration(msys, mlibmounthelper);
-    ASSERT_EQ(rocFileHandleRegister(&handle, &descr), HIPFILE_SUCCESS);
+    ASSERT_EQ(hipFileHandleRegister(&handle, &descr), HIPFILE_SUCCESS);
     ASSERT_EQ(hipFileUseCount(), 1);
     ASSERT_EQ(hipFileDriverClose(), HIPFILE_SUCCESS);
     ASSERT_EQ(hipFileUseCount(), 0);
     expect_file_registration(msys, mlibmounthelper);
-    ASSERT_EQ(rocFileHandleRegister(&handle, &descr), HIPFILE_SUCCESS);
+    ASSERT_EQ(hipFileHandleRegister(&handle, &descr), HIPFILE_SUCCESS);
     ASSERT_EQ(hipFileUseCount(), 1);
 }
 
@@ -167,16 +167,16 @@ TEST_F(HipFileDriverAdmin, BufRegisterInitsDriver)
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
 
     ASSERT_EQ(hipFileUseCount(), 0);
-    ASSERT_EQ(rocFileBufRegister(reinterpret_cast<void *>(0x1), 0, 0), HIPFILE_SUCCESS);
+    ASSERT_EQ(hipFileBufRegister(reinterpret_cast<void *>(0x1), 0, 0), HIPFILE_SUCCESS);
     ASSERT_EQ(hipFileUseCount(), 1);
 }
 
 // Ensure that buffer deregistration does not increment the driver
-// reference count
+// reference count (the odd error mimics cuFile)
 TEST_F(HipFileDriverAdmin, BufDeregisterDoesNotInitDriver)
 {
     ASSERT_EQ(hipFileUseCount(), 0);
-    ASSERT_EQ(rocFileBufDeregister(nullptr), HipFileOpError(hipFileDriverNotInitialized));
+    ASSERT_EQ(hipFileBufDeregister(nullptr), HipFileOpError(hipFileDriverClosing));
     ASSERT_EQ(hipFileUseCount(), 0);
 }
 
@@ -189,14 +189,14 @@ TEST_F(HipFileDriverAdmin, CloseDeregistersBuffer)
 
     ASSERT_EQ(hipFileUseCount(), 0);
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
-    ASSERT_EQ(rocFileBufRegister(reinterpret_cast<void *>(0x1), 0, 0), HIPFILE_SUCCESS);
+    ASSERT_EQ(hipFileBufRegister(reinterpret_cast<void *>(0x1), 0, 0), HIPFILE_SUCCESS);
     ASSERT_EQ(hipFileUseCount(), 1);
 
     ASSERT_EQ(hipFileDriverClose(), HIPFILE_SUCCESS);
     ASSERT_EQ(hipFileUseCount(), 0);
 
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
-    ASSERT_EQ(rocFileBufRegister(reinterpret_cast<void *>(0x1), 0, 0), HIPFILE_SUCCESS);
+    ASSERT_EQ(hipFileBufRegister(reinterpret_cast<void *>(0x1), 0, 0), HIPFILE_SUCCESS);
     ASSERT_EQ(hipFileUseCount(), 1);
 }
 
@@ -221,23 +221,21 @@ TEST_F(HipFileDriverAdmin, WriteAsyncInitsDriver)
     ASSERT_EQ(hipFileUseCount(), 1);
 }
 
-// Ensure rocFileRead():
-// * Returns hipFileDriverNotInitialized when called w/o a driver init
-//   (the weird negative sign is a quirk of returning a ssize_t)
+// Ensure hipFileRead():
+// * Returns -1 (like cuFile) when called w/o a driver init
 // * Does NOT initialize the driver and returns a reference count of 0
 TEST_F(HipFileDriverAdmin, ReadDoesNotInitsDriver)
 {
-    ASSERT_EQ(rocFileRead(nullptr, nullptr, 0, 0, 0), -hipFileDriverNotInitialized);
+    ASSERT_EQ(hipFileRead(nullptr, nullptr, 0, 0, 0), -1);
     ASSERT_EQ(hipFileUseCount(), 0);
 }
 
-// Ensure rocFileWrite():
-// * Returns hipFileDriverNotInitialized when called w/o a driver init
-//   (the weird negative sign is a quirk of returning a ssize_t)
+// Ensure hipFileWrite():
+// * Returns -1 (like cuFile) when called w/o a driver init
 // * Does NOT initialize the driver and returns a reference count of 0
 TEST_F(HipFileDriverAdmin, WriteDoesNotInitDriver)
 {
-    ASSERT_EQ(rocFileWrite(nullptr, nullptr, 0, 0, 0), -hipFileDriverNotInitialized);
+    ASSERT_EQ(hipFileWrite(nullptr, nullptr, 0, 0, 0), -1);
     ASSERT_EQ(hipFileUseCount(), 0);
 }
 

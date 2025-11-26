@@ -136,7 +136,7 @@ public:
     virtual void clear();
 
 private:
-    /// Buffer lookup table. Protected by rocfile.cpp's StateMutex
+    /// Buffer lookup table. Protected by hipfile.cpp's StateMutex
     std::unordered_map<const void *, std::shared_ptr<IBuffer>> from_ptr;
 };
 

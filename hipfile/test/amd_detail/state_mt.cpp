@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-// Multithreading stress test for rocFile's global state
+// Multithreading stress test for hipFile's global state
 //
 // Just run the program. It takes no special arguments.
 

@@ -104,11 +104,11 @@ TEST_F(HipFileHandle, register_handle_linux_fd)
     rfd.handle.fd = 0xBADF00D;
 
     expect_file_registration(msys, mlibmounthelper);
-    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HIPFILE_SUCCESS);
+    ASSERT_EQ(hipFileHandleRegister(&fh, &rfd), HIPFILE_SUCCESS);
     ASSERT_NE(fh, nullptr);
 }
 
-// If statx() fails during file registration return rocfileInternalError
+// If statx() fails during file registration return hipfileInternalError
 TEST_F(HipFileHandle, RocfileHandleRegisterStatxError)
 {
     hipFileHandle_t fh{};
@@ -118,10 +118,10 @@ TEST_F(HipFileHandle, RocfileHandleRegisterStatxError)
 
     EXPECT_CALL(msys, statx).WillOnce(Throw(Sys::RuntimeError(EBADF)));
 
-    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileInternalError));
+    ASSERT_EQ(hipFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileInternalError));
 }
 
-// If the fcntl() fails during file registration return rocfileInternalError
+// If the fcntl() fails during file registration return hipfileInternalError
 TEST_F(HipFileHandle, RocfileHandleRegisterFcntlError)
 {
     hipFileHandle_t fh{};
@@ -132,10 +132,10 @@ TEST_F(HipFileHandle, RocfileHandleRegisterFcntlError)
     EXPECT_CALL(msys, statx);
     EXPECT_CALL(msys, fcntl).WillOnce(Throw(Sys::RuntimeError(EBADF)));
 
-    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileInternalError));
+    ASSERT_EQ(hipFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileInternalError));
 }
 
-// If getting mount information fails during file registration return rocfileInternalError
+// If getting mount information fails during file registration return hipfileInternalError
 TEST_F(HipFileHandle, RocfileHandleRegisterLibMountError)
 {
     hipFileHandle_t fh{};
@@ -147,7 +147,7 @@ TEST_F(HipFileHandle, RocfileHandleRegisterLibMountError)
     EXPECT_CALL(msys, fcntl);
     EXPECT_CALL(mlibmounthelper, getMountInfo).WillOnce(Throw(std::runtime_error("error from test")));
 
-    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileInternalError));
+    ASSERT_EQ(hipFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileInternalError));
 }
 
 TEST_F(HipFileHandle, register_handle_linux_fd_already_registered)
@@ -159,10 +159,10 @@ TEST_F(HipFileHandle, register_handle_linux_fd_already_registered)
     rfd.handle.fd = 0xBADF00D;
 
     expect_file_registration(msys, mlibmounthelper);
-    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HIPFILE_SUCCESS);
+    ASSERT_EQ(hipFileHandleRegister(&fh, &rfd), HIPFILE_SUCCESS);
     ASSERT_NE(fh, nullptr);
     expect_file_registration(msys, mlibmounthelper);
-    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileHandleAlreadyRegistered));
+    ASSERT_EQ(hipFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileHandleAlreadyRegistered));
 }
 
 TEST_F(HipFileHandle, register_handle_windows_handle_not_supported)
@@ -173,7 +173,7 @@ TEST_F(HipFileHandle, register_handle_windows_handle_not_supported)
     rfd.type      = hipFileHandleTypeOpaqueWin32;
     rfd.handle.fd = 0xBADF00D;
 
-    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileIONotSupported));
+    ASSERT_EQ(hipFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileIONotSupported));
 }
 
 TEST_F(HipFileHandle, register_handle_userspace_fs_not_supported)
@@ -184,7 +184,7 @@ TEST_F(HipFileHandle, register_handle_userspace_fs_not_supported)
     rfd.type      = hipFileHandleTypeUserspaceFS;
     rfd.handle.fd = 0xBADF00D;
 
-    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileIONotSupported));
+    ASSERT_EQ(hipFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileIONotSupported));
 }
 
 TEST_F(HipFileHandle, deregister_handle_internal_throws_if_not_registered)
@@ -193,10 +193,9 @@ TEST_F(HipFileHandle, deregister_handle_internal_throws_if_not_registered)
                  FileNotRegistered);
 }
 
-TEST_F(HipFileHandle, deregister_handle_returns_error_if_not_registered)
+TEST_F(HipFileHandle, deregister_handle_doesnt_throw_if_not_registered)
 {
-    ASSERT_EQ(rocFileHandleDeregister(reinterpret_cast<hipFileHandle_t>(0xdeadbeef)),
-              HipFileOpError(hipFileHandleNotRegistered));
+    hipFileHandleDeregister(reinterpret_cast<hipFileHandle_t>(0xdeadbeef));
 }
 
 TEST_F(HipFileHandle, deregister_handle_internal)
@@ -216,9 +215,9 @@ TEST_F(HipFileHandle, deregister_handle)
     rfd.handle.fd = 0xBADF00D;
 
     expect_file_registration(msys, mlibmounthelper);
-    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HIPFILE_SUCCESS);
-    ASSERT_EQ(rocFileHandleDeregister(fh), HIPFILE_SUCCESS);
-    ASSERT_EQ(rocFileHandleDeregister(fh), HipFileOpError(hipFileHandleNotRegistered));
+    ASSERT_EQ(hipFileHandleRegister(&fh, &rfd), HIPFILE_SUCCESS);
+    hipFileHandleDeregister(fh);
+    hipFileHandleDeregister(fh);
 }
 
 TEST_F(HipFileHandle, deregister_handle_internal_fails_when_operations_are_oustanding)
@@ -241,12 +240,12 @@ TEST_F(HipFileHandle, deregister_handle_fails_when_operations_are_oustanding)
     rfd.handle.fd = 0xBADF00D;
 
     expect_file_registration(msys, mlibmounthelper);
-    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HIPFILE_SUCCESS);
+    ASSERT_EQ(hipFileHandleRegister(&fh, &rfd), HIPFILE_SUCCESS);
     {
         auto file = Context<DriverState>::get()->getFile(fh);
-        ASSERT_EQ(rocFileHandleDeregister(fh), HipFileOpError(hipFileInternalError));
+        hipFileHandleDeregister(fh);
     }
-    ASSERT_EQ(rocFileHandleDeregister(fh), HIPFILE_SUCCESS);
+    hipFileHandleDeregister(fh);
 }
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON
