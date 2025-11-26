@@ -20,7 +20,7 @@ using namespace std;
 hipFileError_t
 hipFileHandleRegister(hipFileHandle_t *fh, hipFileDescr_t *descr)
 try {
-    rocFileHandle_t *rocfile_fh = fh;
+    hipFileHandle_t *rocfile_fh = fh;
     hipFileError_t   status;
 
     if (descr) {

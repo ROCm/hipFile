@@ -97,7 +97,7 @@ TEST_F(HipFileHandle, register_handle_internal_linux_fd_already_registered)
 
 TEST_F(HipFileHandle, register_handle_linux_fd)
 {
-    rocFileHandle_t fh{};
+    hipFileHandle_t fh{};
     rocFileDescr_t  rfd{};
 
     rfd.type      = rocFileHandleTypeOpaqueFD;
@@ -111,7 +111,7 @@ TEST_F(HipFileHandle, register_handle_linux_fd)
 // If statx() fails during file registration return rocfileInternalError
 TEST_F(HipFileHandle, RocfileHandleRegisterStatxError)
 {
-    rocFileHandle_t fh{};
+    hipFileHandle_t fh{};
     rocFileDescr_t  rfd{};
     rfd.type      = rocFileHandleTypeOpaqueFD;
     rfd.handle.fd = 0xBADF00D;
@@ -124,7 +124,7 @@ TEST_F(HipFileHandle, RocfileHandleRegisterStatxError)
 // If the fcntl() fails during file registration return rocfileInternalError
 TEST_F(HipFileHandle, RocfileHandleRegisterFcntlError)
 {
-    rocFileHandle_t fh{};
+    hipFileHandle_t fh{};
     rocFileDescr_t  rfd{};
     rfd.type      = rocFileHandleTypeOpaqueFD;
     rfd.handle.fd = 0xBADF00D;
@@ -138,7 +138,7 @@ TEST_F(HipFileHandle, RocfileHandleRegisterFcntlError)
 // If getting mount information fails during file registration return rocfileInternalError
 TEST_F(HipFileHandle, RocfileHandleRegisterLibMountError)
 {
-    rocFileHandle_t fh{};
+    hipFileHandle_t fh{};
     rocFileDescr_t  rfd{};
     rfd.type      = rocFileHandleTypeOpaqueFD;
     rfd.handle.fd = 0xBADF00D;
@@ -152,7 +152,7 @@ TEST_F(HipFileHandle, RocfileHandleRegisterLibMountError)
 
 TEST_F(HipFileHandle, register_handle_linux_fd_already_registered)
 {
-    rocFileHandle_t fh{};
+    hipFileHandle_t fh{};
     rocFileDescr_t  rfd{};
 
     rfd.type      = rocFileHandleTypeOpaqueFD;
@@ -167,7 +167,7 @@ TEST_F(HipFileHandle, register_handle_linux_fd_already_registered)
 
 TEST_F(HipFileHandle, register_handle_windows_handle_not_supported)
 {
-    rocFileHandle_t fh{};
+    hipFileHandle_t fh{};
     rocFileDescr_t  rfd{};
 
     rfd.type      = rocFileHandleTypeOpaqueWin32;
@@ -178,7 +178,7 @@ TEST_F(HipFileHandle, register_handle_windows_handle_not_supported)
 
 TEST_F(HipFileHandle, register_handle_userspace_fs_not_supported)
 {
-    rocFileHandle_t fh{};
+    hipFileHandle_t fh{};
     rocFileDescr_t  rfd{};
 
     rfd.type      = rocFileHandleTypeUserspaceFS;
@@ -189,13 +189,13 @@ TEST_F(HipFileHandle, register_handle_userspace_fs_not_supported)
 
 TEST_F(HipFileHandle, deregister_handle_internal_throws_if_not_registered)
 {
-    ASSERT_THROW(Context<DriverState>::get()->deregisterFile(reinterpret_cast<rocFileHandle_t>(0xdeadbeef)),
+    ASSERT_THROW(Context<DriverState>::get()->deregisterFile(reinterpret_cast<hipFileHandle_t>(0xdeadbeef)),
                  FileNotRegistered);
 }
 
 TEST_F(HipFileHandle, deregister_handle_returns_error_if_not_registered)
 {
-    ASSERT_EQ(rocFileHandleDeregister(reinterpret_cast<rocFileHandle_t>(0xdeadbeef)),
+    ASSERT_EQ(rocFileHandleDeregister(reinterpret_cast<hipFileHandle_t>(0xdeadbeef)),
               HipFileOpError(hipFileHandleNotRegistered));
 }
 
@@ -209,7 +209,7 @@ TEST_F(HipFileHandle, deregister_handle_internal)
 
 TEST_F(HipFileHandle, deregister_handle)
 {
-    rocFileHandle_t fh{};
+    hipFileHandle_t fh{};
     rocFileDescr_t  rfd{};
 
     rfd.type      = rocFileHandleTypeOpaqueFD;
@@ -234,7 +234,7 @@ TEST_F(HipFileHandle, deregister_handle_internal_fails_when_operations_are_ousta
 
 TEST_F(HipFileHandle, deregister_handle_fails_when_operations_are_oustanding)
 {
-    rocFileHandle_t fh{};
+    hipFileHandle_t fh{};
     rocFileDescr_t  rfd{};
 
     rfd.type      = rocFileHandleTypeOpaqueFD;

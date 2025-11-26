@@ -27,18 +27,18 @@ public:
     {
     }
 
-    MOCK_METHOD(rocFileBatchHandle_t, createBatchContext, (unsigned capacity), (override));
-    MOCK_METHOD(void, destroyBatchContext, (rocFileBatchHandle_t handle), (override));
-    MOCK_METHOD(std::shared_ptr<IBatchContext>, getBatchContext, (rocFileBatchHandle_t handle), (override));
+    MOCK_METHOD(hipFileBatchHandle_t, createBatchContext, (unsigned capacity), (override));
+    MOCK_METHOD(void, destroyBatchContext, (hipFileBatchHandle_t handle), (override));
+    MOCK_METHOD(std::shared_ptr<IBatchContext>, getBatchContext, (hipFileBatchHandle_t handle), (override));
     MOCK_METHOD(void, registerBuffer, (const void *buf, size_t length, int flags), (override));
     MOCK_METHOD(void, deregisterBuffer, (const void *buf), (override));
     MOCK_METHOD(std::shared_ptr<IBuffer>, getBuffer, (const void *buf), (override));
     MOCK_METHOD(std::shared_ptr<IBuffer>, getBuffer, (const void *buf, size_t length, int flags), (override));
-    MOCK_METHOD(rocFileHandle_t, registerFile, (const UnregisteredFile &uf), (override));
-    MOCK_METHOD(void, deregisterFile, (rocFileHandle_t fh), (override));
-    MOCK_METHOD(std::shared_ptr<IFile>, getFile, (rocFileHandle_t fh), (override));
+    MOCK_METHOD(hipFileHandle_t, registerFile, (const UnregisteredFile &uf), (override));
+    MOCK_METHOD(void, deregisterFile, (hipFileHandle_t fh), (override));
+    MOCK_METHOD(std::shared_ptr<IFile>, getFile, (hipFileHandle_t fh), (override));
     MOCK_METHOD(file_buffer_pair, getFileAndBuffer,
-                (rocFileHandle_t fh, const void *buf, size_t length, int flags), (override));
+                (hipFileHandle_t fh, const void *buf, size_t length, int flags), (override));
     MOCK_METHOD(void, incrRefCount, (), (override));
     MOCK_METHOD(void, decrRefCount, (), (override));
     MOCK_METHOD(int64_t, getRefCount, (), (override, const));

@@ -55,7 +55,7 @@ TEST_F(HipFileDriverAdmin, HandleRegisterInitsDriver)
     StrictMock<MSys>            msys{};
     StrictMock<MLibMountHelper> mlibmounthelper{};
 
-    rocFileHandle_t handle{};
+    hipFileHandle_t handle{};
     rocFileDescr_t  descr{};
 
     descr.handle.fd = 1234;
@@ -76,7 +76,7 @@ TEST_F(HipFileDriverAdmin, HandleRegisterGoodFD)
     StrictMock<MSys>            msys{};
     StrictMock<MLibMountHelper> mlibmounthelper{};
 
-    rocFileHandle_t handle{};
+    hipFileHandle_t handle{};
     rocFileDescr_t  descr{};
 
     descr.handle.fd = 0;
@@ -99,7 +99,7 @@ TEST_F(HipFileDriverAdmin, HandleRegisterBadFD)
     StrictMock<MSys>            msys{};
     StrictMock<MLibMountHelper> mlibmounthelper{};
 
-    rocFileHandle_t handle{};
+    hipFileHandle_t handle{};
     rocFileDescr_t  descr{};
 
     descr.handle.fd = -1;
@@ -125,7 +125,7 @@ TEST_F(HipFileDriverAdmin, HandleDeregisterDoesNotInitDriver)
     ASSERT_EQ(hipFileUseCount(), 0);
 
     // Check unregistered handle
-    rocFileHandle_t handle{};
+    hipFileHandle_t handle{};
 
     ASSERT_EQ(hipFileUseCount(), 0);
     ASSERT_NE(rocFileHandleDeregister(handle), HIPFILE_SUCCESS);
@@ -140,7 +140,7 @@ TEST_F(HipFileDriverAdmin, CloseDeregistersFile)
     StrictMock<MSys>            msys{};
     StrictMock<MLibMountHelper> mlibmounthelper{};
 
-    rocFileHandle_t handle{};
+    hipFileHandle_t handle{};
     rocFileDescr_t  descr{};
 
     descr.handle.fd = 1234;

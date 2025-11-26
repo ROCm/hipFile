@@ -75,7 +75,7 @@ thread_function(int id)
 
     auto *ds = Context<DriverState>::get();
 
-    vector<pair<int, rocFileHandle_t>> files;
+    vector<pair<int, hipFileHandle_t>> files;
     vector<void *>                     buffers;
     vector<hipStream_t>                hip_streams;
 

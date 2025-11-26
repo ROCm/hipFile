@@ -103,20 +103,20 @@ public:
      * @param capacity Maximum number of outstanding operations that this context can manage
      * @return An opaque handle used to reference this new batch context
      */
-    rocFileBatchHandle_t createContext(unsigned capacity);
+    hipFileBatchHandle_t createContext(unsigned capacity);
 
     /*!
      * @brief Destroy a batch context and release all associated resources
      * @param handle The handle for the batch context to destroy
      */
-    void destroyContext(rocFileBatchHandle_t handle);
+    void destroyContext(hipFileBatchHandle_t handle);
 
     /*!
      * @brief Get a batch context
      * @param handle The opaque handle associated with a batch context
      * @return A batch context
      */
-    std::shared_ptr<IBatchContext> get(rocFileBatchHandle_t handle);
+    std::shared_ptr<IBatchContext> get(hipFileBatchHandle_t handle);
 
     /*!
      * @brief Clear the contents
@@ -125,7 +125,7 @@ public:
 
 private:
     /// batch context lookup table
-    std::unordered_map<rocFileBatchHandle_t, std::shared_ptr<IBatchContext>> active_contexts;
+    std::unordered_map<hipFileBatchHandle_t, std::shared_ptr<IBatchContext>> active_contexts;
 
     /// Mutex to protect the active context map
     mutable std::shared_mutex batch_mutex;

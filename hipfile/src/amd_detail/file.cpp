@@ -61,10 +61,10 @@ UnregisteredFile::getMountInfo() const noexcept
     return m_mountinfo;
 }
 
-rocFileHandle_t
+hipFileHandle_t
 IFile::getHandle() const
 {
-    return reinterpret_cast<rocFileHandle_t>(const_cast<IFile *>(this));
+    return reinterpret_cast<hipFileHandle_t>(const_cast<IFile *>(this));
 }
 
 File::File(const UnregisteredFile &uf)
@@ -97,7 +97,7 @@ File::getMountInfo() const
 }
 
 shared_ptr<IFile>
-FileMap::getFile(rocFileHandle_t fh)
+FileMap::getFile(hipFileHandle_t fh)
 {
     auto itr = from_fh.find(fh);
     if (from_fh.end() == itr) {
@@ -107,7 +107,7 @@ FileMap::getFile(rocFileHandle_t fh)
     return itr->second;
 }
 
-rocFileHandle_t
+hipFileHandle_t
 FileMap::registerFile(const UnregisteredFile &uf)
 {
     if (from_fd.end() != from_fd.find(uf.getFd())) {
@@ -122,7 +122,7 @@ FileMap::registerFile(const UnregisteredFile &uf)
 }
 
 void
-FileMap::deregisterFile(rocFileHandle_t fh)
+FileMap::deregisterFile(hipFileHandle_t fh)
 {
     auto itr = from_fh.find(fh);
 
@@ -149,7 +149,7 @@ FileMap::~FileMap()
 {
     try {
         // Create a list of registered files without causing the use_count to increase
-        vector<rocFileHandle_t> file_handles;
+        vector<hipFileHandle_t> file_handles;
         file_handles.reserve(from_fh.size());
         transform(from_fh.begin(), from_fh.end(), std::back_inserter(file_handles),
                   [](const auto &pair) { return pair.first; });

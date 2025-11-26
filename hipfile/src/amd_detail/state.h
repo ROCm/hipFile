@@ -71,16 +71,16 @@ public:
     /// @brief Create a new batch context
     /// @param [in] capacity Maximum number of outstanding operations that this context can manage
     /// @return An opaque handle used to reference this new batch context
-    virtual rocFileBatchHandle_t createBatchContext(unsigned capacity);
+    virtual hipFileBatchHandle_t createBatchContext(unsigned capacity);
 
     /// @brief Destroy a batch context and release all associated resources
     /// @param [in] handle The handle for the batch context to destroy
-    virtual void destroyBatchContext(rocFileBatchHandle_t handle);
+    virtual void destroyBatchContext(hipFileBatchHandle_t handle);
 
     /// @brief Get a batch context
     /// @param [in] handle The opaque handle associated with a batch context
     /// @return A batch context
-    virtual std::shared_ptr<IBatchContext> getBatchContext(rocFileBatchHandle_t handle);
+    virtual std::shared_ptr<IBatchContext> getBatchContext(hipFileBatchHandle_t handle);
 
     //
     // Buffer interface
@@ -116,17 +116,17 @@ public:
     /// @brief Registers a file. Files must be registered before they can be used with rocFile IO APIs
     /// @param [in] uf An unregistered file
     /// @return A handle to be used when calling rocFile IO APIs
-    virtual rocFileHandle_t registerFile(const UnregisteredFile &uf);
+    virtual hipFileHandle_t registerFile(const UnregisteredFile &uf);
 
     /// @brief Deregisters the file associated with the provided file handle
     /// @param [in] fh The handle of the file to deregister
-    virtual void deregisterFile(rocFileHandle_t fh);
+    virtual void deregisterFile(hipFileHandle_t fh);
 
-    /// @brief Look up a file given a rocFileHandle_t
+    /// @brief Look up a file given a hipFileHandle_t
     /// @param [in] fh The file handle to lookup the file with
     /// @return If file handle is valid, return a shared pointer to the file, otherwise throw
     /// FileNotRegistered.
-    virtual std::shared_ptr<IFile> getFile(rocFileHandle_t fh);
+    virtual std::shared_ptr<IFile> getFile(hipFileHandle_t fh);
 
     //
     // Stream interface
@@ -164,12 +164,12 @@ public:
     /// @param [in]  buf     Buffer pointer
     /// @param [in]  length  Buffer length
     /// @param [in]  flags   Buffer flags (unused)
-    virtual file_buffer_pair getFileAndBuffer(rocFileHandle_t fh, const void *buf, size_t length, int flags);
+    virtual file_buffer_pair getFileAndBuffer(hipFileHandle_t fh, const void *buf, size_t length, int flags);
 
     //
     // Buffer, file, and stream calls
     //
-    virtual file_buffer_stream_tuple getFileBufferAndStream(rocFileHandle_t fh, const void *buf,
+    virtual file_buffer_stream_tuple getFileBufferAndStream(hipFileHandle_t fh, const void *buf,
                                                             size_t length, int flags, hipStream_t hipStream);
 
     //

@@ -18,7 +18,7 @@ namespace hipFile {
 
 class MFile : public IFile {
 public:
-    MOCK_METHOD(rocFileHandle_t, getHandle, (), (const override));
+    MOCK_METHOD(hipFileHandle_t, getHandle, (), (const override));
     MOCK_METHOD(int, getFd, (), (const override));
     MOCK_METHOD(const struct statx &, getStatx, (), (const, noexcept, override));
     MOCK_METHOD(int, getStatusFlags, (), (const override));
@@ -30,9 +30,9 @@ public:
     MFileMap()
     {
     }
-    MOCK_METHOD(rocFileHandle_t, registerFile, (const UnregisteredFile &uf), (override));
-    MOCK_METHOD(void, deregisterFile, (rocFileHandle_t fh), (override));
-    MOCK_METHOD(std::shared_ptr<IFile>, getFile, (rocFileHandle_t), (override));
+    MOCK_METHOD(hipFileHandle_t, registerFile, (const UnregisteredFile &uf), (override));
+    MOCK_METHOD(void, deregisterFile, (hipFileHandle_t fh), (override));
+    MOCK_METHOD(std::shared_ptr<IFile>, getFile, (hipFileHandle_t), (override));
     MOCK_METHOD(void, clear, (), (override));
 };
 

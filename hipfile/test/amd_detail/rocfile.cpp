@@ -61,8 +61,8 @@ struct HipFileUnit : public HipFileUnopened {
 
 TEST_F(HipFileUnit, TestHipFileBatchIOSetupSuccess)
 {
-    rocFileBatchHandle_t b_handle          = nullptr;
-    rocFileBatchHandle_t expected_b_handle = reinterpret_cast<rocFileBatchHandle_t>(0x12345678);
+    hipFileBatchHandle_t b_handle          = nullptr;
+    hipFileBatchHandle_t expected_b_handle = reinterpret_cast<hipFileBatchHandle_t>(0x12345678);
 
     EXPECT_CALL(mock_state, createBatchContext).WillOnce(Return(expected_b_handle));
 
@@ -73,7 +73,7 @@ TEST_F(HipFileUnit, TestHipFileBatchIOSetupSuccess)
 
 TEST_F(HipFileUnit, TestHipFileBatchIOSetupBadArgument)
 {
-    rocFileBatchHandle_t b_handle = nullptr;
+    hipFileBatchHandle_t b_handle = nullptr;
 
     EXPECT_CALL(mock_state, createBatchContext).WillOnce(Throw(std::invalid_argument("")));
 
@@ -90,7 +90,7 @@ TEST_F(HipFileUnit, TestHipFileBatchIOSetupNullptrHandle)
 
 TEST_F(HipFileUnit, TestHipFileBatchIOSubmitSuccess)
 {
-    rocFileBatchHandle_t           b_handle = reinterpret_cast<rocFileBatchHandle_t>(0x12345678);
+    hipFileBatchHandle_t           b_handle = reinterpret_cast<hipFileBatchHandle_t>(0x12345678);
     rocFileIOParams_t              io_param;
     std::shared_ptr<MBatchContext> mock_b_context = std::make_shared<MBatchContext>();
 
@@ -103,7 +103,7 @@ TEST_F(HipFileUnit, TestHipFileBatchIOSubmitSuccess)
 
 TEST_F(HipFileUnit, TestHipFileBatchIOSubmitBadHandle)
 {
-    rocFileBatchHandle_t           b_handle = nullptr;
+    hipFileBatchHandle_t           b_handle = nullptr;
     rocFileIOParams_t              io_param;
     std::shared_ptr<MBatchContext> mock_b_context = std::make_shared<MBatchContext>();
 
@@ -117,7 +117,7 @@ TEST_F(HipFileUnit, TestHipFileBatchIOSubmitBadHandle)
 
 TEST_F(HipFileUnit, TestHipFileBatchIOSubmitBadArgument)
 {
-    rocFileBatchHandle_t           b_handle = reinterpret_cast<rocFileBatchHandle_t>(0x12345678);
+    hipFileBatchHandle_t           b_handle = reinterpret_cast<hipFileBatchHandle_t>(0x12345678);
     rocFileIOParams_t              io_param;
     std::shared_ptr<MBatchContext> mock_b_context = std::make_shared<MBatchContext>();
 
@@ -130,7 +130,7 @@ TEST_F(HipFileUnit, TestHipFileBatchIOSubmitBadArgument)
 
 /// @brief Test rocFileIO function
 struct HipFileIoParam : public TestWithParam<IoType> {
-    rocFileHandle_t                  file_handle{};
+    hipFileHandle_t                  file_handle{};
     void                            *bufptr{reinterpret_cast<void *>(0xDEC0DE)};
     size_t                           buflen{4096};
     const void                      *unreg_bufptr{reinterpret_cast<void *>(0xFACEFEED)};
@@ -182,7 +182,7 @@ TEST_P(HipFileIoParam, HipFileIoHandlesInvalidRegisteredBufferLength)
 
 TEST_P(HipFileIoParam, HipFileIoHandlesInvalidFileHandle)
 {
-    auto invalid_handle{reinterpret_cast<rocFileHandle_t>(0xdeadbeef)};
+    auto invalid_handle{reinterpret_cast<hipFileHandle_t>(0xdeadbeef)};
     ASSERT_EQ(hipFileIo(GetParam(), invalid_handle, bufptr, 0, 0, 0, mbackends), -hipFileHandleNotRegistered);
 }
 
@@ -214,7 +214,7 @@ INSTANTIATE_TEST_SUITE_P(HipFileIo, HipFileIoParam, Values(IoType::Read, IoType:
 struct HipFileIoBackendSelectionParam : public ::testing::TestWithParam<IoType> {
 
     IoType                                io_type;
-    rocFileHandle_t                       handle;
+    hipFileHandle_t                       handle;
     void                                 *buffer;
     size_t                                io_size;
     hoff_t                                file_offset;
@@ -228,7 +228,7 @@ struct HipFileIoBackendSelectionParam : public ::testing::TestWithParam<IoType> 
     StrictMock<MDriverState>              mds;
 
     HipFileIoBackendSelectionParam()
-        : io_type{GetParam()}, handle{reinterpret_cast<rocFileHandle_t>(0xBADF00D)},
+        : io_type{GetParam()}, handle{reinterpret_cast<hipFileHandle_t>(0xBADF00D)},
           buffer{reinterpret_cast<void *>(0xDEADBEEF)}, io_size{1024}, file_offset{32}, buffer_offset{64},
           flags{0}, mfile{std::make_shared<StrictMock<MFile>>()},
           mbuffer{std::make_shared<StrictMock<MBuffer>>()}, mbe1{std::make_shared<StrictMock<MBackend>>()},

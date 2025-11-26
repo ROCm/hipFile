@@ -79,7 +79,7 @@ public:
 
     /// @brief Get the handle for this file
     /// @return The handle for this file
-    virtual rocFileHandle_t getHandle() const;
+    virtual hipFileHandle_t getHandle() const;
 
     virtual int                      getFd() const             = 0;
     virtual const struct statx      &getStatx() const noexcept = 0;
@@ -134,25 +134,25 @@ public:
     /// @brief Registers a file. Files must be registered before they can be used with rocFile IO APIs
     /// @attention A unique_lock on HipFileMutex must be held
     /// @param uf An unregistered file
-    virtual rocFileHandle_t registerFile(const UnregisteredFile &uf);
+    virtual hipFileHandle_t registerFile(const UnregisteredFile &uf);
 
     /// @brief Deregisters the file associated with the provided file handle
     /// @attention A unique_lock on HipFileMutex must be held
     /// @param fh The handle of the file to deregister
-    virtual void deregisterFile(rocFileHandle_t fh);
+    virtual void deregisterFile(hipFileHandle_t fh);
 
-    /// @brief Look up a file given a rocFileHandle_t
+    /// @brief Look up a file given a hipFileHandle_t
     /// @attention A shared_lock on HipFileMutex must be held
     /// @param fh The file handle to lookup the file with
     /// @return If file handle is valid, return a shared pointer to the file, otherwise throw NotRegistered.
-    virtual std::shared_ptr<IFile> getFile(rocFileHandle_t fh);
+    virtual std::shared_ptr<IFile> getFile(hipFileHandle_t fh);
 
     virtual void clear();
 
 private:
     /// File lookup tables.
     std::unordered_map<int, std::shared_ptr<IFile>>             from_fd;
-    std::unordered_map<rocFileHandle_t, std::shared_ptr<IFile>> from_fh;
+    std::unordered_map<hipFileHandle_t, std::shared_ptr<IFile>> from_fh;
 };
 
 }

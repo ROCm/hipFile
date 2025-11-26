@@ -37,7 +37,7 @@ struct HipFileBatch : public HipFileUnopened {
     std::unique_ptr<rocFileIOParams_t>   io_params;
     std::shared_ptr<StrictMock<MBuffer>> default_mock_buffer;
     std::shared_ptr<StrictMock<MFile>>   default_mock_file;
-    const rocFileHandle_t                file_handle{reinterpret_cast<void *>(0xDEADBEEF)};
+    const hipFileHandle_t                file_handle{reinterpret_cast<void *>(0xDEADBEEF)};
     void *const                          buffer_pointer{reinterpret_cast<void *>(0x0BADF00D)};
 
     void SetUp() override
@@ -87,7 +87,7 @@ TEST_F(HipFileBatch, CreateOperationBadBuffer)
 TEST_F(HipFileBatch, CreateOperationBadFileHandle)
 {
     EXPECT_CALL(*default_mock_file, getHandle)
-        .WillOnce(Return(reinterpret_cast<rocFileHandle_t>(0xFACEFEED)));
+        .WillOnce(Return(reinterpret_cast<hipFileHandle_t>(0xFACEFEED)));
     EXPECT_THROW(BatchOperation(std::move(io_params), default_mock_buffer, default_mock_file),
                  std::invalid_argument);
 }
@@ -152,15 +152,15 @@ TEST_F(HipFileBatch, CreateOperationBadMode)
 
 TEST_F(HipFileBatch, CreateContext)
 {
-    rocFileBatchHandle_t handle = batch_map.createContext(32);
+    hipFileBatchHandle_t handle = batch_map.createContext(32);
 
     ASSERT_NE(nullptr, handle);
 }
 
 TEST_F(HipFileBatch, CreateTwoContexts)
 {
-    rocFileBatchHandle_t handle1 = batch_map.createContext(1);
-    rocFileBatchHandle_t handle2 = batch_map.createContext(1);
+    hipFileBatchHandle_t handle1 = batch_map.createContext(1);
+    hipFileBatchHandle_t handle2 = batch_map.createContext(1);
 
     ASSERT_NE(handle1, handle2);
 }
@@ -172,7 +172,7 @@ TEST_F(HipFileBatch, CreateContextZeroCapacity)
 
 TEST_F(HipFileBatch, CreateContextMaxCapacity)
 {
-    rocFileBatchHandle_t handle = batch_map.createContext(BatchContext::MAX_SIZE);
+    hipFileBatchHandle_t handle = batch_map.createContext(BatchContext::MAX_SIZE);
 
     ASSERT_NE(nullptr, handle);
 }
@@ -184,14 +184,14 @@ TEST_F(HipFileBatch, CreateContextOverCapacity)
 
 TEST_F(HipFileBatch, DestroyContext)
 {
-    rocFileBatchHandle_t handle = batch_map.createContext(1);
+    hipFileBatchHandle_t handle = batch_map.createContext(1);
 
     batch_map.destroyContext(handle);
 }
 
 TEST_F(HipFileBatch, DestroyMissingContext)
 {
-    ASSERT_THROW(batch_map.destroyContext(reinterpret_cast<rocFileBatchHandle_t>(1)), InvalidBatchHandle);
+    ASSERT_THROW(batch_map.destroyContext(reinterpret_cast<hipFileBatchHandle_t>(1)), InvalidBatchHandle);
 }
 
 TEST_F(HipFileBatch, DestroyNullptrContext)
@@ -201,7 +201,7 @@ TEST_F(HipFileBatch, DestroyNullptrContext)
 
 TEST_F(HipFileBatch, GetContext)
 {
-    rocFileBatchHandle_t           handle  = batch_map.createContext(1);
+    hipFileBatchHandle_t           handle  = batch_map.createContext(1);
     std::shared_ptr<IBatchContext> context = batch_map.get(handle);
 
     ASSERT_EQ(handle, context.get());
@@ -214,12 +214,12 @@ TEST_F(HipFileBatch, GetNullptrContext)
 
 TEST_F(HipFileBatch, GetInvalidContext)
 {
-    ASSERT_THROW(batch_map.get(reinterpret_cast<rocFileBatchHandle_t>(0xBAC00001)), InvalidBatchHandle);
+    ASSERT_THROW(batch_map.get(reinterpret_cast<hipFileBatchHandle_t>(0xBAC00001)), InvalidBatchHandle);
 }
 
 TEST_F(HipFileBatch, GetDestroyedContext)
 {
-    rocFileBatchHandle_t handle = batch_map.createContext(1);
+    hipFileBatchHandle_t handle = batch_map.createContext(1);
     batch_map.destroyContext(handle);
     ASSERT_THROW(batch_map.get(handle), InvalidBatchHandle);
 }

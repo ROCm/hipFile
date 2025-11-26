@@ -44,7 +44,7 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileHandleRegister(rocFileHandle_t *fh, rocFileDescr_t *descr)
+rocFileHandleRegister(hipFileHandle_t *fh, rocFileDescr_t *descr)
 try {
     if (fh == nullptr || descr == nullptr) {
         return {hipFileInvalidValue, hipSuccess};
@@ -70,7 +70,7 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileHandleDeregister(rocFileHandle_t fh)
+rocFileHandleDeregister(hipFileHandle_t fh)
 try {
     if (fh == nullptr) {
         return {hipFileInvalidValue, hipSuccess};
@@ -150,7 +150,7 @@ getCachedBackends()
 }
 
 ssize_t
-hipFileIo(IoType type, rocFileHandle_t fh, const void *buffer_base, size_t size, hoff_t file_offset,
+hipFileIo(IoType type, hipFileHandle_t fh, const void *buffer_base, size_t size, hoff_t file_offset,
           hoff_t buffer_offset, const vector<shared_ptr<Backend>> &backends)
 try {
     auto [file, buffer] = Context<DriverState>::get()->getFileAndBuffer(fh, buffer_base, size, 0);
@@ -207,13 +207,13 @@ catch (...) {
 }
 
 ssize_t
-rocFileRead(rocFileHandle_t fh, void *buffer_base, size_t size, hoff_t file_offset, hoff_t buffer_offset)
+rocFileRead(hipFileHandle_t fh, void *buffer_base, size_t size, hoff_t file_offset, hoff_t buffer_offset)
 {
     return hipFileIo(IoType::Read, fh, buffer_base, size, file_offset, buffer_offset, getCachedBackends());
 }
 
 ssize_t
-rocFileWrite(rocFileHandle_t fh, const void *buffer_base, size_t size, hoff_t file_offset,
+rocFileWrite(hipFileHandle_t fh, const void *buffer_base, size_t size, hoff_t file_offset,
              hoff_t buffer_offset)
 {
     return hipFileIo(IoType::Write, fh, buffer_base, size, file_offset, buffer_offset, getCachedBackends());
@@ -311,7 +311,7 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileBatchIOSetUp(rocFileBatchHandle_t *batch_idp, unsigned max_nr)
+rocFileBatchIOSetUp(hipFileBatchHandle_t *batch_idp, unsigned max_nr)
 try {
     if (batch_idp == nullptr) {
         return {hipFileInvalidValue, hipSuccess};
@@ -329,7 +329,7 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileBatchIOSubmit(rocFileBatchHandle_t batch_idp, unsigned nr, rocFileIOParams_t *iocbp, unsigned flags)
+rocFileBatchIOSubmit(hipFileBatchHandle_t batch_idp, unsigned nr, rocFileIOParams_t *iocbp, unsigned flags)
 try {
     (void)flags; // Unused at this time.
 
@@ -346,7 +346,7 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileBatchIOGetStatus(rocFileBatchHandle_t batch_idp, unsigned min_nr, unsigned *nr,
+rocFileBatchIOGetStatus(hipFileBatchHandle_t batch_idp, unsigned min_nr, unsigned *nr,
                         rocFileIOEvents_t *iocbp, struct timespec *timeout)
 try {
     (void)batch_idp;
@@ -362,7 +362,7 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileBatchIOCancel(rocFileBatchHandle_t batch_idp)
+rocFileBatchIOCancel(hipFileBatchHandle_t batch_idp)
 try {
     (void)batch_idp;
 
@@ -373,7 +373,7 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileBatchIODestroy(rocFileBatchHandle_t batch_idp)
+rocFileBatchIODestroy(hipFileBatchHandle_t batch_idp)
 try {
     (void)batch_idp;
 
@@ -384,7 +384,7 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileReadAsync(rocFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
+rocFileReadAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
                  hoff_t *buffer_offset_p, ssize_t *bytes_read_p, hipStream_t stream)
 try {
     if (Context<DriverState>::get()->getRefCount() == 0) {
@@ -406,7 +406,7 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileWriteAsync(rocFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
+rocFileWriteAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
                   hoff_t *buffer_offset_p, ssize_t *bytes_written_p, hipStream_t stream)
 try {
     if (Context<DriverState>::get()->getRefCount() == 0) {

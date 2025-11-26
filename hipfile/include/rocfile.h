@@ -139,12 +139,6 @@ typedef struct rocFileDescr {
 } rocFileDescr_t;
 
 /*!
- * Opaque file handle used by the GPU IO driver/library
- * @ingroup file
- */
-typedef void *rocFileHandle_t;
-
-/*!
  * @brief Registers an open file for GPU IO
  * @ingroup file
  *
@@ -158,7 +152,7 @@ typedef void *rocFileHandle_t;
  * @return A rocFile error
  */
 ROCFILE_API
-hipFileError_t rocFileHandleRegister(rocFileHandle_t *fh, rocFileDescr_t *descr);
+hipFileError_t rocFileHandleRegister(hipFileHandle_t *fh, rocFileDescr_t *descr);
 
 /*!
  * @brief Deregisters a file from GPU IO
@@ -169,7 +163,7 @@ hipFileError_t rocFileHandleRegister(rocFileHandle_t *fh, rocFileDescr_t *descr)
  * @return A rocFile error
  */
 ROCFILE_API
-hipFileError_t rocFileHandleDeregister(rocFileHandle_t fh);
+hipFileError_t rocFileHandleDeregister(hipFileHandle_t fh);
 
 /*!
  * @brief Registers a GPU memory region to be used with GPU IO
@@ -216,7 +210,7 @@ hipFileError_t rocFileBufDeregister(const void *buffer_base);
  * @return else:    Negative value of the related hipFileOpError_t
  */
 ROCFILE_API
-ssize_t rocFileRead(rocFileHandle_t fh, void *buffer_base, size_t size, hoff_t file_offset,
+ssize_t rocFileRead(hipFileHandle_t fh, void *buffer_base, size_t size, hoff_t file_offset,
                     hoff_t buffer_offset);
 
 /*!
@@ -234,7 +228,7 @@ ssize_t rocFileRead(rocFileHandle_t fh, void *buffer_base, size_t size, hoff_t f
  * @return else:    Negative value of the related hipFileOpError_t
  */
 ROCFILE_API
-ssize_t rocFileWrite(rocFileHandle_t fh, const void *buffer_base, size_t size, hoff_t file_offset,
+ssize_t rocFileWrite(hipFileHandle_t fh, const void *buffer_base, size_t size, hoff_t file_offset,
                      hoff_t buffer_offset);
 
 // ***********************************************************************
@@ -286,7 +280,7 @@ typedef struct rocFileIOParams {
             size_t  size;          //!< Number of bytes to read or write
         } batch;                   //!< Parameters for the read/write batch request
     } u;                           //!< Wrapping union for batch IO parameters
-    rocFileHandle_t fh;            //!< Registered rocFile handle for the target file
+    hipFileHandle_t fh;            //!< Registered rocFile handle for the target file
     rocFileOpcode_t opcode;        //!< Direction data is moving for the batch request
     void           *cookie;        //!< Optionally used to track IO operations (e.g. self-reference pointer)
 } rocFileIOParams_t;
@@ -302,12 +296,6 @@ typedef struct rocFileIOEvents {
 } rocFileIOEvents_t;
 
 /*!
- * @brief Opaque batch operations handle
- * @ingroup batch
- */
-typedef void *rocFileBatchHandle_t;
-
-/*!
  * @brief Prepare the system to perform a batch IO operation
  * @ingroup batch
  *
@@ -317,7 +305,7 @@ typedef void *rocFileBatchHandle_t;
  * @return A rocFile error
  */
 ROCFILE_API
-hipFileError_t rocFileBatchIOSetUp(rocFileBatchHandle_t *batch_idp, unsigned max_nr);
+hipFileError_t rocFileBatchIOSetUp(hipFileBatchHandle_t *batch_idp, unsigned max_nr);
 
 /*!
  * @brief Enqueue a batch of IO requests for the GPU to complete asynchronously
@@ -333,7 +321,7 @@ hipFileError_t rocFileBatchIOSetUp(rocFileBatchHandle_t *batch_idp, unsigned max
  * @return A rocFile error
  */
 ROCFILE_API
-hipFileError_t rocFileBatchIOSubmit(rocFileBatchHandle_t batch_idp, unsigned nr, rocFileIOParams_t *iocbp,
+hipFileError_t rocFileBatchIOSubmit(hipFileBatchHandle_t batch_idp, unsigned nr, rocFileIOParams_t *iocbp,
                                     unsigned flags);
 
 /*!
@@ -352,7 +340,7 @@ hipFileError_t rocFileBatchIOSubmit(rocFileBatchHandle_t batch_idp, unsigned nr,
  * @return A rocFile error
  */
 ROCFILE_API
-hipFileError_t rocFileBatchIOGetStatus(rocFileBatchHandle_t batch_idp, unsigned min_nr, unsigned *nr,
+hipFileError_t rocFileBatchIOGetStatus(hipFileBatchHandle_t batch_idp, unsigned min_nr, unsigned *nr,
                                        rocFileIOEvents_t *iocbp, struct timespec *timeout);
 
 /*!
@@ -364,7 +352,7 @@ hipFileError_t rocFileBatchIOGetStatus(rocFileBatchHandle_t batch_idp, unsigned 
  * @return A rocFile error
  */
 ROCFILE_API
-hipFileError_t rocFileBatchIOCancel(rocFileBatchHandle_t batch_idp);
+hipFileError_t rocFileBatchIOCancel(hipFileBatchHandle_t batch_idp);
 
 /*!
  * @brief Destroys the batch IO handle and frees the associated resources
@@ -375,7 +363,7 @@ hipFileError_t rocFileBatchIOCancel(rocFileBatchHandle_t batch_idp);
  * @return A rocFile error
  */
 ROCFILE_API
-hipFileError_t rocFileBatchIODestroy(rocFileBatchHandle_t batch_idp);
+hipFileError_t rocFileBatchIODestroy(hipFileBatchHandle_t batch_idp);
 
 // ***********************************************************************
 //  ASYNC API
@@ -397,7 +385,7 @@ hipFileError_t rocFileBatchIODestroy(rocFileBatchHandle_t batch_idp);
  * @return A rocFile error
  */
 ROCFILE_API
-hipFileError_t rocFileReadAsync(rocFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
+hipFileError_t rocFileReadAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
                                 hoff_t *buffer_offset_p, ssize_t *bytes_read_p, hipStream_t stream);
 
 /*!
@@ -416,7 +404,7 @@ hipFileError_t rocFileReadAsync(rocFileHandle_t fh, void *buffer_base, size_t *s
  * @return A rocFile error
  */
 ROCFILE_API
-hipFileError_t rocFileWriteAsync(rocFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
+hipFileError_t rocFileWriteAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
                                  hoff_t *buffer_offset_p, ssize_t *bytes_written_p, hipStream_t stream);
 
 /*!

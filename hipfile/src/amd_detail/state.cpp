@@ -44,20 +44,20 @@ DriverState::~DriverState()
 // Batch interface
 //
 
-rocFileBatchHandle_t
+hipFileBatchHandle_t
 DriverState::createBatchContext(unsigned capacity)
 {
     return batch_map->createContext(capacity);
 }
 
 void
-DriverState::destroyBatchContext(rocFileBatchHandle_t handle)
+DriverState::destroyBatchContext(hipFileBatchHandle_t handle)
 {
     batch_map->destroyContext(handle);
 }
 
 std::shared_ptr<IBatchContext>
-DriverState::getBatchContext(rocFileBatchHandle_t handle)
+DriverState::getBatchContext(hipFileBatchHandle_t handle)
 {
     return batch_map->get(handle);
 }
@@ -118,7 +118,7 @@ DriverState::getBuffer(const void *buf, size_t length, int flags)
 // File interface
 //
 
-rocFileHandle_t
+hipFileHandle_t
 DriverState::registerFile(const UnregisteredFile &uf)
 {
     unique_lock<shared_mutex> ulock{state_mutex};
@@ -133,7 +133,7 @@ DriverState::registerFile(const UnregisteredFile &uf)
 }
 
 void
-DriverState::deregisterFile(rocFileHandle_t fh)
+DriverState::deregisterFile(hipFileHandle_t fh)
 {
     unique_lock<shared_mutex> ulock{state_mutex};
 
@@ -145,7 +145,7 @@ DriverState::deregisterFile(rocFileHandle_t fh)
 }
 
 shared_ptr<IFile>
-DriverState::getFile(rocFileHandle_t fh)
+DriverState::getFile(hipFileHandle_t fh)
 {
     // NOTE: This mutex only protects the map, so we'll
     //       also need to protect the data
@@ -191,7 +191,7 @@ DriverState::getStream(hipStream_t hip_stream)
 //
 
 file_buffer_pair
-DriverState::getFileAndBuffer(rocFileHandle_t fh, const void *buf, size_t length, int flags)
+DriverState::getFileAndBuffer(hipFileHandle_t fh, const void *buf, size_t length, int flags)
 {
     // NOTE: This mutex only protects the map, so we'll
     //       also need to protect the data
@@ -209,7 +209,7 @@ DriverState::getFileAndBuffer(rocFileHandle_t fh, const void *buf, size_t length
 //
 
 file_buffer_stream_tuple
-DriverState::getFileBufferAndStream(rocFileHandle_t fh, const void *buf, size_t length, int flags,
+DriverState::getFileBufferAndStream(hipFileHandle_t fh, const void *buf, size_t length, int flags,
                                     hipStream_t hipStream)
 {
     shared_lock<shared_mutex> slock{state_mutex};

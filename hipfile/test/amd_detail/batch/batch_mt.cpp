@@ -47,7 +47,7 @@ thread_function(int id)
 
     auto bcm = BatchContextMap{};
 
-    vector<rocFileBatchHandle_t> handles;
+    vector<hipFileBatchHandle_t> handles;
 
     // Preload with data
     for (int i{0}; i < N_PRELOAD; i++) {
@@ -80,7 +80,7 @@ thread_function(int id)
                     uniform_int_distribution<size_t> vec_dist{0, handles.size() - 1};
                     size_t                           idx = vec_dist(gen);
 
-                    rocFileBatchHandle_t bh = handles[idx];
+                    hipFileBatchHandle_t bh = handles[idx];
                     bcm.destroyContext(bh);
 
                     swap(handles[idx], handles.back());

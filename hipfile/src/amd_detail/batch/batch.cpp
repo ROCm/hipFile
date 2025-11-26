@@ -140,11 +140,11 @@ BatchContextMap::clear()
     active_contexts.clear();
 }
 
-rocFileBatchHandle_t
+hipFileBatchHandle_t
 BatchContextMap::createContext(unsigned capacity)
 {
     auto                 context = std::shared_ptr<IBatchContext>{new BatchContext{capacity}};
-    rocFileBatchHandle_t handle  = context.get();
+    hipFileBatchHandle_t handle  = context.get();
 
     // Should not need to worry about duplicate keys unless the application
     // somehow deallocates this handle...
@@ -155,7 +155,7 @@ BatchContextMap::createContext(unsigned capacity)
 }
 
 void
-BatchContextMap::destroyContext(rocFileBatchHandle_t handle)
+BatchContextMap::destroyContext(hipFileBatchHandle_t handle)
 {
     std::unique_lock<std::shared_mutex> ulock{batch_mutex};
 
@@ -171,7 +171,7 @@ BatchContextMap::destroyContext(rocFileBatchHandle_t handle)
 }
 
 std::shared_ptr<IBatchContext>
-BatchContextMap::get(rocFileBatchHandle_t handle)
+BatchContextMap::get(hipFileBatchHandle_t handle)
 {
     // NOTE: This mutex only protects the map, so we'll
     //       also need to protect the data
