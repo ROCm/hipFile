@@ -22,8 +22,8 @@ static const char *message = "Ah ah ah, you didn't say the magic word!\n"
                              "          |             /\n"
                              "           \\           /\n"
                              "\n"
-                             "hipFile/rocFile tests should be run using ctest. ctest runs each test in\n"
-                             "an isolated process, which prevents side effects from affecting subsequent\n"
+                             "hipFile tests should be run using ctest. ctest runs each test in an\n"
+                             "isolated process, which prevents side effects from affecting subsequent\n"
                              "tests. Running the test binaries directly may result in test errors if\n"
                              "running multiple tests.\n";
 
