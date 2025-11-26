@@ -219,9 +219,6 @@ endif()
 #-----------------------------------------------------------------------------
 # Subdirectories to configure/build
 #-----------------------------------------------------------------------------
-if(BUILD_ROCFILE)
-    add_subdirectory(rocfile)
-endif()
 add_subdirectory(hipfile)
 if(BUILD_AIS_DOCS)
     add_subdirectory(docs)
