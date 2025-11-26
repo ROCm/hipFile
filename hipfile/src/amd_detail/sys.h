@@ -13,7 +13,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-/* sys wraps system APIs used by rocFile which enables unit tests to mock system calls.
+/* sys wraps system APIs used by hipFile which enables unit tests to mock system calls.
  *
  * The wrapper methods should
  *   - Throw a Sys::RuntimeError if the wrapped function fails

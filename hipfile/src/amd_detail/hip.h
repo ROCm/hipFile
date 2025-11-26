@@ -14,7 +14,7 @@
 
 /* hipxx (hip++)
  *
- * hipxx wraps HIP APIs used by hipFile/rocFile libraries. This enables unit
+ * hipxx wraps HIP APIs used by the hipFile library. This enables unit
  * tests to mock HIP APIs.
  *
  * The wrapper methods should
