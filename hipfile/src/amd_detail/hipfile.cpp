@@ -5,7 +5,6 @@
 
 #include "hipfile.h"
 #include "hipfile-private.h"
-#include "hipfile-rocfile.h"
 
 #include <cerrno>
 #include <climits>
@@ -95,10 +94,10 @@ try {
     hipFileError_t status;
 
     if (iocbp) {
-        vector<rocFileIOParams_t> io_params(nr);
+        vector<hipFileIOParams_t> io_params(nr);
 
         for (unsigned i = 0; i < nr; i++) {
-            io_params[i] = toRocFileIOParams(iocbp[i]);
+            io_params[i] = iocbp[i];
         }
 
         status = rocFileBatchIOSubmit(rf_batch_idp, nr, io_params.data(), flags);
@@ -121,13 +120,13 @@ try {
     hipFileError_t status;
 
     if (iocbp) {
-        vector<rocFileIOEvents_t> io_events(*nr);
+        vector<hipFileIOEvents_t> io_events(*nr);
 
         status = rocFileBatchIOGetStatus(rf_batch_idp, min_nr, nr, io_events.data(), timeout);
 
         if (status.err == hipFileSuccess) {
             for (unsigned i = 0; i < *nr; i++) {
-                iocbp[i] = toHipFileIOEvents(io_events[i]);
+                iocbp[i] = io_events[i];
             }
         }
     }

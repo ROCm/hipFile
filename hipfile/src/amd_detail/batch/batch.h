@@ -35,13 +35,13 @@ public:
     /// @param [in] params IO parameters
     /// @param [in] buffer Buffer corresponding to params->u.batch.devPtr_base
     /// @param [in] file File corresponding params->fh
-    BatchOperation(std::unique_ptr<const rocFileIOParams_t> params, std::shared_ptr<IBuffer> buffer,
+    BatchOperation(std::unique_ptr<const hipFileIOParams_t> params, std::shared_ptr<IBuffer> buffer,
                    std::shared_ptr<IFile> file);
 
 private:
     /// @brief A copy of the params provided by the application.
     /// @internal Keep this listed at the top of BatchOperation.
-    const std::unique_ptr<const rocFileIOParams_t> io_params;
+    const std::unique_ptr<const hipFileIOParams_t> io_params;
 
     /// @brief A reference to the specified Buffer.
     const std::shared_ptr<const IBuffer> buffer;
@@ -56,7 +56,7 @@ public:
 
     virtual ~IBatchContext()                                                                 = default;
     virtual unsigned get_capacity() const noexcept                                           = 0;
-    virtual void     submit_operations(const rocFileIOParams_t *params, unsigned num_params) = 0;
+    virtual void     submit_operations(const hipFileIOParams_t *params, unsigned num_params) = 0;
 };
 
 class BatchContext : public IBatchContext {
@@ -76,7 +76,7 @@ public:
     /// @note This is an All or None operation. If one submitted operation is not valid, no operations
     ///       will be submitted.
     ///
-    void submit_operations(const rocFileIOParams_t *params, const unsigned num_params) override;
+    void submit_operations(const hipFileIOParams_t *params, const unsigned num_params) override;
 
 private:
     const unsigned capacity;

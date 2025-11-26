@@ -91,7 +91,7 @@ TEST_F(HipFileUnit, TestHipFileBatchIOSetupNullptrHandle)
 TEST_F(HipFileUnit, TestHipFileBatchIOSubmitSuccess)
 {
     hipFileBatchHandle_t           b_handle = reinterpret_cast<hipFileBatchHandle_t>(0x12345678);
-    rocFileIOParams_t              io_param;
+    hipFileIOParams_t              io_param;
     std::shared_ptr<MBatchContext> mock_b_context = std::make_shared<MBatchContext>();
 
     EXPECT_CALL(mock_state, getBatchContext).WillOnce(Return(mock_b_context));
@@ -104,7 +104,7 @@ TEST_F(HipFileUnit, TestHipFileBatchIOSubmitSuccess)
 TEST_F(HipFileUnit, TestHipFileBatchIOSubmitBadHandle)
 {
     hipFileBatchHandle_t           b_handle = nullptr;
-    rocFileIOParams_t              io_param;
+    hipFileIOParams_t              io_param;
     std::shared_ptr<MBatchContext> mock_b_context = std::make_shared<MBatchContext>();
 
     EXPECT_CALL(mock_state, getBatchContext).WillOnce(Throw(InvalidBatchHandle()));
@@ -118,7 +118,7 @@ TEST_F(HipFileUnit, TestHipFileBatchIOSubmitBadHandle)
 TEST_F(HipFileUnit, TestHipFileBatchIOSubmitBadArgument)
 {
     hipFileBatchHandle_t           b_handle = reinterpret_cast<hipFileBatchHandle_t>(0x12345678);
-    rocFileIOParams_t              io_param;
+    hipFileIOParams_t              io_param;
     std::shared_ptr<MBatchContext> mock_b_context = std::make_shared<MBatchContext>();
 
     EXPECT_CALL(mock_state, getBatchContext).WillOnce(Return(mock_b_context));

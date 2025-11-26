@@ -329,7 +329,7 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileBatchIOSubmit(hipFileBatchHandle_t batch_idp, unsigned nr, rocFileIOParams_t *iocbp, unsigned flags)
+rocFileBatchIOSubmit(hipFileBatchHandle_t batch_idp, unsigned nr, hipFileIOParams_t *iocbp, unsigned flags)
 try {
     (void)flags; // Unused at this time.
 
@@ -347,7 +347,7 @@ catch (...) {
 
 hipFileError_t
 rocFileBatchIOGetStatus(hipFileBatchHandle_t batch_idp, unsigned min_nr, unsigned *nr,
-                        rocFileIOEvents_t *iocbp, struct timespec *timeout)
+                        hipFileIOEvents_t *iocbp, struct timespec *timeout)
 try {
     (void)batch_idp;
     (void)min_nr;

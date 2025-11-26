@@ -123,66 +123,6 @@ ssize_t rocFileWrite(hipFileHandle_t fh, const void *buffer_base, size_t size, h
 // ***********************************************************************
 
 /*!
- * @brief The direction of data movement in a batch IO request
- * @ingroup batch
- */
-typedef enum rocFileOpcode {
-    rocFileBatchRead  = 0, //!< Batch IO read operation
-    rocFileBatchWrite = 1, //!< Batch IO write operation
-} rocFileOpcode_t;
-
-/*!
- * @brief The status of a batch IO operation
- * @ingroup batch
- */
-typedef enum rocFileStatus {
-    rocFileWaiting  = 1 << 0, //!< Batch IO request pending acceptance
-    rocFilePending  = 1 << 1, //!< Batch IO request accepted and queued
-    rocFileInvalid  = 1 << 2, //!< Batch IO request was rejected for being invalid or could not be queued
-    rocFileCanceled = 1 << 3, //!< Batch IO request was canceled
-    rocFileComplete = 1 << 4, //!< Batch IO request completed
-    rocFileTimeout  = 1 << 5, //!< Batch IO request timed out
-    rocFileFailed   = 1 << 6, //!< Batch IO request failed
-} rocFileStatus_t;
-
-/*!
- * @brief Mode of a batch IO operation
- * @ingroup batch
- */
-typedef enum rocFileBatchMode {
-    rocFileBatch = 1, //!< Normal batch IO operation
-} rocFileBatchMode_t;
-
-/*!
- * @brief Input parameters for a batch IO request
- * @ingroup batch
- */
-typedef struct rocFileIOParams {
-    rocFileBatchMode_t mode; //!< Mode of the batch IO request
-    union {
-        struct {
-            void   *devPtr_base;   //!< Base address of the GPU buffer where data should be read/written
-            int64_t file_offset;   //!< Offset into the file that should be read/written
-            int64_t devPtr_offset; //!< Offset of the GPU buffer that should be read/written
-            size_t  size;          //!< Number of bytes to read or write
-        } batch;                   //!< Parameters for the read/write batch request
-    } u;                           //!< Wrapping union for batch IO parameters
-    hipFileHandle_t fh;            //!< Registered rocFile handle for the target file
-    rocFileOpcode_t opcode;        //!< Direction data is moving for the batch request
-    void           *cookie;        //!< Optionally used to track IO operations (e.g. self-reference pointer)
-} rocFileIOParams_t;
-
-/*!
- * @brief Status of a batch IO operation
- * @ingroup batch
- */
-typedef struct rocFileIOEvents {
-    void *cookie; //!< Optionally used to track IO operations (e.g. pointer to corresponding rocFileIOParams)
-    rocFileStatus_t status; //!< Status of the batch IO operation
-    size_t          ret;    //!< Number of bytes transferred or POSIX error code if negative
-} rocFileIOEvents_t;
-
-/*!
  * @brief Prepare the system to perform a batch IO operation
  * @ingroup batch
  *
@@ -208,7 +148,7 @@ hipFileError_t rocFileBatchIOSetUp(hipFileBatchHandle_t *batch_idp, unsigned max
  * @return A rocFile error
  */
 ROCFILE_API
-hipFileError_t rocFileBatchIOSubmit(hipFileBatchHandle_t batch_idp, unsigned nr, rocFileIOParams_t *iocbp,
+hipFileError_t rocFileBatchIOSubmit(hipFileBatchHandle_t batch_idp, unsigned nr, hipFileIOParams_t *iocbp,
                                     unsigned flags);
 
 /*!
@@ -228,7 +168,7 @@ hipFileError_t rocFileBatchIOSubmit(hipFileBatchHandle_t batch_idp, unsigned nr,
  */
 ROCFILE_API
 hipFileError_t rocFileBatchIOGetStatus(hipFileBatchHandle_t batch_idp, unsigned min_nr, unsigned *nr,
-                                       rocFileIOEvents_t *iocbp, struct timespec *timeout);
+                                       hipFileIOEvents_t *iocbp, struct timespec *timeout);
 
 /*!
  * @brief Cancels all pending batch IO operations

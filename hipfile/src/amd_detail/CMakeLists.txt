@@ -17,7 +17,6 @@ set(HIPFILE_SOURCES
     hip.cpp
     hipfile.cpp
     hipfile-private.cpp
-    hipfile-rocfile.cpp
     mountinfo.cpp
     rocfile.cpp
     state.cpp

@@ -34,7 +34,7 @@ HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 
 struct HipFileBatch : public HipFileUnopened {
     BatchContextMap                      batch_map = BatchContextMap{};
-    std::unique_ptr<rocFileIOParams_t>   io_params;
+    std::unique_ptr<hipFileIOParams_t>   io_params;
     std::shared_ptr<StrictMock<MBuffer>> default_mock_buffer;
     std::shared_ptr<StrictMock<MFile>>   default_mock_file;
     const hipFileHandle_t                file_handle{reinterpret_cast<void *>(0xDEADBEEF)};
@@ -49,12 +49,12 @@ struct HipFileBatch : public HipFileUnopened {
         default_mock_file = std::make_shared<StrictMock<MFile>>();
         EXPECT_CALL(*default_mock_file, getHandle).WillRepeatedly(Return(file_handle));
 
-        io_params                      = std::make_unique<rocFileIOParams_t>();
+        io_params                      = std::make_unique<hipFileIOParams_t>();
         io_params->u.batch.devPtr_base = const_cast<void *>(buffer_pointer);
         io_params->u.batch.size        = 1;
         io_params->fh                  = file_handle;
-        io_params->mode                = rocFileBatch;
-        io_params->opcode              = rocFileBatchRead;
+        io_params->mode                = hipFileBatch;
+        io_params->opcode              = hipFileBatchRead;
     }
 
     HipFileBatch()
@@ -65,14 +65,14 @@ struct HipFileBatch : public HipFileUnopened {
 
 TEST_F(HipFileBatch, CreateOperationRead)
 {
-    io_params->opcode = rocFileBatchRead;
+    io_params->opcode = hipFileBatchRead;
 
     BatchOperation op = BatchOperation{std::move(io_params), default_mock_buffer, default_mock_file};
 }
 
 TEST_F(HipFileBatch, CreateOperationWrite)
 {
-    io_params->opcode = rocFileBatchWrite;
+    io_params->opcode = hipFileBatchWrite;
 
     BatchOperation op = BatchOperation{std::move(io_params), default_mock_buffer, default_mock_file};
 }
@@ -136,7 +136,7 @@ TEST_F(HipFileBatch, CreateOperationBadFileOffsetIsNegative)
 
 TEST_F(HipFileBatch, CreateOperationBadOpcode)
 {
-    io_params->opcode = invalidEnum<rocFileOpcode_t>(-1);
+    io_params->opcode = invalidEnum<hipFileOpcode_t>(-1);
 
     EXPECT_THROW(BatchOperation(std::move(io_params), default_mock_buffer, default_mock_file),
                  std::invalid_argument);
@@ -144,7 +144,7 @@ TEST_F(HipFileBatch, CreateOperationBadOpcode)
 
 TEST_F(HipFileBatch, CreateOperationBadMode)
 {
-    io_params->mode = invalidEnum<rocFileBatchMode_t>(-1);
+    io_params->mode = invalidEnum<hipFileBatchMode_t>(-1);
 
     EXPECT_THROW(BatchOperation(std::move(io_params), default_mock_buffer, default_mock_file),
                  std::invalid_argument);
@@ -230,7 +230,7 @@ struct HipFileBatchContext : public HipFileUnopened {
     unsigned                                  _context_capacity = 2;
     std::unique_ptr<StrictMock<MDriverState>> mock_driver_state;
 
-    rocFileIOParams_t                    io_params{};
+    hipFileIOParams_t                    io_params{};
     std::shared_ptr<StrictMock<MBuffer>> default_mock_buffer;
     int                                  default_mock_buffer_length = 1;
     std::shared_ptr<StrictMock<MFile>>   default_mock_file;
@@ -249,8 +249,8 @@ struct HipFileBatchContext : public HipFileUnopened {
         io_params.u.batch.devPtr_base = default_mock_buffer->getBuffer();
         io_params.u.batch.size        = 1;
         io_params.fh                  = default_mock_file->getHandle();
-        io_params.mode                = rocFileBatch;
-        io_params.opcode              = rocFileBatchRead;
+        io_params.mode                = hipFileBatch;
+        io_params.opcode              = hipFileBatchRead;
 
         mock_driver_state = std::make_unique<StrictMock<MDriverState>>();
         _context          = batch_map.get(batch_map.createContext(_context_capacity));
@@ -308,43 +308,43 @@ TEST_F(HipFileBatchContext, SubmitSingleBadFileHandle)
 // BatchOperation is not mocked.
 TEST_F(HipFileBatchContext, SubmitSingleBadParamBufferOffsetNegative)
 {
-    rocFileIOParams_t bad_io_params     = io_params;
+    hipFileIOParams_t bad_io_params     = io_params;
     bad_io_params.u.batch.devPtr_offset = -1;
     ASSERT_THROW(_context->submit_operations(&bad_io_params, 1), std::invalid_argument);
 }
 
 TEST_F(HipFileBatchContext, SubmitSingleBadParamBufferOffsetTooLarge)
 {
-    rocFileIOParams_t bad_io_params     = io_params;
+    hipFileIOParams_t bad_io_params     = io_params;
     bad_io_params.u.batch.devPtr_offset = default_mock_buffer_length;
     ASSERT_THROW(_context->submit_operations(&bad_io_params, 1), std::invalid_argument);
 }
 
 TEST_F(HipFileBatchContext, SubmitSingleBadParamIOSizeTooLarge)
 {
-    rocFileIOParams_t bad_io_params = io_params;
+    hipFileIOParams_t bad_io_params = io_params;
     bad_io_params.u.batch.size      = static_cast<size_t>(default_mock_buffer_length + 1);
     ASSERT_THROW(_context->submit_operations(&bad_io_params, 1), std::invalid_argument);
 }
 
 TEST_F(HipFileBatchContext, SubmitSingleBadParamFileOffsetNegative)
 {
-    rocFileIOParams_t bad_io_params   = io_params;
+    hipFileIOParams_t bad_io_params   = io_params;
     bad_io_params.u.batch.file_offset = -1;
     ASSERT_THROW(_context->submit_operations(&bad_io_params, 1), std::invalid_argument);
 }
 
 TEST_F(HipFileBatchContext, SubmitSingleBadParamOpcodeInvalid)
 {
-    rocFileIOParams_t bad_io_params = io_params;
-    bad_io_params.opcode            = invalidEnum<rocFileOpcode_t>(-1);
+    hipFileIOParams_t bad_io_params = io_params;
+    bad_io_params.opcode            = invalidEnum<hipFileOpcode_t>(-1);
     ASSERT_THROW(_context->submit_operations(&bad_io_params, 1), std::invalid_argument);
 }
 
 TEST_F(HipFileBatchContext, SubmitSingleBadParamModeInvalid)
 {
-    rocFileIOParams_t bad_io_params = io_params;
-    bad_io_params.mode              = invalidEnum<rocFileBatchMode_t>(-1);
+    hipFileIOParams_t bad_io_params = io_params;
+    bad_io_params.mode              = invalidEnum<hipFileBatchMode_t>(-1);
     ASSERT_THROW(_context->submit_operations(&bad_io_params, 1), std::invalid_argument);
 }
 

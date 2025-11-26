@@ -209,7 +209,11 @@ TEST_F(DriverNoInit, hipFileBatchIOSubmit)
     hipFileBatchHandle_t handle{};
     hipFileIOParams_t    param{};
 
+#ifdef __HIP_PLATFORM_AMD__
+    ASSERT_EQ(hipFileBatchIOSubmit(handle, 1, &param, 0), HipFileOpError(hipFileInvalidValue));
+#else
     ASSERT_EQ(hipFileBatchIOSubmit(handle, 1, &param, 0), HipFileOpError(hipFileInternalError));
+#endif
 }
 
 TEST_F(DriverNoInit, hipFileBatchIOGetStatusNullArgs)

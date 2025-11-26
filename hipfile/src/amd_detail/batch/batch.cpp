@@ -22,7 +22,7 @@
 
 namespace hipFile {
 
-BatchOperation::BatchOperation(std::unique_ptr<const rocFileIOParams_t> params,
+BatchOperation::BatchOperation(std::unique_ptr<const hipFileIOParams_t> params,
                                std::shared_ptr<IBuffer> _buffer, std::shared_ptr<IFile> _file)
     : io_params{std::move(params)}, buffer{_buffer}, file{_file}
 {
@@ -67,7 +67,7 @@ BatchOperation::BatchOperation(std::unique_ptr<const rocFileIOParams_t> params,
     }
 
     // Check OpCode
-    if (io_params->opcode != rocFileBatchRead && io_params->opcode != rocFileBatchWrite) {
+    if (io_params->opcode != hipFileBatchRead && io_params->opcode != hipFileBatchWrite) {
         std::stringstream msg;
         msg << "Bad opcode specified. Value: " << io_params->opcode;
         msg << ". Cookie: " << io_params->cookie;
@@ -75,7 +75,7 @@ BatchOperation::BatchOperation(std::unique_ptr<const rocFileIOParams_t> params,
     }
 
     // Check Batch Mode
-    if (io_params->mode != rocFileBatch) {
+    if (io_params->mode != hipFileBatch) {
         std::stringstream msg;
         msg << "Invalid Batch mode specified. Value: " << io_params->mode;
         msg << ". Cookie: " << io_params->cookie;
@@ -100,7 +100,7 @@ BatchContext::get_capacity() const noexcept
 }
 
 void
-BatchContext::submit_operations(const rocFileIOParams_t *params, unsigned num_params)
+BatchContext::submit_operations(const hipFileIOParams_t *params, unsigned num_params)
 {
     std::unique_lock<std::shared_mutex> _ulock{context_mutex};
 
@@ -119,7 +119,7 @@ BatchContext::submit_operations(const rocFileIOParams_t *params, unsigned num_pa
     // rather than waiting to lock the DriverState lock for each lookup.
     for (unsigned i = 0; i < num_params; i++) {
         // Make a copy of the params so another thread cannot modify the operation.
-        auto param_copy = std::make_unique<const rocFileIOParams_t>(params[i]);
+        auto param_copy = std::make_unique<const hipFileIOParams_t>(params[i]);
         // flags currently unused. Ambiguous if flags in rocFileBatchIOSubmit is for buffer or
         // file flags.
         auto [_file, _buffer] = Context<DriverState>::get()->getFileAndBuffer(
