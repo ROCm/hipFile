@@ -8,8 +8,6 @@
  * Usage: ./aiscp SOURCE DEST
  *
  * This _very_basic_ program copies SOURCE to DEST via GPU memory.
- *
- * Note: Currently SOURCE's size must be > 0
  */
 
 #include <hipfile.h>
@@ -102,18 +100,17 @@ main(int argc, char *argv[])
         block_size = static_cast<size_t>(statbuf.st_blksize);
     }
 
-    if (0 == file_size) {
-        fprintf(stderr, "SOURCE's length must be non-zero\n");
+    if (open_file(dst_path, O_DIRECT | O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH, &dst_fd,
+                  &dst_handle)) {
         goto program_exit;
+    }
+
+    if (0 == file_size) {
+        goto close_dst;
     }
 
     if (open_file(src_path, O_DIRECT | O_RDONLY, 0, &src_fd, &src_handle)) {
-        goto program_exit;
-    }
-
-    if (open_file(dst_path, O_DIRECT | O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH, &dst_fd,
-                  &dst_handle)) {
-        goto close_src;
+        goto close_dst;
     }
 
     buffer_size = file_size;
@@ -124,7 +121,7 @@ main(int argc, char *argv[])
     hip_err = hipMalloc(&devbuf, buffer_size);
     if (hipSuccess != hip_err) {
         fprintf(stderr, "Could not allocate device buffer (%d)", hip_err);
-        goto close_dst;
+        goto close_src;
     }
 
     nbytes = hipFileRead(src_handle, devbuf, buffer_size, 0, 0);
@@ -156,13 +153,13 @@ free_devbuf:
         exit_status = EXIT_FAILURE;
     }
 
-close_dst:
-    if (close_file(dst_path, dst_fd, dst_handle)) {
+close_src:
+    if (close_file(src_path, src_fd, src_handle)) {
         exit_status = EXIT_FAILURE;
     }
 
-close_src:
-    if (close_file(src_path, src_fd, src_handle)) {
+close_dst:
+    if (close_file(dst_path, dst_fd, dst_handle)) {
         exit_status = EXIT_FAILURE;
     }
 
