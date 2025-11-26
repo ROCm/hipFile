@@ -9,10 +9,6 @@ include(ROCMInstallTargets)
 include(ROCMCreatePackage)
 
 # Install the package
-if(BUILD_AMD_DETAIL)
-    rocm_install(TARGETS rocfile_static)
-    rocm_install(TARGETS rocfile_shared)
-endif()
 rocm_install(TARGETS hipfile_static)
 rocm_install(TARGETS hipfile_shared)
 
@@ -32,9 +28,6 @@ rocm_install(
 # when we have dependencies
 
 # Export the targets
-if(BUILD_AMD_DETAIL)
-    set(target_list ${target_list} roc::rocfile_shared roc::rocfile_static)
-endif()
 set(target_list ${target_list} roc::hipfile_shared roc::hipfile_static)
 
 rocm_export_targets(

@@ -13,21 +13,13 @@ include(CheckLinkerFlag)
 #   LIBINCL  <path>                             Path to installed include files (e.g., hipfile.h)
 #   SYSINCLS [path1 [path2 ...]]                Paths to other include dirs
 #   SRCS     [src1 [src2 ...]]                  The source files
-#   DEPS     [dependency1 [dependency2 ...]]    List of AIS target library dependencies
 #   LIBS     [lib1, [lib2 ...]]                 List of external library dependencies
-#
-# NOTE: Assumes internal library dependencies are named <foo>_(static|shared)
-#
-# NOTE: This isn't the most robust function. It's mainly intended to reduce
-#       code duplication in rocFile/hipFile. For example, DEPS is for passing
-#       the rocFile internal library dependency to hipFile and won't work for
-#       passing general library dependencies.
 function(ais_add_libraries)
 
     # Parse arguments
     set(options) # None at this time
     set(oneValueArgs NAME DETAIL LIBINCL)
-    set(multiValueArgs SRCS DEPS SYSINCLS LIBS)
+    set(multiValueArgs SRCS SYSINCLS LIBS)
     cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     # Convenience names
@@ -47,18 +39,6 @@ function(ais_add_libraries)
     set_target_properties(${static_name} PROPERTIES VERSION ${AIS_LIBRARY_VERSION})
     set_target_properties(${shared_name} PROPERTIES VERSION ${AIS_LIBRARY_VERSION})
     set_target_properties(${shared_name} PROPERTIES SOVERSION ${AIS_LIBRARY_SOVERSION})
-
-    # Add dependencies on internal targets
-    foreach(dep IN LISTS arg_DEPS)
-        add_dependencies(${static_name} "${dep}_static")
-        add_dependencies(${shared_name} "${dep}_shared")
-
-        target_link_libraries(${static_name} PRIVATE "${dep}_static")
-        target_link_libraries(${shared_name} PRIVATE "${dep}_shared")
-
-        # The object library needs to see the headers for any dependencies
-        target_link_libraries(${object_name} PUBLIC "${dep}_shared")
-    endforeach()
 
     # Add dependencies on external libraries
     foreach(lib IN LISTS arg_LIBS)

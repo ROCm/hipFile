@@ -5,21 +5,7 @@
 # ROCm-backed hipFile
 
 set(HIPFILE_SOURCES
-    hipfile.cpp
-    hipfile-rocfile.cpp
     ../common/hipfile-common.cpp
-)
-
-# Will create hipfile_(static|shared)
-ais_add_libraries(
-    NAME    hipfile
-    DETAIL  amd
-    SRCS    ${HIPFILE_SOURCES}
-    DEPS    rocfile
-    LIBINCL ${HIPFILE_INCLUDE_PATH}
-)
-
-set(ROCFILE_SOURCES
     async.cpp
     backend/asyncop-fallback.cpp
     backend/fallback.cpp
@@ -29,6 +15,8 @@ set(ROCFILE_SOURCES
     context.cpp
     file.cpp
     hip.cpp
+    hipfile.cpp
+    hipfile-rocfile.cpp
     mountinfo.cpp
     rocfile.cpp
     rocfile-private.cpp
@@ -37,12 +25,12 @@ set(ROCFILE_SOURCES
     sys.cpp
 )
 
-# Will create rocfile_(static|shared)
+# Will create hipfile_(static|shared)
 ais_add_libraries(
-    NAME     rocfile
+    NAME     hipfile
     DETAIL   amd
-    SRCS     ${ROCFILE_SOURCES}
-    LIBINCL  ${ROCFILE_INCLUDE_PATH}
-    SYSINCLS ${ROCFILE_SOURCE_PATH}
     LIBS     mount
+    SRCS     ${HIPFILE_SOURCES}
+    LIBINCL  ${HIPFILE_INCLUDE_PATH}
+    SYSINCLS ${HIPFILE_AMD_SOURCE_PATH}
 )

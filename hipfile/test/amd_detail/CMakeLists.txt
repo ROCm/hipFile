@@ -30,15 +30,16 @@ set(TEST_SOURCE_FILES
 )
 
 set(TEST_SYSINCLS
-    ${ROCFILE_SOURCE_PATH}
-    ${ROCFILE_INCLUDE_PATH}
-    ${ROCFILE_TEST_PATH}
+    ${HIPFILE_AMD_SOURCE_PATH}
+    ${HIPFILE_INCLUDE_PATH}
+    ${HIPFILE_TEST_PATH}
+    ${HIPFILE_AMD_TEST_PATH}
     ${SHARED_TEST_INCLUDE_PATH}
 )
 
 ais_add_executable(
     NAME rocfile_tests
-    DEPS rocfile_shared
+    DEPS hipfile_shared
     SRCS ${TEST_SOURCE_FILES} ${SHARED_SOURCE_FILES}
     SYSINCLS ${TEST_SYSINCLS}
 )
@@ -63,9 +64,9 @@ ais_gtest_discover_tests(
 
 ais_add_executable(
     NAME state_mt
-    DEPS rocfile_shared
+    DEPS hipfile_shared
     SRCS "state_mt.cpp"
-    SYSINCLS ${ROCFILE_SOURCE_PATH} ${ROCFILE_INCLUDE_PATH}
+    SYSINCLS ${HIPFILE_AMD_SOURCE_PATH} ${HIPFILE_INCLUDE_PATH}
 )
 add_test(
     NAME state_mt_test
@@ -75,9 +76,9 @@ set_tests_properties(state_mt_test PROPERTIES LABELS "stress;rocfile")
 
 ais_add_executable(
     NAME batch_mt
-    DEPS rocfile_shared
+    DEPS hipfile_shared
     SRCS "batch/batch_mt.cpp"
-    SYSINCLS ${ROCFILE_SOURCE_PATH} ${ROCFILE_INCLUDE_PATH}
+    SYSINCLS ${HIPFILE_AMD_SOURCE_PATH} ${HIPFILE_INCLUDE_PATH}
 )
 add_test(
     NAME batch_mt_test

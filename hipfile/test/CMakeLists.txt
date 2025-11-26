@@ -56,9 +56,6 @@ target_compile_options(hipfile_tests
 )
 target_link_libraries(hipfile_tests PRIVATE GTest::gtest)
 target_link_libraries(hipfile_tests PRIVATE GTest::gtest_main)
-if(BUILD_AMD_DETAIL)
-    target_link_libraries(hipfile_tests PRIVATE rocfile_shared)
-endif()
 
 ais_gtest_discover_tests(
     hipfile_tests
@@ -74,9 +71,6 @@ ais_add_executable(
 )
 target_link_libraries(hipfile_system_tests PRIVATE GTest::gtest)
 target_link_libraries(hipfile_system_tests PRIVATE Boost::program_options)
-if(BUILD_AMD_DETAIL)
-    target_link_libraries(hipfile_system_tests PRIVATE rocfile_shared)
-endif()
 
 gtest_discover_tests(
     hipfile_system_tests

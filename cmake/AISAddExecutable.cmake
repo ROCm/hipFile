@@ -15,9 +15,9 @@ include(AISCompilerOptions)
 # NOTE: Assumes AIS target libraries are named <foo>_(static|shared)
 #
 # NOTE: This isn't the most robust function. It's mainly intended
-#       to reduce code duplication in rocFile/hipFile. For example,
-#       DEPS is for passing the rocFile dependency to hipFile and
-#       won't work for passing general library dependencies.
+#       to reduce code duplication. For example, DEPS is for passing
+#       the hipFile shared/static dependency and won't work for passing
+#       general library dependencies.
 function(ais_add_executable)
 
     # Parse arguments
