@@ -21,8 +21,8 @@ set(TEST_SOURCE_FILES
     driver.cpp
     handle.cpp
     hip.cpp
+    fallback.cpp
     fastpath.cpp
-    io.cpp
     misc.cpp
     mountinfo.cpp
     rocfile.cpp

@@ -24,6 +24,7 @@
 #include <system_error>
 
 using namespace rocFile;
+using namespace std;
 
 const char *
 rocFileOpStatusError(rocFileOpError_t status)
@@ -224,14 +225,20 @@ catch (...) {
     return handle_exception();
 }
 
-ssize_t
-rocFileIo(IoType type, rocFileHandle_t fh, const void *buffer_base, size_t size, hoff_t file_offset,
-          hoff_t buffer_offset)
-try {
+/// @brief Get the cached list of backends obtained from DriverState
+static const vector<shared_ptr<Backend>> &
+getCachedBackends()
+{
     HIPFILE_WARN_NO_EXIT_DTOR_OFF
     static const auto backends{Context<DriverState>::get()->getBackends()};
     HIPFILE_WARN_NO_EXIT_DTOR_ON
+    return backends;
+}
 
+ssize_t
+rocFileIo(IoType type, rocFileHandle_t fh, const void *buffer_base, size_t size, hoff_t file_offset,
+          hoff_t buffer_offset, const vector<shared_ptr<Backend>> &backends)
+try {
     auto [file, buffer] = Context<DriverState>::get()->getFileAndBuffer(fh, buffer_base, size, 0);
     int                      score{-1};
     std::shared_ptr<Backend> backend{};
@@ -288,14 +295,14 @@ catch (...) {
 ssize_t
 rocFileRead(rocFileHandle_t fh, void *buffer_base, size_t size, hoff_t file_offset, hoff_t buffer_offset)
 {
-    return rocFileIo(IoType::Read, fh, buffer_base, size, file_offset, buffer_offset);
+    return rocFileIo(IoType::Read, fh, buffer_base, size, file_offset, buffer_offset, getCachedBackends());
 }
 
 ssize_t
 rocFileWrite(rocFileHandle_t fh, const void *buffer_base, size_t size, hoff_t file_offset,
              hoff_t buffer_offset)
 {
-    return rocFileIo(IoType::Write, fh, buffer_base, size, file_offset, buffer_offset);
+    return rocFileIo(IoType::Write, fh, buffer_base, size, file_offset, buffer_offset, getCachedBackends());
 }
 
 rocFileError_t

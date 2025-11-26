@@ -50,19 +50,24 @@ ssize_t
 Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
              hoff_t file_offset, hoff_t buffer_offset, size_t chunk_size)
 {
+    size_t buflen{buffer->getLength()};
+
     size = min(size, rocFile::MAX_RW_COUNT);
 
-    if ((buffer_offset < 0) || (buffer->getLength() <= static_cast<size_t>(buffer_offset)) ||
-        (buffer->getLength() - static_cast<size_t>(buffer_offset) < size)) {
-        throw std::invalid_argument("bad buffer offset");
-    }
-
     if (file_offset < 0) {
-        throw std::invalid_argument("negative file offset");
+        throw std::invalid_argument("Negative file offset");
     }
 
-    if (size == 0) {
-        return 0;
+    if (buffer_offset < 0) {
+        throw std::invalid_argument("Negative buffer offset");
+    }
+
+    if (buflen <= static_cast<size_t>(buffer_offset)) {
+        throw std::invalid_argument("Buffer offset larger than buffer length");
+    }
+
+    if (buflen - static_cast<size_t>(buffer_offset) < size) {
+        throw std::invalid_argument("IO could overflow buffer");
     }
 
     auto ptr     = Context<Sys>::get()->mmap(nullptr, chunk_size, PROT_READ | PROT_WRITE,
@@ -71,7 +76,7 @@ Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer,
     unique_ptr<void, decltype(deleter)> bounce_buffer{ptr, deleter};
 
     ssize_t total_io_bytes = 0;
-    while (static_cast<size_t>(total_io_bytes) < size) {
+    do {
         auto    count                  = min(chunk_size, size - static_cast<size_t>(total_io_bytes));
         auto    offset                 = file_offset + total_io_bytes;
         ssize_t io_bytes               = 0;
@@ -108,7 +113,7 @@ Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer,
         if (io_bytes == 0) {
             break;
         }
-    }
+    } while (static_cast<size_t>(total_io_bytes) < size);
 
     return total_io_bytes;
 }
