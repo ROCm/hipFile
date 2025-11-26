@@ -12,7 +12,7 @@ function(ais_set_compiler_flags target)
     foreach(source IN LISTS sources)
         get_source_file_property(language ${source} LANGUAGE)
         # CMake HIP language prior to 3.28 only supports AMD, so change LANGUAGE to CUDA for HIP files
-        if(CMAKE_HIP_PLATFORM STREQUAL "nvidia" AND CMAKE_VERSION VERSION_LESS "3.28" AND language STREQUAL HIP)
+        if(BUILD_NVIDIA_DETAIL AND CMAKE_VERSION VERSION_LESS "3.28" AND language STREQUAL HIP)
             set_source_files_properties(${source} PROPERTIES LANGUAGE "CUDA")
             set(language CUDA)
             message(STATUS "Setting ${source} LANGUAGE to CUDA because CMake < 3.28")

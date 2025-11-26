@@ -37,10 +37,10 @@ set(TEST_SYSINCLS
     ${SHARED_TEST_INCLUDE_PATH}
 )
 
-if(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
+if(BUILD_NVIDIA_DETAIL)
     list(APPEND UNIT_TEST_SOURCE_FILES hipfile-cufile.cpp)
     list(APPEND TEST_SYSINCLS ${HIPFILE_NVIDIA_SOURCE_PATH})
-elseif(CMAKE_HIP_PLATFORM STREQUAL "amd")
+else()
     list(APPEND UNIT_TEST_SOURCE_FILES hipfile-rocfile.cpp)
     list(APPEND TEST_SYSINCLS ${HIPFILE_AMD_SOURCE_PATH})
 endif()
@@ -56,7 +56,7 @@ target_compile_options(hipfile_tests
 )
 target_link_libraries(hipfile_tests PRIVATE GTest::gtest)
 target_link_libraries(hipfile_tests PRIVATE GTest::gtest_main)
-if(CMAKE_HIP_PLATFORM STREQUAL "amd")
+if(BUILD_AMD_DETAIL)
     target_link_libraries(hipfile_tests PRIVATE rocfile_shared)
 endif()
 
@@ -74,7 +74,7 @@ ais_add_executable(
 )
 target_link_libraries(hipfile_system_tests PRIVATE GTest::gtest)
 target_link_libraries(hipfile_system_tests PRIVATE Boost::program_options)
-if(CMAKE_HIP_PLATFORM STREQUAL "amd")
+if(BUILD_AMD_DETAIL)
     target_link_libraries(hipfile_system_tests PRIVATE rocfile_shared)
 endif()
 

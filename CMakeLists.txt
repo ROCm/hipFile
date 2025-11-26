@@ -81,6 +81,15 @@ if(NOT CMAKE_HIP_PLATFORM STREQUAL "amd" AND NOT CMAKE_HIP_PLATFORM STREQUAL "nv
     message(FATAL_ERROR "Invalid CMAKE_HIP_PLATFORM: '${CMAKE_HIP_PLATFORM}'. Allowed values are 'amd' or 'nvidia'.")
 endif()
 
+# Set the platform variable
+if(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
+    set(BUILD_AMD_DETAIL OFF)
+    set(BUILD_NVIDIA_DETAIL ON)
+else()
+    set(BUILD_AMD_DETAIL ON)
+    set(BUILD_NVIDIA_DETAIL OFF)
+endif()
+
 #-----------------------------------------------------------------------------
 # Include our custom CMake code in the module path
 #-----------------------------------------------------------------------------
@@ -156,15 +165,6 @@ include(AISIWYU)
 #-------------------
 include(AISSanitizers)
 
-#-------------------
-# Platform defaults
-#-------------------
-if(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
-    set(BUILD_ROCFILE OFF)
-else()
-    set(BUILD_ROCFILE ON)
-endif()
-
 #-----------------------
 # aiscp example program
 #-----------------------
@@ -194,10 +194,10 @@ else()
 endif()
 
 # Find the cuFile library and headers on NVIDIA
-if(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
+if(BUILD_NVIDIA_DETAIL)
     find_package(CUDAToolkit REQUIRED)
 
-    if(CMAKE_HIP_PLATFORM STREQUAL "nvidia" AND CMAKE_VERSION VERSION_LESS "3.28")
+    if(CMAKE_VERSION VERSION_LESS "3.28")
         enable_language(CUDA)
         # Set a default architecture if not provided.
         if(NOT CMAKE_CUDA_ARCHITECTURES)

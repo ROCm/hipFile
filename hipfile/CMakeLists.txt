@@ -19,7 +19,7 @@ set(ROCFILE_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/amd_detail")
 set(ROCFILE_TEST_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test/amd_detail")
 
 # Add the src directory depending on the HIP platform
-if(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
+if(BUILD_NVIDIA_DETAIL)
     add_subdirectory(src/nvidia_detail)
 else()
     add_subdirectory(src/amd_detail)
@@ -29,7 +29,7 @@ endif()
 if(BUILD_TESTING)
     add_subdirectory(test)
 endif()
-if(BUILD_TESTING AND NOT CMAKE_HIP_PLATFORM STREQUAL "nvidia")
+if(BUILD_AMD_DETAIL)
     add_subdirectory(test/amd_detail)
 endif()
 

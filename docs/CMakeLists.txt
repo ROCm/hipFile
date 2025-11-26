@@ -52,6 +52,6 @@ function(ais_add_docs_target AIS_DOC_PRETTY_NAME)
 endfunction()
 
 ais_add_docs_target("hipFile")
-if(BUILD_ROCFILE)
+if(BUILD_AMD_DETAIL)
     ais_add_docs_target("rocFile")
 endif()
