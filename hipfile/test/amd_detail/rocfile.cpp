@@ -66,7 +66,7 @@ TEST_F(HipFileUnit, TestHipFileBatchIOSetupSuccess)
 
     EXPECT_CALL(mock_state, createBatchContext).WillOnce(Return(expected_b_handle));
 
-    auto result = rocFileBatchIOSetUp(&b_handle, 1);
+    auto result = hipFileBatchIOSetUp(&b_handle, 1);
     EXPECT_EQ(result, HIPFILE_SUCCESS);
     EXPECT_EQ(b_handle, expected_b_handle);
 }
@@ -77,14 +77,14 @@ TEST_F(HipFileUnit, TestHipFileBatchIOSetupBadArgument)
 
     EXPECT_CALL(mock_state, createBatchContext).WillOnce(Throw(std::invalid_argument("")));
 
-    auto result = rocFileBatchIOSetUp(&b_handle, 0);
+    auto result = hipFileBatchIOSetUp(&b_handle, 0);
     EXPECT_EQ(result, HIPFILE_INVALID_VALUE);
     EXPECT_EQ(b_handle, nullptr);
 }
 
 TEST_F(HipFileUnit, TestHipFileBatchIOSetupNullptrHandle)
 {
-    auto result = rocFileBatchIOSetUp(nullptr, 1);
+    auto result = hipFileBatchIOSetUp(nullptr, 1);
     ASSERT_EQ(result, HIPFILE_INVALID_VALUE);
 }
 
@@ -97,7 +97,7 @@ TEST_F(HipFileUnit, TestHipFileBatchIOSubmitSuccess)
     EXPECT_CALL(mock_state, getBatchContext).WillOnce(Return(mock_b_context));
     EXPECT_CALL(*mock_b_context, submit_operations);
 
-    auto result = rocFileBatchIOSubmit(b_handle, 1, &io_param, 0);
+    auto result = hipFileBatchIOSubmit(b_handle, 1, &io_param, 0);
     ASSERT_EQ(result, HIPFILE_SUCCESS);
 }
 
@@ -110,7 +110,7 @@ TEST_F(HipFileUnit, TestHipFileBatchIOSubmitBadHandle)
     EXPECT_CALL(mock_state, getBatchContext).WillOnce(Throw(InvalidBatchHandle()));
     EXPECT_CALL(*mock_b_context, submit_operations).Times(0);
 
-    auto           result          = rocFileBatchIOSubmit(b_handle, 1, &io_param, 0);
+    auto           result          = hipFileBatchIOSubmit(b_handle, 1, &io_param, 0);
     hipFileError_t expected_result = {hipFileInvalidValue, hipSuccess};
     ASSERT_EQ(result, expected_result);
 }
@@ -124,7 +124,7 @@ TEST_F(HipFileUnit, TestHipFileBatchIOSubmitBadArgument)
     EXPECT_CALL(mock_state, getBatchContext).WillOnce(Return(mock_b_context));
     EXPECT_CALL(*mock_b_context, submit_operations).WillOnce(Throw(std::invalid_argument("")));
 
-    auto result = rocFileBatchIOSubmit(b_handle, 1, &io_param, 0);
+    auto result = hipFileBatchIOSubmit(b_handle, 1, &io_param, 0);
     ASSERT_EQ(result, HIPFILE_INVALID_VALUE);
 }
 

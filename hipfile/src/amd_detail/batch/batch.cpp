@@ -120,7 +120,7 @@ BatchContext::submit_operations(const hipFileIOParams_t *params, unsigned num_pa
     for (unsigned i = 0; i < num_params; i++) {
         // Make a copy of the params so another thread cannot modify the operation.
         auto param_copy = std::make_unique<const hipFileIOParams_t>(params[i]);
-        // flags currently unused. Ambiguous if flags in rocFileBatchIOSubmit is for buffer or
+        // flags currently unused. Ambiguous if flags in hipFileBatchIOSubmit is for buffer or
         // file flags.
         auto [_file, _buffer] = Context<DriverState>::get()->getFileAndBuffer(
             param_copy->fh, param_copy->u.batch.devPtr_base, param_copy->u.batch.size, 0);

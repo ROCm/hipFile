@@ -311,7 +311,7 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileBatchIOSetUp(hipFileBatchHandle_t *batch_idp, unsigned max_nr)
+hipFileBatchIOSetUp(hipFileBatchHandle_t *batch_idp, unsigned max_nr)
 try {
     if (batch_idp == nullptr) {
         return {hipFileInvalidValue, hipSuccess};
@@ -329,7 +329,7 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileBatchIOSubmit(hipFileBatchHandle_t batch_idp, unsigned nr, hipFileIOParams_t *iocbp, unsigned flags)
+hipFileBatchIOSubmit(hipFileBatchHandle_t batch_idp, unsigned nr, hipFileIOParams_t *iocbp, unsigned flags)
 try {
     (void)flags; // Unused at this time.
 
@@ -346,7 +346,7 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileBatchIOGetStatus(hipFileBatchHandle_t batch_idp, unsigned min_nr, unsigned *nr,
+hipFileBatchIOGetStatus(hipFileBatchHandle_t batch_idp, unsigned min_nr, unsigned *nr,
                         hipFileIOEvents_t *iocbp, struct timespec *timeout)
 try {
     (void)batch_idp;
@@ -362,7 +362,7 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileBatchIOCancel(hipFileBatchHandle_t batch_idp)
+hipFileBatchIOCancel(hipFileBatchHandle_t batch_idp)
 try {
     (void)batch_idp;
 
@@ -372,15 +372,15 @@ catch (...) {
     return handle_exception();
 }
 
-hipFileError_t
-rocFileBatchIODestroy(hipFileBatchHandle_t batch_idp)
+void
+hipFileBatchIODestroy(hipFileBatchHandle_t batch_idp)
 try {
     (void)batch_idp;
 
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception();
+    return;
 }
 
 hipFileError_t
