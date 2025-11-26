@@ -32,9 +32,3 @@ rocFileIOParams_t toRocFileIOParams(const hipFileIOParams_t &hf_io_params);
 rocFileOpcode_t toRocFileOpcode(hipFileOpcode_t hf_opcode);
 
 rocFileBatchMode toRocFileBatchMode(hipFileBatchMode_t hf_batch_mode);
-
-rocFileSizeTConfigParameter_t toRocFileSizeTConfigParameter(hipFileSizeTConfigParameter_t param);
-
-rocFileBoolConfigParameter_t toRocFileBoolConfigParameter(hipFileBoolConfigParameter_t param);
-
-rocFileStringConfigParameter_t toRocFileStringConfigParameter(hipFileStringConfigParameter_t param);

@@ -128,6 +128,24 @@ catch (...) {
     return {rocFileInternalError, hipSuccess};
 }
 
+/// Catch C++ exceptions from the hipFile code and convert
+/// them into error values that can be returned from public
+/// C API calls.
+static inline hipFileError_t
+handle_exception2() noexcept
+try {
+    throw;
+}
+catch (hipFileError_t e) {
+    return e;
+}
+catch (const Hip::RuntimeError &e) {
+    return {hipFileHipDriverError, e.error};
+}
+catch (...) {
+    return {hipFileInternalError, hipSuccess};
+}
+
 rocFileError_t
 rocFileHandleRegister(rocFileHandle_t *fh, rocFileDescr_t *descr)
 try {
@@ -558,8 +576,12 @@ catch (...) {
     return handle_exception();
 }
 
-rocFileError_t
-rocFileGetParameterSizeT(rocFileSizeTConfigParameter_t param, size_t *value)
+// ***********************************************************************
+//  PROPERTIES API
+// ***********************************************************************
+
+hipFileError_t
+hipFileGetParameterSizeT(hipFileSizeTConfigParameter_t param, size_t *value)
 try {
     (void)param;
     (void)value;
@@ -567,11 +589,11 @@ try {
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception();
+    return handle_exception2();
 }
 
-rocFileError_t
-rocFileGetParameterBool(rocFileBoolConfigParameter_t param, bool *value)
+hipFileError_t
+hipFileGetParameterBool(hipFileBoolConfigParameter_t param, bool *value)
 try {
     (void)param;
     (void)value;
@@ -579,11 +601,11 @@ try {
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception();
+    return handle_exception2();
 }
 
-rocFileError_t
-rocFileGetParameterString(rocFileStringConfigParameter_t param, char *desc_str, int len)
+hipFileError_t
+hipFileGetParameterString(hipFileStringConfigParameter_t param, char *desc_str, int len)
 try {
     (void)param;
     (void)desc_str;
@@ -592,11 +614,11 @@ try {
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception();
+    return handle_exception2();
 }
 
-rocFileError_t
-rocFileSetParameterSizeT(rocFileSizeTConfigParameter_t param, size_t value)
+hipFileError_t
+hipFileSetParameterSizeT(hipFileSizeTConfigParameter_t param, size_t value)
 try {
     (void)param;
     (void)value;
@@ -604,11 +626,11 @@ try {
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception();
+    return handle_exception2();
 }
 
-rocFileError_t
-rocFileSetParameterBool(rocFileBoolConfigParameter_t param, bool value)
+hipFileError_t
+hipFileSetParameterBool(hipFileBoolConfigParameter_t param, bool value)
 try {
     (void)param;
     (void)value;
@@ -616,11 +638,11 @@ try {
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception();
+    return handle_exception2();
 }
 
-rocFileError_t
-rocFileSetParameterString(rocFileStringConfigParameter_t param, const char *desc_str)
+hipFileError_t
+hipFileSetParameterString(hipFileStringConfigParameter_t param, const char *desc_str)
 try {
     (void)param;
     (void)desc_str;
@@ -628,5 +650,5 @@ try {
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception();
+    return handle_exception2();
 }
