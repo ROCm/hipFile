@@ -188,7 +188,7 @@ struct FallbackParam : ::testing::TestWithParam<IoType> {
         StrictMock<MSys>            msys;
         StrictMock<MLibMountHelper> mlibmounthelper;
 
-        assert(rocFileDriverOpen() == ROCFILE_SUCCESS);
+        assert(rocFileDriverOpen() == HIPFILE_SUCCESS);
 
         expect_buffer_registration(mhip, hipMemoryTypeDevice);
         void *buf = reinterpret_cast<void *>(0xFEFEFEFE);
@@ -207,7 +207,7 @@ struct FallbackParam : ::testing::TestWithParam<IoType> {
         buffer.reset();
 
         while (rocFileUseCount()) {
-            assert(rocFileDriverClose() == ROCFILE_SUCCESS);
+            assert(rocFileDriverClose() == HIPFILE_SUCCESS);
         }
     }
 

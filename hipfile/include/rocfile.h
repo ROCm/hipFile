@@ -22,90 +22,6 @@ extern "C" {
 #endif
 
 // ***********************************************************************
-//  ERROR HANDLING
-// ***********************************************************************
-
-/*!
- * @brief The base value for rocFile error codes
- * @ingroup error
- */
-#define ROCFILE_BASE_ERR 5000
-
-/* clang-format off */
-/*!
- * @brief rocFile function return codes
- * @ingroup error
- *
- * An error code of -1 indicates a that a C or POSIX error has occurred and
- * errno is likely to have been set.
- *
- * @note ROCFILE_BASE_ERR + 21 and 32 are intentionally omitted.
- */
-typedef enum rocFileOpError {
-    rocFileSuccess                 = 0,                     //!< rocFile success
-    rocFileDriverNotInitialized    = ROCFILE_BASE_ERR + 1,  //!< GPU IO driver is not loaded
-    rocFileDriverInvalidProps      = ROCFILE_BASE_ERR + 2,  //!< Invalid GPU IO driver property provided
-    rocFileDriverUnsupportedLimit  = ROCFILE_BASE_ERR + 3,  //!< GPU IO Driver property value is unsupported
-    rocFileDriverVersionMismatch   = ROCFILE_BASE_ERR + 4,  //!< rocFile version does not match GPU IO driver version
-    rocFileDriverVersionReadError  = ROCFILE_BASE_ERR + 5,  //!< Unable to read the GPU IO driver version
-    rocFileDriverClosing           = ROCFILE_BASE_ERR + 6,  //!< GPU IO driver is closing and not accepting new requests
-    rocFilePlatformNotSupported    = ROCFILE_BASE_ERR + 7,  //!< rocFile is not supported on the current platform
-    rocFileIONotSupported          = ROCFILE_BASE_ERR + 8,  //!< rocFile is not supported on the selected file
-    rocFileDeviceNotSupported      = ROCFILE_BASE_ERR + 9,  //!< The selected GPU does not support rocFile
-    rocFileDriverError             = ROCFILE_BASE_ERR + 10, //!< GPU IO driver error
-    rocFileHipDriverError          = ROCFILE_BASE_ERR + 11, //!< GPU driver error: Inspect the hipError_t value for additional information
-    rocFileHipPointerInvalid       = ROCFILE_BASE_ERR + 12, //!< Invalid GPU pointer
-    rocFileHipMemoryTypeInvalid    = ROCFILE_BASE_ERR + 13, //!< Memory type backing pointer is incompatible with rocFile
-    rocFileHipPointerRangeError    = ROCFILE_BASE_ERR + 14, //!< Pointer range exceeds allocated memory region
-    rocFileHipContextMismatch      = ROCFILE_BASE_ERR + 15, //!< GPU driver context mismatch
-    rocFileInvalidMappingSize      = ROCFILE_BASE_ERR + 16, //!< Accessing memory beyond pinned memory buffer
-    rocFileInvalidMappingRange     = ROCFILE_BASE_ERR + 17, //!< Accessing memory beyond mapped memory region
-    rocFileInvalidFileType         = ROCFILE_BASE_ERR + 18, //!< Unsupported file type
-    rocFileInvalidFileOpenFlag     = ROCFILE_BASE_ERR + 19, //!< Unsupported file open flags
-    rocFileDIONotSet               = ROCFILE_BASE_ERR + 20, //!< O_DIRECT flag not set
-    /* Value 5021 intentionally unused */
-    rocFileInvalidValue            = ROCFILE_BASE_ERR + 22, //!< One or more arguments have an invalid value
-    rocFileMemoryAlreadyRegistered = ROCFILE_BASE_ERR + 23, //!< Device pointer is already registered
-    rocFileMemoryNotRegistered     = ROCFILE_BASE_ERR + 24, //!< Device pointer is not registered
-    rocFilePermissionDenied        = ROCFILE_BASE_ERR + 25, //!< Permission error on device or file access
-    rocFileDriverAlreadyOpen       = ROCFILE_BASE_ERR + 26, //!< GPU IO driver is already open
-    rocFileHandleNotRegistered     = ROCFILE_BASE_ERR + 27, //!< File handle for GPU IO is not registered
-    rocFileHandleAlreadyRegistered = ROCFILE_BASE_ERR + 28, //!< File handle for GPU IO is already registered
-    rocFileDeviceNotFound          = ROCFILE_BASE_ERR + 29, //!< Selected device not found
-    rocFileInternalError           = ROCFILE_BASE_ERR + 30, //!< Internal GPU IO library error
-    rocFileGetNewFDFailed          = ROCFILE_BASE_ERR + 31, //!< Unable to obtain a new file descriptor
-    /* Value 5032 intentionally unused */
-    rocFileDriverSetupError        = ROCFILE_BASE_ERR + 33, //!< GPU IO Driver initialization error
-    rocFileIODisabled              = ROCFILE_BASE_ERR + 34, //!< GPU IO config file prohibits GPU IO on specified file
-    rocFileBatchSubmitFailed       = ROCFILE_BASE_ERR + 35, //!< Failed to submit request for batch operation
-    rocFileGPUMemoryPinningFailed  = ROCFILE_BASE_ERR + 36, //!< Failed to allocated pinned device memory
-    rocFileBatchFull               = ROCFILE_BASE_ERR + 37, //!< Batch operation queue is full
-    rocFileAsyncNotSupported       = ROCFILE_BASE_ERR + 38, //!< rocFile async IO is not supported
-    rocFileIOMaxError              = ROCFILE_BASE_ERR + 39, //!< Internal flag to mark largest rocFile error code
-} rocFileOpError_t;
-/* clang-format on */
-
-// Ignoring return values from rocFile APIs is discouraged.
-// On C++17 and C23 and up, we can make that emit a warning.
-#if __cplusplus >= 201703L || __STDC_VERSION__ >= 202311L
-#define __ROCFILE_NODISCARD [[nodiscard]]
-#else
-#define __ROCFILE_NODISCARD
-#endif
-
-/*!
- * @brief Error status returned from rocFile API calls
- * @ingroup error
- *
- * @note This struct has the `[[nodiscard]]` attribute in C++ >= 17 and
- *       C >= 23 so unhandled return values will generate warnings
- */
-typedef struct __ROCFILE_NODISCARD rocFileError {
-    rocFileOpError_t err;         //!< Errors related to rocFile or the GPU IO driver
-    hipError_t       hip_drv_err; //!< Errors related to the GPU driver
-} rocFileError_t;
-
-// ***********************************************************************
 //  GPU IO DRIVER API
 // ***********************************************************************
 
@@ -242,7 +158,7 @@ typedef void *rocFileHandle_t;
  * @return A rocFile error
  */
 ROCFILE_API
-rocFileError_t rocFileHandleRegister(rocFileHandle_t *fh, rocFileDescr_t *descr);
+hipFileError_t rocFileHandleRegister(rocFileHandle_t *fh, rocFileDescr_t *descr);
 
 /*!
  * @brief Deregisters a file from GPU IO
@@ -253,7 +169,7 @@ rocFileError_t rocFileHandleRegister(rocFileHandle_t *fh, rocFileDescr_t *descr)
  * @return A rocFile error
  */
 ROCFILE_API
-rocFileError_t rocFileHandleDeregister(rocFileHandle_t fh);
+hipFileError_t rocFileHandleDeregister(rocFileHandle_t fh);
 
 /*!
  * @brief Registers a GPU memory region to be used with GPU IO
@@ -272,7 +188,7 @@ rocFileError_t rocFileHandleDeregister(rocFileHandle_t fh);
  * @return A rocFile error
  */
 ROCFILE_API
-rocFileError_t rocFileBufRegister(const void *buffer_base, size_t length, int flags);
+hipFileError_t rocFileBufRegister(const void *buffer_base, size_t length, int flags);
 
 /*!
  * @brief Deregisters a GPU memory region from being used with GPU IO
@@ -283,7 +199,7 @@ rocFileError_t rocFileBufRegister(const void *buffer_base, size_t length, int fl
  * @return A rocFile error
  */
 ROCFILE_API
-rocFileError_t rocFileBufDeregister(const void *buffer_base);
+hipFileError_t rocFileBufDeregister(const void *buffer_base);
 
 /*!
  * @brief Synchronously read data from a file into a GPU buffer
@@ -297,7 +213,7 @@ rocFileError_t rocFileBufDeregister(const void *buffer_base);
  *
  * @return if >= 0: Number of bytes read
  * @return if -1:   System error (check `errno` for the specific error)
- * @return else:    Negative value of the related rocFileOpError_t
+ * @return else:    Negative value of the related hipFileOpError_t
  */
 ROCFILE_API
 ssize_t rocFileRead(rocFileHandle_t fh, void *buffer_base, size_t size, hoff_t file_offset,
@@ -315,7 +231,7 @@ ssize_t rocFileRead(rocFileHandle_t fh, void *buffer_base, size_t size, hoff_t f
  *
  * @return if >= 0: Number of bytes written
  * @return if -1:   System error (check `errno` for the specific error)
- * @return else:    Negative value of the related rocFileOpError_t
+ * @return else:    Negative value of the related hipFileOpError_t
  */
 ROCFILE_API
 ssize_t rocFileWrite(rocFileHandle_t fh, const void *buffer_base, size_t size, hoff_t file_offset,
@@ -340,7 +256,7 @@ ssize_t rocFileWrite(rocFileHandle_t fh, const void *buffer_base, size_t size, h
  * @return A rocFile error
  */
 ROCFILE_API
-rocFileError_t rocFileDriverOpen(void);
+hipFileError_t rocFileDriverOpen(void);
 
 /*!
  * @brief Close the GPU IO driver for this process
@@ -356,7 +272,7 @@ rocFileError_t rocFileDriverOpen(void);
  * @return A rocFile error
  */
 ROCFILE_API
-rocFileError_t rocFileDriverClose(void);
+hipFileError_t rocFileDriverClose(void);
 
 /*!
  * @brief Obtain the current reference count for the library
@@ -450,7 +366,7 @@ typedef void *rocFileBatchHandle_t;
  * @return A rocFile error
  */
 ROCFILE_API
-rocFileError_t rocFileBatchIOSetUp(rocFileBatchHandle_t *batch_idp, unsigned max_nr);
+hipFileError_t rocFileBatchIOSetUp(rocFileBatchHandle_t *batch_idp, unsigned max_nr);
 
 /*!
  * @brief Enqueue a batch of IO requests for the GPU to complete asynchronously
@@ -466,7 +382,7 @@ rocFileError_t rocFileBatchIOSetUp(rocFileBatchHandle_t *batch_idp, unsigned max
  * @return A rocFile error
  */
 ROCFILE_API
-rocFileError_t rocFileBatchIOSubmit(rocFileBatchHandle_t batch_idp, unsigned nr, rocFileIOParams_t *iocbp,
+hipFileError_t rocFileBatchIOSubmit(rocFileBatchHandle_t batch_idp, unsigned nr, rocFileIOParams_t *iocbp,
                                     unsigned flags);
 
 /*!
@@ -485,7 +401,7 @@ rocFileError_t rocFileBatchIOSubmit(rocFileBatchHandle_t batch_idp, unsigned nr,
  * @return A rocFile error
  */
 ROCFILE_API
-rocFileError_t rocFileBatchIOGetStatus(rocFileBatchHandle_t batch_idp, unsigned min_nr, unsigned *nr,
+hipFileError_t rocFileBatchIOGetStatus(rocFileBatchHandle_t batch_idp, unsigned min_nr, unsigned *nr,
                                        rocFileIOEvents_t *iocbp, struct timespec *timeout);
 
 /*!
@@ -497,7 +413,7 @@ rocFileError_t rocFileBatchIOGetStatus(rocFileBatchHandle_t batch_idp, unsigned 
  * @return A rocFile error
  */
 ROCFILE_API
-rocFileError_t rocFileBatchIOCancel(rocFileBatchHandle_t batch_idp);
+hipFileError_t rocFileBatchIOCancel(rocFileBatchHandle_t batch_idp);
 
 /*!
  * @brief Destroys the batch IO handle and frees the associated resources
@@ -508,7 +424,7 @@ rocFileError_t rocFileBatchIOCancel(rocFileBatchHandle_t batch_idp);
  * @return A rocFile error
  */
 ROCFILE_API
-rocFileError_t rocFileBatchIODestroy(rocFileBatchHandle_t batch_idp);
+hipFileError_t rocFileBatchIODestroy(rocFileBatchHandle_t batch_idp);
 
 // ***********************************************************************
 //  ASYNC API
@@ -530,7 +446,7 @@ rocFileError_t rocFileBatchIODestroy(rocFileBatchHandle_t batch_idp);
  * @return A rocFile error
  */
 ROCFILE_API
-rocFileError_t rocFileReadAsync(rocFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
+hipFileError_t rocFileReadAsync(rocFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
                                 hoff_t *buffer_offset_p, ssize_t *bytes_read_p, hipStream_t stream);
 
 /*!
@@ -549,7 +465,7 @@ rocFileError_t rocFileReadAsync(rocFileHandle_t fh, void *buffer_base, size_t *s
  * @return A rocFile error
  */
 ROCFILE_API
-rocFileError_t rocFileWriteAsync(rocFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
+hipFileError_t rocFileWriteAsync(rocFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
                                  hoff_t *buffer_offset_p, ssize_t *bytes_written_p, hipStream_t stream);
 
 /*!
@@ -563,7 +479,7 @@ rocFileError_t rocFileWriteAsync(rocFileHandle_t fh, void *buffer_base, size_t *
  * @return A rocFile error
  */
 ROCFILE_API
-rocFileError_t rocFileStreamRegister(hipStream_t stream, unsigned flags);
+hipFileError_t rocFileStreamRegister(hipStream_t stream, unsigned flags);
 
 /*!
  * @brief Deregister a stream and free the associated resources
@@ -574,10 +490,7 @@ rocFileError_t rocFileStreamRegister(hipStream_t stream, unsigned flags);
  * @return A rocFile error
  */
 ROCFILE_API
-rocFileError_t rocFileStreamDeregister(hipStream_t stream);
-
-// Not a part of the public API
-#undef __ROCFILE_NODISCARD
+hipFileError_t rocFileStreamDeregister(hipStream_t stream);
 
 #ifdef __cplusplus
 }

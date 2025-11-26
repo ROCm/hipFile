@@ -21,7 +21,7 @@ hipFileError_t
 hipFileHandleRegister(hipFileHandle_t *fh, hipFileDescr_t *descr)
 try {
     rocFileHandle_t *rocfile_fh = fh;
-    rocFileError_t   status;
+    hipFileError_t   status;
 
     if (descr) {
         auto rocfile_descr = toRocFileDescr(*descr);
@@ -32,7 +32,7 @@ try {
         status = rocFileHandleRegister(rocfile_fh, nullptr);
     }
 
-    return toHipFileError(status);
+    return status;
 }
 catch (...) {
     return {hipFileInternalError, hipSuccess};
@@ -47,7 +47,7 @@ hipFileHandleDeregister(hipFileHandle_t fh)
 hipFileError_t
 hipFileBufRegister(const void *buffer_base, size_t length, int flags)
 try {
-    return toHipFileError(rocFileBufRegister(buffer_base, length, flags));
+    return rocFileBufRegister(buffer_base, length, flags);
 }
 catch (...) {
     return {hipFileInternalError, hipSuccess};
@@ -56,7 +56,7 @@ catch (...) {
 hipFileError_t
 hipFileBufDeregister(const void *buffer_base)
 try {
-    auto error = toHipFileError(rocFileBufDeregister(buffer_base));
+    auto error = rocFileBufDeregister(buffer_base);
     if (error.err == hipFileDriverNotInitialized) {
         error.err = hipFileDriverClosing;
     }
@@ -70,7 +70,7 @@ ssize_t
 hipFileRead(hipFileHandle_t fh, void *buffer_base, size_t size, hoff_t file_offset, hoff_t buffer_offset)
 {
     auto result = rocFileRead(fh, buffer_base, size, file_offset, buffer_offset);
-    if (result == -rocFileDriverNotInitialized) {
+    if (result == -hipFileDriverNotInitialized) {
         // Match cuFile behaviour
         errno  = EINVAL;
         result = -1;
@@ -83,7 +83,7 @@ hipFileWrite(hipFileHandle_t fh, const void *buffer_base, size_t size, hoff_t fi
              hoff_t buffer_offset)
 {
     auto result = rocFileWrite(fh, buffer_base, size, file_offset, buffer_offset);
-    if (result == -rocFileDriverNotInitialized) {
+    if (result == -hipFileDriverNotInitialized) {
         // Match cuFile behaviour
         errno  = EINVAL;
         result = -1;
@@ -94,7 +94,7 @@ hipFileWrite(hipFileHandle_t fh, const void *buffer_base, size_t size, hoff_t fi
 hipFileError_t
 hipFileDriverOpen()
 try {
-    return toHipFileError(rocFileDriverOpen());
+    return rocFileDriverOpen();
 }
 catch (...) {
     return {hipFileInternalError, hipSuccess};
@@ -103,7 +103,7 @@ catch (...) {
 hipFileError_t
 hipFileDriverClose()
 try {
-    return toHipFileError(rocFileDriverClose());
+    return rocFileDriverClose();
 }
 catch (...) {
     return {hipFileInternalError, hipSuccess};
@@ -118,7 +118,7 @@ hipFileUseCount()
 hipFileError_t
 hipFileBatchIOSetUp(hipFileBatchHandle_t *batch_idp, unsigned max_nr)
 try {
-    return toHipFileError(rocFileBatchIOSetUp(batch_idp, max_nr));
+    return rocFileBatchIOSetUp(batch_idp, max_nr);
 }
 catch (...) {
     return {hipFileInternalError, hipSuccess};
@@ -128,7 +128,7 @@ hipFileError_t
 hipFileBatchIOSubmit(hipFileBatchHandle_t batch_idp, unsigned nr, hipFileIOParams_t *iocbp, unsigned flags)
 try {
     auto           rf_batch_idp = batch_idp;
-    rocFileError_t status;
+    hipFileError_t status;
 
     if (iocbp) {
         vector<rocFileIOParams_t> io_params(nr);
@@ -143,7 +143,7 @@ try {
         status = rocFileBatchIOSubmit(rf_batch_idp, nr, nullptr, flags);
     }
 
-    return toHipFileError(status);
+    return status;
 }
 catch (...) {
     return {hipFileInternalError, hipSuccess};
@@ -154,14 +154,14 @@ hipFileBatchIOGetStatus(hipFileBatchHandle_t batch_idp, unsigned min_nr, unsigne
                         hipFileIOEvents_t *iocbp, struct timespec *timeout)
 try {
     auto           rf_batch_idp = batch_idp;
-    rocFileError_t status;
+    hipFileError_t status;
 
     if (iocbp) {
         vector<rocFileIOEvents_t> io_events(*nr);
 
         status = rocFileBatchIOGetStatus(rf_batch_idp, min_nr, nr, io_events.data(), timeout);
 
-        if (status.err == rocFileSuccess) {
+        if (status.err == hipFileSuccess) {
             for (unsigned i = 0; i < *nr; i++) {
                 iocbp[i] = toHipFileIOEvents(io_events[i]);
             }
@@ -171,7 +171,7 @@ try {
         status = rocFileBatchIOGetStatus(rf_batch_idp, min_nr, nr, nullptr, timeout);
     }
 
-    return toHipFileError(status);
+    return status;
 }
 catch (...) {
     return {hipFileInternalError, hipSuccess};
@@ -180,7 +180,7 @@ catch (...) {
 hipFileError_t
 hipFileBatchIOCancel(hipFileBatchHandle_t batch_idp)
 try {
-    return toHipFileError(rocFileBatchIOCancel(batch_idp));
+    return rocFileBatchIOCancel(batch_idp);
 }
 catch (...) {
     return {hipFileInternalError, hipSuccess};
@@ -196,8 +196,8 @@ hipFileError_t
 hipFileReadAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
                  hoff_t *buffer_offset_p, ssize_t *bytes_read_p, hipStream_t stream)
 try {
-    auto result = toHipFileError(
-        rocFileReadAsync(fh, buffer_base, size_p, file_offset_p, buffer_offset_p, bytes_read_p, stream));
+    auto result =
+        rocFileReadAsync(fh, buffer_base, size_p, file_offset_p, buffer_offset_p, bytes_read_p, stream);
     if (result.err == hipFileDriverNotInitialized) {
         // Match cuFile behaviour
         hipFileEnsureDriverInitPrivate();
@@ -213,8 +213,8 @@ hipFileError_t
 hipFileWriteAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
                   hoff_t *buffer_offset_p, ssize_t *bytes_written_p, hipStream_t stream)
 try {
-    auto result = toHipFileError(
-        rocFileWriteAsync(fh, buffer_base, size_p, file_offset_p, buffer_offset_p, bytes_written_p, stream));
+    auto result =
+        rocFileWriteAsync(fh, buffer_base, size_p, file_offset_p, buffer_offset_p, bytes_written_p, stream);
     if (result.err == hipFileDriverNotInitialized) {
         // Match cuFile behaviour
         hipFileEnsureDriverInitPrivate();
@@ -229,7 +229,7 @@ catch (...) {
 hipFileError_t
 hipFileStreamRegister(hipStream_t stream, unsigned flags)
 try {
-    return toHipFileError(rocFileStreamRegister(stream, flags));
+    return rocFileStreamRegister(stream, flags);
 }
 catch (...) {
     return {hipFileInternalError, hipSuccess};
@@ -238,7 +238,7 @@ catch (...) {
 hipFileError_t
 hipFileStreamDeregister(hipStream_t stream)
 try {
-    return toHipFileError(rocFileStreamDeregister(stream));
+    return rocFileStreamDeregister(stream);
 }
 catch (...) {
     return {hipFileInternalError, hipSuccess};

@@ -67,7 +67,7 @@ TEST_F(RocFileUnit, TestRocFileBatchIOSetupSuccess)
     EXPECT_CALL(mock_state, createBatchContext).WillOnce(Return(expected_b_handle));
 
     auto result = rocFileBatchIOSetUp(&b_handle, 1);
-    EXPECT_EQ(result, ROCFILE_SUCCESS);
+    EXPECT_EQ(result, HIPFILE_SUCCESS);
     EXPECT_EQ(b_handle, expected_b_handle);
 }
 
@@ -78,14 +78,14 @@ TEST_F(RocFileUnit, TestRocFileBatchIOSetupBadArgument)
     EXPECT_CALL(mock_state, createBatchContext).WillOnce(Throw(std::invalid_argument("")));
 
     auto result = rocFileBatchIOSetUp(&b_handle, 0);
-    EXPECT_EQ(result, ROCFILE_INVALID_VALUE);
+    EXPECT_EQ(result, HIPFILE_INVALID_VALUE);
     EXPECT_EQ(b_handle, nullptr);
 }
 
 TEST_F(RocFileUnit, TestRocFileBatchIOSetupNullptrHandle)
 {
     auto result = rocFileBatchIOSetUp(nullptr, 1);
-    ASSERT_EQ(result, ROCFILE_INVALID_VALUE);
+    ASSERT_EQ(result, HIPFILE_INVALID_VALUE);
 }
 
 TEST_F(RocFileUnit, TestRocFileBatchIOSubmitSuccess)
@@ -98,7 +98,7 @@ TEST_F(RocFileUnit, TestRocFileBatchIOSubmitSuccess)
     EXPECT_CALL(*mock_b_context, submit_operations);
 
     auto result = rocFileBatchIOSubmit(b_handle, 1, &io_param, 0);
-    ASSERT_EQ(result, ROCFILE_SUCCESS);
+    ASSERT_EQ(result, HIPFILE_SUCCESS);
 }
 
 TEST_F(RocFileUnit, TestRocFileBatchIOSubmitBadHandle)
@@ -111,7 +111,7 @@ TEST_F(RocFileUnit, TestRocFileBatchIOSubmitBadHandle)
     EXPECT_CALL(*mock_b_context, submit_operations).Times(0);
 
     auto           result          = rocFileBatchIOSubmit(b_handle, 1, &io_param, 0);
-    rocFileError_t expected_result = {rocFileInvalidValue, hipSuccess};
+    hipFileError_t expected_result = {hipFileInvalidValue, hipSuccess};
     ASSERT_EQ(result, expected_result);
 }
 
@@ -125,7 +125,7 @@ TEST_F(RocFileUnit, TestRocFileBatchIOSubmitBadArgument)
     EXPECT_CALL(*mock_b_context, submit_operations).WillOnce(Throw(std::invalid_argument("")));
 
     auto result = rocFileBatchIOSubmit(b_handle, 1, &io_param, 0);
-    ASSERT_EQ(result, ROCFILE_INVALID_VALUE);
+    ASSERT_EQ(result, HIPFILE_INVALID_VALUE);
 }
 
 /// @brief Test rocFileIO function
@@ -169,7 +169,7 @@ TEST_P(RocFileIoParam, RocFileIoHandlesUnsupportedHipMemoryType)
         attrs.type = memoryType;
         EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
         ASSERT_EQ(rocFileIo(GetParam(), file_handle, unreg_bufptr, 0, 0, 0, mbackends),
-                  -static_cast<ssize_t>(rocFileHipMemoryTypeInvalid));
+                  -static_cast<ssize_t>(hipFileHipMemoryTypeInvalid));
     }
 }
 
@@ -177,13 +177,13 @@ TEST_P(RocFileIoParam, RocFileIoHandlesInvalidRegisteredBufferLength)
 {
     StrictMock<MHip> mhip;
     ASSERT_EQ(rocFileIo(GetParam(), file_handle, bufptr, buflen + 1, 0, 0, mbackends),
-              -static_cast<ssize_t>(rocFileInvalidValue));
+              -static_cast<ssize_t>(hipFileInvalidValue));
 }
 
 TEST_P(RocFileIoParam, RocFileIoHandlesInvalidFileHandle)
 {
     auto invalid_handle{reinterpret_cast<rocFileHandle_t>(0xdeadbeef)};
-    ASSERT_EQ(rocFileIo(GetParam(), invalid_handle, bufptr, 0, 0, 0, mbackends), -rocFileHandleNotRegistered);
+    ASSERT_EQ(rocFileIo(GetParam(), invalid_handle, bufptr, 0, 0, 0, mbackends), -hipFileHandleNotRegistered);
 }
 
 TEST_P(RocFileIoParam, RocFileIoHandlesSysRuntimeError)
@@ -206,7 +206,7 @@ TEST_P(RocFileIoParam, RocFileIoHandlesInvalidArgumentError)
 {
     EXPECT_CALL(*mbackend, score).WillOnce(Return(1));
     EXPECT_CALL(*mbackend, io).WillOnce(Throw(std::invalid_argument("")));
-    ASSERT_EQ(rocFileIo(GetParam(), file_handle, bufptr, buflen, 0, 0, mbackends), -rocFileInvalidValue);
+    ASSERT_EQ(rocFileIo(GetParam(), file_handle, bufptr, buflen, 0, 0, mbackends), -hipFileInvalidValue);
 }
 
 INSTANTIATE_TEST_SUITE_P(RocFileIo, RocFileIoParam, Values(IoType::Read, IoType::Write));
@@ -248,11 +248,11 @@ TEST_P(RocFileIoBackendSelectionParam, RocFileIoThrowsIfThereAreNoBackends)
     switch (io_type) {
         case IoType::Read:
             ASSERT_EQ(rocFileRead(handle, buffer, io_size, file_offset, buffer_offset),
-                      -rocFileInternalError);
+                      -hipFileInternalError);
             break;
         case IoType::Write:
             ASSERT_EQ(rocFileWrite(handle, buffer, io_size, file_offset, buffer_offset),
-                      -rocFileInternalError);
+                      -hipFileInternalError);
             break;
         default:
             FAIL() << "Unhandled IO Type";
@@ -276,11 +276,11 @@ TEST_P(RocFileIoBackendSelectionParam, RocFileIoThrowsIfAllBackendsRejectTheIO)
     switch (io_type) {
         case IoType::Read:
             ASSERT_EQ(rocFileRead(handle, buffer, io_size, file_offset, buffer_offset),
-                      -rocFileInternalError);
+                      -hipFileInternalError);
             break;
         case IoType::Write:
             ASSERT_EQ(rocFileWrite(handle, buffer, io_size, file_offset, buffer_offset),
-                      -rocFileInternalError);
+                      -hipFileInternalError);
             break;
         default:
             FAIL() << "Unhandled IO Type";

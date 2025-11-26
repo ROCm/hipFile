@@ -11,10 +11,6 @@
 
 // rocFile to hipFile ////////////////////////////////////////////////////////
 
-hipFileOpError_t toHipFileOpError(rocFileOpError_t status);
-
-hipFileError_t toHipFileError(const rocFileError_t &status);
-
 hipFileDriverProps_t toHipFileDriverProps(const rocFileDriverProps_t &rf_props);
 
 hipFileStatus_t toHipFileStatus(rocFileStatus_t rf_status);

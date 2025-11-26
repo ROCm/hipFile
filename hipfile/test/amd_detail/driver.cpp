@@ -36,12 +36,12 @@ TEST_F(RocFileDriverAdmin, OpenClose)
     ASSERT_EQ(rocFileUseCount(), 0);
 
     for (int64_t i = 1; i <= N; i++) {
-        ASSERT_EQ(rocFileDriverOpen(), ROCFILE_SUCCESS);
+        ASSERT_EQ(rocFileDriverOpen(), HIPFILE_SUCCESS);
         ASSERT_EQ(rocFileUseCount(), i);
     }
 
     for (int64_t i = N; i >= 1; i--) {
-        ASSERT_EQ(rocFileDriverClose(), ROCFILE_SUCCESS);
+        ASSERT_EQ(rocFileDriverClose(), HIPFILE_SUCCESS);
         ASSERT_EQ(rocFileUseCount(), i - 1);
     }
 
@@ -64,7 +64,7 @@ TEST_F(RocFileDriverAdmin, HandleRegisterInitsDriver)
 
     ASSERT_EQ(rocFileUseCount(), 0);
     expect_file_registration(msys, mlibmounthelper);
-    ASSERT_EQ(rocFileHandleRegister(&handle, &descr), ROCFILE_SUCCESS);
+    ASSERT_EQ(rocFileHandleRegister(&handle, &descr), HIPFILE_SUCCESS);
     ASSERT_EQ(rocFileUseCount(), 1);
 }
 
@@ -86,9 +86,9 @@ TEST_F(RocFileDriverAdmin, HandleRegisterGoodFD)
     expect_file_registration(msys, mlibmounthelper);
 
     ASSERT_EQ(rocFileUseCount(), 0);
-    ASSERT_EQ(rocFileHandleRegister(&handle, &descr), ROCFILE_SUCCESS);
+    ASSERT_EQ(rocFileHandleRegister(&handle, &descr), HIPFILE_SUCCESS);
     ASSERT_EQ(rocFileUseCount(), 1);
-    ASSERT_EQ(rocFileHandleDeregister(handle), ROCFILE_SUCCESS);
+    ASSERT_EQ(rocFileHandleDeregister(handle), HIPFILE_SUCCESS);
     ASSERT_EQ(rocFileUseCount(), 1);
 }
 
@@ -108,7 +108,7 @@ TEST_F(RocFileDriverAdmin, HandleRegisterBadFD)
     EXPECT_CALL(msys, statx).WillOnce(Throw(Sys::RuntimeError(EBADF)));
 
     ASSERT_EQ(rocFileUseCount(), 0);
-    ASSERT_NE(rocFileHandleRegister(&handle, &descr), ROCFILE_SUCCESS);
+    ASSERT_NE(rocFileHandleRegister(&handle, &descr), HIPFILE_SUCCESS);
     ASSERT_EQ(rocFileUseCount(), 0);
 }
 
@@ -121,14 +121,14 @@ TEST_F(RocFileDriverAdmin, HandleDeregisterDoesNotInitDriver)
 
     // Check NULL
     ASSERT_EQ(rocFileUseCount(), 0);
-    ASSERT_NE(rocFileHandleDeregister(nullptr), ROCFILE_SUCCESS);
+    ASSERT_NE(rocFileHandleDeregister(nullptr), HIPFILE_SUCCESS);
     ASSERT_EQ(rocFileUseCount(), 0);
 
     // Check unregistered handle
     rocFileHandle_t handle{};
 
     ASSERT_EQ(rocFileUseCount(), 0);
-    ASSERT_NE(rocFileHandleDeregister(handle), ROCFILE_SUCCESS);
+    ASSERT_NE(rocFileHandleDeregister(handle), HIPFILE_SUCCESS);
     ASSERT_EQ(rocFileUseCount(), 0);
 }
 
@@ -149,12 +149,12 @@ TEST_F(RocFileDriverAdmin, CloseDeregistersFile)
 
     ASSERT_EQ(rocFileUseCount(), 0);
     expect_file_registration(msys, mlibmounthelper);
-    ASSERT_EQ(rocFileHandleRegister(&handle, &descr), ROCFILE_SUCCESS);
+    ASSERT_EQ(rocFileHandleRegister(&handle, &descr), HIPFILE_SUCCESS);
     ASSERT_EQ(rocFileUseCount(), 1);
-    ASSERT_EQ(rocFileDriverClose(), ROCFILE_SUCCESS);
+    ASSERT_EQ(rocFileDriverClose(), HIPFILE_SUCCESS);
     ASSERT_EQ(rocFileUseCount(), 0);
     expect_file_registration(msys, mlibmounthelper);
-    ASSERT_EQ(rocFileHandleRegister(&handle, &descr), ROCFILE_SUCCESS);
+    ASSERT_EQ(rocFileHandleRegister(&handle, &descr), HIPFILE_SUCCESS);
     ASSERT_EQ(rocFileUseCount(), 1);
 }
 
@@ -167,7 +167,7 @@ TEST_F(RocFileDriverAdmin, BufRegisterInitsDriver)
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
 
     ASSERT_EQ(rocFileUseCount(), 0);
-    ASSERT_EQ(rocFileBufRegister(reinterpret_cast<void *>(0x1), 0, 0), ROCFILE_SUCCESS);
+    ASSERT_EQ(rocFileBufRegister(reinterpret_cast<void *>(0x1), 0, 0), HIPFILE_SUCCESS);
     ASSERT_EQ(rocFileUseCount(), 1);
 }
 
@@ -176,7 +176,7 @@ TEST_F(RocFileDriverAdmin, BufRegisterInitsDriver)
 TEST_F(RocFileDriverAdmin, BufDeregisterDoesNotInitDriver)
 {
     ASSERT_EQ(rocFileUseCount(), 0);
-    ASSERT_EQ(rocFileBufDeregister(nullptr), RocFileOpError(rocFileDriverNotInitialized));
+    ASSERT_EQ(rocFileBufDeregister(nullptr), RocFileOpError(hipFileDriverNotInitialized));
     ASSERT_EQ(rocFileUseCount(), 0);
 }
 
@@ -189,54 +189,54 @@ TEST_F(RocFileDriverAdmin, CloseDeregistersBuffer)
 
     ASSERT_EQ(rocFileUseCount(), 0);
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
-    ASSERT_EQ(rocFileBufRegister(reinterpret_cast<void *>(0x1), 0, 0), ROCFILE_SUCCESS);
+    ASSERT_EQ(rocFileBufRegister(reinterpret_cast<void *>(0x1), 0, 0), HIPFILE_SUCCESS);
     ASSERT_EQ(rocFileUseCount(), 1);
 
-    ASSERT_EQ(rocFileDriverClose(), ROCFILE_SUCCESS);
+    ASSERT_EQ(rocFileDriverClose(), HIPFILE_SUCCESS);
     ASSERT_EQ(rocFileUseCount(), 0);
 
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
-    ASSERT_EQ(rocFileBufRegister(reinterpret_cast<void *>(0x1), 0, 0), ROCFILE_SUCCESS);
+    ASSERT_EQ(rocFileBufRegister(reinterpret_cast<void *>(0x1), 0, 0), HIPFILE_SUCCESS);
     ASSERT_EQ(rocFileUseCount(), 1);
 }
 
 // Ensure rocFileReadAsync():
-// * Returns rocFileDriverNotInitialized when called w/o a driver init
+// * Returns hipFileDriverNotInitialized when called w/o a driver init
 // * Does NOT initialize the driver and returns a reference count of 0
 TEST_F(RocFileDriverAdmin, ReadAsyncDoesNotInitDriver)
 {
     ASSERT_EQ(rocFileReadAsync(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr),
-              RocFileOpError(rocFileDriverNotInitialized));
+              RocFileOpError(hipFileDriverNotInitialized));
     ASSERT_EQ(rocFileUseCount(), 0);
 }
 
 // Ensure rocFileWriteAsync():
-// * Returns rocFileDriverNotInitialized when called w/o a driver init
+// * Returns hipFileDriverNotInitialized when called w/o a driver init
 // * Does NOT initialize the driver and returns a reference count of 0
 TEST_F(RocFileDriverAdmin, WriteAsyncDoesNotInitDriverDriver)
 {
     ASSERT_EQ(rocFileWriteAsync(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr),
-              RocFileOpError(rocFileDriverNotInitialized));
+              RocFileOpError(hipFileDriverNotInitialized));
     ASSERT_EQ(rocFileUseCount(), 0);
 }
 
 // Ensure rocFileRead():
-// * Returns rocFileDriverNotInitialized when called w/o a driver init
+// * Returns hipFileDriverNotInitialized when called w/o a driver init
 //   (the weird negative sign is a quirk of returning a ssize_t)
 // * Does NOT initialize the driver and returns a reference count of 0
 TEST_F(RocFileDriverAdmin, ReadDoesNotInitDriver)
 {
-    ASSERT_EQ(rocFileRead(nullptr, nullptr, 0, 0, 0), -rocFileDriverNotInitialized);
+    ASSERT_EQ(rocFileRead(nullptr, nullptr, 0, 0, 0), -hipFileDriverNotInitialized);
     ASSERT_EQ(rocFileUseCount(), 0);
 }
 
 // Ensure rocFileWrite():
-// * Returns rocFileDriverNotInitialized when called w/o a driver init
+// * Returns hipFileDriverNotInitialized when called w/o a driver init
 //   (the weird negative sign is a quirk of returning a ssize_t)
 // * Does NOT initialize the driver and returns a reference count of 0
 TEST_F(RocFileDriverAdmin, WriteDoesNotInitDriver)
 {
-    ASSERT_EQ(rocFileWrite(nullptr, nullptr, 0, 0, 0), -rocFileDriverNotInitialized);
+    ASSERT_EQ(rocFileWrite(nullptr, nullptr, 0, 0, 0), -hipFileDriverNotInitialized);
     ASSERT_EQ(rocFileUseCount(), 0);
 }
 

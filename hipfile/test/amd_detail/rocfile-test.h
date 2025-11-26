@@ -25,50 +25,50 @@
 // ***********************************************************************
 
 // Set a particular rocFile error
-constexpr rocFileError_t
+constexpr hipFileError_t
 RocFileHipError(hipError_t err)
 {
-    return {rocFileHipDriverError, err};
+    return {hipFileHipDriverError, err};
 }
 
 // Set a particular HIP error
-constexpr rocFileError_t
-RocFileOpError(rocFileOpError_t err)
+constexpr hipFileError_t
+RocFileOpError(hipFileOpError_t err)
 {
     return {err, hipSuccess};
 }
 
-// == overload for rocFileError_t values
+// == overload for hipFileError_t values
 inline bool
-operator==(const rocFileError_t &lhs, const rocFileError_t &rhs)
+operator==(const hipFileError_t &lhs, const hipFileError_t &rhs)
 {
     return lhs.err == rhs.err && lhs.hip_drv_err == rhs.hip_drv_err;
 }
 
-// != overload for rocFileError_t values
+// != overload for hipFileError_t values
 inline bool
-operator!=(const rocFileError_t &lhs, const rocFileError_t &rhs)
+operator!=(const hipFileError_t &lhs, const hipFileError_t &rhs)
 {
     return lhs.err != rhs.err || lhs.hip_drv_err != rhs.hip_drv_err;
 }
 
-// << overload for rocFileError_t values
+// << overload for hipFileError_t values
 //
 // Unused in the test code, but kept here for iostream debugging
 #ifndef NDEBUG
 #include <iostream>
 inline std::ostream &
-operator<<(std::ostream &os, const rocFileError_t &rfe)
+operator<<(std::ostream &os, const hipFileError_t &rfe)
 {
-    return os << "rocFileError_t{ err: " << rfe.err << ", hip_drv_err: " << rfe.hip_drv_err << " }";
+    return os << "hipFileError_t{ err: " << rfe.err << ", hip_drv_err: " << rfe.hip_drv_err << " }";
 }
 #endif
 
 // Convenience "success" value
-inline constexpr rocFileError_t ROCFILE_SUCCESS{rocFileSuccess, hipSuccess};
+inline constexpr hipFileError_t HIPFILE_SUCCESS{hipFileSuccess, hipSuccess};
 
 // Convenience "invalid argument" value
-inline constexpr rocFileError_t ROCFILE_INVALID_VALUE{rocFileInvalidValue, hipSuccess};
+inline constexpr hipFileError_t HIPFILE_INVALID_VALUE{hipFileInvalidValue, hipSuccess};
 
 // ***********************************************************************
 //  BASE ERROR CLASSES
@@ -80,13 +80,13 @@ struct RocFileOpened : public ::testing::Test {
     RocFileOpened()
     {
         assert(rocFileUseCount() == 0);
-        assert(rocFileDriverOpen() == ROCFILE_SUCCESS);
+        assert(rocFileDriverOpen() == HIPFILE_SUCCESS);
     }
 
     virtual ~RocFileOpened() override
     {
         while (rocFileUseCount()) {
-            assert(rocFileDriverClose() == ROCFILE_SUCCESS);
+            assert(rocFileDriverClose() == HIPFILE_SUCCESS);
         }
         assert(rocFileUseCount() == 0);
     }
@@ -103,7 +103,7 @@ struct RocFileUnopened : public ::testing::Test {
     virtual ~RocFileUnopened() override
     {
         while (rocFileUseCount()) {
-            assert(rocFileDriverClose() == ROCFILE_SUCCESS);
+            assert(rocFileDriverClose() == HIPFILE_SUCCESS);
         }
         assert(rocFileUseCount() == 0);
     }

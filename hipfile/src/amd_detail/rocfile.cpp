@@ -25,29 +25,11 @@
 using namespace hipFile;
 using namespace std;
 
-/// Catch C++ exceptions from the rocFile code and convert
-/// them into error values that can be returned from public
-/// C API calls.
-static inline rocFileError_t
-handle_exception() noexcept
-try {
-    throw;
-}
-catch (rocFileError_t e) {
-    return e;
-}
-catch (const Hip::RuntimeError &e) {
-    return {rocFileHipDriverError, e.error};
-}
-catch (...) {
-    return {rocFileInternalError, hipSuccess};
-}
-
 /// Catch C++ exceptions from the hipFile code and convert
 /// them into error values that can be returned from public
 /// C API calls.
 static inline hipFileError_t
-handle_exception2() noexcept
+handle_exception() noexcept
 try {
     throw;
 }
@@ -61,97 +43,97 @@ catch (...) {
     return {hipFileInternalError, hipSuccess};
 }
 
-rocFileError_t
+hipFileError_t
 rocFileHandleRegister(rocFileHandle_t *fh, rocFileDescr_t *descr)
 try {
     if (fh == nullptr || descr == nullptr) {
-        return {rocFileInvalidValue, hipSuccess};
+        return {hipFileInvalidValue, hipSuccess};
     }
 
     switch (descr->type) {
         case rocFileHandleTypeOpaqueFD: {
             UnregisteredFile uf{descr->handle.fd};
             *fh = Context<DriverState>::get()->registerFile(uf);
-            return {rocFileSuccess, hipSuccess};
+            return {hipFileSuccess, hipSuccess};
         }
         case rocFileHandleTypeOpaqueWin32:
         case rocFileHandleTypeUserspaceFS:
         default:
-            return {rocFileIONotSupported, hipSuccess};
+            return {hipFileIONotSupported, hipSuccess};
     }
 }
 catch (const FileAlreadyRegistered &) {
-    return {rocFileHandleAlreadyRegistered, hipSuccess};
+    return {hipFileHandleAlreadyRegistered, hipSuccess};
 }
 catch (...) {
     return handle_exception();
 }
 
-rocFileError_t
+hipFileError_t
 rocFileHandleDeregister(rocFileHandle_t fh)
 try {
     if (fh == nullptr) {
-        return {rocFileInvalidValue, hipSuccess};
+        return {hipFileInvalidValue, hipSuccess};
     }
 
     Context<DriverState>::get()->deregisterFile(fh);
-    return {rocFileSuccess, hipSuccess};
+    return {hipFileSuccess, hipSuccess};
 }
 catch (const DriverNotInitialized &) {
-    return {rocFileDriverNotInitialized, hipSuccess};
+    return {hipFileDriverNotInitialized, hipSuccess};
 }
 catch (const FileOperationsOutstanding &) {
-    return {rocFileInternalError, hipSuccess};
+    return {hipFileInternalError, hipSuccess};
 }
 catch (const FileNotRegistered &) {
-    return {rocFileHandleNotRegistered, hipSuccess};
+    return {hipFileHandleNotRegistered, hipSuccess};
 }
 catch (...) {
     return handle_exception();
 }
 
-rocFileError_t
+hipFileError_t
 rocFileBufRegister(const void *buffer_base, size_t length, int flags)
 try {
     Context<DriverState>::get()->registerBuffer(buffer_base, length, flags);
-    return {rocFileSuccess, hipSuccess};
+    return {hipFileSuccess, hipSuccess};
 }
 catch (const BufferAlreadyRegistered &) {
-    return {rocFileMemoryAlreadyRegistered, hipSuccess};
+    return {hipFileMemoryAlreadyRegistered, hipSuccess};
 }
 catch (const InvalidMemoryType &) {
-    return {rocFileHipMemoryTypeInvalid, hipSuccess};
+    return {hipFileHipMemoryTypeInvalid, hipSuccess};
 }
 catch (const InvalidPointerRange &) {
-    return {rocFileHipPointerRangeError, hipSuccess};
+    return {hipFileHipPointerRangeError, hipSuccess};
 }
 catch (const Hip::RuntimeError &e) {
     if (e.error == hipErrorInvalidValue) {
-        return {rocFileInvalidValue, hipSuccess};
+        return {hipFileInvalidValue, hipSuccess};
     }
     return handle_exception();
 }
 catch (const std::invalid_argument &) {
-    return {rocFileInvalidValue, hipSuccess};
+    return {hipFileInvalidValue, hipSuccess};
 }
 catch (...) {
     return handle_exception();
 }
 
-rocFileError_t
+hipFileError_t
 rocFileBufDeregister(const void *buffer_base)
 try {
     Context<DriverState>::get()->deregisterBuffer(buffer_base);
-    return {rocFileSuccess, hipSuccess};
+    return {hipFileSuccess, hipSuccess};
 }
 catch (const DriverNotInitialized &) {
-    return {rocFileDriverNotInitialized, hipSuccess};
+    return {hipFileDriverNotInitialized, hipSuccess};
 }
 catch (const BufferNotRegistered &) {
-    return {rocFileMemoryNotRegistered, hipSuccess};
+    return {hipFileMemoryNotRegistered, hipSuccess};
 }
 catch (const BufferOperationsOutstanding &) {
-    return {rocFileInternalError, hipSuccess};
+    return {hipFileInternalError, hipSuccess};
 }
 catch (...) {
     return handle_exception();
@@ -195,19 +177,19 @@ try {
     return backend->io(type, file, buffer, size, file_offset, buffer_offset);
 }
 catch (const DriverNotInitialized &) {
-    return -rocFileDriverNotInitialized;
+    return -hipFileDriverNotInitialized;
 }
-catch (rocFileError_t e) {
+catch (hipFileError_t e) {
     return -e.err;
 }
 catch (const InvalidMemoryType &) {
-    return -rocFileHipMemoryTypeInvalid;
+    return -hipFileHipMemoryTypeInvalid;
 }
 catch (const std::invalid_argument &) {
-    return -rocFileInvalidValue;
+    return -hipFileInvalidValue;
 }
 catch (const FileNotRegistered &) {
-    return -rocFileHandleNotRegistered;
+    return -hipFileHandleNotRegistered;
 }
 catch (const Hip::RuntimeError &e) {
     return -e.error;
@@ -221,7 +203,7 @@ catch (const std::system_error &e) {
     return -1;
 }
 catch (...) {
-    return -rocFileInternalError;
+    return -hipFileInternalError;
 }
 
 ssize_t
@@ -237,26 +219,26 @@ rocFileWrite(rocFileHandle_t fh, const void *buffer_base, size_t size, hoff_t fi
     return rocFileIo(IoType::Write, fh, buffer_base, size, file_offset, buffer_offset, getCachedBackends());
 }
 
-rocFileError_t
+hipFileError_t
 rocFileDriverOpen()
 try {
     Context<DriverState>::get()->incrRefCount();
 
-    return {rocFileSuccess, hipSuccess};
+    return {hipFileSuccess, hipSuccess};
 }
 catch (...) {
     return handle_exception();
 }
 
-rocFileError_t
+hipFileError_t
 rocFileDriverClose()
 try {
     if (Context<DriverState>::get()->getRefCount() > 0) {
         Context<DriverState>::get()->decrRefCount();
-        return {rocFileSuccess, hipSuccess};
+        return {hipFileSuccess, hipSuccess};
     }
     else {
-        return {rocFileDriverNotInitialized, hipSuccess};
+        return {hipFileDriverNotInitialized, hipSuccess};
     }
 }
 catch (...) {
@@ -280,7 +262,7 @@ try {
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception2();
+    return handle_exception();
 }
 
 hipFileError_t
@@ -292,7 +274,7 @@ try {
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception2();
+    return handle_exception();
 }
 
 hipFileError_t
@@ -303,7 +285,7 @@ try {
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception2();
+    return handle_exception();
 }
 
 hipFileError_t
@@ -314,7 +296,7 @@ try {
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception2();
+    return handle_exception();
 }
 
 hipFileError_t
@@ -325,28 +307,28 @@ try {
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception2();
+    return handle_exception();
 }
 
-rocFileError_t
+hipFileError_t
 rocFileBatchIOSetUp(rocFileBatchHandle_t *batch_idp, unsigned max_nr)
 try {
     if (batch_idp == nullptr) {
-        return {rocFileInvalidValue, hipSuccess};
+        return {hipFileInvalidValue, hipSuccess};
     }
 
     *batch_idp = Context<DriverState>::get()->createBatchContext(max_nr);
 
-    return {rocFileSuccess, hipSuccess};
+    return {hipFileSuccess, hipSuccess};
 }
 catch (const std::invalid_argument &) {
-    return {rocFileInvalidValue, hipSuccess};
+    return {hipFileInvalidValue, hipSuccess};
 }
 catch (...) {
     return handle_exception();
 }
 
-rocFileError_t
+hipFileError_t
 rocFileBatchIOSubmit(rocFileBatchHandle_t batch_idp, unsigned nr, rocFileIOParams_t *iocbp, unsigned flags)
 try {
     (void)flags; // Unused at this time.
@@ -354,16 +336,16 @@ try {
     std::shared_ptr<IBatchContext> batch_context = Context<DriverState>::get()->getBatchContext(batch_idp);
     batch_context->submit_operations(iocbp, nr);
 
-    return {rocFileSuccess, hipSuccess};
+    return {hipFileSuccess, hipSuccess};
 }
 catch (const std::invalid_argument &) {
-    return {rocFileInvalidValue, hipSuccess};
+    return {hipFileInvalidValue, hipSuccess};
 }
 catch (...) {
     return handle_exception();
 }
 
-rocFileError_t
+hipFileError_t
 rocFileBatchIOGetStatus(rocFileBatchHandle_t batch_idp, unsigned min_nr, unsigned *nr,
                         rocFileIOEvents_t *iocbp, struct timespec *timeout)
 try {
@@ -379,7 +361,7 @@ catch (...) {
     return handle_exception();
 }
 
-rocFileError_t
+hipFileError_t
 rocFileBatchIOCancel(rocFileBatchHandle_t batch_idp)
 try {
     (void)batch_idp;
@@ -390,7 +372,7 @@ catch (...) {
     return handle_exception();
 }
 
-rocFileError_t
+hipFileError_t
 rocFileBatchIODestroy(rocFileBatchHandle_t batch_idp)
 try {
     (void)batch_idp;
@@ -401,12 +383,12 @@ catch (...) {
     return handle_exception();
 }
 
-rocFileError_t
+hipFileError_t
 rocFileReadAsync(rocFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
                  hoff_t *buffer_offset_p, ssize_t *bytes_read_p, hipStream_t stream)
 try {
     if (Context<DriverState>::get()->getRefCount() == 0) {
-        return {rocFileDriverNotInitialized, hipSuccess};
+        return {hipFileDriverNotInitialized, hipSuccess};
     }
 
     (void)fh;
@@ -423,12 +405,12 @@ catch (...) {
     return handle_exception();
 }
 
-rocFileError_t
+hipFileError_t
 rocFileWriteAsync(rocFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
                   hoff_t *buffer_offset_p, ssize_t *bytes_written_p, hipStream_t stream)
 try {
     if (Context<DriverState>::get()->getRefCount() == 0) {
-        return {rocFileDriverNotInitialized, hipSuccess};
+        return {hipFileDriverNotInitialized, hipSuccess};
     }
 
     (void)fh;
@@ -445,27 +427,27 @@ catch (...) {
     return handle_exception();
 }
 
-rocFileError_t
+hipFileError_t
 rocFileStreamRegister(hipStream_t stream, unsigned flags)
 try {
     Context<DriverState>::get()->registerStream(stream, flags);
-    return {rocFileSuccess, hipSuccess};
+    return {hipFileSuccess, hipSuccess};
 }
 catch (std::invalid_argument &) {
-    return {rocFileInvalidValue, hipSuccess};
+    return {hipFileInvalidValue, hipSuccess};
 }
 catch (...) {
     return handle_exception();
 }
 
-rocFileError_t
+hipFileError_t
 rocFileStreamDeregister(hipStream_t stream)
 try {
     Context<DriverState>::get()->deregisterStream(stream);
-    return {rocFileSuccess, hipSuccess};
+    return {hipFileSuccess, hipSuccess};
 }
 catch (std::invalid_argument &) {
-    return {rocFileInvalidValue, hipSuccess};
+    return {hipFileInvalidValue, hipSuccess};
 }
 catch (...) {
     return handle_exception();
@@ -484,7 +466,7 @@ try {
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception2();
+    return handle_exception();
 }
 
 hipFileError_t
@@ -496,7 +478,7 @@ try {
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception2();
+    return handle_exception();
 }
 
 hipFileError_t
@@ -509,7 +491,7 @@ try {
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception2();
+    return handle_exception();
 }
 
 hipFileError_t
@@ -521,7 +503,7 @@ try {
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception2();
+    return handle_exception();
 }
 
 hipFileError_t
@@ -533,7 +515,7 @@ try {
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception2();
+    return handle_exception();
 }
 
 hipFileError_t
@@ -545,5 +527,5 @@ try {
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception2();
+    return handle_exception();
 }
