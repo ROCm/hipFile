@@ -85,17 +85,6 @@ typedef enum rocFileOpError {
 } rocFileOpError_t;
 /* clang-format on */
 
-/*!
- * @brief Return a descriptive string for a rocFile error
- * @ingroup error
- *
- * @param [in] status Return code provided by rocFile
- *
- * @return Description of the error encountered
- */
-ROCFILE_API
-const char *rocFileOpStatusError(rocFileOpError_t status);
-
 // Ignoring return values from rocFile APIs is discouraged.
 // On C++17 and C23 and up, we can make that emit a warning.
 #if __cplusplus >= 201703L || __STDC_VERSION__ >= 202311L
