@@ -9,7 +9,7 @@
  *
  * This _very_basic_ program copies SOURCE to DEST via GPU memory.
  *
- * Note: Currently SOURCE's size must be > 0 and a multiple of 4096.
+ * Note: Currently SOURCE's size must be > 0
  */
 
 #include <hipfile.h>
@@ -81,7 +81,7 @@ main(int argc, char *argv[])
     void           *devbuf;
     hipError_t      hip_err;
     int             exit_status = EXIT_FAILURE;
-    size_t          file_size;
+    size_t          buffer_size, file_size, block_size;
     ssize_t         nbytes;
 
     if (argc != 3) {
@@ -98,11 +98,12 @@ main(int argc, char *argv[])
             fprintf(stderr, "Could not stat file: %s (%s)\n", src_path, strerror(errno));
             goto program_exit;
         }
-        file_size = static_cast<size_t>(statbuf.st_size);
+        file_size  = static_cast<size_t>(statbuf.st_size);
+        block_size = static_cast<size_t>(statbuf.st_blksize);
     }
 
-    if (0 == file_size || file_size % 4096) {
-        fprintf(stderr, "SOURCE's length must be non-zero and a multiple of 4096\n");
+    if (0 == file_size) {
+        fprintf(stderr, "SOURCE's length must be non-zero\n");
         goto program_exit;
     }
 
@@ -115,24 +116,35 @@ main(int argc, char *argv[])
         goto close_src;
     }
 
-    hip_err = hipMalloc(&devbuf, file_size);
+    buffer_size = file_size;
+    // If needed, round buffer_size up to the next multiple of block_size
+    if (buffer_size & (block_size - 1)) {
+        buffer_size = (buffer_size + block_size) & ~(block_size - 1);
+    }
+    hip_err = hipMalloc(&devbuf, buffer_size);
     if (hipSuccess != hip_err) {
         fprintf(stderr, "Could not allocate device buffer (%d)", hip_err);
         goto close_dst;
     }
 
-    nbytes = hipFileRead(src_handle, devbuf, file_size, 0, 0);
+    nbytes = hipFileRead(src_handle, devbuf, buffer_size, 0, 0);
     if (nbytes < 0 || file_size != static_cast<size_t>(nbytes)) {
         fprintf(stderr, "Could not read from %s (%zd) (%s)\n", src_path, nbytes,
                 IS_HIPFILE_ERR(nbytes) ? HIPFILE_ERRSTR(nbytes) : strerror(errno));
         goto free_devbuf;
     }
 
-    nbytes = hipFileWrite(dst_handle, devbuf, file_size, 0, 0);
-    if (nbytes < 0 || file_size != static_cast<size_t>(nbytes)) {
+    nbytes = hipFileWrite(dst_handle, devbuf, buffer_size, 0, 0);
+    if (nbytes < 0 || buffer_size != static_cast<size_t>(nbytes)) {
         fprintf(stderr, "Could not write to %s (%zd) (%s)\n", src_path, nbytes,
                 IS_HIPFILE_ERR(nbytes) ? HIPFILE_ERRSTR(nbytes) : strerror(errno));
         goto free_devbuf;
+    }
+
+    if (file_size < buffer_size) {
+        if (-1 == ftruncate(dst_fd, static_cast<off_t>(file_size))) {
+            fprintf(stderr, "Could not truncate %s (%zd) (%s)\n", dst_path, file_size, strerror(errno));
+        }
     }
 
     exit_status = EXIT_SUCCESS;
