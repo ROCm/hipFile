@@ -33,14 +33,14 @@ using namespace std;
  *  - The buffer type is hipMemoryTypeDevice
  *
  * When using the fastpath the IO flows through the following
- *  - rocFile HIP wrapper (userspace)
+ *  - hipFile HIP wrapper (userspace)
  *      - repository: hipFile
- *      - file: rocfile/hip.cpp
+ *      - file: hipfile/src/amd_detail/hip.cpp
  *      - methods: Hip::hipAmdFileRead(...), Hip::hipAmdFileWrite(...)
  *      - throws
  *          - std::system_error if status is non-zero (set by kfd)
  *          - Hip::runtime_error if hip runtime does not return hipSuccess or
- *            if rocFile was unable to find hipAmdFileRead/hipAmdFileWrite
+ *            if hipFile was unable to find hipAmdFileRead/hipAmdFileWrite
  *  - HIP Runtime (userspace)
  *      - repository: rocm-systems
  *      - file: projects/clr/hipamd/src/hip_storage.cpp
