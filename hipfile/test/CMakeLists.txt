@@ -84,12 +84,12 @@ gtest_discover_tests(
 # ----------------------------------------
 ais_add_executable(
     NAME test_hipfile_basic
-    SRCS test-hipfile.cpp
+    SRCS legacy/test-hipfile.cpp
     DEPS hipfile_shared
 )
 ais_add_executable(
     NAME test_hipfile_batch
-    SRCS test-hipfile-batch.cpp
+    SRCS legacy/test-hipfile-batch.cpp
     DEPS hipfile_shared
 )
 # ----------------------------------------
