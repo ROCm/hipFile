@@ -61,26 +61,6 @@ typedef struct rocFileDriverProps {
 } rocFileDriverProps_t;
 
 // ***********************************************************************
-//  RDMA API
-// ***********************************************************************
-
-/*!
- * @brief Userspace RDMA configuration
- * @ingroup rdma
- */
-typedef struct rocFileRDMAInfo {
-    int         version;  //!< Version of the RDMA API to use
-    int         desc_len; //!< Length of the description string
-    const char *desc_str; //!< Describes the configuration of the RDMA operation
-} rocFileRDMAInfo_t;
-
-/// Flag for if the RDMA operation is registered
-#define ROCFILE_RDMA_REGISTER 1
-
-/// Flag for if the RDMA operation has relaxed ordering
-#define ROCFILE_RDMA_RELAXED_ORDERING (1 << 1)
-
-// ***********************************************************************
 //  FILE HANDLE API
 // ***********************************************************************
 
@@ -104,11 +84,11 @@ typedef struct rocFileFSOps {
     /*!
      * Read from the remote filesystem. If NULL, use the Linux VFS.
      */
-    ssize_t (*read)(void *handle, char *, size_t, hoff_t, rocFileRDMAInfo_t *);
+    ssize_t (*read)(void *handle, char *, size_t, hoff_t, hipFileRDMAInfo_t *);
     /*!
      * Write to the remote filesystem. If NULL, use the Linux VFS.
      */
-    ssize_t (*write)(void *handle, const char *, size_t, hoff_t, rocFileRDMAInfo_t *);
+    ssize_t (*write)(void *handle, const char *, size_t, hoff_t, hipFileRDMAInfo_t *);
 } rocFileFSOps_t;
 
 /*!
