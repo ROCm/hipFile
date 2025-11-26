@@ -29,10 +29,10 @@ HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 static auto
 rocFileFlagsPowerSet()
 {
-    return ::testing::Combine(::testing::Values(0, ROCFILE_STREAM_FIXED_BUF_OFFSET),
-                              ::testing::Values(0, ROCFILE_STREAM_FIXED_FILE_OFFSET),
-                              ::testing::Values(0, ROCFILE_STREAM_FIXED_FILE_SIZE),
-                              ::testing::Values(0, ROCFILE_STREAM_PAGE_ALIGNED_INPUTS));
+    return ::testing::Combine(::testing::Values(0, HIPFILE_STREAM_FIXED_BUF_OFFSET),
+                              ::testing::Values(0, HIPFILE_STREAM_FIXED_FILE_OFFSET),
+                              ::testing::Values(0, HIPFILE_STREAM_FIXED_FILE_SIZE),
+                              ::testing::Values(0, HIPFILE_STREAM_PAGE_ALIGNED_INPUTS));
 }
 
 struct RocFileStream : public ::testing::Test {
@@ -75,7 +75,7 @@ TEST_F(RocFileStream, get_stream_with_unregistered_stream_works)
 
 TEST_F(RocFileStream, register_with_invalid_flags_throws)
 {
-    ASSERT_THROW(stream_map.registerStream(nonnull_stream, ROCFILE_STREAM_FLAGS_MASK + 1),
+    ASSERT_THROW(stream_map.registerStream(nonnull_stream, HIPFILE_STREAM_FLAGS_MASK + 1),
                  std::invalid_argument);
 }
 

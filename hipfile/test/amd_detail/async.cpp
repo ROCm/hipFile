@@ -75,8 +75,8 @@ struct RocFileAsyncMonitor : RocFileAsyncOp {
 static auto
 rocfileFlagsPowerSet()
 {
-    return Combine(Values(0, ROCFILE_STREAM_FIXED_BUF_OFFSET), Values(0, ROCFILE_STREAM_FIXED_FILE_OFFSET),
-                   Values(0, ROCFILE_STREAM_FIXED_FILE_SIZE), Values(0, ROCFILE_STREAM_PAGE_ALIGNED_INPUTS));
+    return Combine(Values(0, HIPFILE_STREAM_FIXED_BUF_OFFSET), Values(0, HIPFILE_STREAM_FIXED_FILE_OFFSET),
+                   Values(0, HIPFILE_STREAM_FIXED_FILE_SIZE), Values(0, HIPFILE_STREAM_PAGE_ALIGNED_INPUTS));
 }
 
 struct RocFileAsyncOpStreamParams
@@ -112,19 +112,19 @@ TEST_P(RocFileAsyncOpStreamParams, asyncOp_construction_has_correct_variants)
                                           &buffer_offset, &bytes_transferred);
 
     // Unfixed flags will be pointers
-    if (flags & ROCFILE_STREAM_FIXED_BUF_OFFSET) {
+    if (flags & HIPFILE_STREAM_FIXED_BUF_OFFSET) {
         EXPECT_NO_THROW(std::get<const hoff_t>(op->buffer_offset));
     }
     else {
         EXPECT_NO_THROW(std::get<hoff_t *>(op->buffer_offset));
     }
-    if (flags & ROCFILE_STREAM_FIXED_FILE_OFFSET) {
+    if (flags & HIPFILE_STREAM_FIXED_FILE_OFFSET) {
         EXPECT_NO_THROW(std::get<const hoff_t>(op->file_offset));
     }
     else {
         EXPECT_NO_THROW(std::get<hoff_t *>(op->file_offset));
     }
-    if (flags & ROCFILE_STREAM_FIXED_FILE_SIZE) {
+    if (flags & HIPFILE_STREAM_FIXED_FILE_SIZE) {
         EXPECT_NO_THROW(std::get<size_t>(op->size));
     }
     else {

@@ -16,13 +16,13 @@
 namespace hipFile {
 
 Stream::Stream(const hipStream_t _hip_stream, uint32_t flags)
-    : hip_stream{_hip_stream}, fixed_buf_offset{(flags & ROCFILE_STREAM_FIXED_BUF_OFFSET) != 0},
-      fixed_file_offset{(flags & ROCFILE_STREAM_FIXED_FILE_OFFSET) != 0},
-      fixed_io_size{(flags & ROCFILE_STREAM_FIXED_FILE_SIZE) != 0},
-      page_aligned{(flags & ROCFILE_STREAM_PAGE_ALIGNED_INPUTS) != 0}
+    : hip_stream{_hip_stream}, fixed_buf_offset{(flags & HIPFILE_STREAM_FIXED_BUF_OFFSET) != 0},
+      fixed_file_offset{(flags & HIPFILE_STREAM_FIXED_FILE_OFFSET) != 0},
+      fixed_io_size{(flags & HIPFILE_STREAM_FIXED_FILE_SIZE) != 0},
+      page_aligned{(flags & HIPFILE_STREAM_PAGE_ALIGNED_INPUTS) != 0}
 
 {
-    if ((flags & ROCFILE_STREAM_FLAGS_MASK) != flags) {
+    if ((flags & HIPFILE_STREAM_FLAGS_MASK) != flags) {
         throw std::invalid_argument("Invalid flags for stream");
     }
 }

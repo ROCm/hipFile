@@ -568,30 +568,6 @@ rocFileError_t rocFileBatchIODestroy(rocFileBatchHandle_t batch_idp);
 // ***********************************************************************
 
 /*!
- * @defgroup stream_flags Stream registration flags
- * @ingroup async
- *
- * @brief Flags to configure async GPU IO behaviour at stream registration
- * @{
- */
-
-/// Buffer offset is fixed at time of submission
-#define ROCFILE_STREAM_FIXED_BUF_OFFSET 1
-
-/// File offset is fixed at time of submission
-#define ROCFILE_STREAM_FIXED_FILE_OFFSET (1 << 1)
-
-/// File size is fixed at time of submission
-#define ROCFILE_STREAM_FIXED_FILE_SIZE (1 << 2)
-
-/// Offsets and size are 4k aligned
-#define ROCFILE_STREAM_PAGE_ALIGNED_INPUTS (1 << 3)
-
-/// Mask for selecting flag bits
-#define ROCFILE_STREAM_FLAGS_MASK 0xf
-/*! @} */
-
-/*!
  * @brief Perform an asynchronous read from a stream
  * @ingroup async
  *
