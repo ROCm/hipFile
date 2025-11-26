@@ -114,7 +114,7 @@ struct RocFileUnopened : public ::testing::Test {
 // ***********************************************************************
 
 /// @brief Set up mocks for buffer registration
-void expect_buffer_registration(rocFile::MHip &mhip, hipMemoryType memory_type);
+void expect_buffer_registration(hipFile::MHip &mhip, hipMemoryType memory_type);
 
 // ***********************************************************************
 //  FILE FUNCTIONALITY
@@ -123,13 +123,13 @@ void expect_buffer_registration(rocFile::MHip &mhip, hipMemoryType memory_type);
 /// @brief Setup mocks for file registration
 ///
 /// Mock methods will return default values
-void expect_file_registration(rocFile::MSys &msys, rocFile::MLibMountHelper &mlibmounthelper);
+void expect_file_registration(hipFile::MSys &msys, hipFile::MLibMountHelper &mlibmounthelper);
 
 /// @brief Setup mocks for file registration
 ///
 /// Mock methods will return the specified values
-void expect_file_registration(rocFile::MSys &msys, rocFile::MLibMountHelper &mlibmounthelper,
-                              struct statx stxbuf, int fcntl_flags, rocFile::MountInfo mountinfo);
+void expect_file_registration(hipFile::MSys &msys, hipFile::MLibMountHelper &mlibmounthelper,
+                              struct statx stxbuf, int fcntl_flags, hipFile::MountInfo mountinfo);
 
 // ***********************************************************************
 //  ENUM VALUE HELPERS

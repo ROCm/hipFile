@@ -16,7 +16,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-namespace rocFile {
+namespace hipFile {
 
 // The maximum number of bytes that can be transferred in a single read() or
 // write() system call. Mirrors kernel's MAX_RW_COUNT

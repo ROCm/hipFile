@@ -10,7 +10,7 @@
 
 #include <gmock/gmock.h>
 
-namespace rocFile {
+namespace hipFile {
 
 struct MLibMount : LibMount {
     ContextOverride<LibMount> co;

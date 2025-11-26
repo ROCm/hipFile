@@ -16,7 +16,7 @@
 #include <linux/stat.h>
 #include <stdexcept>
 
-using namespace rocFile;
+using namespace hipFile;
 using namespace std;
 
 /* The fastpath backend is used when:

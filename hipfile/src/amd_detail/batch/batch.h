@@ -13,14 +13,14 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace rocFile {
+namespace hipFile {
 class IBuffer;
 }
-namespace rocFile {
+namespace hipFile {
 class IFile;
 }
 
-namespace rocFile {
+namespace hipFile {
 
 struct InvalidBatchHandle : public std::invalid_argument {
     InvalidBatchHandle() : std::invalid_argument{"Invalid batch handle"}

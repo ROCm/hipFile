@@ -13,17 +13,17 @@
 #include <syslog.h>
 #include <utility>
 
-namespace rocFile {
+namespace hipFile {
 class IBuffer;
 }
-namespace rocFile {
+namespace hipFile {
 class IFile;
 }
-namespace rocFile {
+namespace hipFile {
 enum class IoType;
 }
 
-namespace rocFile {
+namespace hipFile {
 
 AsyncMonitor::AsyncMonitor() : is_finished{false}
 {

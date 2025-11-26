@@ -39,14 +39,14 @@
 #include <unistd.h>
 #include <vector>
 
-using namespace rocFile;
+using namespace hipFile;
 using namespace testing;
 
 using std::shared_ptr;
 using ::testing::Return;
 using ::testing::StrictMock;
 
-namespace rocFile {
+namespace hipFile {
 class IFile;
 }
 

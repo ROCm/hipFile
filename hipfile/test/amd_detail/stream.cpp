@@ -18,7 +18,7 @@
 #include <stdexcept>
 #include <tuple>
 
-using namespace rocFile;
+using namespace hipFile;
 
 using ::testing::StrictMock;
 

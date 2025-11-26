@@ -12,7 +12,7 @@
 #include <sys/types.h>
 #include <vector>
 
-namespace rocFile {
+namespace hipFile {
 enum class IoType;
 struct Backend;
 }
@@ -26,6 +26,6 @@ struct Backend;
 ROCFILE_API
 void rocFileEnsureDriverInitPrivate();
 
-ssize_t rocFileIo(rocFile::IoType type, rocFileHandle_t fh, const void *buffer_base, size_t size,
+ssize_t rocFileIo(hipFile::IoType type, rocFileHandle_t fh, const void *buffer_base, size_t size,
                   hoff_t file_offset, hoff_t buffer_offset,
-                  const std::vector<std::shared_ptr<rocFile::Backend>> &backends);
+                  const std::vector<std::shared_ptr<hipFile::Backend>> &backends);

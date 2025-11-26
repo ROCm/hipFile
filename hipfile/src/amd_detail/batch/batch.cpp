@@ -20,7 +20,7 @@
 #include <utility>
 #include <vector>
 
-namespace rocFile {
+namespace hipFile {
 
 BatchOperation::BatchOperation(std::unique_ptr<const rocFileIOParams_t> params,
                                std::shared_ptr<IBuffer> _buffer, std::shared_ptr<IFile> _file)

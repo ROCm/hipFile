@@ -21,7 +21,7 @@
 #include <memory>
 #include <stdexcept>
 
-using namespace rocFile;
+using namespace hipFile;
 
 using ::testing::StrictMock;
 

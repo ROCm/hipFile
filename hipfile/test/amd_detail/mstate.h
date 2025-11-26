@@ -17,7 +17,7 @@
  * A place to create mocks for the DriverState singleton.
  */
 
-namespace rocFile {
+namespace hipFile {
 
 class MDriverState : public DriverState {
 public:

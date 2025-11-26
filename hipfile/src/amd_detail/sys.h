@@ -20,7 +20,7 @@
  *   - Use return values instead of out arguments when possible
  */
 
-namespace rocFile {
+namespace hipFile {
 
 struct Sys {
     virtual ~Sys() = default;

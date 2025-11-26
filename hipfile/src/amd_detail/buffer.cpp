@@ -20,7 +20,7 @@ using std::shared_ptr;
 using std::transform;
 using std::vector;
 
-namespace rocFile {
+namespace hipFile {
 
 static bool
 isValidBufferRegion(void *ptr, size_t length)

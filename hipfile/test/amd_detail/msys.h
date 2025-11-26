@@ -11,7 +11,7 @@
 #include <gmock/gmock.h>
 
 // Mock implementations for Sys. Enables unit tests to mock system calls.
-namespace rocFile {
+namespace hipFile {
 
 struct MSys : Sys {
     ContextOverride<Sys> co;

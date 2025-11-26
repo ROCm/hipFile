@@ -9,7 +9,7 @@
 #include <memory>
 #include <unordered_map>
 
-namespace rocFile {
+namespace hipFile {
 
 class IStream {
 public:

@@ -20,7 +20,7 @@
 #include <stdexcept>
 #include <sys/mman.h>
 
-using namespace rocFile;
+using namespace hipFile;
 
 using std::min;
 using std::shared_ptr;
@@ -52,7 +52,7 @@ Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer,
 {
     size_t buflen{buffer->getLength()};
 
-    size = min(size, rocFile::MAX_RW_COUNT);
+    size = min(size, hipFile::MAX_RW_COUNT);
 
     if (file_offset < 0) {
         throw std::invalid_argument("Negative file offset");

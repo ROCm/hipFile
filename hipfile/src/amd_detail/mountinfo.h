@@ -12,7 +12,7 @@ struct libmnt_context;
 struct libmnt_fs;
 struct libmnt_table;
 
-namespace rocFile {
+namespace hipFile {
 
 /// @brief The filesystem type
 enum class FilesystemType {

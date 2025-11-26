@@ -14,17 +14,17 @@
 #include <new>
 #include <syslog.h>
 
-namespace rocFile {
+namespace hipFile {
 class IFile;
 }
-namespace rocFile {
+namespace hipFile {
 class IStream;
 }
-namespace rocFile {
+namespace hipFile {
 enum class IoType;
 }
 
-using namespace rocFile;
+using namespace hipFile;
 
 static void
 hipHostDeleter(void *buffer)

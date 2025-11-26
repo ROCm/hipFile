@@ -13,7 +13,7 @@
  * A place to create mocks for the batch module.
  */
 
-namespace rocFile {
+namespace hipFile {
 
 class MBatchContext : public IBatchContext {
 public:

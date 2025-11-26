@@ -28,7 +28,7 @@ using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::Throw;
 
-using namespace rocFile;
+using namespace hipFile;
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 

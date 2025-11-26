@@ -15,20 +15,20 @@
 #include <variant>
 #include <vector>
 
-namespace rocFile {
+namespace hipFile {
 class IBuffer;
 }
-namespace rocFile {
+namespace hipFile {
 class IFile;
 }
-namespace rocFile {
+namespace hipFile {
 class IStream;
 }
-namespace rocFile {
+namespace hipFile {
 enum class IoType;
 }
 
-namespace rocFile {
+namespace hipFile {
 
 class AsyncOp {
 public:

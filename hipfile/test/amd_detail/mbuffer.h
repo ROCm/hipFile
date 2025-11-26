@@ -13,7 +13,7 @@
  * A place to create mocks for the buffer module.
  */
 
-namespace rocFile {
+namespace hipFile {
 
 class MBuffer : public IBuffer {
 public:

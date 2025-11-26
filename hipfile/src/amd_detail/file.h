@@ -14,7 +14,7 @@
 #include <stdexcept>
 #include <unordered_map>
 
-namespace rocFile {
+namespace hipFile {
 
 /// @brief File is not registered
 struct FileNotRegistered : public std::runtime_error {

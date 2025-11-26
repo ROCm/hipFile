@@ -10,20 +10,20 @@
 #include <memory>
 #include <sys/types.h>
 
-namespace rocFile {
+namespace hipFile {
 class IBuffer;
 }
-namespace rocFile {
+namespace hipFile {
 class IFile;
 }
-namespace rocFile {
+namespace hipFile {
 class IStream;
 }
-namespace rocFile {
+namespace hipFile {
 enum class IoType;
 }
 
-namespace rocFile {
+namespace hipFile {
 
 struct AsyncOpFallback : AsyncOp {
     ssize_t     bytes_transferred_internal;

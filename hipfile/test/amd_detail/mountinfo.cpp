@@ -22,7 +22,7 @@ struct libmnt_context;
 struct libmnt_fs;
 struct libmnt_table;
 
-using namespace rocFile;
+using namespace hipFile;
 using namespace testing;
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF

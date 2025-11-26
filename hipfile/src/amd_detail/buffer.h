@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include <unordered_map>
 
-namespace rocFile {
+namespace hipFile {
 
 /// @brief Buffer is currently registered
 struct BufferAlreadyRegistered : public std::runtime_error {

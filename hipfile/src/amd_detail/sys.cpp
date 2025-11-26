@@ -11,7 +11,7 @@
 #include <syslog.h>
 #include <unistd.h>
 
-namespace rocFile {
+namespace hipFile {
 
 template <typename ExceptionType, typename L, typename R>
 static inline R

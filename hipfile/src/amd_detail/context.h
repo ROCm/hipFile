@@ -11,7 +11,7 @@
 #include <mutex>
 #endif
 
-namespace rocFile {
+namespace hipFile {
 
 template <typename T> struct ContextOverride;
 

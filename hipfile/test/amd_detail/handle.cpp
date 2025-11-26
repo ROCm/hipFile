@@ -24,7 +24,7 @@
 #include <optional>
 #include <stdexcept>
 
-using namespace rocFile;
+using namespace hipFile;
 using namespace testing;
 
 // Put tests inside the macros to suppress the global constructor

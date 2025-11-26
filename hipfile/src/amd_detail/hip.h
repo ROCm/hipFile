@@ -23,7 +23,7 @@
  *   - Use return values instead of out arguments when possible
  */
 
-namespace rocFile {
+namespace hipFile {
 
 struct HipMemAddressRange {
     hipDeviceptr_t base;

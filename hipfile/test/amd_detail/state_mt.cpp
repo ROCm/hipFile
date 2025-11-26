@@ -27,7 +27,7 @@
 #include <sys/resource.h>
 #include <vector>
 
-using namespace rocFile;
+using namespace hipFile;
 
 using namespace std;
 

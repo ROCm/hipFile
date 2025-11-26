@@ -21,7 +21,7 @@ using std::shared_ptr;
 using std::transform;
 using std::vector;
 
-namespace rocFile {
+namespace hipFile {
 
 UnregisteredFile::UnregisteredFile(int fd)
     : m_fd(fd), m_stx{Context<Sys>::get()->statx(fd, "", AT_EMPTY_PATH,

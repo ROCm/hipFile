@@ -4,7 +4,7 @@
  */
 
 /*
- * These tests are integration-level tests against th rocFile API.
+ * These tests are integration-level tests against the rocFile API.
  * They should test that the various rocFile modules are compatible with
  * one another. Running IO is not intended to be guaranteed to run here.
  *
@@ -41,11 +41,11 @@
 #include <sys/types.h>
 #include <vector>
 
-namespace rocFile {
+namespace hipFile {
 struct Backend;
 }
 
-using namespace rocFile;
+using namespace hipFile;
 using namespace std;
 using namespace testing;
 

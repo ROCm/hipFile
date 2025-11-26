@@ -12,7 +12,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 
-using namespace rocFile;
+using namespace hipFile;
 
 // Put tests inside the macros to suppress the global constructor
 // warnings

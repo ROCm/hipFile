@@ -32,7 +32,7 @@
 // warnings
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 
-using namespace rocFile;
+using namespace hipFile;
 using std::shared_ptr;
 using ::testing::_;
 using ::testing::AnyNumber;

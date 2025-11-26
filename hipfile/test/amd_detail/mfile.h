@@ -14,7 +14,7 @@
  * A place to create mocks for the file module.
  */
 
-namespace rocFile {
+namespace hipFile {
 
 class MFile : public IFile {
 public:

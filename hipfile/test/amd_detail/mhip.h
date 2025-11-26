@@ -14,7 +14,7 @@
  *
  * Mock implementations for Hip. Enables unit tests to mock HIP APIs.
  */
-namespace rocFile {
+namespace hipFile {
 
 struct MHip : Hip {
     ContextOverride<Hip> co;

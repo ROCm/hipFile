@@ -22,11 +22,11 @@ using std::shared_mutex;
 using std::shared_ptr;
 using std::unique_lock;
 
-namespace rocFile {
+namespace hipFile {
 struct Backend;
 }
 
-namespace rocFile {
+namespace hipFile {
 
 DriverState::DriverState() : ref_count{0}
 {

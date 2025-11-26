@@ -23,7 +23,7 @@
 #include <vector>
 #include <system_error>
 
-using namespace rocFile;
+using namespace hipFile;
 using namespace std;
 
 const char *

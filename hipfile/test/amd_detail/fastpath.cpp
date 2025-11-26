@@ -25,7 +25,7 @@
 #include <sys/types.h>
 #include <system_error>
 
-using namespace rocFile;
+using namespace hipFile;
 using namespace testing;
 using namespace std;
 
@@ -42,7 +42,7 @@ static uint32_t DEFAULT_MEM_ALIGN{4096};
 static uint32_t DEFAULT_OFFSET_ALIGN{4096};
 #endif
 
-namespace rocFile {
+namespace hipFile {
 inline bool
 operator==(const hipAmdFileHandle_t &lhs, const hipAmdFileHandle_t &rhs)
 {

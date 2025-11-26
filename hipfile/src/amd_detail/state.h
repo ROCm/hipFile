@@ -20,11 +20,11 @@
 #include <stdexcept>
 #include <vector>
 
-namespace rocFile {
+namespace hipFile {
 template <typename T> struct Context;
 }
 
-namespace rocFile {
+namespace hipFile {
 
 /// @brief The driver is not initialized
 struct DriverNotInitialized : public std::runtime_error {

@@ -9,7 +9,7 @@
 #include <cstdlib>
 #include <system_error>
 
-namespace rocFile {
+namespace hipFile {
 
 static void *
 hipGetProcAddressHelper(const char *symbol)

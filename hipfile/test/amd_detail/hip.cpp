@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 #include <hip/hip_runtime_api.h>
 
-using namespace rocFile;
+using namespace hipFile;
 using namespace testing;
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF

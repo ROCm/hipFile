@@ -18,7 +18,7 @@
 #include <hip/hip_runtime_api.h>
 #include <memory>
 
-using namespace rocFile;
+using namespace hipFile;
 using namespace testing;
 
 // Put tests inside the macros to suppress the global constructor

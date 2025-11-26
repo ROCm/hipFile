@@ -6,7 +6,7 @@
 
 #include "stream.h"
 
-namespace rocFile {
+namespace hipFile {
 
 class MStream : public IStream {
 public:

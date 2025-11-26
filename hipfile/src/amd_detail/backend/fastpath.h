@@ -11,17 +11,17 @@
 #include <memory>
 #include <sys/types.h>
 
-namespace rocFile {
+namespace hipFile {
 class IBuffer;
 }
-namespace rocFile {
+namespace hipFile {
 class IFile;
 }
-namespace rocFile {
+namespace hipFile {
 enum class IoType;
 }
 
-namespace rocFile {
+namespace hipFile {
 
 struct Fastpath : public Backend {
     virtual ~Fastpath() override = default;

@@ -4,7 +4,7 @@
  */
 #pragma once
 
-namespace rocFile {
+namespace hipFile {
 
 enum class IoType {
     Read,
