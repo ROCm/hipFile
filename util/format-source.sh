@@ -9,7 +9,6 @@ COMMAND="clang-format"
 
 DIRS=(
     "hipfile"
-    "rocfile"
 )
 
 if [ $# -eq 1 ]; then
