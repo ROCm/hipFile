@@ -128,13 +128,13 @@ struct HipFileStreamExternal : public HipFileOpened {
 
 TEST_F(HipFileStreamExternal, register_and_deregister_with_valid_stream_works)
 {
-    ASSERT_EQ(rocFileStreamRegister(nonnull_stream, 0), HIPFILE_SUCCESS);
-    ASSERT_EQ(rocFileStreamDeregister(nonnull_stream), HIPFILE_SUCCESS);
+    ASSERT_EQ(hipFileStreamRegister(nonnull_stream, 0), HIPFILE_SUCCESS);
+    ASSERT_EQ(hipFileStreamDeregister(nonnull_stream), HIPFILE_SUCCESS);
 }
 
 TEST_F(HipFileStreamExternal, deregister_exception_returns_error)
 {
-    ASSERT_EQ(rocFileStreamDeregister(nullptr), HipFileOpError(hipFileInvalidValue));
+    ASSERT_EQ(hipFileStreamDeregister(nullptr), HipFileOpError(hipFileInvalidValue));
 }
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

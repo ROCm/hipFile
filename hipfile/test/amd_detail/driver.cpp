@@ -200,31 +200,32 @@ TEST_F(HipFileDriverAdmin, CloseDeregistersBuffer)
     ASSERT_EQ(hipFileUseCount(), 1);
 }
 
-// Ensure rocFileReadAsync():
-// * Returns hipFileDriverNotInitialized when called w/o a driver init
-// * Does NOT initialize the driver and returns a reference count of 0
-TEST_F(HipFileDriverAdmin, ReadAsyncDoesNotInitDriver)
+// Ensure hipFileReadAsync():
+// * Returns hipFileInvalidValue when called w/o a driver init
+// * Initializes the driver and returns a reference count of 1 (like cuFile)
+TEST_F(HipFileDriverAdmin, ReadAsyncInitsDriver)
 {
-    ASSERT_EQ(rocFileReadAsync(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr),
-              HipFileOpError(hipFileDriverNotInitialized));
-    ASSERT_EQ(hipFileUseCount(), 0);
+    ASSERT_EQ(hipFileReadAsync(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr),
+              HipFileOpError(hipFileInvalidValue));
+    ASSERT_EQ(hipFileUseCount(), 1);
 }
 
-// Ensure rocFileWriteAsync():
-// * Returns hipFileDriverNotInitialized when called w/o a driver init
-// * Does NOT initialize the driver and returns a reference count of 0
-TEST_F(HipFileDriverAdmin, WriteAsyncDoesNotInitDriverDriver)
+// Ensure hipFileWriteAsync():
+// * Returns hipFileInvalidValue when called w/o a driver init
+// * Initializes the driver and returns a reference count of 1 (like cuFile)
+TEST_F(HipFileDriverAdmin, WriteAsyncInitsDriver)
 {
-    ASSERT_EQ(rocFileWriteAsync(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr),
-              HipFileOpError(hipFileDriverNotInitialized));
-    ASSERT_EQ(hipFileUseCount(), 0);
+    // Error value matches cuFile
+    ASSERT_EQ(hipFileWriteAsync(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr),
+              HipFileOpError(hipFileInvalidValue));
+    ASSERT_EQ(hipFileUseCount(), 1);
 }
 
 // Ensure rocFileRead():
 // * Returns hipFileDriverNotInitialized when called w/o a driver init
 //   (the weird negative sign is a quirk of returning a ssize_t)
 // * Does NOT initialize the driver and returns a reference count of 0
-TEST_F(HipFileDriverAdmin, ReadDoesNotInitDriver)
+TEST_F(HipFileDriverAdmin, ReadDoesNotInitsDriver)
 {
     ASSERT_EQ(rocFileRead(nullptr, nullptr, 0, 0, 0), -hipFileDriverNotInitialized);
     ASSERT_EQ(hipFileUseCount(), 0);

@@ -384,11 +384,13 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileReadAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
+hipFileReadAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
                  hoff_t *buffer_offset_p, ssize_t *bytes_read_p, hipStream_t stream)
 try {
     if (Context<DriverState>::get()->getRefCount() == 0) {
-        return {hipFileDriverNotInitialized, hipSuccess};
+        // Match cuFile behaviour
+        hipFileEnsureDriverInitPrivate();
+        return {hipFileInvalidValue, hipSuccess};
     }
 
     (void)fh;
@@ -406,11 +408,13 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileWriteAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
+hipFileWriteAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
                   hoff_t *buffer_offset_p, ssize_t *bytes_written_p, hipStream_t stream)
 try {
     if (Context<DriverState>::get()->getRefCount() == 0) {
-        return {hipFileDriverNotInitialized, hipSuccess};
+        // Match cuFile behaviour
+        hipFileEnsureDriverInitPrivate();
+        return {hipFileInvalidValue, hipSuccess};
     }
 
     (void)fh;
@@ -428,7 +432,7 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileStreamRegister(hipStream_t stream, unsigned flags)
+hipFileStreamRegister(hipStream_t stream, unsigned flags)
 try {
     Context<DriverState>::get()->registerStream(stream, flags);
     return {hipFileSuccess, hipSuccess};
@@ -441,7 +445,7 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileStreamDeregister(hipStream_t stream)
+hipFileStreamDeregister(hipStream_t stream)
 try {
     Context<DriverState>::get()->deregisterStream(stream);
     return {hipFileSuccess, hipSuccess};
