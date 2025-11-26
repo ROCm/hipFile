@@ -31,8 +31,8 @@ be set to ``hipSuccess``.
 
 Several helper macros are included in ``hipfile.h`` that help with error checking:
 
-* ``IS_ROCFILE_ERR()``
-* ``ROCFILE_ERRSTR()``
+* ``IS_HIPFILE_ERR()``
+* ``HIPFILE_ERRSTR()``
 * ``IS_HIP_DRV_ERR()``
 * ``HIP_DRV_ERR()``
 

@@ -177,66 +177,6 @@ typedef struct __ROCFILE_NODISCARD rocFileError {
     hipError_t       hip_drv_err; //!< Errors related to the GPU driver
 } rocFileError_t;
 
-/*!
- * @brief Determine if an error code is a rocFile error
- * @ingroup error
- * @hideinitializer
- *
- * Signature
- * @code
- * bool IS_ROCFILE_ERR(rocFileOpError err)
- * @endcode
- *
- * @return true/false
- */
-#define IS_ROCFILE_ERR(err) (abs((int)err) > ROCFILE_BASE_ERR)
-
-/*!
- * @brief Get an error string for a rocFile error
- * @ingroup error
- * @hideinitializer
- *
- * Signature
- * @code
- * const char *ROCFILE_ERRSTR(rocFileOpError err)
- * @endcode
- *
- * @return A string description of a rocFile error
- */
-#define ROCFILE_ERRSTR(err) rocFileOpStatusError((rocFileOpError_t)abs(err))
-
-/*!
- * @brief Determine if an error is a rocFile driver error
- * @ingroup error
- * @hideinitializer
- *
- * Signature
- * @code
- * bool IS_HIP_DRV_ERR(rocFileError_t err)
- * @endcode
- *
- * @return true/false
- */
-#ifndef IS_HIP_DRV_ERR
-#define IS_HIP_DRV_ERR(err) ((err).err == rocFileHipDriverError)
-#endif
-
-/*!
- * @brief Get the driver error from a rocFileError_t
- * @ingroup error
- * @hideinitializer
- *
- * Signature
- * @code
- * hipError_t HIP_DRV_ERR(rocFileError_t err)
- * @endcode
- *
- * @return The hipError_t component of err
- */
-#ifndef HIP_DRV_ERR
-#define HIP_DRV_ERR(err) ((err).hip_drv_err)
-#endif
-
 // ***********************************************************************
 //  GPU IO DRIVER API
 // ***********************************************************************
