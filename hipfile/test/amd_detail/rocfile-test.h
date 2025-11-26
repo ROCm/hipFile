@@ -79,16 +79,16 @@ struct RocFileOpened : public ::testing::Test {
 
     RocFileOpened()
     {
-        assert(rocFileUseCount() == 0);
-        assert(rocFileDriverOpen() == HIPFILE_SUCCESS);
+        assert(hipFileUseCount() == 0);
+        assert(hipFileDriverOpen() == HIPFILE_SUCCESS);
     }
 
     virtual ~RocFileOpened() override
     {
-        while (rocFileUseCount()) {
-            assert(rocFileDriverClose() == HIPFILE_SUCCESS);
+        while (hipFileUseCount()) {
+            assert(hipFileDriverClose() == HIPFILE_SUCCESS);
         }
-        assert(rocFileUseCount() == 0);
+        assert(hipFileUseCount() == 0);
     }
 };
 
@@ -97,15 +97,15 @@ struct RocFileUnopened : public ::testing::Test {
 
     RocFileUnopened()
     {
-        assert(rocFileUseCount() == 0);
+        assert(hipFileUseCount() == 0);
     }
 
     virtual ~RocFileUnopened() override
     {
-        while (rocFileUseCount()) {
-            assert(rocFileDriverClose() == HIPFILE_SUCCESS);
+        while (hipFileUseCount()) {
+            assert(hipFileDriverClose() == HIPFILE_SUCCESS);
         }
-        assert(rocFileUseCount() == 0);
+        assert(hipFileUseCount() == 0);
     }
 };
 

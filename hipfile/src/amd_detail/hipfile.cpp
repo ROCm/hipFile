@@ -92,30 +92,6 @@ hipFileWrite(hipFileHandle_t fh, const void *buffer_base, size_t size, hoff_t fi
 }
 
 hipFileError_t
-hipFileDriverOpen()
-try {
-    return rocFileDriverOpen();
-}
-catch (...) {
-    return {hipFileInternalError, hipSuccess};
-}
-
-hipFileError_t
-hipFileDriverClose()
-try {
-    return rocFileDriverClose();
-}
-catch (...) {
-    return {hipFileInternalError, hipSuccess};
-}
-
-int64_t
-hipFileUseCount()
-{
-    return rocFileUseCount();
-}
-
-hipFileError_t
 hipFileBatchIOSetUp(hipFileBatchHandle_t *batch_idp, unsigned max_nr)
 try {
     return rocFileBatchIOSetUp(batch_idp, max_nr);

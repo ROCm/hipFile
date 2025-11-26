@@ -220,7 +220,7 @@ rocFileWrite(rocFileHandle_t fh, const void *buffer_base, size_t size, hoff_t fi
 }
 
 hipFileError_t
-rocFileDriverOpen()
+hipFileDriverOpen()
 try {
     Context<DriverState>::get()->incrRefCount();
 
@@ -231,7 +231,7 @@ catch (...) {
 }
 
 hipFileError_t
-rocFileDriverClose()
+hipFileDriverClose()
 try {
     if (Context<DriverState>::get()->getRefCount() > 0) {
         Context<DriverState>::get()->decrRefCount();
@@ -246,7 +246,7 @@ catch (...) {
 }
 
 int64_t
-rocFileUseCount()
+hipFileUseCount()
 try {
     return Context<DriverState>::get()->getRefCount();
 }

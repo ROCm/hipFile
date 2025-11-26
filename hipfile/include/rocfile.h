@@ -238,55 +238,6 @@ ssize_t rocFileWrite(rocFileHandle_t fh, const void *buffer_base, size_t size, h
                      hoff_t buffer_offset);
 
 // ***********************************************************************
-//  GPU IO DRIVER API
-// ***********************************************************************
-
-/*!
- * @brief Initialize the GPU IO driver for this process
- * @ingroup driver
- *
- * Each call to `rocFileDriverOpen()` increments the library's reference
- * count. If a call to `rocFileDriverOpen()` results in the reference count
- * transitioning from zero to one, the library's state will be initialized.
- *
- * Calling `rocFileDriverOpen()` is optional. The first call to
- * `rocFileBufRegister()` or `rocFileHandleRegister()` will trigger
- * library initialization and increment the library's reference count.
- *
- * @return A rocFile error
- */
-ROCFILE_API
-hipFileError_t rocFileDriverOpen(void);
-
-/*!
- * @brief Close the GPU IO driver for this process
- * @ingroup driver
- *
- * Each call to `rocFileDriverClose()` decrements the library's reference
- * count. If a call to `rocFileDriverClose()` results in the reference count
- * transitioning from one to zero, the library's state will be destroyed.
- *
- * Explicitly closing the library is not required; the library's state will be
- * destroyed automatically at program exit.
- *
- * @return A rocFile error
- */
-ROCFILE_API
-hipFileError_t rocFileDriverClose(void);
-
-/*!
- * @brief Obtain the current reference count for the library
- * @ingroup driver
- *
- * @see rocFileDriverOpen()
- * @see rocFileDriverClose()
- *
- * @return The library's reference count
- */
-ROCFILE_API
-int64_t rocFileUseCount(void);
-
-// ***********************************************************************
 //  BATCH API
 // ***********************************************************************
 

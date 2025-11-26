@@ -188,7 +188,7 @@ struct FallbackParam : ::testing::TestWithParam<IoType> {
         StrictMock<MSys>            msys;
         StrictMock<MLibMountHelper> mlibmounthelper;
 
-        assert(rocFileDriverOpen() == HIPFILE_SUCCESS);
+        assert(hipFileDriverOpen() == HIPFILE_SUCCESS);
 
         expect_buffer_registration(mhip, hipMemoryTypeDevice);
         void *buf = reinterpret_cast<void *>(0xFEFEFEFE);
@@ -202,12 +202,12 @@ struct FallbackParam : ::testing::TestWithParam<IoType> {
     ~FallbackParam() override
     {
         // Drop the references to the file & buffer so that they can be
-        // deregistered in rocFileDriverClose()
+        // deregistered in hipFileDriverClose()
         file.reset();
         buffer.reset();
 
-        while (rocFileUseCount()) {
-            assert(rocFileDriverClose() == HIPFILE_SUCCESS);
+        while (hipFileUseCount()) {
+            assert(hipFileDriverClose() == HIPFILE_SUCCESS);
         }
     }
 
