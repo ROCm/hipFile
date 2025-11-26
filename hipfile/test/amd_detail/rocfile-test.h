@@ -5,7 +5,7 @@
 
 #pragma once
 
-// Common rocFile test functionality
+// Common hipFile test functionality
 
 #include "hipfile.h"
 #include "magic-word.h"
@@ -24,7 +24,7 @@
 //  ERRORS AND ERROR HANDLING
 // ***********************************************************************
 
-// Set a particular rocFile error
+// Set a particular hipFile error
 constexpr hipFileError_t
 RocFileHipError(hipError_t err)
 {
