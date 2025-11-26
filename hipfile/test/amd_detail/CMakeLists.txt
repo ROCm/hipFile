@@ -19,7 +19,6 @@ set(TEST_SOURCE_FILES
     hip.cpp
     fallback.cpp
     fastpath.cpp
-    misc.cpp
     mountinfo.cpp
     rocfile.cpp
     stream.cpp

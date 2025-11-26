@@ -556,26 +556,6 @@ catch (...) {
     return handle_exception();
 }
 
-rocFileError_t
-rocFileGetVersion(unsigned *major, unsigned *minor, unsigned *patch)
-try {
-    // NULL parameters are ignored
-    if (major != nullptr) {
-        *major = ROCFILE_VERSION_MAJOR;
-    }
-    if (minor != nullptr) {
-        *minor = ROCFILE_VERSION_MINOR;
-    }
-    if (patch != nullptr) {
-        *patch = ROCFILE_VERSION_PATCH;
-    }
-
-    return {rocFileSuccess, hipSuccess};
-}
-catch (...) {
-    return handle_exception();
-}
-
 // ***********************************************************************
 //  PROPERTIES API
 // ***********************************************************************

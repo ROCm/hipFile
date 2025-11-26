@@ -22,26 +22,6 @@ extern "C" {
 #endif
 
 // ***********************************************************************
-//  LIBRARY VERSION NUMBERS
-// ***********************************************************************
-
-/*!
- * @brief rocFile major version number
- * @ingroup core
- */
-#define ROCFILE_VERSION_MAJOR 0
-/*!
- * @brief rocFile minor version number
- * @ingroup core
- */
-#define ROCFILE_VERSION_MINOR 2
-/*!
- * @brief rocFile patch version number
- * @ingroup core
- */
-#define ROCFILE_VERSION_PATCH 0
-
-// ***********************************************************************
 //  ERROR HANDLING
 // ***********************************************************************
 
@@ -729,25 +709,6 @@ rocFileError_t rocFileStreamRegister(hipStream_t stream, unsigned flags);
  */
 ROCFILE_API
 rocFileError_t rocFileStreamDeregister(hipStream_t stream);
-
-// ***********************************************************************
-//  CORE API
-// ***********************************************************************
-
-/*!
- * @brief Get the rocFile version
- * @ingroup core
- *
- * @param [out] major The major version
- * @param [out] minor The minor version
- * @param [out] patch The patch version
- *
- * @note Parameters can be set to NULL to ignore that part of the version
- *
- * @return rocFileSuccess
- */
-ROCFILE_API
-rocFileError_t rocFileGetVersion(unsigned *major, unsigned *minor, unsigned *patch);
 
 // Not a part of the public API
 #undef __ROCFILE_NODISCARD
