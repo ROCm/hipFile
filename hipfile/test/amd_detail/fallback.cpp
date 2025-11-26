@@ -9,6 +9,7 @@
 #include "context.h"
 #include "hip.h"
 #include "hipfile.h"
+#include "hipfile-test.h"
 #include "hipfile-warnings.h"
 #include "io.h"
 #include "mbuffer.h"
@@ -16,7 +17,6 @@
 #include "mhip.h"
 #include "mmountinfo.h"
 #include "msys.h"
-#include "rocfile-test.h"
 #include "state.h"
 #include "sys.h"
 

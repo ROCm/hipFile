@@ -7,12 +7,12 @@
 #include "buffer.h"
 #include "file.h"
 #include "hipfile.h"
+#include "hipfile-test.h"
 #include "hipfile-warnings.h"
 #include "invalid-enum.h"
 #include "mbuffer.h"
 #include "mfile.h"
 #include "mstate.h"
-#include "rocfile-test.h"
 #include "state.h"
 
 #include <cstdio>

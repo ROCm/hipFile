@@ -4,11 +4,11 @@
  */
 
 #include "hipfile.h"
+#include "hipfile-test.h"
 #include "hipfile-warnings.h"
 #include "mhip.h"
 #include "mmountinfo.h"
 #include "msys.h"
-#include "rocfile-test.h"
 #include "sys.h"
 
 #include <cerrno>

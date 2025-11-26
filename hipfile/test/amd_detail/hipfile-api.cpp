@@ -16,6 +16,7 @@
 #include "hip.h"
 #include "hipfile.h"
 #include "hipfile-private.h"
+#include "hipfile-test.h"
 #include "hipfile-warnings.h"
 #include "io.h"
 #include "mbackend.h"
@@ -26,7 +27,6 @@
 #include "mmountinfo.h"
 #include "mstate.h"
 #include "msys.h"
-#include "rocfile-test.h"
 #include "state.h"
 #include "sys.h"
 

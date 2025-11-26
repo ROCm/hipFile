@@ -17,10 +17,10 @@ set(TEST_SOURCE_FILES
     driver.cpp
     handle.cpp
     hip.cpp
+    hipfile-api.cpp
     fallback.cpp
     fastpath.cpp
     mountinfo.cpp
-    rocfile.cpp
     stream.cpp
 )
 

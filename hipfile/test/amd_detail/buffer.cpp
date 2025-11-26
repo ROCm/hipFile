@@ -7,9 +7,9 @@
 #include "context.h"
 #include "hip.h"
 #include "hipfile.h"
+#include "hipfile-test.h"
 #include "hipfile-warnings.h"
 #include "mhip.h"
-#include "rocfile-test.h"
 #include "state.h"
 
 #include <array>

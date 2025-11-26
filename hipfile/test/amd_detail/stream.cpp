@@ -4,10 +4,10 @@
  */
 
 #include "hipfile.h"
+#include "hipfile-test.h"
 #include "hipfile-warnings.h"
 #include "mhip.h"
 #include "msys.h"
-#include "rocfile-test.h"
 #include "stream.h"
 
 #include <algorithm>

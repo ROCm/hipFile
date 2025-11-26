@@ -12,7 +12,6 @@
 #include "mhip.h"
 #include "mmountinfo.h"
 #include "msys.h"
-#include "rocfile-test.h"
 
 #include <array>
 #include <cassert>
