@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "rocfile.h"
+#include "hipfile.h"
 
 #include <memory>
 #include <shared_mutex>

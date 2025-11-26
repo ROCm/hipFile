@@ -5,11 +5,11 @@
 
 #include "context.h"
 #include "file.h"
+#include "hipfile.h"
 #include "hipfile-warnings.h"
 #include "msys.h"
 #include "mmountinfo.h"
 #include "mountinfo.h"
-#include "rocfile.h"
 #include "rocfile-test.h"
 #include "state.h"
 #include "sys.h"

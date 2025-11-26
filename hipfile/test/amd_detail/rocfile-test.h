@@ -7,12 +7,12 @@
 
 // Common rocFile test functionality
 
+#include "hipfile.h"
 #include "magic-word.h"
 #include "mhip.h"
 #include "mmountinfo.h"
 #include "msys.h"
 #include "rocfile-test.h"
-#include "rocfile.h"
 
 #include <array>
 #include <cassert>

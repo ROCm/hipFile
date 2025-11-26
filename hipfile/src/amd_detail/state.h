@@ -9,7 +9,7 @@
 #include "batch/batch.h"
 #include "buffer.h"
 #include "file.h"
-#include "rocfile.h"
+#include "hipfile.h"
 #include "stream.h"
 
 #include <cstddef>

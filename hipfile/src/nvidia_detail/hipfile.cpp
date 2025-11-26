@@ -5,7 +5,6 @@
 
 #include "hipfile.h"
 #include "hipfile-cufile.h"
-#include "hipfile-types.h"
 
 #include <cuda.h>
 #include <cufile.h>

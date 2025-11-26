@@ -4,8 +4,8 @@
  */
 
 #include "context.h"
+#include "hipfile.h"
 #include "hipfile-warnings.h"
-#include "rocfile.h"
 #include "rocfile-test.h"
 
 #include <climits>

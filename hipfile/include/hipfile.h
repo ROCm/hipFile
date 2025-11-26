@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <hipfile-types.h>
 #include <hip/hip_runtime_api.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -82,6 +81,20 @@ extern "C" {
  * @ingroup core
  */
 #define HIPFILE_VERSION_PATCH 0
+
+// ***********************************************************************
+//  PLATFORM-INDEPENDENT TYPES
+// ***********************************************************************
+
+/*!
+ * @brief Platform-independent offset type
+ * @ingroup core
+ */
+#ifndef _WIN32
+typedef off_t hoff_t;
+#else
+typedef __int64 hoff_t;
+#endif
 
 // ***********************************************************************
 //  ERROR HANDLING
@@ -1097,3 +1110,5 @@ hipFileError_t hipFileSetParameterString(hipFileStringConfigParameter_t param, c
 #ifdef __cplusplus
 }
 #endif
+
+#include <rocfile.h>

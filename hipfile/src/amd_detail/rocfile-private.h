@@ -5,8 +5,7 @@
 
 #pragma once
 
-#include "hipfile-types.h"
-#include "rocfile.h"
+#include "hipfile.h"
 
 #include <memory>
 #include <sys/types.h>

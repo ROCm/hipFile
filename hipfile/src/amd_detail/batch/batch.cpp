@@ -7,7 +7,7 @@
 #include "buffer.h"
 #include "context.h"
 #include "file.h"
-#include "rocfile.h"
+#include "hipfile.h"
 #include "state.h"
 
 #include <cstddef>

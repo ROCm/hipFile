@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 #include "context.h"
-#include "rocfile.h"
+#include "hipfile.h"
 #include "stream.h"
 #include "sys.h"
 

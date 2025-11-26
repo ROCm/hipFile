@@ -9,8 +9,6 @@
 
 #include "hipfile.h"
 
-#include "rocfile.h"
-
 // rocFile to hipFile ////////////////////////////////////////////////////////
 
 hipFileOpError_t toHipFileOpError(rocFileOpError_t status);

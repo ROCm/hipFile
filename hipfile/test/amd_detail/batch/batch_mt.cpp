@@ -9,7 +9,7 @@
 //
 
 #include "batch/batch.h"
-#include "rocfile.h"
+#include "hipfile.h"
 
 #include <array>
 #include <atomic>

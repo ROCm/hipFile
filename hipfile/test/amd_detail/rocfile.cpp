@@ -14,7 +14,7 @@
 #include "batch/batch.h"
 #include "context.h"
 #include "hip.h"
-#include "hipfile-types.h"
+#include "hipfile.h"
 #include "hipfile-warnings.h"
 #include "io.h"
 #include "mbackend.h"
@@ -27,7 +27,6 @@
 #include "msys.h"
 #include "rocfile-private.h"
 #include "rocfile-test.h"
-#include "rocfile.h"
 #include "state.h"
 #include "sys.h"
 

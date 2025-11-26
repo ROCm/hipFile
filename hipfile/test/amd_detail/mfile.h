@@ -6,7 +6,7 @@
 #pragma once
 
 #include "file.h"
-#include "rocfile.h"
+#include "hipfile.h"
 
 #include <gmock/gmock.h>
 

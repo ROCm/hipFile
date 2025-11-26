@@ -3,10 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include "hipfile-rocfile.h"
-#include "hipfile-types.h"
 #include "hipfile.h"
-#include "rocfile.h"
+#include "hipfile-rocfile.h"
 
 #include <cerrno>
 #include <climits>

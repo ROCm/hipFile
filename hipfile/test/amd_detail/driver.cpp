@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "hipfile.h"
 #include "hipfile-warnings.h"
 #include "mhip.h"
 #include "mmountinfo.h"
 #include "msys.h"
-#include "rocfile.h"
 #include "rocfile-test.h"
 #include "sys.h"
 

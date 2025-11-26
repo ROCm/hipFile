@@ -4,7 +4,7 @@
  */
 #pragma once
 
-#include "hipfile-types.h"
+#include "hipfile.h"
 
 #include <condition_variable>
 #include <memory>

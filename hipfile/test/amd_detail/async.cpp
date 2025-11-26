@@ -6,6 +6,7 @@
 #include "async.h"
 #include "backend/asyncop-fallback.h"
 #include "hip.h"
+#include "hipfile.h"
 #include "hipfile-warnings.h"
 #include "io.h"
 #include "mbuffer.h"
@@ -13,7 +14,6 @@
 #include "mhip.h"
 #include "mstream.h"
 #include "msys.h"
-#include "rocfile.h"
 
 #include <cstdint>
 #include <gmock/gmock.h>

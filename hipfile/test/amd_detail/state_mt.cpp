@@ -8,7 +8,7 @@
 // Just run the program. It takes no special arguments.
 
 #include "context.h"
-#include "rocfile.h"
+#include "hipfile.h"
 #include "state.h"
 
 #include <array>
