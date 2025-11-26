@@ -55,7 +55,7 @@ jobs:
               cp -R /mnt/ais /ais
               mkdir /ais/build
             '
-      - name: Generate build files for hipFile and rocFile targeting the AMD platform (amdclang++)
+      - name: Generate build files for hipFile targeting the AMD platform (amdclang++)
         run: |
           docker exec \
             -t \
@@ -70,7 +70,7 @@ jobs:
                 -DBUILD_CODE_COVERAGE=ON \
                 ..
             '
-      - name: Build hipFile and rocFile for the AMD platform (amdclang++)
+      - name: Build hipFile for the AMD platform (amdclang++)
         run: |
           docker exec \
             -t \
@@ -79,7 +79,7 @@ jobs:
             /bin/bash -c '
               cmake --build . --parallel
             '
-      - name: Test hipFile and rocFile for the AMD platform (amdclang++)
+      - name: Test hipFile for the AMD platform (amdclang++)
         run: |
           docker exec \
             -t \
@@ -157,7 +157,7 @@ jobs:
               cp -R /mnt/ais /ais
               mkdir /ais/build
             '
-      - name: Generate build files for hipFile and rocFile targeting the AMD platform (${{ matrix.alternate_compilers }})
+      - name: Generate build files for hipFile targeting the AMD platform (${{ matrix.alternate_compilers }})
         run: |
           docker exec \
             -t \
@@ -171,7 +171,7 @@ jobs:
                 -DBUILD_AIS_DOCS=ON \
                 ..
             '
-      - name: Build hipFile and rocFile for the AMD platform (${{ matrix.alternate_compilers }})
+      - name: Build hipFile for the AMD platform (${{ matrix.alternate_compilers }})
         run: |
           docker exec \
             -t \
@@ -226,7 +226,7 @@ jobs:
               cp -R /mnt/ais /ais
               mkdir /ais/build
             '
-      - name: Generate build files for hipFile and rocFile targeting the AMD platform (amdclang++)
+      - name: Generate build files for hipFile targeting the AMD platform (amdclang++)
         run: |
           docker exec \
             -t \
@@ -240,7 +240,7 @@ jobs:
                 -DBUILD_AIS_DOCS=ON \
                 ..
             '
-      - name: Build hipFile and rocFile for the AMD platform (amdclang++)
+      - name: Build hipFile for the AMD platform (amdclang++)
         run: |
           docker exec \
             -t \
@@ -249,7 +249,7 @@ jobs:
             /bin/bash -c '
               cmake --build . --parallel
             '
-      - name: Run hipFile and rocFile system tests for the AMD platform (amdclang++)
+      - name: Run hipFile system tests for the AMD platform (amdclang++)
         run: |
           docker exec \
             -t \
@@ -258,7 +258,7 @@ jobs:
             /bin/bash -c '
               ctest -V -L "system" --parallel
             '
-      - name: Stress tests for hipFile and rocFile targeting the AMD platform (amdclang++)
+      - name: Stress tests for hipFile targeting the AMD platform (amdclang++)
         run: |
           docker exec \
             -t \

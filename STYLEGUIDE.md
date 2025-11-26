@@ -1,4 +1,4 @@
-# hipFile/rocFile Style Guide
+# hipFile Style Guide
 
 ## File and Directory Structure
 ### Organization

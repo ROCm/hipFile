@@ -1,4 +1,4 @@
-# Changelog for hipFile/rocFile
+# Changelog for hipFile
 
 ## UNRELEASED - hipFile 0.2.0
 ### Added

@@ -1,6 +1,6 @@
-# Install guide for hipFile / rocFile
+# Install guide for hipFile
 
-## Building hipFile and rocFile
+## Building hipFile
 
 > [!NOTE]
 > hipFile is alpha software that has undergone testing on limited hardware. It may not work on your system at this time.
@@ -64,11 +64,11 @@ You can filter on test labels using the `-L` option. We currently have `hipfile`
 
 You can filter on test names using the `-R` option. This option supports wildcards.
 
-`ctest . -R RocFileBuffer.get_buffer_makes_temporary_buffer` runs the specified test.
-`ctest . -R 'RocFileBuffer*'` runs all tests that start with RocFileBuffer.
+`ctest . -R HipFileBuffer.get_buffer_makes_temporary_buffer` runs the specified test.
+`ctest . -R 'HipFileBuffer*'` runs all tests that start with HipFileBuffer.
 
 ### Install and package
-The hipFile and rocFile libraries can be installed with CMake. The default
+The hipFile library can be installed with CMake. The default
 install prefix is still the CMake default of `/usr/local`.
 
 `cmake --install .`

@@ -1,4 +1,4 @@
-# Contributing to hipFile/rocFile
+# Contributing to hipFile
 
 Thank you for contributing! This guide outlines the development workflow,
 contribution standards, and best practices when working on hipFile.

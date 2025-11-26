@@ -12,7 +12,7 @@ values indicate an error.
 
 ::
 
-    typedef struct __ROCFILE_NODISCARD hipFileError {
+    typedef struct __HIPFILE_NODISCARD hipFileError {
         hipFileOpError_t err;         //!< Errors related to hipFile or the GPU IO driver
         hipError_t       hip_drv_err; //!< Errors related to the GPU driver
     } hipFileError_t;

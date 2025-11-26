@@ -16,8 +16,6 @@ endif()
 
 # Set the library version in a variable so we can use
 # it in *.in files and avoid version mismatch.
-#
-# The versions number of rocFile and hipFile are identical
 set(AIS_LIBRARY_MAJOR 0)
 set(AIS_LIBRARY_MINOR 2)
 set(AIS_LIBRARY_PATCH 0)
@@ -128,7 +126,7 @@ include(AISAddLibraries)
 #-----------------------------------------------------------------------------
 # Code coverage (via llvm-cov)
 #
-# To use with the hipFile/rocFile libraries:
+# To use with the hipFile library:
 #   - Build with BUILD_CODE_COVERAGE set to ON
 #   - Run `ctest .`
 #
@@ -173,7 +171,7 @@ option(BUILD_AISCP "Build aiscp example program" ON)
 #------
 # docs
 #------
-option(BUILD_AIS_DOCS "Build the rocFile/hipFile docs (requires Doxygen)" OFF)
+option(BUILD_AIS_DOCS "Build the hipFile docs (requires Doxygen)" OFF)
 
 #-----------------------------------------------------------------------------
 # Find important packages for building the software

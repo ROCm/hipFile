@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-# Install hipFile and rocFile
+# Install hipFile
 
 # From the rocm-cmake repo
 include(ROCMInstallTargets)
