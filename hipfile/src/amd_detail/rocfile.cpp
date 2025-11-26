@@ -357,19 +357,19 @@ catch (...) {
     return -1;
 }
 
-rocFileError_t
-rocFileDriverGetProperties(rocFileDriverProps_t *props)
+hipFileError_t
+hipFileDriverGetProperties(hipFileDriverProps_t *props)
 try {
     (void)props;
 
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception();
+    return handle_exception2();
 }
 
-rocFileError_t
-rocFileDriverSetPollMode(bool poll, size_t poll_threshold_size)
+hipFileError_t
+hipFileDriverSetPollMode(bool poll, size_t poll_threshold_size)
 try {
     (void)poll;
     (void)poll_threshold_size;
@@ -377,40 +377,40 @@ try {
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception();
+    return handle_exception2();
 }
 
-rocFileError_t
-rocFileDriverSetMaxDirectIOSize(size_t max_direct_io_size)
+hipFileError_t
+hipFileDriverSetMaxDirectIOSize(size_t max_direct_io_size)
 try {
     (void)max_direct_io_size;
 
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception();
+    return handle_exception2();
 }
 
-rocFileError_t
-rocFileDriverSetMaxCacheSize(size_t max_cache_size)
+hipFileError_t
+hipFileDriverSetMaxCacheSize(size_t max_cache_size)
 try {
     (void)max_cache_size;
 
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception();
+    return handle_exception2();
 }
 
-rocFileError_t
-rocFileDriverSetMaxPinnedMemSize(size_t max_pinned_size)
+hipFileError_t
+hipFileDriverSetMaxPinnedMemSize(size_t max_pinned_size)
 try {
     (void)max_pinned_size;
 
     throw std::runtime_error("Not Implemented");
 }
 catch (...) {
-    return handle_exception();
+    return handle_exception2();
 }
 
 rocFileError_t

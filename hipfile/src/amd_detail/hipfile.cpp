@@ -117,64 +117,6 @@ hipFileUseCount()
 }
 
 hipFileError_t
-hipFileDriverGetProperties(hipFileDriverProps_t *props)
-try {
-    rocFileError_t status;
-
-    if (props) {
-        rocFileDriverProps_t roc_props;
-        status = rocFileDriverGetProperties(&roc_props);
-        if (status.err == rocFileSuccess) {
-            *props = toHipFileDriverProps(roc_props);
-        }
-    }
-    else {
-        status = rocFileDriverGetProperties(nullptr);
-    }
-
-    return toHipFileError(status);
-}
-catch (...) {
-    return {hipFileInternalError, hipSuccess};
-}
-
-hipFileError_t
-hipFileDriverSetPollMode(bool poll, size_t poll_threshold_size)
-try {
-    return toHipFileError(rocFileDriverSetPollMode(poll, poll_threshold_size));
-}
-catch (...) {
-    return {hipFileInternalError, hipSuccess};
-}
-
-hipFileError_t
-hipFileDriverSetMaxDirectIOSize(size_t max_direct_io_size)
-try {
-    return toHipFileError(rocFileDriverSetMaxDirectIOSize(max_direct_io_size));
-}
-catch (...) {
-    return {hipFileInternalError, hipSuccess};
-}
-
-hipFileError_t
-hipFileDriverSetMaxCacheSize(size_t max_cache_size)
-try {
-    return toHipFileError(rocFileDriverSetMaxCacheSize(max_cache_size));
-}
-catch (...) {
-    return {hipFileInternalError, hipSuccess};
-}
-
-hipFileError_t
-hipFileDriverSetMaxPinnedMemSize(size_t max_pinned_size)
-try {
-    return toHipFileError(rocFileDriverSetMaxPinnedMemSize(max_pinned_size));
-}
-catch (...) {
-    return {hipFileInternalError, hipSuccess};
-}
-
-hipFileError_t
 hipFileBatchIOSetUp(hipFileBatchHandle_t *batch_idp, unsigned max_nr)
 try {
     return toHipFileError(rocFileBatchIOSetUp(batch_idp, max_nr));

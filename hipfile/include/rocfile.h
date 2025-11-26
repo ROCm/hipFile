@@ -423,63 +423,6 @@ rocFileError_t rocFileDriverClose(void);
 ROCFILE_API
 int64_t rocFileUseCount(void);
 
-/*!
- * @brief Get a list of GPU IO driver properties
- * @ingroup driver
- *
- * @param [out] props See `rocFileDriverProps_t` for what properties are reported
- *
- * @return A rocFile error
- */
-ROCFILE_API
-rocFileError_t rocFileDriverGetProperties(rocFileDriverProps_t *props);
-
-/*!
- * @brief Enable/disable polling mode for GPU IO
- * @ingroup driver
- *
- * @param [in] poll `true` to enable polling, `false` to disable
- * @param [in] poll_threshold_size Maximum IO size (in KiB) for which polling is
- *                                 used when enabled
- *
- * @return A rocFile error
- */
-ROCFILE_API
-rocFileError_t rocFileDriverSetPollMode(bool poll, size_t poll_threshold_size);
-
-/*!
- * @brief Set the maximum IO chunk size
- * @ingroup driver
- *
- * @param [in] max_direct_io_size Maximum IO chunk size (in KiB) for each IO request
- *
- * @return A rocFile error
- */
-ROCFILE_API
-rocFileError_t rocFileDriverSetMaxDirectIOSize(size_t max_direct_io_size);
-
-/*!
- * @brief Set the maximum amount of GPU memory that can be used for bounce buffers
- * @ingroup driver
- *
- * @param [in] max_cache_size Maximum GPU memory (in KiB) that can be reserved for bounce buffers
- *
- * @return A rocFile error
- */
-ROCFILE_API
-rocFileError_t rocFileDriverSetMaxCacheSize(size_t max_cache_size);
-
-/*!
- * @brief Set the maximum amount of GPU memory that can be pinned
- * @ingroup driver
- *
- * @param [in] max_pinned_size Maximum GPU memory (in KiB) that can be pinned
- *
- * @return A rocFile error
- */
-ROCFILE_API
-rocFileError_t rocFileDriverSetMaxPinnedMemSize(size_t max_pinned_size);
-
 // ***********************************************************************
 //  BATCH API
 // ***********************************************************************
