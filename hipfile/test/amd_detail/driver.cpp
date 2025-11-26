@@ -176,7 +176,7 @@ TEST_F(RocFileDriverAdmin, BufRegisterInitsDriver)
 TEST_F(RocFileDriverAdmin, BufDeregisterDoesNotInitDriver)
 {
     ASSERT_EQ(hipFileUseCount(), 0);
-    ASSERT_EQ(rocFileBufDeregister(nullptr), RocFileOpError(hipFileDriverNotInitialized));
+    ASSERT_EQ(rocFileBufDeregister(nullptr), HipFileOpError(hipFileDriverNotInitialized));
     ASSERT_EQ(hipFileUseCount(), 0);
 }
 
@@ -206,7 +206,7 @@ TEST_F(RocFileDriverAdmin, CloseDeregistersBuffer)
 TEST_F(RocFileDriverAdmin, ReadAsyncDoesNotInitDriver)
 {
     ASSERT_EQ(rocFileReadAsync(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr),
-              RocFileOpError(hipFileDriverNotInitialized));
+              HipFileOpError(hipFileDriverNotInitialized));
     ASSERT_EQ(hipFileUseCount(), 0);
 }
 
@@ -216,7 +216,7 @@ TEST_F(RocFileDriverAdmin, ReadAsyncDoesNotInitDriver)
 TEST_F(RocFileDriverAdmin, WriteAsyncDoesNotInitDriverDriver)
 {
     ASSERT_EQ(rocFileWriteAsync(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr),
-              RocFileOpError(hipFileDriverNotInitialized));
+              HipFileOpError(hipFileDriverNotInitialized));
     ASSERT_EQ(hipFileUseCount(), 0);
 }
 

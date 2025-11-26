@@ -134,7 +134,7 @@ TEST_F(RocFileStreamExternal, register_and_deregister_with_valid_stream_works)
 
 TEST_F(RocFileStreamExternal, deregister_exception_returns_error)
 {
-    ASSERT_EQ(rocFileStreamDeregister(nullptr), RocFileOpError(hipFileInvalidValue));
+    ASSERT_EQ(rocFileStreamDeregister(nullptr), HipFileOpError(hipFileInvalidValue));
 }
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

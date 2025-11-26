@@ -82,7 +82,7 @@ TEST_F(RocFileBuffer, register_unsupported_hip_memory)
         hipPointerAttribute_t attrs{};
         attrs.type = memoryType;
         EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
-        ASSERT_EQ(rocFileBufRegister(nonnull_ptr, 0, 0), RocFileOpError(hipFileHipMemoryTypeInvalid));
+        ASSERT_EQ(rocFileBufRegister(nonnull_ptr, 0, 0), HipFileOpError(hipFileHipMemoryTypeInvalid));
     }
 }
 
@@ -97,12 +97,12 @@ TEST_F(RocFileBuffer, register_hip_pointer_get_attributes_error)
 {
     StrictMock<MHip> mhip;
     EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
-    ASSERT_EQ(rocFileBufRegister(nonnull_ptr, 0, 0), RocFileHipError(hipErrorUnknown));
+    ASSERT_EQ(rocFileBufRegister(nonnull_ptr, 0, 0), HipFileHipError(hipErrorUnknown));
 
     // hipErrorInvalidValue is handled differently to match the behaviour of cufile
     EXPECT_CALL(mhip, hipPointerGetAttributes)
         .WillOnce(testing::Throw(Hip::RuntimeError(hipErrorInvalidValue)));
-    ASSERT_EQ(rocFileBufRegister(nonnull_ptr, 0, 0), RocFileOpError(hipFileInvalidValue));
+    ASSERT_EQ(rocFileBufRegister(nonnull_ptr, 0, 0), HipFileOpError(hipFileInvalidValue));
 }
 
 TEST_F(RocFileBuffer, register_internal_already_registered)
@@ -118,12 +118,12 @@ TEST_F(RocFileBuffer, register_already_registered)
     StrictMock<MHip> mhip;
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
     ASSERT_EQ(rocFileBufRegister(nonnull_ptr, 0, 0), HIPFILE_SUCCESS);
-    ASSERT_EQ(rocFileBufRegister(nonnull_ptr, 0, 0), RocFileOpError(hipFileMemoryAlreadyRegistered));
+    ASSERT_EQ(rocFileBufRegister(nonnull_ptr, 0, 0), HipFileOpError(hipFileMemoryAlreadyRegistered));
 }
 
 TEST_F(RocFileBuffer, registerNullPointerReturnsError)
 {
-    ASSERT_EQ(rocFileBufRegister(nullptr, 0x10000, 0), RocFileOpError(hipFileInvalidValue));
+    ASSERT_EQ(rocFileBufRegister(nullptr, 0x10000, 0), HipFileOpError(hipFileInvalidValue));
 }
 
 TEST_F(RocFileBuffer, registerOversizeRangeReturnsError)
@@ -135,7 +135,7 @@ TEST_F(RocFileBuffer, registerOversizeRangeReturnsError)
     attrs.type = hipMemoryTypeDevice;
     EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
     ASSERT_EQ(rocFileBufRegister(reinterpret_cast<void *>(0x1), 101, 0),
-              RocFileOpError(hipFileHipPointerRangeError));
+              HipFileOpError(hipFileHipPointerRangeError));
 }
 
 TEST_F(RocFileBuffer, registerHipMemGetAddressRangeThrowReturnsError)
@@ -145,7 +145,7 @@ TEST_F(RocFileBuffer, registerHipMemGetAddressRangeThrowReturnsError)
     hipPointerAttribute_t attrs{};
     attrs.type = hipMemoryTypeDevice;
     EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
-    ASSERT_EQ(rocFileBufRegister(reinterpret_cast<void *>(0x1), 100, 0), RocFileOpError(hipFileInvalidValue));
+    ASSERT_EQ(rocFileBufRegister(reinterpret_cast<void *>(0x1), 100, 0), HipFileOpError(hipFileInvalidValue));
 }
 
 TEST_F(RocFileBuffer, registerOverflowingRangeReturnsError)
@@ -157,7 +157,7 @@ TEST_F(RocFileBuffer, registerOverflowingRangeReturnsError)
     attrs.type = hipMemoryTypeDevice;
     EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
     ASSERT_EQ(rocFileBufRegister(reinterpret_cast<void *>(0xFFFF0000), 0x10000, 0),
-              RocFileOpError(hipFileHipPointerRangeError));
+              HipFileOpError(hipFileHipPointerRangeError));
 }
 
 TEST_F(RocFileBuffer, deregister_internal_not_registered)
@@ -167,7 +167,7 @@ TEST_F(RocFileBuffer, deregister_internal_not_registered)
 
 TEST_F(RocFileBuffer, deregister_not_registered)
 {
-    ASSERT_EQ(rocFileBufDeregister(nonnull_ptr), RocFileOpError(hipFileMemoryNotRegistered));
+    ASSERT_EQ(rocFileBufDeregister(nonnull_ptr), HipFileOpError(hipFileMemoryNotRegistered));
 }
 
 TEST_F(RocFileBuffer, deregister_internal)
@@ -201,7 +201,7 @@ TEST_F(RocFileBuffer, deregister_duplicate_deregister)
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
     ASSERT_EQ(rocFileBufRegister(nonnull_ptr, 0, 0), HIPFILE_SUCCESS);
     ASSERT_EQ(rocFileBufDeregister(nonnull_ptr), HIPFILE_SUCCESS);
-    ASSERT_EQ(rocFileBufDeregister(nonnull_ptr), RocFileOpError(hipFileMemoryNotRegistered));
+    ASSERT_EQ(rocFileBufDeregister(nonnull_ptr), HipFileOpError(hipFileMemoryNotRegistered));
 }
 
 TEST_F(RocFileBuffer, deregister_internal_get_prevents_deregister)
@@ -223,7 +223,7 @@ TEST_F(RocFileBuffer, deregister_get_prevents_deregister)
     ASSERT_EQ(rocFileBufRegister(nonnull_ptr, 0, 0), HIPFILE_SUCCESS);
     {
         auto buffer = Context<DriverState>::get()->getBuffer(nonnull_ptr);
-        ASSERT_EQ(rocFileBufDeregister(nonnull_ptr), RocFileOpError(hipFileInternalError));
+        ASSERT_EQ(rocFileBufDeregister(nonnull_ptr), HipFileOpError(hipFileInternalError));
     }
     ASSERT_EQ(rocFileBufDeregister(nonnull_ptr), HIPFILE_SUCCESS);
 }

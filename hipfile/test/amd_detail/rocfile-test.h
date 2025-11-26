@@ -26,14 +26,14 @@
 
 // Set a particular hipFile error
 constexpr hipFileError_t
-RocFileHipError(hipError_t err)
+HipFileHipError(hipError_t err)
 {
     return {hipFileHipDriverError, err};
 }
 
 // Set a particular HIP error
 constexpr hipFileError_t
-RocFileOpError(hipFileOpError_t err)
+HipFileOpError(hipFileOpError_t err)
 {
     return {err, hipSuccess};
 }

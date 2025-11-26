@@ -118,7 +118,7 @@ TEST_F(RocFileHandle, RocfileHandleRegisterStatxError)
 
     EXPECT_CALL(msys, statx).WillOnce(Throw(Sys::RuntimeError(EBADF)));
 
-    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), RocFileOpError(hipFileInternalError));
+    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileInternalError));
 }
 
 // If the fcntl() fails during file registration return rocfileInternalError
@@ -132,7 +132,7 @@ TEST_F(RocFileHandle, RocfileHandleRegisterFcntlError)
     EXPECT_CALL(msys, statx);
     EXPECT_CALL(msys, fcntl).WillOnce(Throw(Sys::RuntimeError(EBADF)));
 
-    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), RocFileOpError(hipFileInternalError));
+    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileInternalError));
 }
 
 // If getting mount information fails during file registration return rocfileInternalError
@@ -147,7 +147,7 @@ TEST_F(RocFileHandle, RocfileHandleRegisterLibMountError)
     EXPECT_CALL(msys, fcntl);
     EXPECT_CALL(mlibmounthelper, getMountInfo).WillOnce(Throw(std::runtime_error("error from test")));
 
-    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), RocFileOpError(hipFileInternalError));
+    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileInternalError));
 }
 
 TEST_F(RocFileHandle, register_handle_linux_fd_already_registered)
@@ -162,7 +162,7 @@ TEST_F(RocFileHandle, register_handle_linux_fd_already_registered)
     ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HIPFILE_SUCCESS);
     ASSERT_NE(fh, nullptr);
     expect_file_registration(msys, mlibmounthelper);
-    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), RocFileOpError(hipFileHandleAlreadyRegistered));
+    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileHandleAlreadyRegistered));
 }
 
 TEST_F(RocFileHandle, register_handle_windows_handle_not_supported)
@@ -173,7 +173,7 @@ TEST_F(RocFileHandle, register_handle_windows_handle_not_supported)
     rfd.type      = rocFileHandleTypeOpaqueWin32;
     rfd.handle.fd = 0xBADF00D;
 
-    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), RocFileOpError(hipFileIONotSupported));
+    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileIONotSupported));
 }
 
 TEST_F(RocFileHandle, register_handle_userspace_fs_not_supported)
@@ -184,7 +184,7 @@ TEST_F(RocFileHandle, register_handle_userspace_fs_not_supported)
     rfd.type      = rocFileHandleTypeUserspaceFS;
     rfd.handle.fd = 0xBADF00D;
 
-    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), RocFileOpError(hipFileIONotSupported));
+    ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileIONotSupported));
 }
 
 TEST_F(RocFileHandle, deregister_handle_internal_throws_if_not_registered)
@@ -196,7 +196,7 @@ TEST_F(RocFileHandle, deregister_handle_internal_throws_if_not_registered)
 TEST_F(RocFileHandle, deregister_handle_returns_error_if_not_registered)
 {
     ASSERT_EQ(rocFileHandleDeregister(reinterpret_cast<rocFileHandle_t>(0xdeadbeef)),
-              RocFileOpError(hipFileHandleNotRegistered));
+              HipFileOpError(hipFileHandleNotRegistered));
 }
 
 TEST_F(RocFileHandle, deregister_handle_internal)
@@ -218,7 +218,7 @@ TEST_F(RocFileHandle, deregister_handle)
     expect_file_registration(msys, mlibmounthelper);
     ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HIPFILE_SUCCESS);
     ASSERT_EQ(rocFileHandleDeregister(fh), HIPFILE_SUCCESS);
-    ASSERT_EQ(rocFileHandleDeregister(fh), RocFileOpError(hipFileHandleNotRegistered));
+    ASSERT_EQ(rocFileHandleDeregister(fh), HipFileOpError(hipFileHandleNotRegistered));
 }
 
 TEST_F(RocFileHandle, deregister_handle_internal_fails_when_operations_are_oustanding)
@@ -244,7 +244,7 @@ TEST_F(RocFileHandle, deregister_handle_fails_when_operations_are_oustanding)
     ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HIPFILE_SUCCESS);
     {
         auto file = Context<DriverState>::get()->getFile(fh);
-        ASSERT_EQ(rocFileHandleDeregister(fh), RocFileOpError(hipFileInternalError));
+        ASSERT_EQ(rocFileHandleDeregister(fh), HipFileOpError(hipFileInternalError));
     }
     ASSERT_EQ(rocFileHandleDeregister(fh), HIPFILE_SUCCESS);
 }
