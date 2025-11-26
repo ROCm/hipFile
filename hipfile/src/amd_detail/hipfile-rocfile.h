@@ -11,8 +11,6 @@
 
 // rocFile to hipFile ////////////////////////////////////////////////////////
 
-hipFileDriverProps_t toHipFileDriverProps(const rocFileDriverProps_t &rf_props);
-
 hipFileStatus_t toHipFileStatus(rocFileStatus_t rf_status);
 
 hipFileIOEvents_t toHipFileIOEvents(const rocFileIOEvents_t &rf_io_event);

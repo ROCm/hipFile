@@ -22,27 +22,6 @@ toRocFileFileHandleType(hipFileFileHandleType_t hf_type)
     }
 }
 
-hipFileDriverProps_t
-toHipFileDriverProps(const rocFileDriverProps_t &rf_props)
-{
-    hipFileDriverProps_t hf_props;
-
-    hf_props.nvfs.major_version         = rf_props.nvfs.major_version;
-    hf_props.nvfs.minor_version         = rf_props.nvfs.minor_version;
-    hf_props.nvfs.poll_thresh_size      = rf_props.nvfs.poll_thresh_size;
-    hf_props.nvfs.max_direct_io_size    = rf_props.nvfs.max_direct_io_size;
-    hf_props.nvfs.driver_status_flags   = rf_props.nvfs.driver_status_flags;
-    hf_props.nvfs.driver_control_flags  = rf_props.nvfs.driver_control_flags;
-    hf_props.feature_flags              = rf_props.feature_flags;
-    hf_props.max_device_cache_size      = rf_props.max_device_cache_size;
-    hf_props.per_buffer_cache_size      = rf_props.per_buffer_cache_size;
-    hf_props.max_device_pinned_mem_size = rf_props.max_device_pinned_mem_size;
-    hf_props.max_batch_io_count         = rf_props.max_batch_io_count;
-    hf_props.max_batch_io_timeout_msecs = rf_props.max_batch_io_timeout_msecs;
-
-    return hf_props;
-}
-
 rocFileDescr_t
 toRocFileDescr(const hipFileDescr_t &fd)
 {

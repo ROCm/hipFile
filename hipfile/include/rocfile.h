@@ -22,45 +22,6 @@ extern "C" {
 #endif
 
 // ***********************************************************************
-//  GPU IO DRIVER API
-// ***********************************************************************
-
-/* See this section in hipfile.h for a discussion about the
- * following enums.
- */
-
-/*!
- * @brief GPU IO configuration
- * @ingroup driver
- */
-typedef struct rocFileDriverProps {
-    /*!
-     * @brief GPU IO Driver Configuration
-     */
-    struct {
-        unsigned major_version; //!< Major version of the GPU IO driver
-        unsigned minor_version; //!< Minor version of the GPU IO driver
-
-        uint64_t poll_thresh_size;   //!< Maximum IO size (in KiB) for which polling is used when poll mode is
-                                     //!< enabled
-        uint64_t max_direct_io_size; //!< Maximum IO size (in KiB) used by the GPU IO driver
-
-        unsigned driver_status_flags;  //!< Bitfield that maps to rocFileDriverStatusFlags_t
-        unsigned driver_control_flags; //!< Bitfield that maps to rocFileDriverControlFlags_t
-    } nvfs;
-
-    unsigned feature_flags; //!< Bitfield that maps to rocFileFeatureFlags_t
-
-    uint64_t
-        max_device_cache_size; //!< Maximum amount of GPU memory (in KiB) that can be used for bounce buffers
-    uint64_t per_buffer_cache_size;      //!< Amount of GPU memory (in KiB) allocated for each bounce buffer
-    uint64_t max_device_pinned_mem_size; //!< Maximum amount of GPU memory (in KiB) that can be pinned
-
-    unsigned max_batch_io_count;         //!< Maximum number of batch operations that can be submitted at once
-    unsigned max_batch_io_timeout_msecs; //!< Timeout (in msec) for a batch operation to complete
-} rocFileDriverProps_t;
-
-// ***********************************************************************
 //  FILE HANDLE API
 // ***********************************************************************
 
