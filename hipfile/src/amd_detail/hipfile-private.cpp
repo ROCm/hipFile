@@ -8,7 +8,7 @@
 #include "state.h"
 
 void
-rocFileEnsureDriverInitPrivate()
+hipFileEnsureDriverInitPrivate()
 {
     hipFile::Context<hipFile::DriverState>::get()->ensureInitialized();
 }

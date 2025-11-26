@@ -4,6 +4,7 @@
  */
 
 #include "hipfile.h"
+#include "hipfile-private.h"
 #include "hipfile-rocfile.h"
 
 #include <cerrno>
@@ -15,8 +16,6 @@
 #include <vector>
 
 using namespace std;
-
-void rocFileEnsureDriverInitPrivate();
 
 hipFileError_t
 hipFileHandleRegister(hipFileHandle_t *fh, hipFileDescr_t *descr)
@@ -201,7 +200,7 @@ try {
         rocFileReadAsync(fh, buffer_base, size_p, file_offset_p, buffer_offset_p, bytes_read_p, stream));
     if (result.err == hipFileDriverNotInitialized) {
         // Match cuFile behaviour
-        rocFileEnsureDriverInitPrivate();
+        hipFileEnsureDriverInitPrivate();
         result.err = hipFileInvalidValue;
     }
     return result;
@@ -218,7 +217,7 @@ try {
         rocFileWriteAsync(fh, buffer_base, size_p, file_offset_p, buffer_offset_p, bytes_written_p, stream));
     if (result.err == hipFileDriverNotInitialized) {
         // Match cuFile behaviour
-        rocFileEnsureDriverInitPrivate();
+        hipFileEnsureDriverInitPrivate();
         result.err = hipFileInvalidValue;
     }
     return result;

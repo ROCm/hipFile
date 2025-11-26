@@ -22,8 +22,8 @@ struct Backend;
 // Ensures that the driver is initialized without incrementing the reference
 // count if the driver is already initialized. Used by hipFile to ensure its
 // behaviour is consistent on AMD and NVIDIA
-ROCFILE_API
-void rocFileEnsureDriverInitPrivate();
+HIPFILE_API
+void hipFileEnsureDriverInitPrivate();
 
 ssize_t rocFileIo(hipFile::IoType type, rocFileHandle_t fh, const void *buffer_base, size_t size,
                   hoff_t file_offset, hoff_t buffer_offset,
