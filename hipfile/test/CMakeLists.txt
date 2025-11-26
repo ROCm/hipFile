@@ -7,11 +7,7 @@ include(AISUseGTest)
 find_package(Boost COMPONENTS program_options REQUIRED)
 
 set(SHARED_SOURCE_FILES
-    "${CMAKE_SOURCE_DIR}/shared/test/magic-word.cpp"
-)
-
-set(SHARED_TEST_INCLUDE_PATH
-    "${CMAKE_SOURCE_DIR}/shared/test/"
+    common/magic-word.cpp
 )
 
 # These tests do not require a HIP capable GPU.
@@ -33,7 +29,6 @@ set(SYSTEM_TEST_SOURCE_FILES
 set(TEST_SYSINCLS
     ${HIPFILE_INCLUDE_PATH}
     ${HIPFILE_TEST_INCLUDE_PATH}
-    ${SHARED_TEST_INCLUDE_PATH}
 )
 
 if(BUILD_NVIDIA_DETAIL)

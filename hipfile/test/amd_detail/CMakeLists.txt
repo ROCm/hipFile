@@ -6,11 +6,7 @@ include(AISAddExecutable)
 include(AISUseGTest)
 
 set(SHARED_SOURCE_FILES
-    "${CMAKE_SOURCE_DIR}/shared/test/magic-word.cpp"
-)
-
-set(SHARED_TEST_INCLUDE_PATH
-    "${CMAKE_SOURCE_DIR}/shared/test/"
+    "${CMAKE_SOURCE_DIR}/hipfile/test/common/magic-word.cpp"
 )
 
 set(TEST_SOURCE_FILES
@@ -34,7 +30,6 @@ set(TEST_SYSINCLS
     ${HIPFILE_INCLUDE_PATH}
     ${HIPFILE_TEST_INCLUDE_PATH}
     ${HIPFILE_AMD_TEST_PATH}
-    ${SHARED_TEST_INCLUDE_PATH}
 )
 
 ais_add_executable(
