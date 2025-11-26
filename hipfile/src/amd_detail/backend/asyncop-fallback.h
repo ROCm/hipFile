@@ -5,6 +5,7 @@
 #pragma once
 
 #include "async.h"
+#include "hipfile.h"
 
 #include <memory>
 #include <sys/types.h>

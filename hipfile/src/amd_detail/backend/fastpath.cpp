@@ -8,6 +8,7 @@
 #include "fastpath.h"
 #include "file.h"
 #include "hip.h"
+#include "hipfile.h"
 #include "io.h"
 
 #include <cstdint>

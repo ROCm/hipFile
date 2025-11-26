@@ -6,6 +6,7 @@
 #pragma once
 
 #include "backend.h"
+#include "hipfile.h"
 
 #include <memory>
 #include <sys/types.h>

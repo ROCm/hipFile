@@ -17,9 +17,12 @@
 #include "sys.h"
 
 #include <cerrno>
+#include <cstdint>
+#include <hip/hip_runtime_api.h>
 #include <memory>
 #include <stdexcept>
 #include <vector>
+#include <sys/types.h>
 #include <system_error>
 
 using namespace hipFile;
