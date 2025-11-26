@@ -10,9 +10,9 @@
 #include "file.h"
 #include "hip.h"
 #include "hipfile.h"
+#include "hipfile-private.h"
 #include "hipfile-warnings.h"
 #include "io.h"
-#include "rocfile-private.h"
 #include "state.h"
 #include "sys.h"
 

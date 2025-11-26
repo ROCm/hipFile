@@ -4,7 +4,7 @@
  */
 
 #include "context.h"
-#include "rocfile-private.h"
+#include "hipfile-private.h"
 #include "state.h"
 
 void

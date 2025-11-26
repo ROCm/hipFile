@@ -16,10 +16,10 @@ set(HIPFILE_SOURCES
     file.cpp
     hip.cpp
     hipfile.cpp
+    hipfile-private.cpp
     hipfile-rocfile.cpp
     mountinfo.cpp
     rocfile.cpp
-    rocfile-private.cpp
     state.cpp
     stream.cpp
     sys.cpp
