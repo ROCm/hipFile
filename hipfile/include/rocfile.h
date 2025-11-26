@@ -22,47 +22,6 @@ extern "C" {
 #endif
 
 // ***********************************************************************
-//  DOXYGEN SETUP
-// ***********************************************************************
-
-// Without the `file`/`defgroup` directives, Doxgyen will not emit
-// documentation for anything aside from structs in a C header.
-//
-// *ALL* Doxygen comment blocks should have an `ingroup` directive so they
-// group properly in the output.
-
-/**
- * @file
- *
- * @mainpage rocFile API Reference
- *
- * @section contents Contents
- * - @ref core
- * - @ref error
- * - @ref driver
- * - @ref rdma
- * - @ref file
- * - @ref batch
- * - @ref async
- */
-
-/*!
- * @defgroup core Core Functionality
- *
- * @defgroup error Errors and Error Handling
- *
- * @defgroup driver GPU IO Driver API
- *
- * @defgroup rdma Userspace RDMA API
- *
- * @defgroup file File Handle API
- *
- * @defgroup batch Batch API
- *
- * @defgroup async Async API
- */
-
-// ***********************************************************************
 //  LIBRARY VERSION NUMBERS
 // ***********************************************************************
 
@@ -262,10 +221,6 @@ typedef struct rocFileDriverProps {
 //  RDMA API
 // ***********************************************************************
 
-/*
- * NOTE: !! AIS UNSUPPORTED !! (Not related to NVMeoRDMA)
- */
-
 /*!
  * @brief Userspace RDMA configuration
  * @ingroup rdma
@@ -276,21 +231,11 @@ typedef struct rocFileRDMAInfo {
     const char *desc_str; //!< Describes the configuration of the RDMA operation
 } rocFileRDMAInfo_t;
 
-/*!
- * @defgroup rdma_flags RDMA Characteristic Flags
- * @ingroup rdma
- *
- * @brief Bitwise flags for RDMA characteristics
- * @{
- */
-
 /// Flag for if the RDMA operation is registered
 #define ROCFILE_RDMA_REGISTER 1
 
 /// Flag for if the RDMA operation has relaxed ordering
 #define ROCFILE_RDMA_RELAXED_ORDERING (1 << 1)
-
-/*! @} */
 
 // ***********************************************************************
 //  FILE HANDLE API
