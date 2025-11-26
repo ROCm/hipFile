@@ -6,7 +6,7 @@
 ### Changed
 
 ### Removed
-* The rocFile library has been completelly removed and the code is now a part of hipFile.
+* The rocFile library has been completely removed and the code is now a part of hipFile.
 * The hipify patch was removed. You can get hipify with hipFile support at https://github.com/derobins/HIPIFY/tree/hipFile.
 
 ### Limitations
