@@ -10,7 +10,7 @@ project("hipfile" DESCRIPTION "hipFile library" LANGUAGES CXX HIP)
 set(HIPFILE_INCLUDE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(HIPFILE_AMD_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/amd_detail")
 set(HIPFILE_NVIDIA_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/nvidia_detail")
-set(HIPFILE_TEST_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test")
+set(HIPFILE_TEST_INCLUDE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test/common")
 set(HIPFILE_AMD_TEST_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test/amd_detail")
 
 # Add the src directory depending on the HIP platform
