@@ -14,10 +14,13 @@
 #include <memory>
 #include <stdexcept>
 
-#ifdef __HIP_PLATFORM_NVIDIA__
 #include <cuda.h>
 #include <cufile.h>
-#endif
+
+/* These tests exist to ensure that the hipFile API stays compatible
+ * with the cuFile API. They check that things like struct members,
+ * enum values, etc. align with cufile.h.
+ */
 
 // Put tests inside the macros to suppress the global constructor
 // warnings

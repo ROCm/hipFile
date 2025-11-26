@@ -17,7 +17,6 @@ set(SHARED_TEST_INCLUDE_PATH
 # These tests do not require a HIP capable GPU.
 # They should pass on a CPU-only system.
 set(UNIT_TEST_SOURCE_FILES
-    main.cpp
 )
 
 # These tests call into the GPU Driver.
@@ -38,7 +37,7 @@ set(TEST_SYSINCLS
 )
 
 if(BUILD_NVIDIA_DETAIL)
-    list(APPEND UNIT_TEST_SOURCE_FILES hipfile-cufile.cpp)
+    list(APPEND UNIT_TEST_SOURCE_FILES nvidia_detail/cufile-api-compat.cpp)
     list(APPEND TEST_SYSINCLS ${HIPFILE_NVIDIA_SOURCE_PATH})
 else()
     list(APPEND TEST_SYSINCLS ${HIPFILE_AMD_SOURCE_PATH})
