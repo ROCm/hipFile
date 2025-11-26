@@ -52,14 +52,14 @@ using namespace testing;
 // warnings
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 
-struct RocFileUnit : public RocFileUnopened {
+struct HipFileUnit : public HipFileUnopened {
     StrictMock<MDriverState> mock_state;
     void                     SetUp() override
     {
     }
 };
 
-TEST_F(RocFileUnit, TestRocFileBatchIOSetupSuccess)
+TEST_F(HipFileUnit, TestHipFileBatchIOSetupSuccess)
 {
     rocFileBatchHandle_t b_handle          = nullptr;
     rocFileBatchHandle_t expected_b_handle = reinterpret_cast<rocFileBatchHandle_t>(0x12345678);
@@ -71,7 +71,7 @@ TEST_F(RocFileUnit, TestRocFileBatchIOSetupSuccess)
     EXPECT_EQ(b_handle, expected_b_handle);
 }
 
-TEST_F(RocFileUnit, TestRocFileBatchIOSetupBadArgument)
+TEST_F(HipFileUnit, TestHipFileBatchIOSetupBadArgument)
 {
     rocFileBatchHandle_t b_handle = nullptr;
 
@@ -82,13 +82,13 @@ TEST_F(RocFileUnit, TestRocFileBatchIOSetupBadArgument)
     EXPECT_EQ(b_handle, nullptr);
 }
 
-TEST_F(RocFileUnit, TestRocFileBatchIOSetupNullptrHandle)
+TEST_F(HipFileUnit, TestHipFileBatchIOSetupNullptrHandle)
 {
     auto result = rocFileBatchIOSetUp(nullptr, 1);
     ASSERT_EQ(result, HIPFILE_INVALID_VALUE);
 }
 
-TEST_F(RocFileUnit, TestRocFileBatchIOSubmitSuccess)
+TEST_F(HipFileUnit, TestHipFileBatchIOSubmitSuccess)
 {
     rocFileBatchHandle_t           b_handle = reinterpret_cast<rocFileBatchHandle_t>(0x12345678);
     rocFileIOParams_t              io_param;
@@ -101,7 +101,7 @@ TEST_F(RocFileUnit, TestRocFileBatchIOSubmitSuccess)
     ASSERT_EQ(result, HIPFILE_SUCCESS);
 }
 
-TEST_F(RocFileUnit, TestRocFileBatchIOSubmitBadHandle)
+TEST_F(HipFileUnit, TestHipFileBatchIOSubmitBadHandle)
 {
     rocFileBatchHandle_t           b_handle = nullptr;
     rocFileIOParams_t              io_param;
@@ -115,7 +115,7 @@ TEST_F(RocFileUnit, TestRocFileBatchIOSubmitBadHandle)
     ASSERT_EQ(result, expected_result);
 }
 
-TEST_F(RocFileUnit, TestRocFileBatchIOSubmitBadArgument)
+TEST_F(HipFileUnit, TestHipFileBatchIOSubmitBadArgument)
 {
     rocFileBatchHandle_t           b_handle = reinterpret_cast<rocFileBatchHandle_t>(0x12345678);
     rocFileIOParams_t              io_param;
@@ -129,7 +129,7 @@ TEST_F(RocFileUnit, TestRocFileBatchIOSubmitBadArgument)
 }
 
 /// @brief Test rocFileIO function
-struct RocFileIoParam : public TestWithParam<IoType> {
+struct HipFileIoParam : public TestWithParam<IoType> {
     rocFileHandle_t                  file_handle{};
     void                            *bufptr{reinterpret_cast<void *>(0xDEC0DE)};
     size_t                           buflen{4096};
@@ -137,7 +137,7 @@ struct RocFileIoParam : public TestWithParam<IoType> {
     shared_ptr<StrictMock<MBackend>> mbackend{make_shared<StrictMock<MBackend>>()};
     vector<shared_ptr<Backend>>      mbackends{mbackend};
 
-    RocFileIoParam()
+    HipFileIoParam()
     {
         {
             StrictMock<MSys>            msys;
@@ -154,14 +154,14 @@ struct RocFileIoParam : public TestWithParam<IoType> {
     }
 };
 
-TEST_P(RocFileIoParam, RocFileIoHandlesHipPointerGetAttributesError)
+TEST_P(HipFileIoParam, HipFileIoHandlesHipPointerGetAttributesError)
 {
     StrictMock<MHip> mhip;
     EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
     ASSERT_EQ(hipFileIo(GetParam(), file_handle, unreg_bufptr, 0, 0, 0, mbackends), -hipErrorUnknown);
 }
 
-TEST_P(RocFileIoParam, RocFileIoHandlesUnsupportedHipMemoryType)
+TEST_P(HipFileIoParam, HipFileIoHandlesUnsupportedHipMemoryType)
 {
     for (const auto memoryType : UnsupportedHipMemoryTypes) {
         StrictMock<MHip>      mhip;
@@ -173,20 +173,20 @@ TEST_P(RocFileIoParam, RocFileIoHandlesUnsupportedHipMemoryType)
     }
 }
 
-TEST_P(RocFileIoParam, RocFileIoHandlesInvalidRegisteredBufferLength)
+TEST_P(HipFileIoParam, HipFileIoHandlesInvalidRegisteredBufferLength)
 {
     StrictMock<MHip> mhip;
     ASSERT_EQ(hipFileIo(GetParam(), file_handle, bufptr, buflen + 1, 0, 0, mbackends),
               -static_cast<ssize_t>(hipFileInvalidValue));
 }
 
-TEST_P(RocFileIoParam, RocFileIoHandlesInvalidFileHandle)
+TEST_P(HipFileIoParam, HipFileIoHandlesInvalidFileHandle)
 {
     auto invalid_handle{reinterpret_cast<rocFileHandle_t>(0xdeadbeef)};
     ASSERT_EQ(hipFileIo(GetParam(), invalid_handle, bufptr, 0, 0, 0, mbackends), -hipFileHandleNotRegistered);
 }
 
-TEST_P(RocFileIoParam, RocFileIoHandlesSysRuntimeError)
+TEST_P(HipFileIoParam, HipFileIoHandlesSysRuntimeError)
 {
     EXPECT_CALL(*mbackend, score).WillOnce(Return(1));
     EXPECT_CALL(*mbackend, io).WillOnce(Throw(Sys::RuntimeError(EBADFD)));
@@ -195,23 +195,23 @@ TEST_P(RocFileIoParam, RocFileIoHandlesSysRuntimeError)
     ASSERT_EQ(errno, EBADFD);
 }
 
-TEST_P(RocFileIoParam, RocFileIoHandlesHipRuntimeError)
+TEST_P(HipFileIoParam, HipFileIoHandlesHipRuntimeError)
 {
     EXPECT_CALL(*mbackend, score).WillOnce(Return(1));
     EXPECT_CALL(*mbackend, io).WillOnce(Throw(Hip::RuntimeError(hipErrorUnknown)));
     ASSERT_EQ(hipFileIo(GetParam(), file_handle, bufptr, buflen, 0, 0, mbackends), -hipErrorUnknown);
 }
 
-TEST_P(RocFileIoParam, RocFileIoHandlesInvalidArgumentError)
+TEST_P(HipFileIoParam, HipFileIoHandlesInvalidArgumentError)
 {
     EXPECT_CALL(*mbackend, score).WillOnce(Return(1));
     EXPECT_CALL(*mbackend, io).WillOnce(Throw(std::invalid_argument("")));
     ASSERT_EQ(hipFileIo(GetParam(), file_handle, bufptr, buflen, 0, 0, mbackends), -hipFileInvalidValue);
 }
 
-INSTANTIATE_TEST_SUITE_P(RocFileIo, RocFileIoParam, Values(IoType::Read, IoType::Write));
+INSTANTIATE_TEST_SUITE_P(HipFileIo, HipFileIoParam, Values(IoType::Read, IoType::Write));
 
-struct RocFileIoBackendSelectionParam : public ::testing::TestWithParam<IoType> {
+struct HipFileIoBackendSelectionParam : public ::testing::TestWithParam<IoType> {
 
     IoType                                io_type;
     rocFileHandle_t                       handle;
@@ -227,7 +227,7 @@ struct RocFileIoBackendSelectionParam : public ::testing::TestWithParam<IoType> 
     std::shared_ptr<StrictMock<MBackend>> mbe3;
     StrictMock<MDriverState>              mds;
 
-    RocFileIoBackendSelectionParam()
+    HipFileIoBackendSelectionParam()
         : io_type{GetParam()}, handle{reinterpret_cast<rocFileHandle_t>(0xBADF00D)},
           buffer{reinterpret_cast<void *>(0xDEADBEEF)}, io_size{1024}, file_offset{32}, buffer_offset{64},
           flags{0}, mfile{std::make_shared<StrictMock<MFile>>()},
@@ -237,7 +237,7 @@ struct RocFileIoBackendSelectionParam : public ::testing::TestWithParam<IoType> 
     }
 };
 
-TEST_P(RocFileIoBackendSelectionParam, RocFileIoThrowsIfThereAreNoBackends)
+TEST_P(HipFileIoBackendSelectionParam, HipFileIoThrowsIfThereAreNoBackends)
 {
     auto backends{std::vector<std::shared_ptr<Backend>>()};
 
@@ -259,7 +259,7 @@ TEST_P(RocFileIoBackendSelectionParam, RocFileIoThrowsIfThereAreNoBackends)
     }
 }
 
-TEST_P(RocFileIoBackendSelectionParam, RocFileIoThrowsIfAllBackendsRejectTheIO)
+TEST_P(HipFileIoBackendSelectionParam, HipFileIoThrowsIfAllBackendsRejectTheIO)
 {
     std::vector<std::shared_ptr<Backend>> backends{mbe1, mbe2, mbe3};
 
@@ -287,7 +287,7 @@ TEST_P(RocFileIoBackendSelectionParam, RocFileIoThrowsIfAllBackendsRejectTheIO)
     }
 }
 
-TEST_P(RocFileIoBackendSelectionParam, RocFileIoIssuesIoToHighestScoringBackend)
+TEST_P(HipFileIoBackendSelectionParam, HipFileIoIssuesIoToHighestScoringBackend)
 {
     std::vector<std::shared_ptr<Backend>> backends{mbe1, mbe2, mbe3};
 
@@ -319,7 +319,7 @@ TEST_P(RocFileIoBackendSelectionParam, RocFileIoIssuesIoToHighestScoringBackend)
     }
 }
 
-INSTANTIATE_TEST_SUITE_P(RocFileIoBackendSelection, RocFileIoBackendSelectionParam,
+INSTANTIATE_TEST_SUITE_P(HipFileIoBackendSelection, HipFileIoBackendSelectionParam,
                          ::testing::Values(IoType::Read, IoType::Write));
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

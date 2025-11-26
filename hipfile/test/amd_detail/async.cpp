@@ -47,8 +47,8 @@ using ::testing::WithParamInterface;
 
 typedef struct stat stat_t;
 
-struct RocFileAsyncOp : public Test {
-    RocFileAsyncOp()
+struct HipFileAsyncOp : public Test {
+    HipFileAsyncOp()
         : buffer{std::make_shared<StrictMock<MBuffer>>()}, file{std::make_shared<StrictMock<MFile>>()},
           stream{std::make_shared<StrictMock<MStream>>()}
     {
@@ -68,7 +68,7 @@ struct RocFileAsyncOp : public Test {
     shared_ptr<MStream> stream;
 };
 
-struct RocFileAsyncMonitor : RocFileAsyncOp {
+struct HipFileAsyncMonitor : HipFileAsyncOp {
     AsyncMonitor monitor;
 };
 
@@ -79,10 +79,10 @@ rocfileFlagsPowerSet()
                    Values(0, HIPFILE_STREAM_FIXED_FILE_SIZE), Values(0, HIPFILE_STREAM_PAGE_ALIGNED_INPUTS));
 }
 
-struct RocFileAsyncOpStreamParams
-    : public RocFileAsyncOp,
+struct HipFileAsyncOpStreamParams
+    : public HipFileAsyncOp,
       public WithParamInterface<std::tuple<uint32_t, uint32_t, uint32_t, uint32_t>> {
-    RocFileAsyncOpStreamParams() : RocFileAsyncOp{}
+    HipFileAsyncOpStreamParams() : HipFileAsyncOp{}
     {
         auto params            = GetParam();
         bool fixed_buf_offset  = std::get<0>(params) > 0;
@@ -102,7 +102,7 @@ struct RocFileAsyncOpStreamParams
     unsigned flags;
 };
 
-TEST_P(RocFileAsyncOpStreamParams, asyncOp_construction_has_correct_variants)
+TEST_P(HipFileAsyncOpStreamParams, asyncOp_construction_has_correct_variants)
 {
     size_t size              = 100;
     hoff_t file_offset       = 0;
@@ -131,9 +131,9 @@ TEST_P(RocFileAsyncOpStreamParams, asyncOp_construction_has_correct_variants)
         EXPECT_NO_THROW(std::get<size_t *>(op->size));
     }
 }
-INSTANTIATE_TEST_SUITE_P(StreamSuite, RocFileAsyncOpStreamParams, rocfileFlagsPowerSet());
+INSTANTIATE_TEST_SUITE_P(StreamSuite, HipFileAsyncOpStreamParams, rocfileFlagsPowerSet());
 
-TEST_F(RocFileAsyncOp, AsyncOpFallback_new_uses_pinned_host_memory)
+TEST_F(HipFileAsyncOp, AsyncOpFallback_new_uses_pinned_host_memory)
 {
     size_t size              = 100;
     hoff_t file_offset       = 0;
@@ -149,7 +149,7 @@ TEST_F(RocFileAsyncOp, AsyncOpFallback_new_uses_pinned_host_memory)
         IoType::Read, file, buffer, stream, &size, &file_offset, &buffer_offset, &bytes_transferred});
 }
 
-TEST_F(RocFileAsyncOp, AsyncOpFallback_new_failure_throws_bad_alloc)
+TEST_F(HipFileAsyncOp, AsyncOpFallback_new_failure_throws_bad_alloc)
 {
     size_t size              = 100;
     hoff_t file_offset       = 0;
@@ -163,7 +163,7 @@ TEST_F(RocFileAsyncOp, AsyncOpFallback_new_failure_throws_bad_alloc)
                  std::bad_alloc);
 }
 
-TEST_F(RocFileAsyncOp, AsyncOpFallback_bounce_alloc_failure_throws)
+TEST_F(HipFileAsyncOp, AsyncOpFallback_bounce_alloc_failure_throws)
 {
     size_t size              = 100;
     hoff_t file_offset       = 0;
@@ -180,7 +180,7 @@ TEST_F(RocFileAsyncOp, AsyncOpFallback_bounce_alloc_failure_throws)
                  Hip::RuntimeError);
 }
 
-TEST_F(RocFileAsyncOp, AsyncOpFallback_bounce_buffer_deleter_failure_calls_syslog)
+TEST_F(HipFileAsyncOp, AsyncOpFallback_bounce_buffer_deleter_failure_calls_syslog)
 {
     size_t size              = 100;
     hoff_t file_offset       = 0;
@@ -198,7 +198,7 @@ TEST_F(RocFileAsyncOp, AsyncOpFallback_bounce_buffer_deleter_failure_calls_syslo
         IoType::Read, file, buffer, stream, &size, &file_offset, &buffer_offset, &bytes_transferred});
 }
 
-TEST_F(RocFileAsyncOp, AsyncOpFallback_delete_failure_calls_syslog)
+TEST_F(HipFileAsyncOp, AsyncOpFallback_delete_failure_calls_syslog)
 {
     size_t size              = 100;
     hoff_t file_offset       = 0;
@@ -216,8 +216,8 @@ TEST_F(RocFileAsyncOp, AsyncOpFallback_delete_failure_calls_syslog)
         IoType::Read, file, buffer, stream, &size, &file_offset, &buffer_offset, &bytes_transferred});
 }
 
-struct RocFileAsyncOpFallbackFunctions : public RocFileAsyncOp {
-    RocFileAsyncOpFallbackFunctions() : bounce_buffer{new uint8_t[size]}
+struct HipFileAsyncOpFallbackFunctions : public HipFileAsyncOp {
+    HipFileAsyncOpFallbackFunctions() : bounce_buffer{new uint8_t[size]}
     {
         //  make_shared uses placement new, which will not use hipHostMalloc/hipHostFree for
         //  AsyncOpFallback
@@ -226,7 +226,7 @@ struct RocFileAsyncOpFallbackFunctions : public RocFileAsyncOp {
         op = std::make_shared<AsyncOpFallback>(IoType::Read, file, buffer, stream, &size, &file_offset,
                                                &buffer_offset, &bytes_transferred);
     }
-    ~RocFileAsyncOpFallbackFunctions() override
+    ~HipFileAsyncOpFallbackFunctions() override
     {
         EXPECT_CALL(mhip, hipHostFree(Eq(bounce_buffer.get())));
     }
@@ -239,19 +239,19 @@ struct RocFileAsyncOpFallbackFunctions : public RocFileAsyncOp {
     std::shared_ptr<AsyncOpFallback> op;
 };
 
-TEST_F(RocFileAsyncOpFallbackFunctions, bounceBufferHostPtr_returns_pointer)
+TEST_F(HipFileAsyncOpFallbackFunctions, bounceBufferHostPtr_returns_pointer)
 {
     ASSERT_EQ(op->bounceBufferHostPtr(), bounce_buffer.get());
 }
 
-TEST_F(RocFileAsyncOpFallbackFunctions, devPtr_calls_hipHostGetDevicePointer)
+TEST_F(HipFileAsyncOpFallbackFunctions, devPtr_calls_hipHostGetDevicePointer)
 {
     void *addr = reinterpret_cast<void *>(0xABACADBA);
     EXPECT_CALL(mhip, hipHostGetDevicePointer).WillOnce(Return(addr));
     ASSERT_EQ(op->devPtr(), addr);
 }
 
-TEST_F(RocFileAsyncMonitor, addOp_and_completeOp_with_valid_params_works)
+TEST_F(HipFileAsyncMonitor, addOp_and_completeOp_with_valid_params_works)
 {
     size_t size              = 100;
     hoff_t file_offset       = 0;
@@ -264,12 +264,12 @@ TEST_F(RocFileAsyncMonitor, addOp_and_completeOp_with_valid_params_works)
     EXPECT_NO_THROW(monitor.completeOp(op.get()));
 }
 
-TEST_F(RocFileAsyncMonitor, completeOp_with_invalid_op_throws)
+TEST_F(HipFileAsyncMonitor, completeOp_with_invalid_op_throws)
 {
     EXPECT_THROW(monitor.completeOp(reinterpret_cast<AsyncOp *>(0xDEADBEEF)), std::invalid_argument);
 }
 
-TEST_F(RocFileAsyncMonitor, addOp_without_completeOp_prints_error_on_AsyncMonitor_destruction)
+TEST_F(HipFileAsyncMonitor, addOp_without_completeOp_prints_error_on_AsyncMonitor_destruction)
 {
     size_t size              = 100;
     hoff_t file_offset       = 0;

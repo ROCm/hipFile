@@ -16,13 +16,13 @@ using namespace hipFile;
 // warnings
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 
-TEST(RocFileContext, get_default_context)
+TEST(HipFileContext, get_default_context)
 {
     Hip *hip = Context<Hip>::get();
     ASSERT_NE(hip, nullptr);
 }
 
-TEST(RocFileContext, override_works_and_is_reverted_on_destruction)
+TEST(HipFileContext, override_works_and_is_reverted_on_destruction)
 {
     Hip *orig_context = Context<Hip>::get();
     {
@@ -35,7 +35,7 @@ TEST(RocFileContext, override_works_and_is_reverted_on_destruction)
     ASSERT_EQ(orig_context, hip_context);
 }
 
-TEST(RocFileContext, default_is_set_when_override_called_before_get)
+TEST(HipFileContext, default_is_set_when_override_called_before_get)
 {
     Hip *override_context;
     {
@@ -48,7 +48,7 @@ TEST(RocFileContext, default_is_set_when_override_called_before_get)
     ASSERT_NE(context, nullptr);
 }
 
-TEST(RocFileContext, context_throws_on_second_override)
+TEST(HipFileContext, context_throws_on_second_override)
 {
     Hip                  hip;
     ContextOverride<Hip> ho(&hip);

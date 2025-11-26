@@ -92,9 +92,9 @@ template <typename T> struct ContextOverride {
 };
 #endif
 
-class RocFileInit {
-    RocFileInit();
-    friend struct Context<RocFileInit>;
+class HipFileInit {
+    HipFileInit();
+    friend struct Context<HipFileInit>;
 };
 
 }

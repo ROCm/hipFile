@@ -110,7 +110,7 @@ contains_expected_data(std::vector<uint8_t> &buffer, hoff_t buffer_offset, std::
     return true;
 }
 
-struct FallbackIo : public RocFileOpened {
+struct FallbackIo : public HipFileOpened {
 
     shared_ptr<IBuffer>  buffer;
     std::vector<uint8_t> buffer_data;
@@ -150,7 +150,7 @@ struct FallbackIo : public RocFileOpened {
     }
 };
 
-TEST(RocFileFallbackBackend, FallbackBackendIsBarelyWillingToHandleDeviceMemory)
+TEST(HipFileFallbackBackend, FallbackBackendIsBarelyWillingToHandleDeviceMemory)
 {
     auto   mfile{std::make_shared<StrictMock<MFile>>()};
     auto   mbuffer{std::make_shared<StrictMock<MBuffer>>()};
@@ -163,7 +163,7 @@ TEST(RocFileFallbackBackend, FallbackBackendIsBarelyWillingToHandleDeviceMemory)
     ASSERT_EQ(Fallback().score(mfile, mbuffer, io_size, file_offset, buffer_offset), 0);
 }
 
-TEST(RocFileFallbackBackend, FallbackBackendRejectsUnsupportedHipMemoryTypes)
+TEST(HipFileFallbackBackend, FallbackBackendRejectsUnsupportedHipMemoryTypes)
 {
     auto   mfile{std::make_shared<StrictMock<MFile>>()};
     size_t io_size{2048};

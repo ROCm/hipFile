@@ -11,7 +11,7 @@
 
 namespace hipFile {
 
-RocFileInit::RocFileInit()
+HipFileInit::HipFileInit()
 {
     Context<Hip>::get();
     Context<Sys>::get();
@@ -20,7 +20,7 @@ RocFileInit::RocFileInit()
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 HIPFILE_WARN_NO_EXIT_DTOR_OFF
-static RocFileInit *rocfile_init = Context<RocFileInit>::get();
+static HipFileInit *rocfile_init = Context<HipFileInit>::get();
 HIPFILE_WARN_NO_EXIT_DTOR_ON
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON
 

@@ -25,11 +25,11 @@ using namespace testing;
 // warnings
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 
-struct RocFileDriverAdmin : public RocFileUnopened {};
+struct HipFileDriverAdmin : public HipFileUnopened {};
 
 // Ensure that rocFileOpen() and rocFileClose() increment and
 // decrement the reference count
-TEST_F(RocFileDriverAdmin, OpenClose)
+TEST_F(HipFileDriverAdmin, OpenClose)
 {
     const int64_t N = 10;
 
@@ -50,7 +50,7 @@ TEST_F(RocFileDriverAdmin, OpenClose)
 
 // Ensure rocFileHandleRegister() initializes the driver
 // and DOES bump the reference count
-TEST_F(RocFileDriverAdmin, HandleRegisterInitsDriver)
+TEST_F(HipFileDriverAdmin, HandleRegisterInitsDriver)
 {
     StrictMock<MSys>            msys{};
     StrictMock<MLibMountHelper> mlibmounthelper{};
@@ -71,7 +71,7 @@ TEST_F(RocFileDriverAdmin, HandleRegisterInitsDriver)
 // Ensure rocFileHandleRegister() handles a file descriptor
 // of zero (technically a legal POSIX value) and DOES bump
 // the reference count
-TEST_F(RocFileDriverAdmin, HandleRegisterGoodFD)
+TEST_F(HipFileDriverAdmin, HandleRegisterGoodFD)
 {
     StrictMock<MSys>            msys{};
     StrictMock<MLibMountHelper> mlibmounthelper{};
@@ -94,7 +94,7 @@ TEST_F(RocFileDriverAdmin, HandleRegisterGoodFD)
 
 // Ensure rocFileHandleRegister() fails when passed a negative file
 // descriptor and does NOT bump the reference count
-TEST_F(RocFileDriverAdmin, HandleRegisterBadFD)
+TEST_F(HipFileDriverAdmin, HandleRegisterBadFD)
 {
     StrictMock<MSys>            msys{};
     StrictMock<MLibMountHelper> mlibmounthelper{};
@@ -114,7 +114,7 @@ TEST_F(RocFileDriverAdmin, HandleRegisterBadFD)
 
 // Ensure rocFileHandleDeregister() fails when passed a NULL or
 // unregistered pointer and does NOT bump the driver reference count
-TEST_F(RocFileDriverAdmin, HandleDeregisterDoesNotInitDriver)
+TEST_F(HipFileDriverAdmin, HandleDeregisterDoesNotInitDriver)
 {
     StrictMock<MSys>            msys{};
     StrictMock<MLibMountHelper> mlibmounthelper{};
@@ -135,7 +135,7 @@ TEST_F(RocFileDriverAdmin, HandleDeregisterDoesNotInitDriver)
 // Ensure that closing the driver will also close any open handles. This
 // is checked by trying to re-register a handle, which should fail if
 // the handle were still open.
-TEST_F(RocFileDriverAdmin, CloseDeregistersFile)
+TEST_F(HipFileDriverAdmin, CloseDeregistersFile)
 {
     StrictMock<MSys>            msys{};
     StrictMock<MLibMountHelper> mlibmounthelper{};
@@ -160,7 +160,7 @@ TEST_F(RocFileDriverAdmin, CloseDeregistersFile)
 
 // Ensure that registering a buffer increments the driver reference
 // count
-TEST_F(RocFileDriverAdmin, BufRegisterInitsDriver)
+TEST_F(HipFileDriverAdmin, BufRegisterInitsDriver)
 {
     StrictMock<MHip> mhip;
 
@@ -173,7 +173,7 @@ TEST_F(RocFileDriverAdmin, BufRegisterInitsDriver)
 
 // Ensure that buffer deregistration does not increment the driver
 // reference count
-TEST_F(RocFileDriverAdmin, BufDeregisterDoesNotInitDriver)
+TEST_F(HipFileDriverAdmin, BufDeregisterDoesNotInitDriver)
 {
     ASSERT_EQ(hipFileUseCount(), 0);
     ASSERT_EQ(rocFileBufDeregister(nullptr), HipFileOpError(hipFileDriverNotInitialized));
@@ -183,7 +183,7 @@ TEST_F(RocFileDriverAdmin, BufDeregisterDoesNotInitDriver)
 // Ensure that closing the driver also closes open buffers. This is
 // checked by attempting to re-register a buffer, which should fail
 // if it's already registered.
-TEST_F(RocFileDriverAdmin, CloseDeregistersBuffer)
+TEST_F(HipFileDriverAdmin, CloseDeregistersBuffer)
 {
     StrictMock<MHip> mhip;
 
@@ -203,7 +203,7 @@ TEST_F(RocFileDriverAdmin, CloseDeregistersBuffer)
 // Ensure rocFileReadAsync():
 // * Returns hipFileDriverNotInitialized when called w/o a driver init
 // * Does NOT initialize the driver and returns a reference count of 0
-TEST_F(RocFileDriverAdmin, ReadAsyncDoesNotInitDriver)
+TEST_F(HipFileDriverAdmin, ReadAsyncDoesNotInitDriver)
 {
     ASSERT_EQ(rocFileReadAsync(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr),
               HipFileOpError(hipFileDriverNotInitialized));
@@ -213,7 +213,7 @@ TEST_F(RocFileDriverAdmin, ReadAsyncDoesNotInitDriver)
 // Ensure rocFileWriteAsync():
 // * Returns hipFileDriverNotInitialized when called w/o a driver init
 // * Does NOT initialize the driver and returns a reference count of 0
-TEST_F(RocFileDriverAdmin, WriteAsyncDoesNotInitDriverDriver)
+TEST_F(HipFileDriverAdmin, WriteAsyncDoesNotInitDriverDriver)
 {
     ASSERT_EQ(rocFileWriteAsync(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr),
               HipFileOpError(hipFileDriverNotInitialized));
@@ -224,7 +224,7 @@ TEST_F(RocFileDriverAdmin, WriteAsyncDoesNotInitDriverDriver)
 // * Returns hipFileDriverNotInitialized when called w/o a driver init
 //   (the weird negative sign is a quirk of returning a ssize_t)
 // * Does NOT initialize the driver and returns a reference count of 0
-TEST_F(RocFileDriverAdmin, ReadDoesNotInitDriver)
+TEST_F(HipFileDriverAdmin, ReadDoesNotInitDriver)
 {
     ASSERT_EQ(rocFileRead(nullptr, nullptr, 0, 0, 0), -hipFileDriverNotInitialized);
     ASSERT_EQ(hipFileUseCount(), 0);
@@ -234,7 +234,7 @@ TEST_F(RocFileDriverAdmin, ReadDoesNotInitDriver)
 // * Returns hipFileDriverNotInitialized when called w/o a driver init
 //   (the weird negative sign is a quirk of returning a ssize_t)
 // * Does NOT initialize the driver and returns a reference count of 0
-TEST_F(RocFileDriverAdmin, WriteDoesNotInitDriver)
+TEST_F(HipFileDriverAdmin, WriteDoesNotInitDriver)
 {
     ASSERT_EQ(rocFileWrite(nullptr, nullptr, 0, 0, 0), -hipFileDriverNotInitialized);
     ASSERT_EQ(hipFileUseCount(), 0);

@@ -32,7 +32,7 @@ using namespace hipFile;
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 
-struct RocFileBatch : public RocFileUnopened {
+struct HipFileBatch : public HipFileUnopened {
     BatchContextMap                      batch_map = BatchContextMap{};
     std::unique_ptr<rocFileIOParams_t>   io_params;
     std::shared_ptr<StrictMock<MBuffer>> default_mock_buffer;
@@ -57,34 +57,34 @@ struct RocFileBatch : public RocFileUnopened {
         io_params->opcode              = rocFileBatchRead;
     }
 
-    RocFileBatch()
+    HipFileBatch()
     {
         batch_map.clear();
     }
 };
 
-TEST_F(RocFileBatch, CreateOperationRead)
+TEST_F(HipFileBatch, CreateOperationRead)
 {
     io_params->opcode = rocFileBatchRead;
 
     BatchOperation op = BatchOperation{std::move(io_params), default_mock_buffer, default_mock_file};
 }
 
-TEST_F(RocFileBatch, CreateOperationWrite)
+TEST_F(HipFileBatch, CreateOperationWrite)
 {
     io_params->opcode = rocFileBatchWrite;
 
     BatchOperation op = BatchOperation{std::move(io_params), default_mock_buffer, default_mock_file};
 }
 
-TEST_F(RocFileBatch, CreateOperationBadBuffer)
+TEST_F(HipFileBatch, CreateOperationBadBuffer)
 {
     EXPECT_CALL(*default_mock_buffer, getBuffer).WillOnce(Return(reinterpret_cast<void *>(0xFACEFEED)));
     EXPECT_THROW(BatchOperation(std::move(io_params), default_mock_buffer, default_mock_file),
                  std::invalid_argument);
 }
 
-TEST_F(RocFileBatch, CreateOperationBadFileHandle)
+TEST_F(HipFileBatch, CreateOperationBadFileHandle)
 {
     EXPECT_CALL(*default_mock_file, getHandle)
         .WillOnce(Return(reinterpret_cast<rocFileHandle_t>(0xFACEFEED)));
@@ -92,7 +92,7 @@ TEST_F(RocFileBatch, CreateOperationBadFileHandle)
                  std::invalid_argument);
 }
 
-TEST_F(RocFileBatch, CreateOperationBadbufferOffsetIsNegative)
+TEST_F(HipFileBatch, CreateOperationBadbufferOffsetIsNegative)
 {
     io_params->u.batch.devPtr_offset = -1;
 
@@ -100,7 +100,7 @@ TEST_F(RocFileBatch, CreateOperationBadbufferOffsetIsNegative)
                  std::invalid_argument);
 }
 
-TEST_F(RocFileBatch, CreateOperationBadBufferOffsetExceedsBuffer)
+TEST_F(HipFileBatch, CreateOperationBadBufferOffsetExceedsBuffer)
 {
     io_params->u.batch.devPtr_offset = 1;
 
@@ -108,7 +108,7 @@ TEST_F(RocFileBatch, CreateOperationBadBufferOffsetExceedsBuffer)
                  std::invalid_argument);
 }
 
-TEST_F(RocFileBatch, CreateOperationBadOperationLargerThanBuffer)
+TEST_F(HipFileBatch, CreateOperationBadOperationLargerThanBuffer)
 {
     io_params->u.batch.size = 2;
 
@@ -116,7 +116,7 @@ TEST_F(RocFileBatch, CreateOperationBadOperationLargerThanBuffer)
                  std::invalid_argument);
 }
 
-TEST_F(RocFileBatch, CreateOperationBadOperationLargerThanBufferWithOffset)
+TEST_F(HipFileBatch, CreateOperationBadOperationLargerThanBufferWithOffset)
 {
     EXPECT_CALL(*default_mock_buffer, getLength).WillRepeatedly(Return(10));
     io_params->u.batch.devPtr_offset = 6;
@@ -126,7 +126,7 @@ TEST_F(RocFileBatch, CreateOperationBadOperationLargerThanBufferWithOffset)
                  std::invalid_argument);
 }
 
-TEST_F(RocFileBatch, CreateOperationBadFileOffsetIsNegative)
+TEST_F(HipFileBatch, CreateOperationBadFileOffsetIsNegative)
 {
     io_params->u.batch.file_offset = -1;
 
@@ -134,7 +134,7 @@ TEST_F(RocFileBatch, CreateOperationBadFileOffsetIsNegative)
                  std::invalid_argument);
 }
 
-TEST_F(RocFileBatch, CreateOperationBadOpcode)
+TEST_F(HipFileBatch, CreateOperationBadOpcode)
 {
     io_params->opcode = invalidEnum<rocFileOpcode_t>(-1);
 
@@ -142,7 +142,7 @@ TEST_F(RocFileBatch, CreateOperationBadOpcode)
                  std::invalid_argument);
 }
 
-TEST_F(RocFileBatch, CreateOperationBadMode)
+TEST_F(HipFileBatch, CreateOperationBadMode)
 {
     io_params->mode = invalidEnum<rocFileBatchMode_t>(-1);
 
@@ -150,14 +150,14 @@ TEST_F(RocFileBatch, CreateOperationBadMode)
                  std::invalid_argument);
 }
 
-TEST_F(RocFileBatch, CreateContext)
+TEST_F(HipFileBatch, CreateContext)
 {
     rocFileBatchHandle_t handle = batch_map.createContext(32);
 
     ASSERT_NE(nullptr, handle);
 }
 
-TEST_F(RocFileBatch, CreateTwoContexts)
+TEST_F(HipFileBatch, CreateTwoContexts)
 {
     rocFileBatchHandle_t handle1 = batch_map.createContext(1);
     rocFileBatchHandle_t handle2 = batch_map.createContext(1);
@@ -165,41 +165,41 @@ TEST_F(RocFileBatch, CreateTwoContexts)
     ASSERT_NE(handle1, handle2);
 }
 
-TEST_F(RocFileBatch, CreateContextZeroCapacity)
+TEST_F(HipFileBatch, CreateContextZeroCapacity)
 {
     ASSERT_THROW(batch_map.createContext(0), std::invalid_argument);
 }
 
-TEST_F(RocFileBatch, CreateContextMaxCapacity)
+TEST_F(HipFileBatch, CreateContextMaxCapacity)
 {
     rocFileBatchHandle_t handle = batch_map.createContext(BatchContext::MAX_SIZE);
 
     ASSERT_NE(nullptr, handle);
 }
 
-TEST_F(RocFileBatch, CreateContextOverCapacity)
+TEST_F(HipFileBatch, CreateContextOverCapacity)
 {
     ASSERT_THROW(batch_map.createContext(BatchContext::MAX_SIZE + 1), std::invalid_argument);
 }
 
-TEST_F(RocFileBatch, DestroyContext)
+TEST_F(HipFileBatch, DestroyContext)
 {
     rocFileBatchHandle_t handle = batch_map.createContext(1);
 
     batch_map.destroyContext(handle);
 }
 
-TEST_F(RocFileBatch, DestroyMissingContext)
+TEST_F(HipFileBatch, DestroyMissingContext)
 {
     ASSERT_THROW(batch_map.destroyContext(reinterpret_cast<rocFileBatchHandle_t>(1)), InvalidBatchHandle);
 }
 
-TEST_F(RocFileBatch, DestroyNullptrContext)
+TEST_F(HipFileBatch, DestroyNullptrContext)
 {
     ASSERT_THROW(batch_map.destroyContext(nullptr), InvalidBatchHandle);
 }
 
-TEST_F(RocFileBatch, GetContext)
+TEST_F(HipFileBatch, GetContext)
 {
     rocFileBatchHandle_t           handle  = batch_map.createContext(1);
     std::shared_ptr<IBatchContext> context = batch_map.get(handle);
@@ -207,24 +207,24 @@ TEST_F(RocFileBatch, GetContext)
     ASSERT_EQ(handle, context.get());
 }
 
-TEST_F(RocFileBatch, GetNullptrContext)
+TEST_F(HipFileBatch, GetNullptrContext)
 {
     ASSERT_THROW(batch_map.get(nullptr), InvalidBatchHandle);
 }
 
-TEST_F(RocFileBatch, GetInvalidContext)
+TEST_F(HipFileBatch, GetInvalidContext)
 {
     ASSERT_THROW(batch_map.get(reinterpret_cast<rocFileBatchHandle_t>(0xBAC00001)), InvalidBatchHandle);
 }
 
-TEST_F(RocFileBatch, GetDestroyedContext)
+TEST_F(HipFileBatch, GetDestroyedContext)
 {
     rocFileBatchHandle_t handle = batch_map.createContext(1);
     batch_map.destroyContext(handle);
     ASSERT_THROW(batch_map.get(handle), InvalidBatchHandle);
 }
 
-struct RocFileBatchContext : public RocFileUnopened {
+struct HipFileBatchContext : public HipFileUnopened {
     BatchContextMap                           batch_map = BatchContextMap{};
     std::shared_ptr<IBatchContext>            _context;
     unsigned                                  _context_capacity = 2;
@@ -265,23 +265,23 @@ struct RocFileBatchContext : public RocFileUnopened {
     }
 };
 
-TEST_F(RocFileBatchContext, SubmitSingleGoodOp)
+TEST_F(HipFileBatchContext, SubmitSingleGoodOp)
 {
     _context->submit_operations(&io_params, 1);
 }
 
-TEST_F(RocFileBatchContext, SubmitZeroOperations)
+TEST_F(HipFileBatchContext, SubmitZeroOperations)
 {
     _context->submit_operations(nullptr, 0);
 }
 
-TEST_F(RocFileBatchContext, SubmitOverCapacity)
+TEST_F(HipFileBatchContext, SubmitOverCapacity)
 {
     // We should fail before we ever try touching the nullptr.
     ASSERT_THROW(_context->submit_operations(nullptr, _context_capacity + 1), std::invalid_argument);
 }
 
-TEST_F(RocFileBatchContext, SubmitOverCapacityOverMultipleSubmissions)
+TEST_F(HipFileBatchContext, SubmitOverCapacityOverMultipleSubmissions)
 {
     // Submit one at a time up to the capacity.
     // In the future we might care that we are submitting the same operation.
@@ -293,55 +293,55 @@ TEST_F(RocFileBatchContext, SubmitOverCapacityOverMultipleSubmissions)
     ASSERT_THROW(_context->submit_operations(nullptr, 1), std::invalid_argument);
 }
 
-TEST_F(RocFileBatchContext, SubmitSingleBadBuffer)
+TEST_F(HipFileBatchContext, SubmitSingleBadBuffer)
 {
     EXPECT_CALL(*mock_driver_state, getFileAndBuffer).WillOnce(Throw(BufferNotRegistered()));
     ASSERT_THROW(_context->submit_operations(&io_params, 1), BufferNotRegistered);
 }
 
-TEST_F(RocFileBatchContext, SubmitSingleBadFileHandle)
+TEST_F(HipFileBatchContext, SubmitSingleBadFileHandle)
 {
     EXPECT_CALL(*mock_driver_state, getFileAndBuffer).WillOnce(Throw(FileNotRegistered()));
     ASSERT_THROW(_context->submit_operations(&io_params, 1), FileNotRegistered);
 }
 
 // BatchOperation is not mocked.
-TEST_F(RocFileBatchContext, SubmitSingleBadParamBufferOffsetNegative)
+TEST_F(HipFileBatchContext, SubmitSingleBadParamBufferOffsetNegative)
 {
     rocFileIOParams_t bad_io_params     = io_params;
     bad_io_params.u.batch.devPtr_offset = -1;
     ASSERT_THROW(_context->submit_operations(&bad_io_params, 1), std::invalid_argument);
 }
 
-TEST_F(RocFileBatchContext, SubmitSingleBadParamBufferOffsetTooLarge)
+TEST_F(HipFileBatchContext, SubmitSingleBadParamBufferOffsetTooLarge)
 {
     rocFileIOParams_t bad_io_params     = io_params;
     bad_io_params.u.batch.devPtr_offset = default_mock_buffer_length;
     ASSERT_THROW(_context->submit_operations(&bad_io_params, 1), std::invalid_argument);
 }
 
-TEST_F(RocFileBatchContext, SubmitSingleBadParamIOSizeTooLarge)
+TEST_F(HipFileBatchContext, SubmitSingleBadParamIOSizeTooLarge)
 {
     rocFileIOParams_t bad_io_params = io_params;
     bad_io_params.u.batch.size      = static_cast<size_t>(default_mock_buffer_length + 1);
     ASSERT_THROW(_context->submit_operations(&bad_io_params, 1), std::invalid_argument);
 }
 
-TEST_F(RocFileBatchContext, SubmitSingleBadParamFileOffsetNegative)
+TEST_F(HipFileBatchContext, SubmitSingleBadParamFileOffsetNegative)
 {
     rocFileIOParams_t bad_io_params   = io_params;
     bad_io_params.u.batch.file_offset = -1;
     ASSERT_THROW(_context->submit_operations(&bad_io_params, 1), std::invalid_argument);
 }
 
-TEST_F(RocFileBatchContext, SubmitSingleBadParamOpcodeInvalid)
+TEST_F(HipFileBatchContext, SubmitSingleBadParamOpcodeInvalid)
 {
     rocFileIOParams_t bad_io_params = io_params;
     bad_io_params.opcode            = invalidEnum<rocFileOpcode_t>(-1);
     ASSERT_THROW(_context->submit_operations(&bad_io_params, 1), std::invalid_argument);
 }
 
-TEST_F(RocFileBatchContext, SubmitSingleBadParamModeInvalid)
+TEST_F(HipFileBatchContext, SubmitSingleBadParamModeInvalid)
 {
     rocFileIOParams_t bad_io_params = io_params;
     bad_io_params.mode              = invalidEnum<rocFileBatchMode_t>(-1);

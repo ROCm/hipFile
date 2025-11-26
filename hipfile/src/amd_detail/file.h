@@ -132,17 +132,17 @@ public:
     virtual ~FileMap();
 
     /// @brief Registers a file. Files must be registered before they can be used with rocFile IO APIs
-    /// @attention A unique_lock on RocFileMutex must be held
+    /// @attention A unique_lock on HipFileMutex must be held
     /// @param uf An unregistered file
     virtual rocFileHandle_t registerFile(const UnregisteredFile &uf);
 
     /// @brief Deregisters the file associated with the provided file handle
-    /// @attention A unique_lock on RocFileMutex must be held
+    /// @attention A unique_lock on HipFileMutex must be held
     /// @param fh The handle of the file to deregister
     virtual void deregisterFile(rocFileHandle_t fh);
 
     /// @brief Look up a file given a rocFileHandle_t
-    /// @attention A shared_lock on RocFileMutex must be held
+    /// @attention A shared_lock on HipFileMutex must be held
     /// @param fh The file handle to lookup the file with
     /// @return If file handle is valid, return a shared pointer to the file, otherwise throw NotRegistered.
     virtual std::shared_ptr<IFile> getFile(rocFileHandle_t fh);

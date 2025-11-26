@@ -108,26 +108,26 @@ public:
     virtual ~BufferMap();
 
     /// @brief Creates and registers a buffer
-    /// @attention A unique_lock on RocFileMutex must be held
+    /// @attention A unique_lock on HipFileMutex must be held
     /// @param buf Buffer pointer
     /// @param length Buffer length
     /// @param flags Buffer flags (unused)
     virtual void registerBuffer(const void *buf, size_t length, int flags);
 
     /// @brief Deregisters and destroys a buffer
-    /// @attention A unique_lock on RocFileMutex must be held
+    /// @attention A unique_lock on HipFileMutex must be held
     /// @param buf Buffer pointer
     virtual void deregisterBuffer(const void *buf);
 
     /// @brief Look up a registered buffer using the buffer pointer
-    /// @attention A shared_lock on RocFileMutex must be held
+    /// @attention A shared_lock on HipFileMutex must be held
     /// @param buf Buffer pointer
     /// @return A registered buffer
     virtual std::shared_ptr<IBuffer> getBuffer(const void *buf);
 
     /// @brief Look up a registered buffer. Returns a temporary unregistered
     ///        buffer (of size length, using flags) if no matching buffer is found.
-    /// @attention A shared_lock on RocFileMutex must be held
+    /// @attention A shared_lock on HipFileMutex must be held
     /// @param buf Buffer pointer
     /// @param length Buffer length
     /// @return A registered or temporary unregistered buffer

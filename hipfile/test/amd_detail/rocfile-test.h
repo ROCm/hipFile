@@ -75,15 +75,15 @@ inline constexpr hipFileError_t HIPFILE_INVALID_VALUE{hipFileInvalidValue, hipSu
 // ***********************************************************************
 
 // Base class for tests that open the driver
-struct RocFileOpened : public ::testing::Test {
+struct HipFileOpened : public ::testing::Test {
 
-    RocFileOpened()
+    HipFileOpened()
     {
         assert(hipFileUseCount() == 0);
         assert(hipFileDriverOpen() == HIPFILE_SUCCESS);
     }
 
-    virtual ~RocFileOpened() override
+    virtual ~HipFileOpened() override
     {
         while (hipFileUseCount()) {
             assert(hipFileDriverClose() == HIPFILE_SUCCESS);
@@ -93,14 +93,14 @@ struct RocFileOpened : public ::testing::Test {
 };
 
 // Base class for tests that do NOT open the driver
-struct RocFileUnopened : public ::testing::Test {
+struct HipFileUnopened : public ::testing::Test {
 
-    RocFileUnopened()
+    HipFileUnopened()
     {
         assert(hipFileUseCount() == 0);
     }
 
-    virtual ~RocFileUnopened() override
+    virtual ~HipFileUnopened() override
     {
         while (hipFileUseCount()) {
             assert(hipFileDriverClose() == HIPFILE_SUCCESS);

@@ -48,12 +48,12 @@ expect_file_registration(MSys &msys, MLibMountHelper &mlibmounthelper, struct st
     EXPECT_CALL(mlibmounthelper, getMountInfo).WillOnce(Return(mountinfo));
 }
 
-struct RocFileHandle : public RocFileOpened {
+struct HipFileHandle : public HipFileOpened {
     StrictMock<MSys>            msys;
     StrictMock<MLibMountHelper> mlibmounthelper;
 };
 
-TEST_F(RocFileHandle, register_handle_internal_linux_fd)
+TEST_F(HipFileHandle, register_handle_internal_linux_fd)
 {
     int fd{0xBADF00D};
 
@@ -61,7 +61,7 @@ TEST_F(RocFileHandle, register_handle_internal_linux_fd)
     ASSERT_NE(Context<DriverState>::get()->registerFile(fd), nullptr);
 }
 
-TEST_F(RocFileHandle, file_initialization)
+TEST_F(HipFileHandle, file_initialization)
 {
     int          fd{0x12345678};
     int          status_flags{0x789ABCDE};
@@ -86,7 +86,7 @@ TEST_F(RocFileHandle, file_initialization)
               file->getMountInfo().value().options.ext4.journaling_mode);
 }
 
-TEST_F(RocFileHandle, register_handle_internal_linux_fd_already_registered)
+TEST_F(HipFileHandle, register_handle_internal_linux_fd_already_registered)
 {
     int fd{0xBADF00D};
     expect_file_registration(msys, mlibmounthelper);
@@ -95,7 +95,7 @@ TEST_F(RocFileHandle, register_handle_internal_linux_fd_already_registered)
     ASSERT_THROW(Context<DriverState>::get()->registerFile(fd), FileAlreadyRegistered);
 }
 
-TEST_F(RocFileHandle, register_handle_linux_fd)
+TEST_F(HipFileHandle, register_handle_linux_fd)
 {
     rocFileHandle_t fh{};
     rocFileDescr_t  rfd{};
@@ -109,7 +109,7 @@ TEST_F(RocFileHandle, register_handle_linux_fd)
 }
 
 // If statx() fails during file registration return rocfileInternalError
-TEST_F(RocFileHandle, RocfileHandleRegisterStatxError)
+TEST_F(HipFileHandle, RocfileHandleRegisterStatxError)
 {
     rocFileHandle_t fh{};
     rocFileDescr_t  rfd{};
@@ -122,7 +122,7 @@ TEST_F(RocFileHandle, RocfileHandleRegisterStatxError)
 }
 
 // If the fcntl() fails during file registration return rocfileInternalError
-TEST_F(RocFileHandle, RocfileHandleRegisterFcntlError)
+TEST_F(HipFileHandle, RocfileHandleRegisterFcntlError)
 {
     rocFileHandle_t fh{};
     rocFileDescr_t  rfd{};
@@ -136,7 +136,7 @@ TEST_F(RocFileHandle, RocfileHandleRegisterFcntlError)
 }
 
 // If getting mount information fails during file registration return rocfileInternalError
-TEST_F(RocFileHandle, RocfileHandleRegisterLibMountError)
+TEST_F(HipFileHandle, RocfileHandleRegisterLibMountError)
 {
     rocFileHandle_t fh{};
     rocFileDescr_t  rfd{};
@@ -150,7 +150,7 @@ TEST_F(RocFileHandle, RocfileHandleRegisterLibMountError)
     ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileInternalError));
 }
 
-TEST_F(RocFileHandle, register_handle_linux_fd_already_registered)
+TEST_F(HipFileHandle, register_handle_linux_fd_already_registered)
 {
     rocFileHandle_t fh{};
     rocFileDescr_t  rfd{};
@@ -165,7 +165,7 @@ TEST_F(RocFileHandle, register_handle_linux_fd_already_registered)
     ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileHandleAlreadyRegistered));
 }
 
-TEST_F(RocFileHandle, register_handle_windows_handle_not_supported)
+TEST_F(HipFileHandle, register_handle_windows_handle_not_supported)
 {
     rocFileHandle_t fh{};
     rocFileDescr_t  rfd{};
@@ -176,7 +176,7 @@ TEST_F(RocFileHandle, register_handle_windows_handle_not_supported)
     ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileIONotSupported));
 }
 
-TEST_F(RocFileHandle, register_handle_userspace_fs_not_supported)
+TEST_F(HipFileHandle, register_handle_userspace_fs_not_supported)
 {
     rocFileHandle_t fh{};
     rocFileDescr_t  rfd{};
@@ -187,19 +187,19 @@ TEST_F(RocFileHandle, register_handle_userspace_fs_not_supported)
     ASSERT_EQ(rocFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileIONotSupported));
 }
 
-TEST_F(RocFileHandle, deregister_handle_internal_throws_if_not_registered)
+TEST_F(HipFileHandle, deregister_handle_internal_throws_if_not_registered)
 {
     ASSERT_THROW(Context<DriverState>::get()->deregisterFile(reinterpret_cast<rocFileHandle_t>(0xdeadbeef)),
                  FileNotRegistered);
 }
 
-TEST_F(RocFileHandle, deregister_handle_returns_error_if_not_registered)
+TEST_F(HipFileHandle, deregister_handle_returns_error_if_not_registered)
 {
     ASSERT_EQ(rocFileHandleDeregister(reinterpret_cast<rocFileHandle_t>(0xdeadbeef)),
               HipFileOpError(hipFileHandleNotRegistered));
 }
 
-TEST_F(RocFileHandle, deregister_handle_internal)
+TEST_F(HipFileHandle, deregister_handle_internal)
 {
     expect_file_registration(msys, mlibmounthelper);
     auto fh = Context<DriverState>::get()->registerFile(0xBADF00D);
@@ -207,7 +207,7 @@ TEST_F(RocFileHandle, deregister_handle_internal)
     ASSERT_THROW(Context<DriverState>::get()->deregisterFile(fh), FileNotRegistered);
 }
 
-TEST_F(RocFileHandle, deregister_handle)
+TEST_F(HipFileHandle, deregister_handle)
 {
     rocFileHandle_t fh{};
     rocFileDescr_t  rfd{};
@@ -221,7 +221,7 @@ TEST_F(RocFileHandle, deregister_handle)
     ASSERT_EQ(rocFileHandleDeregister(fh), HipFileOpError(hipFileHandleNotRegistered));
 }
 
-TEST_F(RocFileHandle, deregister_handle_internal_fails_when_operations_are_oustanding)
+TEST_F(HipFileHandle, deregister_handle_internal_fails_when_operations_are_oustanding)
 {
     expect_file_registration(msys, mlibmounthelper);
     auto fh = Context<DriverState>::get()->registerFile(0xBADF00D);
@@ -232,7 +232,7 @@ TEST_F(RocFileHandle, deregister_handle_internal_fails_when_operations_are_ousta
     Context<DriverState>::get()->deregisterFile(fh);
 }
 
-TEST_F(RocFileHandle, deregister_handle_fails_when_operations_are_oustanding)
+TEST_F(HipFileHandle, deregister_handle_fails_when_operations_are_oustanding)
 {
     rocFileHandle_t fh{};
     rocFileDescr_t  rfd{};
