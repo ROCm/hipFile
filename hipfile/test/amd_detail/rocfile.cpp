@@ -158,7 +158,7 @@ TEST_P(RocFileIoParam, RocFileIoHandlesHipPointerGetAttributesError)
 {
     StrictMock<MHip> mhip;
     EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
-    ASSERT_EQ(rocFileIo(GetParam(), file_handle, unreg_bufptr, 0, 0, 0, mbackends), -hipErrorUnknown);
+    ASSERT_EQ(hipFileIo(GetParam(), file_handle, unreg_bufptr, 0, 0, 0, mbackends), -hipErrorUnknown);
 }
 
 TEST_P(RocFileIoParam, RocFileIoHandlesUnsupportedHipMemoryType)
@@ -168,7 +168,7 @@ TEST_P(RocFileIoParam, RocFileIoHandlesUnsupportedHipMemoryType)
         hipPointerAttribute_t attrs{};
         attrs.type = memoryType;
         EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Return(attrs));
-        ASSERT_EQ(rocFileIo(GetParam(), file_handle, unreg_bufptr, 0, 0, 0, mbackends),
+        ASSERT_EQ(hipFileIo(GetParam(), file_handle, unreg_bufptr, 0, 0, 0, mbackends),
                   -static_cast<ssize_t>(hipFileHipMemoryTypeInvalid));
     }
 }
@@ -176,14 +176,14 @@ TEST_P(RocFileIoParam, RocFileIoHandlesUnsupportedHipMemoryType)
 TEST_P(RocFileIoParam, RocFileIoHandlesInvalidRegisteredBufferLength)
 {
     StrictMock<MHip> mhip;
-    ASSERT_EQ(rocFileIo(GetParam(), file_handle, bufptr, buflen + 1, 0, 0, mbackends),
+    ASSERT_EQ(hipFileIo(GetParam(), file_handle, bufptr, buflen + 1, 0, 0, mbackends),
               -static_cast<ssize_t>(hipFileInvalidValue));
 }
 
 TEST_P(RocFileIoParam, RocFileIoHandlesInvalidFileHandle)
 {
     auto invalid_handle{reinterpret_cast<rocFileHandle_t>(0xdeadbeef)};
-    ASSERT_EQ(rocFileIo(GetParam(), invalid_handle, bufptr, 0, 0, 0, mbackends), -hipFileHandleNotRegistered);
+    ASSERT_EQ(hipFileIo(GetParam(), invalid_handle, bufptr, 0, 0, 0, mbackends), -hipFileHandleNotRegistered);
 }
 
 TEST_P(RocFileIoParam, RocFileIoHandlesSysRuntimeError)
@@ -191,7 +191,7 @@ TEST_P(RocFileIoParam, RocFileIoHandlesSysRuntimeError)
     EXPECT_CALL(*mbackend, score).WillOnce(Return(1));
     EXPECT_CALL(*mbackend, io).WillOnce(Throw(Sys::RuntimeError(EBADFD)));
     errno = 0;
-    ASSERT_EQ(rocFileIo(GetParam(), file_handle, bufptr, buflen, 0, 0, mbackends), -1);
+    ASSERT_EQ(hipFileIo(GetParam(), file_handle, bufptr, buflen, 0, 0, mbackends), -1);
     ASSERT_EQ(errno, EBADFD);
 }
 
@@ -199,14 +199,14 @@ TEST_P(RocFileIoParam, RocFileIoHandlesHipRuntimeError)
 {
     EXPECT_CALL(*mbackend, score).WillOnce(Return(1));
     EXPECT_CALL(*mbackend, io).WillOnce(Throw(Hip::RuntimeError(hipErrorUnknown)));
-    ASSERT_EQ(rocFileIo(GetParam(), file_handle, bufptr, buflen, 0, 0, mbackends), -hipErrorUnknown);
+    ASSERT_EQ(hipFileIo(GetParam(), file_handle, bufptr, buflen, 0, 0, mbackends), -hipErrorUnknown);
 }
 
 TEST_P(RocFileIoParam, RocFileIoHandlesInvalidArgumentError)
 {
     EXPECT_CALL(*mbackend, score).WillOnce(Return(1));
     EXPECT_CALL(*mbackend, io).WillOnce(Throw(std::invalid_argument("")));
-    ASSERT_EQ(rocFileIo(GetParam(), file_handle, bufptr, buflen, 0, 0, mbackends), -hipFileInvalidValue);
+    ASSERT_EQ(hipFileIo(GetParam(), file_handle, bufptr, buflen, 0, 0, mbackends), -hipFileInvalidValue);
 }
 
 INSTANTIATE_TEST_SUITE_P(RocFileIo, RocFileIoParam, Values(IoType::Read, IoType::Write));

@@ -25,6 +25,6 @@ struct Backend;
 HIPFILE_API
 void hipFileEnsureDriverInitPrivate();
 
-ssize_t rocFileIo(hipFile::IoType type, rocFileHandle_t fh, const void *buffer_base, size_t size,
+ssize_t hipFileIo(hipFile::IoType type, rocFileHandle_t fh, const void *buffer_base, size_t size,
                   hoff_t file_offset, hoff_t buffer_offset,
                   const std::vector<std::shared_ptr<hipFile::Backend>> &backends);
