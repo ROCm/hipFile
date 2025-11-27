@@ -140,7 +140,7 @@ main(int argc, char *argv[])
 
     if (file_size < buffer_size) {
         if (-1 == ftruncate(dst_fd, static_cast<off_t>(file_size))) {
-            fprintf(stderr, "Could not truncate %s (%zd) (%s)\n", dst_path, file_size, strerror(errno));
+            fprintf(stderr, "Could not truncate %s (%zu) (%s)\n", dst_path, file_size, strerror(errno));
         }
     }
 
