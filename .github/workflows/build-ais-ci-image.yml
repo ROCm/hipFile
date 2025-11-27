@@ -60,7 +60,7 @@ jobs:
               PR URL: ${{ env.AIS_PR_BASE_URL }}/${AIS_PR_NUMBER}" \
             --build-arg BUILDKIT_INLINE_CACHE=1 \
             --cache-from=type=registry,ref=${{ steps.ci-image.outputs.AIS_CI_IMAGE }} \
-            --cache-from=type=registry,ref=${{ steps.ci-image.outcome.AIS_CI_LATEST_CACHE }} \
+            --cache-from=type=registry,ref=${{ steps.ci-image.outputs.AIS_CI_LATEST_CACHE }} \
             --push \
             -t ${{ steps.ci-image.outputs.AIS_CI_IMAGE }} \
             ${GITHUB_WORKSPACE}
