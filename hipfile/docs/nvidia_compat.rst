@@ -18,7 +18,7 @@ differences, however.
   effect of an API call will match cuFile's behaviour.
 
 * The specific effects of ``hipFileDriverOpen()``, ``hipFileDriverClose()``, and
-  the use count reported by ``hipfileUseCount()``, may not match cuFile's. We
+  the use count reported by ``hipFileUseCount()``, may not match cuFile's. We
   don't even guarantee that needing to initialize a driver via a special API call
   will be necessary in hipFile.
 
