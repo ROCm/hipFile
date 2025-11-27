@@ -46,6 +46,15 @@ catch (...) {
     return {hipFileInternalError, hipSuccess};
 }
 
+// Ensures that the driver is initialized without incrementing the reference
+// count if the driver is already initialized. Used by hipFile to ensure its
+// behaviour is consistent on AMD and NVIDIA
+static inline void
+ensureDriverInit()
+{
+    hipFile::Context<hipFile::DriverState>::get()->ensureInitialized();
+}
+
 hipFileError_t
 hipFileHandleRegister(hipFileHandle_t *fh, hipFileDescr_t *descr)
 try {
@@ -401,7 +410,7 @@ hipFileReadAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *
 try {
     if (Context<DriverState>::get()->getRefCount() == 0) {
         // Match cuFile behaviour
-        hipFileEnsureDriverInitPrivate();
+        ensureDriverInit();
         return {hipFileInvalidValue, hipSuccess};
     }
 
@@ -425,7 +434,7 @@ hipFileWriteAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t 
 try {
     if (Context<DriverState>::get()->getRefCount() == 0) {
         // Match cuFile behaviour
-        hipFileEnsureDriverInitPrivate();
+        ensureDriverInit();
         return {hipFileInvalidValue, hipSuccess};
     }
 

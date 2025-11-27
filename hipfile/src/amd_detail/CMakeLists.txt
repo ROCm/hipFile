@@ -16,7 +16,6 @@ set(HIPFILE_SOURCES
     file.cpp
     hip.cpp
     hipfile.cpp
-    hipfile-private.cpp
     mountinfo.cpp
     state.cpp
     stream.cpp
