@@ -155,6 +155,7 @@ FileMap::~FileMap()
                   [](const auto &pair) { return pair.first; });
 
         for (const auto &fh : file_handles) {
+            // NOLINTNEXTLINE(clang-analyzer-optin.cplusplus.VirtualCall)
             deregisterFile(fh);
         }
     }

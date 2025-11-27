@@ -166,6 +166,7 @@ BufferMap::~BufferMap()
                   [](const auto &pair) { return pair.first; });
 
         for (const auto &ptr : buffer_ptrs) {
+            // NOLINTNEXTLINE(clang-analyzer-optin.cplusplus.VirtualCall)
             deregisterBuffer(ptr);
         }
     }
