@@ -23,8 +23,9 @@ fi
 mapfile -t changed_files <<< "${diff_output}"
 
 for changed_file in "${changed_files[@]}"; do
-    if [[ "${changed_file}" == "${CHECK_PATTERN}" ]]; then
-         FILES_CHANGED=1
+    if [[ "${changed_file}" == ${CHECK_PATTERN} ]]; then
+        FILES_CHANGED=1
+        break
     fi
 done
 
