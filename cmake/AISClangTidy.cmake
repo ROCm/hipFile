@@ -11,5 +11,5 @@ option(AIS_USE_CLANG_TIDY "Run clang-tidy when compiling" OFF)
 
 if(AIS_USE_CLANG_TIDY)
     find_program(CLANG_TIDY_EXE NAMES clang-tidy REQUIRED)
-    set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXE})
+    set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXE};-warnings-as-errors=*)
 endif()
