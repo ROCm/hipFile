@@ -35,6 +35,7 @@ EOF
 RUN apt update && \
     apt install -y \
         clang \
+        clang-tidy \
         cmake \
         doxygen \
         gdb \

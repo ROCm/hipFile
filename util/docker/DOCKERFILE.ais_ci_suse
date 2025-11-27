@@ -60,6 +60,7 @@ RUN zypper --gpg-auto-import-keys refresh
 RUN zypper install -y \
         libboost_program_options1_66_0-devel \
         clang19 \
+        clang-tidy-19 \
         cmake \
         doxygen \
         gcc13-c++ \

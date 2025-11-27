@@ -65,6 +65,7 @@ RUN dnf makecache && \
     dnf install -y \
         boost-devel \
         clang \
+        clang-tidy \
         cmake \
         doxygen \
         gcc-toolset-13 \
