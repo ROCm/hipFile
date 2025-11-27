@@ -23,8 +23,11 @@ fi
 mapfile -t changed_files <<< "${diff_output}"
 
 for changed_file in "${changed_files[@]}"; do
-    if [[ "${changed_file}" == "${CHECK_PATTERN}" ]]; then
-         FILES_CHANGED=1
+    # This is intended behaviour to check for globbing.
+    # shellcheck disable=SC2053
+    if [[ "${changed_file}" == ${CHECK_PATTERN} ]]; then
+        FILES_CHANGED=1
+        break
     fi
 done
 
