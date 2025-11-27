@@ -20,6 +20,14 @@ Supported filesystems: Only ext4 is supported at this time
 
 Targeting NVIDIA requires cuFile to be installed
 
+Multipath NVMe devices are not supported at this time. If you are using a multipath-supporting device, you may need to disable multipath in the nvme_core kernel driver. On Ubuntu 24.04, this can be done by running the following:
+
+```
+sudo bash -c 'echo "options nvme_core multipath=N" > /etc/modprobe.d/nvme_core.conf'
+sudo update-initramfs -c -k all
+sudo systemctl reboot
+```
+
 ### Prerequisites
 
 > [!NOTE]
