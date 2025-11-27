@@ -269,6 +269,13 @@ jobs:
             /bin/bash -c '
               ctest -V -L "stress" --parallel
             '
+      - name: hipFile IO test using aiscp
+        run: |
+          docker exec \
+            -t \
+            -w /ais \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash util/ci-aiscp-test.sh /mnt/ais-fs /ais/build/hipfile/examples/aiscp/aiscp
       - name: Cleanup & Stop the Docker container
         if: ${{ always() }}
         run: |
