@@ -37,7 +37,7 @@ jobs:
           echo "AIS_CI_LATEST_CACHE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME}}:latest-cache" \
             >> "${GITHUB_OUTPUT}"
       - name: Fetching code repository...
-        uses: actions/checkout@v6
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 #v6.0.0
       - name: Authenticating to GitHub Container Registry.
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3.6.0
         with:
