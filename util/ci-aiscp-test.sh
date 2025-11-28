@@ -14,13 +14,13 @@ set -e
 
 trap 'if [ -e "$TMPDIR" ]; then rm -fr "$TMPDIR"; fi' EXIT
 
-TESTDIR=$1
+WORKDIR=$1
 AISCP=$2
 
-echo "Test directory: $TESTDIR"
+echo "Test directory: $WORKDIR"
 echo "aiscp: $AISCP"
 
-TMPDIR=$(mktemp --directory --tmpdir="$TESTDIR")
+TMPDIR=$(mktemp --directory --tmpdir="$WORKDIR")
 SRC="$TMPDIR/rand.dat"
 DST="$TMPDIR/rand.dat.cp"
 echo "Source: $SRC"
