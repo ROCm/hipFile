@@ -219,6 +219,9 @@ jobs:
             -v ${{ env.AIS_MOUNT_PATH }}:/mnt/ais-fs \
             --name ${AIS_CONTAINER_NAME} \
             ${{ inputs.ci_image }}
+      - name: Create hipfile IO test directory
+        run: |
+          docker exec -t ${AIS_CONTAINER_NAME} /bin/bash -c "mkdir -p /mnt/ais-fs/${AIS_CONTAINER_NAME}"
       - name: Make copy of the code repository and create build directories
         run: |
           docker exec \
@@ -269,6 +272,17 @@ jobs:
             /bin/bash -c '
               ctest -V -L "stress" --parallel
             '
+      - name: hipFile IO test using aiscp
+        run: |
+          docker exec \
+            -t \
+            -w /mnt/ais-fs/${AIS_CONTAINER_NAME} \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash /ais/util/ci-aiscp-test.sh /ais/build/hipfile/examples/aiscp/aiscp
+      - name: Destroy hipfile IO test directory
+        if: ${{ always() }}
+        run: |
+          docker exec -t ${AIS_CONTAINER_NAME} /bin/bash -c "rm -fr /mnt/ais-fs/${AIS_CONTAINER_NAME}"
       - name: Cleanup & Stop the Docker container
         if: ${{ always() }}
         run: |
