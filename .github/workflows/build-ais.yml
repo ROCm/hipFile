@@ -221,7 +221,7 @@ jobs:
             ${{ inputs.ci_image }}
       - name: Create hipfile IO test directory
         run: |
-          docker exec -t ${AIS_CONTAINER_NAME} /bin/bash -c 'mkdir -p /mnt/ais-fs/${AIS_CONTAINER_NAME}'
+          docker exec -t ${AIS_CONTAINER_NAME} /bin/bash -c "mkdir -p /mnt/ais-fs/${AIS_CONTAINER_NAME}"
       - name: Make copy of the code repository and create build directories
         run: |
           docker exec \
@@ -282,7 +282,7 @@ jobs:
       - name: Destroy hipfile IO test directory
         if: ${{ always() }}
         run: |
-          docker exec -t ${AIS_CONTAINER_NAME} /bin/bash -c 'rm -fr /mnt/ais-fs/${AIS_CONTAINER_NAME}'
+          docker exec -t ${AIS_CONTAINER_NAME} /bin/bash -c "rm -fr /mnt/ais-fs/${AIS_CONTAINER_NAME}"
       - name: Cleanup & Stop the Docker container
         if: ${{ always() }}
         run: |
