@@ -7,7 +7,7 @@
 
 # Usage:
 # ci-aiscp-test.sh WORKDIR AISCP
-#   TESTDIR: A directory on an AIS supported filesystem backed by an AIS supported device
+#   WORKDIR: A directory on an AIS supported filesystem backed by an AIS supported device
 #   AISCP: Path to the aiscp binary
 
 set -e
