@@ -278,7 +278,7 @@ jobs:
             -t \
             -w /mnt/ais-fs/${AIS_CONTAINER_NAME} \
             ${AIS_CONTAINER_NAME} \
-            /bin/bash util/ci-aiscp-test.sh /ais/build/hipfile/examples/aiscp/aiscp
+            /bin/bash /ais/util/ci-aiscp-test.sh /ais/build/hipfile/examples/aiscp/aiscp
       - name: Destroy hipfile IO test directory
         if: ${{ always() }}
         run: |
