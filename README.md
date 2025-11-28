@@ -21,6 +21,8 @@ We've created a fork of [ROCm/HIPIFY](https://github.com/ROCm/HIPIFY) at
 hipFile can be found in the `hipFile` branch. Please note that this branch
 is a work in progress and may not be fully functional.
 
+A cuFile --> hipFile API map can be found [here](hipfile/docs/cuFile_API_supported_by_HIP.md)
+
 ### fio support
 
 We've created a fork of [axboe/fio](https://github.com/axboe/fio) at
