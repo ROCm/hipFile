@@ -105,11 +105,11 @@ public:
     virtual int                      getStatusFlags() const override;
     virtual std::optional<MountInfo> getMountInfo() const override;
 
-private:
     /// @brief Construct a registered file
     /// @param uf An unregistered file
     File(const UnregisteredFile &uf);
 
+private:
     /// @brief The file descriptor
     int fd;
 
@@ -123,8 +123,6 @@ private:
 
     /// @brief Mount information for the filesystem backing fd
     std::optional<MountInfo> mountinfo;
-
-    friend class FileMap;
 };
 
 class FileMap {
