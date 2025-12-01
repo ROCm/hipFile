@@ -105,7 +105,7 @@ private:
 
 class BufferMap {
 public:
-    virtual ~BufferMap();
+    virtual ~BufferMap() = default;
 
     /// @brief Creates and registers a buffer
     /// @attention A unique_lock on HipFileMutex must be held

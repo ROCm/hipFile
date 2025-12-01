@@ -129,7 +129,7 @@ private:
 
 class FileMap {
 public:
-    virtual ~FileMap();
+    virtual ~FileMap() = default;
 
     /// @brief Registers a file. Files must be registered before they can be used with hipFile IO APIs
     /// @attention A unique_lock on HipFileMutex must be held

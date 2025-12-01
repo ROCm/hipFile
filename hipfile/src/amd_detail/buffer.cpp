@@ -156,29 +156,4 @@ BufferMap::clear()
     from_ptr.clear();
 }
 
-BufferMap::~BufferMap()
-{
-    try {
-        // Create a list of registered buffers without causing the use_count to increase
-        vector<const void *> buffer_ptrs;
-        buffer_ptrs.reserve(from_ptr.size());
-        transform(from_ptr.begin(), from_ptr.end(), std::back_inserter(buffer_ptrs),
-                  [](const auto &pair) { return pair.first; });
-
-        for (const auto &ptr : buffer_ptrs) {
-            // NOLINTNEXTLINE(clang-analyzer-optin.cplusplus.VirtualCall)
-            deregisterBuffer(ptr);
-        }
-    }
-    catch (...) {
-#ifndef NDEBUG
-        // TODO: Consider logging here and/or changing this behaviour
-        //       before launch. It's not a great idea to call exit()
-        //       from inside libraries, but this will at least alert
-        //       us to badness while we develop.
-        std::exit(EXIT_FAILURE);
-#endif
-    }
-}
-
 }
