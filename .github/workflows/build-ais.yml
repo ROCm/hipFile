@@ -25,6 +25,8 @@ jobs:
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{ inputs.platform }}" >> "$GITHUB_ENV"
       - name: Fetching code repository...
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 #v6.0.0
+        with:
+          path: hipFile
       - name: Authenticating to GitHub Container Registry
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3.6.0
         with:
@@ -53,13 +55,13 @@ jobs:
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               cp -R /mnt/ais /ais
-              mkdir /ais/build
+              mkdir /ais/hipFile/build
             '
       - name: Generate build files for hipFile targeting the AMD platform (amdclang++)
         run: |
           docker exec \
             -t \
-            -w /ais/build \
+            -w /ais/hipFile/build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               cmake \
@@ -74,7 +76,7 @@ jobs:
         run: |
           docker exec \
             -t \
-            -w /ais/build \
+            -w /ais/hipFile/build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               cmake --build . --parallel
@@ -83,7 +85,7 @@ jobs:
         run: |
           docker exec \
             -t \
-            -w /ais/build \
+            -w /ais/hipFile/build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               ctest -V -L "unit" --parallel
@@ -92,7 +94,7 @@ jobs:
         run: |
           docker exec \
             -t \
-            -w /ais/build \
+            -w /ais/hipFile/build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               export PATH="/opt/rocm/llvm/bin:$PATH"
@@ -107,7 +109,7 @@ jobs:
         run: |
           docker exec \
             -t \
-            -w /ais \
+            -w /ais/hipFile \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               rm -rf build/*
@@ -134,6 +136,8 @@ jobs:
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{ inputs.platform }}_${AIS_SAFE_COMPILER_NAME}" >> "$GITHUB_ENV"
       - name: Fetching code repository...
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 #v6.0.0
+        with:
+          path: hipFile
       - name: Authenticating to GitHub Container Registry
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3.6.0
         with:
@@ -157,13 +161,13 @@ jobs:
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               cp -R /mnt/ais /ais
-              mkdir /ais/build
+              mkdir /ais/hipFile/build
             '
       - name: Generate build files for hipFile targeting the AMD platform (${{ matrix.alternate_compilers }})
         run: |
           docker exec \
             -t \
-            -w /ais/build \
+            -w /ais/hipFile/build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               cmake \
@@ -177,7 +181,7 @@ jobs:
         run: |
           docker exec \
             -t \
-            -w /ais/build \
+            -w /ais/hipFile/build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               cmake --build . --parallel
@@ -197,6 +201,8 @@ jobs:
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{ inputs.platform }}" >> "$GITHUB_ENV"
       - name: Fetching code repository...
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 #v6.0.0
+        with:
+          path: hipFile
       - name: Authenticating to GitHub Container Registry
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3.6.0
         with:
@@ -229,13 +235,13 @@ jobs:
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               cp -R /mnt/ais /ais
-              mkdir /ais/build
+              mkdir /ais/hipFile/build
             '
       - name: Generate build files for hipFile targeting the AMD platform (amdclang++)
         run: |
           docker exec \
             -t \
-            -w /ais/build \
+            -w /ais/hipFile/build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               cmake \
@@ -249,7 +255,7 @@ jobs:
         run: |
           docker exec \
             -t \
-            -w /ais/build \
+            -w /ais/hipFile/build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               cmake --build . --parallel
@@ -258,7 +264,7 @@ jobs:
         run: |
           docker exec \
             -t \
-            -w /ais/build \
+            -w /ais/hipFile/build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               ctest -V -L "system" --parallel
@@ -267,7 +273,7 @@ jobs:
         run: |
           docker exec \
             -t \
-            -w /ais/build \
+            -w /ais/hipFile/build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               ctest -V -L "stress" --parallel
@@ -278,7 +284,7 @@ jobs:
             -t \
             -w /mnt/ais-fs/${AIS_CONTAINER_NAME} \
             ${AIS_CONTAINER_NAME} \
-            /bin/bash /ais/util/ci-aiscp-test.sh /ais/build/hipfile/examples/aiscp/aiscp
+            /bin/bash /ais/hipFile/util/ci-aiscp-test.sh /ais/hipFile/build/hipfile/examples/aiscp/aiscp
       - name: Destroy hipfile IO test directory
         if: ${{ always() }}
         run: |
@@ -305,6 +311,8 @@ jobs:
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{ inputs.platform }}_${AIS_SAFE_COMPILER_NAME}" >> "$GITHUB_ENV"
       - name: Fetching code repository...
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 #v6.0.0
+        with:
+          path: hipFile
       - name: Authenticating to GitHub Container Registry
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3.6.0
         with:
@@ -331,13 +339,13 @@ jobs:
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               cp -R /mnt/ais /ais
-              mkdir /ais/build
+              mkdir /ais/hipFile/build
             '
       - name: Generate build files for hipFile targeting the NVIDIA platform (${{ matrix.supported_compilers }})
         run: |
           docker exec \
             -t \
-            -w /ais/build \
+            -w /ais/hipFile/build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               cmake \
@@ -351,7 +359,7 @@ jobs:
         run: |
           docker exec \
             -t \
-            -w /ais/build \
+            -w /ais/hipFile/build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               cmake --build . --parallel
@@ -360,7 +368,7 @@ jobs:
         run: |
           docker exec \
             -t \
-            -w /ais \
+            -w /ais/hipFile \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               rm -rf build/*
