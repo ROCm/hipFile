@@ -199,10 +199,16 @@ jobs:
       - name: Set AIS CI container name
         run: |
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{ inputs.platform }}" >> "$GITHUB_ENV"
-      - name: Fetching code repository...
+      - name: Fetching hipFile repository...
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 #v6.0.0
         with:
           path: hipFile
+      - name: Fetching fio repository...
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 #v6.0.0
+        with:
+          repository: ROCm/fio
+          ref: hipFile
+          path: fio
       - name: Authenticating to GitHub Container Registry
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3.6.0
         with:
@@ -236,6 +242,7 @@ jobs:
             /bin/bash -c '
               cp -R /mnt/ais /ais
               mkdir /ais/hipFile/build
+              mkdir /ais/fio/build
             '
       - name: Generate build files for hipFile targeting the AMD platform (amdclang++)
         run: |
@@ -285,6 +292,60 @@ jobs:
             -w /mnt/ais-fs/${AIS_CONTAINER_NAME} \
             ${AIS_CONTAINER_NAME} \
             /bin/bash /ais/hipFile/util/ci-aiscp-test.sh /ais/hipFile/build/hipfile/examples/aiscp/aiscp
+      - name: Configure fio
+        run: |
+          docker exec \
+            -t \
+            -w /ais/fio/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              ROCM=/opt/rocm \
+              HIPFILE=/ais/hipFile \
+              HIPFILELIB=$HIPFILE/build/hipfile/src/amd_detail/ \
+              HIP_PLATFORM=amd \
+              CFLAGS="-I$ROCM/include -I$HIPFILE/hipfile/include" \
+              LDFLAGS="-L$ROCM/lib -L$HIPFILELIB -Wl,-rpath,$HIPFILELIB" \
+              ../configure --enable-libhipfile
+            '
+      - name: Build fio
+        run: |
+          docker exec \
+            -t \
+            -w /ais/fio/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              make -j
+            '
+      - name: hipFile IO test using fio
+        run: |
+          docker exec \
+            -t \
+            -w /mnt/ais-fs/${AIS_CONTAINER_NAME} \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              cat >> write-read-verify.fio <<EOF
+              [global]
+              ioengine=libhipfile
+              rocm_io=hipfile
+              direct=1
+              gpu_dev_ids=0
+              filename=fio.dat
+              size=1G
+              bs=1M
+              verify=md5
+              numjobs=1
+
+              [write]
+              rw=write
+              do_verify=0
+
+              [read]
+              rw=read
+              do_verify=1
+              EOF
+
+              /ais/fio/build/fio write-read-verify.fio
+            '
       - name: Destroy hipfile IO test directory
         if: ${{ always() }}
         run: |
