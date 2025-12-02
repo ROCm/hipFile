@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <sys/socket.h>
 #include <sys/types.h>
 
 #if defined(__GNUC__)
