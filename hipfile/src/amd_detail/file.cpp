@@ -151,7 +151,7 @@ FileMap::~FileMap()
     // Complain in the logs if we're shutting down a FileMap
     // with files that are still in use.
     for (const auto &p : from_fh) {
-        if (p.second.use_count() > 1) {
+        if (p.second.use_count() > 2) {
             Context<Sys>::get()->syslog(LOG_CRIT, "FileMap state is being destructed with in-use files.");
             return;
         }
