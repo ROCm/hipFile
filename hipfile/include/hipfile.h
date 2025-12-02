@@ -9,7 +9,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#ifdef _WIN32
+#include <winsock2.h>
+#else
 #include <sys/socket.h>
+#endif
 #include <sys/types.h>
 
 #if defined(__GNUC__)
