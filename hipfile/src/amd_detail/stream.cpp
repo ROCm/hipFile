@@ -88,13 +88,17 @@ StreamMap::getStream(hipStream_t hip_stream)
 
 StreamMap::~StreamMap()
 {
-    for (const auto &[hip_stream, stream] : from_ptr) {
-        (void)hip_stream;
-        if (stream.use_count() > 1) {
-            Context<Sys>::get()->syslog(LOG_CRIT,
-                                        "Stream state is being destructed while operations are outstanding.");
-            return;
+    // Complain in the logs if we're shutting down a Stream
+    // with outstanding operations.
+    int count = 0;
+    for (const auto &p : from_ptr) {
+        if (p.second.use_count() > 1) {
+            count++;
         }
+    }
+
+    if (count > 0) {
+        Context<Sys>::get()->syslog(LOG_CRIT, "Stream state is being destructed with outstanding operations");
     }
 }
 

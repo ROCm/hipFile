@@ -6,6 +6,7 @@
 #include "buffer.h"
 #include "context.h"
 #include "hip.h"
+#include "sys.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -13,6 +14,7 @@
 #include <hip/hip_runtime_api.h>
 #include <iterator>
 #include <stdexcept>
+#include <syslog.h>
 #include <utility>
 #include <vector>
 
@@ -158,26 +160,17 @@ BufferMap::clear()
 
 BufferMap::~BufferMap()
 {
-    try {
-        // Create a list of registered buffers without causing the use_count to increase
-        vector<const void *> buffer_ptrs;
-        buffer_ptrs.reserve(from_ptr.size());
-        transform(from_ptr.begin(), from_ptr.end(), std::back_inserter(buffer_ptrs),
-                  [](const auto &pair) { return pair.first; });
-
-        for (const auto &ptr : buffer_ptrs) {
-            // NOLINTNEXTLINE(clang-analyzer-optin.cplusplus.VirtualCall)
-            deregisterBuffer(ptr);
+    // Complain in the logs if we're shutting down a BufferMap
+    // with buffers that are still in use.
+    int count = 0;
+    for (const auto &p : from_ptr) {
+        if (p.second.use_count() > 1) {
+            count++;
         }
     }
-    catch (...) {
-#ifndef NDEBUG
-        // TODO: Consider logging here and/or changing this behaviour
-        //       before launch. It's not a great idea to call exit()
-        //       from inside libraries, but this will at least alert
-        //       us to badness while we develop.
-        std::exit(EXIT_FAILURE);
-#endif
+
+    if (count > 0) {
+        Context<Sys>::get()->syslog(LOG_CRIT, "BufferMap state is being destructed with in-use buffers");
     }
 }
 

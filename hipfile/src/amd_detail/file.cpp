@@ -14,6 +14,7 @@
 #include <iterator>
 #include <utility>
 #include <sys/sysmacros.h>
+#include <syslog.h>
 #include <vector>
 
 using std::optional;
@@ -147,26 +148,17 @@ FileMap::clear()
 
 FileMap::~FileMap()
 {
-    try {
-        // Create a list of registered files without causing the use_count to increase
-        vector<hipFileHandle_t> file_handles;
-        file_handles.reserve(from_fh.size());
-        transform(from_fh.begin(), from_fh.end(), std::back_inserter(file_handles),
-                  [](const auto &pair) { return pair.first; });
-
-        for (const auto &fh : file_handles) {
-            // NOLINTNEXTLINE(clang-analyzer-optin.cplusplus.VirtualCall)
-            deregisterFile(fh);
+    // Complain in the logs if we're shutting down a FileMap
+    // with files that are still in use.
+    int count = 0;
+    for (const auto &p : from_fh) {
+        if (p.second.use_count() > 2) {
+            count++;
         }
     }
-    catch (...) {
-#ifndef NDEBUG
-        // TODO: Consider logging here and/or changing this behaviour
-        //       before launch. It's not a great idea to call exit()
-        //       from inside libraries, but this will at least alert
-        //       us to badness while we develop.
-        std::exit(EXIT_FAILURE);
-#endif
+
+    if (count > 0) {
+        Context<Sys>::get()->syslog(LOG_CRIT, "FileMap state is being destructed with in-use files");
     }
 }
 
