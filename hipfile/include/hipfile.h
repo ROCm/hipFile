@@ -95,10 +95,16 @@ extern "C" {
  * @brief Platform-independent offset type
  * @ingroup core
  */
-#ifndef _WIN32
-typedef off_t hoff_t;
-#else
+#ifdef _WIN32
 typedef __int64 hoff_t;
+#else
+typedef off_t hoff_t;
+#endif
+
+/* Handle ssize_t on Windows (does not need Doxygen) */
+#ifdef _WIN32
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
 #endif
 
 // ***********************************************************************
