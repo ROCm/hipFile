@@ -162,11 +162,15 @@ BufferMap::~BufferMap()
 {
     // Complain in the logs if we're shutting down a BufferMap
     // with buffers that are still in use.
+    int count = 0;
     for (const auto &p : from_ptr) {
         if (p.second.use_count() > 1) {
-            Context<Sys>::get()->syslog(LOG_CRIT, "BufferMap state is being destructed with in-use buffers.");
-            return;
+            count++;
         }
+    }
+
+    if (count > 0) {
+        Context<Sys>::get()->syslog(LOG_CRIT, "BufferMap state is being destructed with in-use buffers");
     }
 }
 
