@@ -9,12 +9,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <sys/types.h>
+
+/* Needed for struct sockaddr */
 #ifdef _WIN32
 #include <winsock2.h>
 #else
 #include <sys/socket.h>
 #endif
-#include <sys/types.h>
 
 #if defined(__GNUC__)
 #define HIPFILE_API __attribute__((visibility("default")))
