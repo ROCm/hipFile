@@ -285,13 +285,17 @@ jobs:
             /bin/bash -c '
               ctest -V -L "stress" --parallel
             '
-      - name: hipFile IO test using aiscp
+      - name: hipFile fallback/POSIX IO test using aiscp
         run: |
           docker exec \
             -t \
             -w /mnt/ais-fs/${AIS_CONTAINER_NAME} \
             ${AIS_CONTAINER_NAME} \
-            /bin/bash /ais/hipFile/util/ci-aiscp-test.sh /ais/hipFile/build/hipfile/examples/aiscp/aiscp
+            /bin/bash -c '
+              HIPFILE_FORCE_COMPAT_MODE=true
+                /ais/hipFile/util/ci-aiscp-test.sh \
+                /ais/hipFile/build/hipfile/examples/aiscp/aiscp
+            '
       - name: Configure fio
         run: |
           docker exec \
