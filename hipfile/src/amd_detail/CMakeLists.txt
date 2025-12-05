@@ -13,6 +13,7 @@ set(HIPFILE_SOURCES
     batch/batch.cpp
     buffer.cpp
     context.cpp
+    environment.cpp
     file.cpp
     hip.cpp
     hipfile.cpp
