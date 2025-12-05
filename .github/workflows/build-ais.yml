@@ -328,22 +328,7 @@ jobs:
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               /ais/fio/build/fio \
-                --ioengine=libhipfile \
-                --rocm_io=hipfile \
-                --direct=1 \
-                --gpu_dev_ids=0 \
-                --filename=fio.dat \
-                --size=1G \
-                --bs=1M \
-                --verify=md5 \
-                --numjobs=1 \
-                --name=write \
-                --rw=write \
-                --do_verify=0 \
-                --name=read \
-                --stonewall \
-                --rw=read \
-                --do_verify=1
+              /ais/hipFile/util/fio/write-read-verify.fio
             '
       - name: Destroy hipfile IO test directory
         if: ${{ always() }}
