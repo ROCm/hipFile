@@ -4,6 +4,8 @@
  */
 #pragma once
 
+#include "passkey.h"
+
 #include <cstdint>
 #include <hip/hip_runtime_api.h>
 #include <memory>
@@ -22,6 +24,8 @@ public:
     virtual bool        pageAligned() const       = 0;
 };
 
+class StreamMap;
+
 class Stream : public IStream {
 public:
     virtual ~Stream() override = default;
@@ -32,9 +36,9 @@ public:
     virtual bool        fixedIOSize() const override;
     virtual bool        pageAligned() const override;
 
-private:
-    Stream(const hipStream_t hip_stream, uint32_t flags);
+    Stream(const hipStream_t hip_stream, uint32_t flags, PassKey<StreamMap> k);
 
+private:
     Stream(const Stream &)             = delete;
     Stream &operator=(const Stream &)  = delete;
     Stream(const Stream &&)            = delete;
@@ -45,12 +49,12 @@ private:
     bool        fixed_file_offset;
     bool        fixed_io_size;
     bool        page_aligned;
-
-    friend struct StreamMap;
 };
 
-struct StreamMap {
+class StreamMap {
+public:
     ~StreamMap();
+
     /// @brief Registers a stream to use for async operations
     /// @param hip_stream A HIP stream
     /// @param flags Stream flags
@@ -64,7 +68,7 @@ struct StreamMap {
     /// @param hip_stream A HIP stream
     std::shared_ptr<IStream> getStream(hipStream_t hip_stream);
 
-protected:
+private:
     std::unordered_map<hipStream_t, std::shared_ptr<IStream>> from_ptr;
 };
 
