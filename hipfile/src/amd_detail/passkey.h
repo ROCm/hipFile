@@ -17,17 +17,17 @@
 /// which makes it impossible to instantiate an unregistered object.
 ///
 /// @tparam T The "friend" class
-template <typename T> class Key {
+template <typename T> class PassKey {
     friend T;
 
 private:
     // Note: Changing these constructors can break encapsulation.
 
-    Key()
+    PassKey()
     {
     }
 
-    Key(Key const &)
+    PassKey(PassKey const &)
     {
     }
 };

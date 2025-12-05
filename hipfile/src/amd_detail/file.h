@@ -6,8 +6,8 @@
 #pragma once
 
 #include "hipfile.h"
-#include "key.h"
 #include "mountinfo.h"
+#include "passkey.h"
 
 #include <linux/stat.h>
 #include <memory>
@@ -111,7 +111,7 @@ public:
     /// @brief Construct a registered file
     /// @param uf An unregistered file
     /// @param k  Key class instance (see key.h)
-    File(const UnregisteredFile &uf, Key<FileMap> k);
+    File(const UnregisteredFile &uf, PassKey<FileMap> k);
 
 private:
     /// @brief The file descriptor

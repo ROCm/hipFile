@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "key.h"
+#include "passkey.h"
 
 #include <cstddef>
 #include <hip/hip_runtime_api.h>
@@ -87,7 +87,7 @@ public:
     /// @param length Buffer length
     /// @param flags Buffer flags (unused)
     /// @param k  Key class instance (see key.h)
-    Buffer(const void *buf, size_t length, int flags, Key<BufferMap> k);
+    Buffer(const void *buf, size_t length, int flags, PassKey<BufferMap> k);
 
 private:
     /// @brief Pointer to a hip allocated buffer
