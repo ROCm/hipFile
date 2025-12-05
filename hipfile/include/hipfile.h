@@ -979,7 +979,7 @@ typedef enum hipFileSizeTConfigParameter_t {
     hipFileParamPropertiesMaxDevicePinnedMemSizeKB, //!< Max device pinned memory size (KiB)
     hipFileParamPropertiesIOBatchsize,              //!< IO batch size
     hipFileParamPollthresholdSizeKB,                //!< Poll threshold size (KiB)
-    hipFileParamPropertiesBatchIOTimeoutMs,         //!< Batch IO timeouts
+    hipFileParamPropertiesBatchIOTimeoutMs,         //!< Batch IO timeout (ms)
 } hipFileSizeTConfigParameter_t;
 
 /*!
