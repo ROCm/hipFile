@@ -16,7 +16,7 @@
 
 namespace hipFile {
 
-Stream::Stream(const hipStream_t _hip_stream, uint32_t flags, PassKey<StreamMap>)
+Stream::Stream(const hipStream_t _hip_stream, uint32_t flags, const PassKey<StreamMap> &)
     : hip_stream{_hip_stream}, fixed_buf_offset{(flags & HIPFILE_STREAM_FIXED_BUF_OFFSET) != 0},
       fixed_file_offset{(flags & HIPFILE_STREAM_FIXED_FILE_OFFSET) != 0},
       fixed_io_size{(flags & HIPFILE_STREAM_FIXED_FILE_SIZE) != 0},

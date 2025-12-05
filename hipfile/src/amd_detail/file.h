@@ -111,7 +111,7 @@ public:
     /// @brief Construct a registered file
     /// @param uf An unregistered file
     /// @param k  Key class instance (see passkey.h)
-    File(const UnregisteredFile &uf, PassKey<FileMap> k);
+    File(const UnregisteredFile &uf, const PassKey<FileMap> &k);
 
 private:
     /// @brief The file descriptor

@@ -69,7 +69,7 @@ IFile::getHandle() const
     return reinterpret_cast<hipFileHandle_t>(const_cast<IFile *>(this));
 }
 
-File::File(const UnregisteredFile &uf, PassKey<FileMap>)
+File::File(const UnregisteredFile &uf, const PassKey<FileMap> &)
     : fd{uf.getFd()}, stx{uf.getStatx()}, status_flags{uf.getFlags()}, mountinfo{uf.getMountInfo()}
 {
 }

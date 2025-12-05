@@ -47,7 +47,7 @@ isValidBufferRegion(void *ptr, size_t length)
     return true;
 }
 
-Buffer::Buffer(const void *_buffer, size_t _length, int _flags, PassKey<BufferMap>)
+Buffer::Buffer(const void *_buffer, size_t _length, int _flags, const PassKey<BufferMap> &)
     : buffer{const_cast<void *>(_buffer)}, length{_length}, flags{_flags}
 {
     if (!buffer) {

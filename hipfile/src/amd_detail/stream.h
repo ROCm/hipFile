@@ -36,7 +36,7 @@ public:
     virtual bool        fixedIOSize() const override;
     virtual bool        pageAligned() const override;
 
-    Stream(const hipStream_t hip_stream, uint32_t flags, PassKey<StreamMap> k);
+    Stream(const hipStream_t hip_stream, uint32_t flags, const PassKey<StreamMap> &k);
 
 private:
     Stream(const Stream &)             = delete;
