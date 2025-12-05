@@ -7,8 +7,9 @@
 #include "backend/fastpath.h"
 #include "batch/batch.h"
 #include "buffer.h"
+#include "configuration.h"
+#include "context.h"
 #include "file.h"
-#include "hip.h"
 #include "state.h"
 #include "stream.h"
 
@@ -278,10 +279,12 @@ std::vector<std::shared_ptr<Backend>>
 DriverState::getBackends() const
 {
     static bool once = [&]() {
-        if (getHipAmdFileReadPtr() && getHipAmdFileWritePtr()) {
+        if (Context<Configuration>::get()->fastpath()) {
             backends.emplace_back(new Fastpath{});
         }
-        backends.emplace_back(new Fallback{});
+        if (Context<Configuration>::get()->fallback()) {
+            backends.emplace_back(new Fallback{});
+        }
         return true;
     }();
     (void)once;
