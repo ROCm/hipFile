@@ -22,3 +22,9 @@ Environment::get<bool>(const char *key)
     }
     return std::nullopt;
 }
+
+optional<bool>
+Environment::allow_compat_mode()
+{
+    return Environment::get<bool>(Environment::ALLOW_COMPAT_MODE);
+}
