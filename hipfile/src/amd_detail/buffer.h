@@ -86,7 +86,7 @@ public:
     /// @param buf Buffer pointer
     /// @param length Buffer length
     /// @param flags Buffer flags (unused)
-    /// @param k  Key class instance (see key.h)
+    /// @param k  Key class instance (see passkey.h)
     Buffer(const void *buf, size_t length, int flags, PassKey<BufferMap> k);
 
 private:
