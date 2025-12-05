@@ -6,6 +6,7 @@
 #pragma once
 
 #include "hipfile.h"
+#include "key.h"
 #include "mountinfo.h"
 
 #include <linux/stat.h>
@@ -87,6 +88,8 @@ public:
     virtual std::optional<MountInfo> getMountInfo() const      = 0;
 };
 
+class FileMap;
+
 class File : public IFile {
 
 public:
@@ -107,7 +110,7 @@ public:
 
     /// @brief Construct a registered file
     /// @param uf An unregistered file
-    File(const UnregisteredFile &uf);
+    File(const UnregisteredFile &uf, Key<FileMap>);
 
 private:
     /// @brief The file descriptor

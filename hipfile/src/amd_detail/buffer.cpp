@@ -46,7 +46,7 @@ isValidBufferRegion(void *ptr, size_t length)
     return true;
 }
 
-Buffer::Buffer(const void *_buffer, size_t _length, int _flags)
+Buffer::Buffer(const void *_buffer, size_t _length, int _flags, Key<BufferMap>)
     : buffer{const_cast<void *>(_buffer)}, length{_length}, flags{_flags}
 {
     if (!buffer) {
@@ -102,7 +102,7 @@ BufferMap::registerBuffer(const void *buf, size_t length, int flags)
         throw BufferAlreadyRegistered();
     }
 
-    auto buffer   = std::shared_ptr<IBuffer>(new Buffer(buf, length, flags));
+    auto buffer   = std::shared_ptr<IBuffer>(new Buffer(buf, length, flags, Key<BufferMap>{}));
     from_ptr[buf] = buffer;
 }
 
@@ -140,7 +140,7 @@ BufferMap::getBuffer(const void *buf, size_t length, int flags)
     if (from_ptr.end() == itr) {
         // If the buffer hasn't been registered, use an unregistered
         // temporary Buffer object
-        return std::shared_ptr<IBuffer>(new Buffer(buf, length, flags));
+        return std::shared_ptr<IBuffer>(new Buffer(buf, length, flags, Key<BufferMap>{}));
     }
     else {
         // If we found a registered buffer, it's an error if the

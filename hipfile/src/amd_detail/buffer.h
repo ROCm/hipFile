@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "key.h"
+
 #include <cstddef>
 #include <hip/hip_runtime_api.h>
 #include <memory>
@@ -59,6 +61,8 @@ public:
     virtual int           getGpuId() const  = 0;
 };
 
+class BufferMap;
+
 class Buffer : public IBuffer {
 
 public:
@@ -82,7 +86,7 @@ public:
     /// @param buf Buffer pointer
     /// @param length Buffer length
     /// @param flags Buffer flags (unused)
-    Buffer(const void *buf, size_t length, int flags);
+    Buffer(const void *buf, size_t length, int flags, Key<BufferMap>);
 
 private:
     /// @brief Pointer to a hip allocated buffer
