@@ -20,11 +20,13 @@
 template <typename T> class Key {
     friend T;
 
+private:
     // Note: Changing these constructors can break encapsulation.
 
     Key()
     {
     }
+
     Key(Key const &)
     {
     }
