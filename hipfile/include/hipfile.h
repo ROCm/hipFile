@@ -185,7 +185,7 @@ HIPFILE_API
 const char *hipFileOpStatusError(hipFileOpError_t status);
 
 // Ignoring return values from hipFile APIs is discouraged.
-// On C++17 and C23 and up, we can make that emit a warning.
+// In C++17 and C23 and up, we can make that emit a warning.
 #if (defined(__cplusplus) && __cplusplus >= 201703L) || __STDC_VERSION__ >= 202311L
 #define __HIPFILE_NODISCARD [[nodiscard]]
 #else
@@ -359,10 +359,6 @@ typedef struct hipFileDriverProps {
 // ***********************************************************************
 //  RDMA API
 // ***********************************************************************
-
-/*
- * NOTE: !! AIS UNSUPPORTED !! (Not related to NVMeoRDMA)
- */
 
 /*!
  * @brief Userspace RDMA configuration
@@ -705,8 +701,6 @@ hipFileError_t hipFileDriverSetMaxPinnedMemSize(size_t max_pinned_size);
 //  BATCH API
 // ***********************************************************************
 
-/* NOTE: cufile.h says that the batch API is experimental */
-
 /*!
  * @brief The direction of data movement in a batch IO request
  * @ingroup batch
@@ -974,18 +968,18 @@ hipFileError_t hipFileGetVersion(unsigned *major, unsigned *minor, unsigned *pat
  * @ingroup core
  */
 typedef enum hipFileSizeTConfigParameter_t {
-    hipFileParamProfileStats,                       //!<
-    hipFileParamExecutionMaxIOQueueDepth,           //!<
-    hipFileParamExecutionMaxIOThreads,              //!<
-    hipFileParamExecutionMinIOThresholdSizeKB,      //!<
-    hipFileParamExecutionMaxRequestParallelism,     //!<
-    hipFileParamPropertiesMaxDirectIOSizeKB,        //!<
-    hipFileParamPropertiesMaxDeviceCacheSizeKB,     //!<
-    hipFileParamPropertiesPerBufferCacheSizeKB,     //!<
-    hipFileParamPropertiesMaxDevicePinnedMemSizeKB, //!<
-    hipFileParamPropertiesIOBatchsize,              //!<
-    hipFileParamPollthresholdSizeKB,                //!<
-    hipFileParamPropertiesBatchIOTimeoutMs,         //!<
+    hipFileParamProfileStats,                       //!< Statistics
+    hipFileParamExecutionMaxIOQueueDepth,           //!< Max IO queue depth
+    hipFileParamExecutionMaxIOThreads,              //!< Max number of IO threads
+    hipFileParamExecutionMinIOThresholdSizeKB,      //!< Min IO threshold (KiB)
+    hipFileParamExecutionMaxRequestParallelism,     //!< Max request parallelism
+    hipFileParamPropertiesMaxDirectIOSizeKB,        //!< Max direct IO size (KiB)
+    hipFileParamPropertiesMaxDeviceCacheSizeKB,     //!< Max device cache size (KiB)
+    hipFileParamPropertiesPerBufferCacheSizeKB,     //!< Max buffer cache size (KiB)
+    hipFileParamPropertiesMaxDevicePinnedMemSizeKB, //!< Max device pinned memory size (KiB)
+    hipFileParamPropertiesIOBatchsize,              //!< IO batch size
+    hipFileParamPollthresholdSizeKB,                //!< Poll threshold size (KiB)
+    hipFileParamPropertiesBatchIOTimeoutMs,         //!< Batch IO timeouts
 } hipFileSizeTConfigParameter_t;
 
 /*!
@@ -993,18 +987,18 @@ typedef enum hipFileSizeTConfigParameter_t {
  * @ingroup core
  */
 typedef enum hipFileBoolConfigParameter_t {
-    hipFileParamPropertiesUsePollMode,       //!<
-    hipFileParamPropertiesAllowCompatMode,   //!<
-    hipFileParamForceCompatMode,             //!<
-    hipFileParamFsMiscApiCheckAggressive,    //!<
-    hipFileParamExecutionParallelIO,         //!<
-    hipFileParamProfileNvtx,                 //!<
-    hipFileParamPropertiesAllowSystemMemory, //!<
-    hipFileParamUsePcip2pdma,                //!<
-    hipFileParamPreferIOUring,               //!<
-    hipFileParamForceOdirectMode,            //!<
-    hipFileParamSkipTopologyDetection,       //!<
-    hipFileParamStreamMemopsBypass,          //!<
+    hipFileParamPropertiesUsePollMode,       //!< Use poll mode
+    hipFileParamPropertiesAllowCompatMode,   //!< Allow compatibility mode
+    hipFileParamForceCompatMode,             //!< Force compatibility mode
+    hipFileParamFsMiscApiCheckAggressive,    //!< Use aggressive checks in API calls
+    hipFileParamExecutionParallelIO,         //!< Allow parallel IO execution
+    hipFileParamProfileNvtx,                 //!< Use NVTX profiler
+    hipFileParamPropertiesAllowSystemMemory, //!< Allow system memory use
+    hipFileParamUsePcip2pdma,                //!< Use P2P DMA
+    hipFileParamPreferIOUring,               //!< Prefer io_uring
+    hipFileParamForceOdirectMode,            //!< Force O_DIRECT mode
+    hipFileParamSkipTopologyDetection,       //!< Skip toplogy detection
+    hipFileParamStreamMemopsBypass,          //!< Bypass stream memory operations
 } hipFileBoolConfigParameter_t;
 
 /*!
@@ -1012,9 +1006,9 @@ typedef enum hipFileBoolConfigParameter_t {
  * @ingroup core
  */
 typedef enum hipFileStringConfigParameter_t {
-    hipFileParamLoggingLevel,   //!<
-    hipFileParamEnvLogfilePath, //!<
-    hipFileParamLogDir,         //!<
+    hipFileParamLoggingLevel,   //!< Logging level
+    hipFileParamEnvLogfilePath, //!< Logfile path
+    hipFileParamLogDir,         //!< Logfile directory
 } hipFileStringConfigParameter_t;
 
 /*!
