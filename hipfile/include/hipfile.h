@@ -997,7 +997,7 @@ typedef enum hipFileBoolConfigParameter_t {
     hipFileParamUsePcip2pdma,                //!< Use P2P DMA
     hipFileParamPreferIOUring,               //!< Prefer io_uring
     hipFileParamForceOdirectMode,            //!< Force O_DIRECT mode
-    hipFileParamSkipTopologyDetection,       //!< Skip toplogy detection
+    hipFileParamSkipTopologyDetection,       //!< Skip topology detection
     hipFileParamStreamMemopsBypass,          //!< Bypass stream memory operations
 } hipFileBoolConfigParameter_t;
 
