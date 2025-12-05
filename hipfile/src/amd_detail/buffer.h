@@ -86,7 +86,8 @@ public:
     /// @param buf Buffer pointer
     /// @param length Buffer length
     /// @param flags Buffer flags (unused)
-    Buffer(const void *buf, size_t length, int flags, Key<BufferMap>);
+    /// @param k  Key class instance (see key.h)
+    Buffer(const void *buf, size_t length, int flags, Key<BufferMap> k);
 
 private:
     /// @brief Pointer to a hip allocated buffer
