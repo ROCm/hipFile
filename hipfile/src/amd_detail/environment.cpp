@@ -28,3 +28,9 @@ Environment::allow_compat_mode()
 {
     return Environment::get<bool>(Environment::ALLOW_COMPAT_MODE);
 }
+
+optional<bool>
+Environment::force_compat_mode()
+{
+    return Environment::get<bool>(Environment::FORCE_COMPAT_MODE);
+}

@@ -34,6 +34,15 @@ public:
     /// nullopt if HIPFILE_ALLOW_COMPAT_MODE was unset or had a value other than
     /// true or false.
     static std::optional<bool> allow_compat_mode();
+
+    /// @brief Force I/O operations to use POSIX I/O APIs
+    ///
+    /// If enabled, I/O operations will be forced to use the POSIX I/O path.
+    /// If disabled (default), I/O operations can use the AIS path if conditions
+    /// are satisfied
+    static constexpr const char *const FORCE_COMPAT_MODE{"HIPFILE_FORCE_COMPAT_MODE"};
+
+    static std::optional<bool> force_compat_mode();
 };
 
 }
