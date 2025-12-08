@@ -30,7 +30,7 @@ public:
     MFileMap()
     {
     }
-    MOCK_METHOD(hipFileHandle_t, registerFile, (const UnregisteredFile &uf), (override));
+    MOCK_METHOD(hipFileHandle_t, registerFile, (UnregisteredFile && uf), (override));
     MOCK_METHOD(void, deregisterFile, (hipFileHandle_t fh), (override));
     MOCK_METHOD(std::shared_ptr<IFile>, getFile, (hipFileHandle_t), (override));
     MOCK_METHOD(void, clear, (), (override));

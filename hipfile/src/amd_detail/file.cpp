@@ -69,7 +69,7 @@ IFile::getHandle() const
     return reinterpret_cast<hipFileHandle_t>(const_cast<IFile *>(this));
 }
 
-File::File(const UnregisteredFile &uf, const PassKey<FileMap> &)
+File::File(UnregisteredFile &&uf, const PassKey<FileMap> &)
     : fd{uf.getFd()}, stx{uf.getStatx()}, status_flags{uf.getFlags()}, mountinfo{uf.getMountInfo()}
 {
 }
@@ -110,13 +110,13 @@ FileMap::getFile(hipFileHandle_t fh)
 }
 
 hipFileHandle_t
-FileMap::registerFile(const UnregisteredFile &uf)
+FileMap::registerFile(UnregisteredFile &&uf)
 {
     if (from_fd.end() != from_fd.find(uf.getFd())) {
         throw FileAlreadyRegistered();
     }
 
-    auto file                  = std::shared_ptr<IFile>(new File(uf, PassKey<FileMap>{}));
+    auto file                  = std::shared_ptr<IFile>(new File(std::move(uf), PassKey<FileMap>{}));
     from_fd[file->getFd()]     = file;
     from_fh[file->getHandle()] = file;
 

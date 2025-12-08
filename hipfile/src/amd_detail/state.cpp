@@ -120,7 +120,7 @@ DriverState::getBuffer(const void *buf, size_t length, int flags)
 //
 
 hipFileHandle_t
-DriverState::registerFile(const UnregisteredFile &uf)
+DriverState::registerFile(UnregisteredFile &&uf)
 {
     unique_lock<shared_mutex> ulock{state_mutex};
 
@@ -130,7 +130,7 @@ DriverState::registerFile(const UnregisteredFile &uf)
         ref_count++;
     }
 
-    return file_map->registerFile(uf);
+    return file_map->registerFile(std::move(uf));
 }
 
 void
