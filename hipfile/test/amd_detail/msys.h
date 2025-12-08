@@ -19,19 +19,19 @@ struct MSys : Sys {
     {
     }
     MOCK_METHOD(void *, mmap, (void *addr, size_t length, int prot, int flags, int fd, off_t offset),
-                (const override));
-    MOCK_METHOD(void, munmap, (void *addr, size_t length), (const override));
+                (const, override));
+    MOCK_METHOD(void, munmap, (void *addr, size_t length), (const, override));
 
-    MOCK_METHOD(ssize_t, pread, (int fd, void *buf, size_t count, off_t offset), (const override));
-    MOCK_METHOD(ssize_t, pwrite, (int fd, void *buf, size_t count, off_t offset), (const override));
+    MOCK_METHOD(ssize_t, pread, (int fd, void *buf, size_t count, off_t offset), (const, override));
+    MOCK_METHOD(ssize_t, pwrite, (int fd, void *buf, size_t count, off_t offset), (const, override));
 
-    MOCK_METHOD(void, syslog, (int priority, const char *msg), (const override));
+    MOCK_METHOD(void, syslog, (int priority, const char *msg), (const, override));
 
-    MOCK_METHOD(struct stat, fstat, (int fd), (const override));
+    MOCK_METHOD(struct stat, fstat, (int fd), (const, override));
     MOCK_METHOD(struct statx, statx, (int dirfd, const char *pathname, int flags, unsigned int mask),
-                (const override));
+                (const, override));
 
-    MOCK_METHOD(int, fcntl, (int fd, int op, uintptr_t arg), (const override));
+    MOCK_METHOD(int, fcntl, (int fd, int op, uintptr_t arg), (const, override));
 
     MOCK_METHOD(char *, getenv, (const char *name), (const, noexcept, override));
 };
