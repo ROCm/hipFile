@@ -18,6 +18,7 @@ set(TEST_SOURCE_FILES
     buffer.cpp
     driver.cpp
     environment.cpp
+    file-descriptor.cpp
     handle.cpp
     hip.cpp
     hipfile-api.cpp
