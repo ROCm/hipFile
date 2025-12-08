@@ -29,6 +29,8 @@ struct Sys {
     virtual int  open(const char *pathname, int flags, mode_t mode) const;
     virtual void close(int fd) const;
 
+    virtual void fdatasync(int fd) const;
+
     virtual void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset) const;
     virtual void  munmap(void *addr, size_t length) const;
 

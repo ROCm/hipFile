@@ -41,6 +41,12 @@ Sys::close(int fd) const
     throwOn<Sys::RuntimeError>(-1, ::close(fd));
 }
 
+void
+Sys::fdatasync(int fd) const
+{
+    throwOn<Sys::RuntimeError>(-1, ::fdatasync(fd));
+}
+
 void *
 Sys::mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset) const
 {
