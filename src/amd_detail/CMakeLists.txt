@@ -16,6 +16,7 @@ set(HIPFILE_SOURCES
     context.cpp
     environment.cpp
     file.cpp
+    file-descriptor.cpp
     hip.cpp
     hipfile.cpp
     mountinfo.cpp
