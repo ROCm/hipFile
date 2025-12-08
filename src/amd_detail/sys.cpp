@@ -66,6 +66,12 @@ Sys::pwrite(int fd, void *buf, size_t count, off_t offset) const
     return throwOn<Sys::RuntimeError>(-1, ::pwrite(fd, buf, count, offset));
 }
 
+ssize_t
+Sys::readlink(const char *pathname, char *buf, size_t bufsize)
+{
+    return throwOn<Sys::RuntimeError>(-1, ::readlink(pathname, buf, bufsize));
+}
+
 void
 Sys::syslog(int priority, const char *msg) const
 {

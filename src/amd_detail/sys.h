@@ -35,6 +35,8 @@ struct Sys {
     virtual ssize_t pread(int fd, void *buf, size_t count, off_t offset) const;
     virtual ssize_t pwrite(int fd, void *buf, size_t count, off_t offset) const;
 
+    virtual ssize_t readlink(const char *pathname, char *buf, size_t bufsize);
+
     virtual void syslog(int priority, const char *msg) const;
 
     virtual struct stat  fstat(int fd) const;
