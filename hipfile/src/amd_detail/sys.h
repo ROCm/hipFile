@@ -25,6 +25,8 @@ namespace hipFile {
 struct Sys {
     virtual ~Sys() = default;
 
+    virtual void close(int fd) const;
+
     virtual void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset) const;
     virtual void  munmap(void *addr, size_t length) const;
 

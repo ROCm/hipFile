@@ -18,6 +18,7 @@ struct MSys : Sys {
     MSys() : co{this}
     {
     }
+    MOCK_METHOD(void, close, (int), (const, override));
     MOCK_METHOD(void *, mmap, (void *addr, size_t length, int prot, int flags, int fd, off_t offset),
                 (const, override));
     MOCK_METHOD(void, munmap, (void *addr, size_t length), (const, override));
