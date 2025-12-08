@@ -128,7 +128,7 @@ void expect_file_registration(hipFile::MSys &msys, hipFile::MLibMountHelper &mli
 ///
 /// Mock methods will return the specified values
 void expect_file_registration(hipFile::MSys &msys, hipFile::MLibMountHelper &mlibmounthelper,
-                              struct statx stxbuf, int fcntl_flags, hipFile::MountInfo mountinfo);
+                              struct statx &stxbuf, int fcntl_flags, hipFile::MountInfo mountinfo);
 
 // ***********************************************************************
 //  ENUM VALUE HELPERS

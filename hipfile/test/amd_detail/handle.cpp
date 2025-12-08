@@ -40,7 +40,7 @@ expect_file_registration(MSys &msys, MLibMountHelper &mlibmounthelper)
 }
 
 void
-expect_file_registration(MSys &msys, MLibMountHelper &mlibmounthelper, struct statx stxbuf, int fcntl_flags,
+expect_file_registration(MSys &msys, MLibMountHelper &mlibmounthelper, struct statx &stxbuf, int fcntl_flags,
                          MountInfo mountinfo)
 {
     EXPECT_CALL(msys, statx).WillOnce(Return(stxbuf));
