@@ -23,6 +23,18 @@ throwOn(const L throw_value, R value)
     return value;
 }
 
+int
+Sys::open(const char *pathname, int flags)
+{
+    return throwOn<Sys::RuntimeError>(-1, ::open(pathname, flags));
+}
+
+int
+Sys::open(const char *pathname, int flags, mode_t mode)
+{
+    return throwOn<Sys::RuntimeError>(-1, ::open(pathname, flags, mode));
+}
+
 void
 Sys::close(int fd) const
 {
