@@ -74,7 +74,8 @@ RUN dnf makecache && \
         libmount-devel \
         llvm-devel \
         openssl-devel \
-        rocthrust-devel
+        rocthrust-devel \
+        rpm-build
 
 # Configure system linker for ROCm
 RUN cat <<EOF > /etc/ld.so.conf.d/rocm.conf
