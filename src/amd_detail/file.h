@@ -48,30 +48,17 @@ public:
     /// @param fd A valid file descriptor
     UnregisteredFile(int fd);
 
-    /// @return Returns the file descriptor
-    int getFd() const noexcept;
-
-    /// @return Returns the information provided by statx (2)
-    struct statx getStatx() const noexcept;
-
-    /// @return Returns the flags provided by fcntl (2)
-    int getFlags() const noexcept;
-
-    /// @brief Returns information obtained from /proc/self/mountinfo
-    std::optional<MountInfo> getMountInfo() const noexcept;
-
-private:
-    /// @brief The file descriptor
-    int m_fd;
+    /// @brief The file descriptor provided by the client
+    int fd;
 
     /// @brief Information provided by statx (2)
-    struct statx m_stx;
+    struct statx stx;
 
     /// @brief Flags provided by fcntl(2)
-    int m_flags;
+    int flags;
 
     /// @brief Information obtained from /proc/self/mountinfo
-    std::optional<MountInfo> m_mountinfo;
+    std::optional<MountInfo> mountinfo;
 };
 
 class IFile {
@@ -111,7 +98,7 @@ public:
     /// @brief Construct a registered file
     /// @param uf An unregistered file
     /// @param k  Key class instance (see passkey.h)
-    File(const UnregisteredFile &uf, const PassKey<FileMap> &k);
+    File(UnregisteredFile &&uf, const PassKey<FileMap> &k);
 
 private:
     /// @brief The file descriptor
@@ -136,7 +123,7 @@ public:
     /// @brief Registers a file. Files must be registered before they can be used with hipFile IO APIs
     /// @attention A unique_lock on HipFileMutex must be held
     /// @param uf An unregistered file
-    virtual hipFileHandle_t registerFile(const UnregisteredFile &uf);
+    virtual hipFileHandle_t registerFile(UnregisteredFile &&uf);
 
     /// @brief Deregisters the file associated with the provided file handle
     /// @attention A unique_lock on HipFileMutex must be held

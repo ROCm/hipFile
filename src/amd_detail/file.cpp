@@ -25,42 +25,17 @@ using std::vector;
 
 namespace hipFile {
 
-UnregisteredFile::UnregisteredFile(int fd)
-    : m_fd(fd), m_stx{Context<Sys>::get()->statx(fd, "", AT_EMPTY_PATH,
+UnregisteredFile::UnregisteredFile(int _fd)
+    : fd(_fd), stx{Context<Sys>::get()->statx(fd, "", AT_EMPTY_PATH,
 #if defined(STATX_DIOALIGN)
-                                                 STATX_TYPE | STATX_MODE | STATX_DIOALIGN
+                                              STATX_TYPE | STATX_MODE | STATX_DIOALIGN
 #else
-                                                 STATX_TYPE | STATX_MODE
+                                              STATX_TYPE | STATX_MODE
 #endif
-                                                 )},
-      m_flags{Context<Sys>::get()->fcntl(fd, F_GETFL, 0)},
-      m_mountinfo{
-          Context<LibMountHelper>::get()->getMountInfo(makedev(m_stx.stx_dev_major, m_stx.stx_dev_minor))}
+                                              )},
+      flags{Context<Sys>::get()->fcntl(fd, F_GETFL, 0)},
+      mountinfo{Context<LibMountHelper>::get()->getMountInfo(makedev(stx.stx_dev_major, stx.stx_dev_minor))}
 {
-}
-
-int
-UnregisteredFile::getFd() const noexcept
-{
-    return m_fd;
-}
-
-struct statx
-UnregisteredFile::getStatx() const noexcept
-{
-    return m_stx;
-}
-
-int
-UnregisteredFile::getFlags() const noexcept
-{
-    return m_flags;
-}
-
-optional<MountInfo>
-UnregisteredFile::getMountInfo() const noexcept
-{
-    return m_mountinfo;
 }
 
 hipFileHandle_t
@@ -69,8 +44,8 @@ IFile::getHandle() const
     return reinterpret_cast<hipFileHandle_t>(const_cast<IFile *>(this));
 }
 
-File::File(const UnregisteredFile &uf, const PassKey<FileMap> &)
-    : fd{uf.getFd()}, stx{uf.getStatx()}, status_flags{uf.getFlags()}, mountinfo{uf.getMountInfo()}
+File::File(UnregisteredFile &&uf, const PassKey<FileMap> &)
+    : fd{uf.fd}, stx{uf.stx}, status_flags{uf.flags}, mountinfo{uf.mountinfo}
 {
 }
 
@@ -110,13 +85,13 @@ FileMap::getFile(hipFileHandle_t fh)
 }
 
 hipFileHandle_t
-FileMap::registerFile(const UnregisteredFile &uf)
+FileMap::registerFile(UnregisteredFile &&uf)
 {
-    if (from_fd.end() != from_fd.find(uf.getFd())) {
+    if (from_fd.end() != from_fd.find(uf.fd)) {
         throw FileAlreadyRegistered();
     }
 
-    auto file                  = std::shared_ptr<IFile>(new File(uf, PassKey<FileMap>{}));
+    auto file                  = std::shared_ptr<IFile>(new File(std::move(uf), PassKey<FileMap>{}));
     from_fd[file->getFd()]     = file;
     from_fh[file->getHandle()] = file;
 

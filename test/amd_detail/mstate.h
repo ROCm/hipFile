@@ -34,7 +34,7 @@ public:
     MOCK_METHOD(void, deregisterBuffer, (const void *buf), (override));
     MOCK_METHOD(std::shared_ptr<IBuffer>, getBuffer, (const void *buf), (override));
     MOCK_METHOD(std::shared_ptr<IBuffer>, getBuffer, (const void *buf, size_t length, int flags), (override));
-    MOCK_METHOD(hipFileHandle_t, registerFile, (const UnregisteredFile &uf), (override));
+    MOCK_METHOD(hipFileHandle_t, registerFile, (UnregisteredFile && uf), (override));
     MOCK_METHOD(void, deregisterFile, (hipFileHandle_t fh), (override));
     MOCK_METHOD(std::shared_ptr<IFile>, getFile, (hipFileHandle_t fh), (override));
     MOCK_METHOD(file_buffer_pair, getFileAndBuffer,

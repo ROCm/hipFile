@@ -65,7 +65,7 @@ try {
     switch (descr->type) {
         case hipFileHandleTypeOpaqueFD: {
             UnregisteredFile uf{descr->handle.fd};
-            *fh = Context<DriverState>::get()->registerFile(uf);
+            *fh = Context<DriverState>::get()->registerFile(std::move(uf));
             return {hipFileSuccess, hipSuccess};
         }
         case hipFileHandleTypeOpaqueWin32:

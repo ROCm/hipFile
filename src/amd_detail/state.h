@@ -116,7 +116,7 @@ public:
     /// @brief Registers a file. Files must be registered before they can be used with hipFile IO APIs
     /// @param [in] uf An unregistered file
     /// @return A handle to be used when calling hipFile IO APIs
-    virtual hipFileHandle_t registerFile(const UnregisteredFile &uf);
+    virtual hipFileHandle_t registerFile(UnregisteredFile &&uf);
 
     /// @brief Deregisters the file associated with the provided file handle
     /// @param [in] fh The handle of the file to deregister
