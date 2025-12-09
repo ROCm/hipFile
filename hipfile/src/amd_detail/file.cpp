@@ -56,6 +56,18 @@ UnregisteredFile::getFd() const noexcept
     return m_fd;
 }
 
+FileDescriptor &&
+UnregisteredFile::takeFdBuffered(const PassKey<File> &) noexcept
+{
+    return std::move(m_fd_buffered);
+}
+
+FileDescriptor &&
+UnregisteredFile::takeFdUnbuffered(const PassKey<File> &) noexcept
+{
+    return std::move(m_fd_unbuffered);
+}
+
 struct statx
 UnregisteredFile::getStatx() const noexcept
 {
@@ -81,7 +93,9 @@ IFile::getHandle() const
 }
 
 File::File(UnregisteredFile &&uf, const PassKey<FileMap> &)
-    : fd{uf.getFd()}, stx{uf.getStatx()}, status_flags{uf.getFlags()}, mountinfo{uf.getMountInfo()}
+    : fd{uf.getFd()}, fd_buffered{uf.takeFdBuffered(PassKey<File>{})},
+      fd_unbuffered{uf.takeFdUnbuffered(PassKey<File>{})}, stx{uf.getStatx()}, status_flags{uf.getFlags()},
+      mountinfo{uf.getMountInfo()}
 {
 }
 
@@ -89,6 +103,18 @@ int
 File::getFd() const
 {
     return fd;
+}
+
+int
+File::getFdBuffered() const
+{
+    return fd_buffered.get();
+}
+
+int
+File::getFdUnbuffered() const
+{
+    return fd_unbuffered.get();
 }
 
 const struct statx &

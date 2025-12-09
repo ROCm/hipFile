@@ -23,6 +23,7 @@
 #include <memory>
 #include <optional>
 #include <stdexcept>
+#include <sys/eventfd.h>
 
 using namespace hipFile;
 using namespace testing;
@@ -143,11 +144,18 @@ TEST_F(HipFileHandle, register_handle_internal_linux_fd)
 TEST_F(HipFileHandle, file_initialization)
 {
     int          fd{0x12345678};
-    int          fd_buffered{0x33445566};
-    int          fd_unbuffered{0x77889900};
     int          status_flags{0x789ABCDE};
     struct statx stxbuf;
     memset(&stxbuf, 0xA5, sizeof(stxbuf));
+
+    // FileDescriptor will call close() on file.fd_buffered and file.fd_unbuffered
+    // _after_ StrictMock<Sys> is destroyed. Return eventfds when the client
+    // fd is duplicated so that Sys::close() has a valid file descriptor to
+    // close.
+    int fd_buffered{eventfd(0, 0)};
+    ASSERT_NE(fd_buffered, -1);
+    int fd_unbuffered{eventfd(0, 0)};
+    ASSERT_NE(fd_unbuffered, -1);
 
     MountInfo mountinfo;
     mountinfo.type                         = FilesystemType::ext4;
@@ -160,7 +168,6 @@ TEST_F(HipFileHandle, file_initialization)
         .fd_buffered(fd_buffered)
         .fd_unbuffered(fd_unbuffered)
         .build();
-    EXPECT_CALL(msys, close).Times(2);
     auto fh{Context<DriverState>::get()->registerFile(fd)};
     auto file{Context<DriverState>::get()->getFile(fh)};
 
@@ -172,6 +179,8 @@ TEST_F(HipFileHandle, file_initialization)
     EXPECT_EQ(mountinfo.type, file->getMountInfo().value().type);
     EXPECT_EQ(mountinfo.options.ext4.journaling_mode,
               file->getMountInfo().value().options.ext4.journaling_mode);
+    EXPECT_EQ(fd_buffered, file->getFdBuffered());
+    EXPECT_EQ(fd_unbuffered, file->getFdUnbuffered());
 }
 
 TEST_F(HipFileHandle, register_handle_internal_linux_fd_already_registered)
@@ -395,6 +404,31 @@ TEST_F(HipFileHandle, UnregistgeredFileClosesDupedFileDescriptorsWhenDestroyed)
     EXPECT_CALL(msys, close(fd_buffered));
     EXPECT_CALL(msys, close(fd_unbuffered));
     UnregisteredFile(97);
+}
+
+TEST_F(HipFileHandle, FileClosesDupedFileDescriptorsWhenDestroyed)
+{
+    int fd{0xABBA};
+    int fd_buffered{0x0D06F00D};
+    int fd_unbuffered{0x0BADF00D};
+
+    // To get a File we need to go through the registration process which
+    // creates and consumes an UnregisteredFile to create a file
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper)
+        .fd_buffered(fd_buffered)
+        .fd_unbuffered(fd_unbuffered)
+        .build();
+
+    // FileDescriptors managing fd_buffered and fd_unbuffered are moved from
+    // UnregisteredFile to File.  The file descriptors should not be closed when
+    // they are transferred
+    auto file_handle{Context<DriverState>::get()->registerFile(UnregisteredFile{fd})};
+
+    // Now that file owns fd_buffered and fd_unbuffered, they should be closed
+    // when file is unregistered and ultimately destroyed
+    EXPECT_CALL(msys, close(fd_buffered));
+    EXPECT_CALL(msys, close(fd_unbuffered));
+    Context<DriverState>::get()->deregisterFile(file_handle);
 }
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

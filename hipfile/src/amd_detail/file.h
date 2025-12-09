@@ -39,6 +39,8 @@ struct FileOperationsOutstanding : public std::runtime_error {
     }
 };
 
+class File;
+
 class UnregisteredFile {
 public:
     /// @brief Construct an unregistered file
@@ -51,6 +53,12 @@ public:
 
     /// @return Returns the file descriptor
     int getFd() const noexcept;
+
+    /// @return Moves m_fd_buffered out of the instance
+    FileDescriptor &&takeFdBuffered(const PassKey<File> &) noexcept;
+
+    /// @return Moves m_fd_unbuffered out of the instance
+    FileDescriptor &&takeFdUnbuffered(const PassKey<File> &) noexcept;
 
     /// @return Returns the information provided by statx (2)
     struct statx getStatx() const noexcept;
@@ -90,6 +98,8 @@ public:
     virtual hipFileHandle_t getHandle() const;
 
     virtual int                      getFd() const             = 0;
+    virtual int                      getFdBuffered() const     = 0;
+    virtual int                      getFdUnbuffered() const   = 0;
     virtual const struct statx      &getStatx() const noexcept = 0;
     virtual int                      getStatusFlags() const    = 0;
     virtual std::optional<MountInfo> getMountInfo() const      = 0;
@@ -111,6 +121,8 @@ public:
     File &operator=(File &&) = delete;
 
     virtual int                      getFd() const override;
+    virtual int                      getFdBuffered() const override;
+    virtual int                      getFdUnbuffered() const override;
     virtual const struct statx      &getStatx() const noexcept override;
     virtual int                      getStatusFlags() const override;
     virtual std::optional<MountInfo> getMountInfo() const override;
@@ -121,8 +133,14 @@ public:
     File(UnregisteredFile &&uf, const PassKey<FileMap> &k);
 
 private:
-    /// @brief The file descriptor
+    /// @brief The client's file descriptor
     int fd;
+
+    /// @brief hipFile's buffered duplicate of the client file descriptor
+    FileDescriptor fd_buffered;
+
+    /// @brief hipFile's unbuffered duplicate of the client file descriptor
+    FileDescriptor fd_unbuffered;
 
     /// @brief File status information obtained from statx (2)
     struct statx stx;
