@@ -16,6 +16,8 @@ permissions:
   packages: read
 jobs:
   compile_on_AMD:
+    outputs:
+      ais_hipfile_version: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_VERSION }}
     runs-on: [ubuntu-24.04]
     steps:
       - name: Set early AIS CI environment variables
@@ -118,7 +120,11 @@ jobs:
       # We should only have a single package built so we can reasonably
       # Just use a glob pattern on the expected package.
       # For now, hardcode to the default DEV release.
+      # (We will also hardcode arch as well.)
+      # We also need to workaround ${GITHUB_OUTPUT} not being made available
+      # from within the container.
       - name: Capture package metadata
+        id: pkg-metadata
         run: |
           docker exec \
             -t \
@@ -127,10 +133,14 @@ jobs:
             /bin/bash -c '
               ${{
                 inputs.platform == 'ubuntu' &&
-                'dpkg-deb -I hipfile-dev*.deb' ||
-                'rpm -qi hipfile-devel*.rpm'
+                'dpkg-deb -f hipfile-dev*.deb "Version"' ||
+                'rpm -qp --qf "%{VERSION}" hipfile-devel*.rpm'
               }}
-            '
+            ' | sed 's|^|AIS_HIPFILE_VERSION=|' >> "$GITHUB_OUTPUT"
+      - name: Validate Metadata stored correctly
+        run: |
+          echo "hipFile package version: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_VERSION }}"
+          if [[ -z "${{ steps.pkg-metadata.outputs.AIS_HIPFILE_VERSION }}" ]]; then exit 1; fi
       - name: Clean CMake build directories
         run: |
           docker exec \
