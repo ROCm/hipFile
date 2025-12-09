@@ -146,6 +146,20 @@ jobs:
         run: |
           echo "hipFile package version: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_VERSION }}"
           if [[ -z "${{ steps.pkg-metadata.outputs.AIS_HIPFILE_VERSION }}" ]]; then exit 1; fi
+      - name: Test installing the hipFile package.
+        run: |
+          docker exec \
+            -t \
+            -w /ais/hipFile/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              ${{
+                inputs.platform == 'ubuntu' && 'apt install -y ./hipfile-dev*.deb' ||
+                inputs.platform == 'rocky' && 'dnf install -y ./hipfile-devel*.rpm' ||
+                inputs.platform == 'suse' && 'zypper install -y --allow-unsigned-rpm ./hipfile-devel*.rpm' ||
+                'echo "Unknown platform."; exit 1'
+              }}
+            '
       - name: Clean CMake build directories
         run: |
           docker exec \
