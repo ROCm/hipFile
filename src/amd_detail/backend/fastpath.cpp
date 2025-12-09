@@ -156,7 +156,7 @@ Fastpath::io(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, si
     size_t             nbytes{};
     size_t             buflen{buffer->getLength()};
 
-    handle.fd = file->getClientFd();
+    handle.fd = file->getUnbufferedFd();
 
     if (file_offset < 0) {
         throw std::invalid_argument("Negative file offset");
