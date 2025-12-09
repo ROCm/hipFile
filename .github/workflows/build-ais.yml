@@ -125,22 +125,23 @@ jobs:
       # Just use a glob pattern on the expected package.
       # For now, hardcode to the default DEV release.
       # (We will also hardcode arch as well.)
-      # We also need to workaround ${GITHUB_OUTPUT} not being made available
-      # from within the container.
       - name: Capture package metadata
         id: pkg-metadata
         run: |
           docker exec \
+            -e "AIS_GITHUB_OUTPUT=${{ env.AIS_GHA_CMD_FILES_DOCKER_DIR }}/${GITHUB_OUTPUT##*/}" \
             -t \
             -w /ais/hipFile/build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
-              ${{
-                inputs.platform == 'ubuntu' &&
-                'dpkg-deb -f hipfile-dev*.deb "Version"' ||
-                'rpm -qp --qf "%{VERSION}" hipfile-devel*.rpm'
-              }}
-            ' | sed 's|^|AIS_HIPFILE_VERSION=|' >> "$GITHUB_OUTPUT"
+              echo "AIS_HIPFILE_VERSION=$(
+                ${{
+                  inputs.platform == 'ubuntu' &&
+                  'dpkg-deb -f hipfile-dev*.deb "Version"' ||
+                  'rpm -qp --qf "%{VERSION}" hipfile-devel*.rpm'
+                }}
+              )" >> "${AIS_GITHUB_OUTPUT}"
+            '
       - name: Validate Metadata stored correctly
         run: |
           echo "hipFile package version: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_VERSION }}"
