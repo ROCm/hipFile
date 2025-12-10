@@ -382,11 +382,13 @@ main()
     // Each thread should be able to create about 10 files
     const unsigned n_files_per_thread = 10;
 
-    if (nofile.rlim_cur <= n_file_reserved + (N_THREADS * n_files_per_thread)) {
+    // hipfile makes two additional file descriptors each time a file is
+    // registered
+    if (nofile.rlim_cur <= n_file_reserved + (N_THREADS * n_files_per_thread * 3)) {
         cerr << "RLIMIT_NOFILE (ulimit -n) is to low" << endl;
         exit(EXIT_FAILURE);
     }
-    n_free_files = nofile.rlim_cur - n_file_reserved;
+    n_free_files = (nofile.rlim_cur - n_file_reserved) / 3;
 
     array<thread, N_THREADS> threads;
 
