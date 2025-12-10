@@ -30,3 +30,18 @@ struct SystemTestOptions {
         sleep_seconds   = vm["sleep-on-exit"].as<uint32_t>();
     }
 };
+
+struct UnitTestOptions {
+    uint32_t sleep_seconds;
+    void     parseTestOptions(int argc, char **argv)
+    {
+        namespace po = boost::program_options;
+        po::options_description desc("System test options");
+        desc.add_options()("sleep-on-exit", po::value<uint32_t>()->default_value(0),
+                           "Sleep before returning to main");
+        po::variables_map vm;
+        po::store(po::parse_command_line(argc, argv, desc), vm);
+
+        sleep_seconds = vm["sleep-on-exit"].as<uint32_t>();
+    }
+};
