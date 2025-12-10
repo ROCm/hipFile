@@ -100,7 +100,7 @@ main(int argc, char *argv[])
         block_size = static_cast<size_t>(statbuf.st_blksize);
     }
 
-    if (open_file(dst_path, O_DIRECT | O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH, &dst_fd,
+    if (open_file(dst_path, O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH, &dst_fd,
                   &dst_handle)) {
         goto program_exit;
     }
@@ -109,7 +109,7 @@ main(int argc, char *argv[])
         goto close_dst;
     }
 
-    if (open_file(src_path, O_DIRECT | O_RDONLY, 0, &src_fd, &src_handle)) {
+    if (open_file(src_path, O_RDONLY, 0, &src_fd, &src_handle)) {
         goto close_dst;
     }
 
