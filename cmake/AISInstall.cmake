@@ -25,7 +25,14 @@ rocm_install(
 # AMD Runtime Dependencies
 if(CMAKE_HIP_PLATFORM STREQUAL "amd")
     rocm_package_add_dependencies(DEPENDS hip-runtime-amd) # Need minimum version
-    rocm_package_add_dependencies(DEPENDS libmount)
+    # Suppressing libmount RELEASE dependency for now for the following:
+    # 1) We currently default to DEV builds.
+    # 2) libmount naming convention is not consistent across distros.
+    #    We need to figure out the ideal method for handling this case.
+    #    openSUSE (RPM): libmount1
+    #    rocky    (RPM): libmount
+    #    Ubuntu   (DEB): libmount1
+    #rocm_package_add_dependencies(DEPENDS libmount)
 endif()
 
 # AMD Development Dependencies
