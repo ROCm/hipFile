@@ -40,6 +40,8 @@ struct ExpectUnregisteredFileBuilder {
     optional<struct statx> m_statx;
     optional<int>          m_fcntl_flags;
     optional<MountInfo>    m_mountinfo;
+    optional<int>          m_fd_buffered;
+    optional<int>          m_fd_unbuffered;
 
     ExpectUnregisteredFileBuilder(MSys &msys, MLibMountHelper &mlibmounthelper)
         : m_msys(msys), m_mlibmounthelper(mlibmounthelper)
@@ -61,6 +63,18 @@ struct ExpectUnregisteredFileBuilder {
     ExpectUnregisteredFileBuilder &mountinfo(const MountInfo &mountinfo)
     {
         m_mountinfo = mountinfo;
+        return *this;
+    }
+
+    ExpectUnregisteredFileBuilder &fd_buffered(int fd_buffered)
+    {
+        m_fd_buffered = fd_buffered;
+        return *this;
+    }
+
+    ExpectUnregisteredFileBuilder &fd_unbuffered(int fd_unbuffered)
+    {
+        m_fd_unbuffered = fd_unbuffered;
         return *this;
     }
 
@@ -91,6 +105,13 @@ struct ExpectUnregisteredFile {
         else {
             EXPECT_CALL(builder.m_mlibmounthelper, getMountInfo);
         }
+
+        EXPECT_CALL(builder.m_msys, fcntl(_, F_DUPFD_CLOEXEC, _))
+            .Times(2)
+            .WillOnce(Return(builder.m_fd_buffered ? builder.m_fd_buffered.value() : -1))
+            .WillOnce(Return(builder.m_fd_unbuffered ? builder.m_fd_unbuffered.value() : -1));
+
+        EXPECT_CALL(builder.m_msys, fcntl(_, F_SETFL, _)).Times(1);
     }
 };
 
@@ -122,6 +143,8 @@ TEST_F(HipFileHandle, register_handle_internal_linux_fd)
 TEST_F(HipFileHandle, file_initialization)
 {
     int          fd{0x12345678};
+    int          fd_buffered{0x33445566};
+    int          fd_unbuffered{0x77889900};
     int          status_flags{0x789ABCDE};
     struct statx stxbuf;
     memset(&stxbuf, 0xA5, sizeof(stxbuf));
@@ -134,7 +157,10 @@ TEST_F(HipFileHandle, file_initialization)
         .statx(stxbuf)
         .fcntl_flags(status_flags)
         .mountinfo(mountinfo)
+        .fd_buffered(fd_buffered)
+        .fd_unbuffered(fd_unbuffered)
         .build();
+    EXPECT_CALL(msys, close).Times(2);
     auto fh{Context<DriverState>::get()->registerFile(fd)};
     auto file{Context<DriverState>::get()->getFile(fh)};
 
@@ -308,6 +334,67 @@ TEST_F(HipFileHandle, deregister_handle_fails_when_operations_are_oustanding)
         hipFileHandleDeregister(fh);
     }
     hipFileHandleDeregister(fh);
+}
+
+TEST_F(HipFileHandle, UnregisteredFileUnsetsODirectOnFdBufferedWhenInstantiatedWithUnbufferedFile)
+{
+    int           fd{777777};
+    int           fd_buffered{888888};
+    int           fd_unbuffered{999999};
+    unsigned long fd_flags{~0UL}; // O_DIRECT flag (and all other flags) set
+
+    // Expectations for construction of UnregisteredFile
+    EXPECT_CALL(msys, statx);
+    EXPECT_CALL(msys, fcntl(fd, F_GETFL, 0)).WillOnce(Return(fd_flags));
+    EXPECT_CALL(mlibmounthelper, getMountInfo);
+    EXPECT_CALL(msys, fcntl(fd, F_DUPFD_CLOEXEC, 0))
+        .Times(2)
+        .WillOnce(Return(fd_buffered))
+        .WillOnce(Return(fd_unbuffered));
+    EXPECT_CALL(msys, fcntl(fd_buffered, F_SETFL, fd_flags & ~static_cast<unsigned long>(O_DIRECT))).Times(1);
+
+    // Expectations for destruction of UnregisteredFile
+    EXPECT_CALL(msys, close(fd_buffered));
+    EXPECT_CALL(msys, close(fd_unbuffered));
+
+    UnregisteredFile uf{fd};
+}
+
+TEST_F(HipFileHandle, UnregisteredFileSetsODirectOnFdUnbufferedWhenInstantiatedWithBufferedFile)
+{
+    int           fd{777777};
+    int           fd_buffered{888888};
+    int           fd_unbuffered{999999};
+    unsigned long fd_flags{~static_cast<unsigned long>(O_DIRECT)}; // All flags other than O_DIRECT are set
+
+    // Expectations for construction of UnregisteredFile
+    EXPECT_CALL(msys, statx);
+    EXPECT_CALL(msys, fcntl(fd, F_GETFL, 0)).WillOnce(Return(fd_flags));
+    EXPECT_CALL(mlibmounthelper, getMountInfo);
+    EXPECT_CALL(msys, fcntl(fd, F_DUPFD_CLOEXEC, 0))
+        .Times(2)
+        .WillOnce(Return(fd_buffered))
+        .WillOnce(Return(fd_unbuffered));
+    EXPECT_CALL(msys, fcntl(fd_unbuffered, F_SETFL, ~0UL)).Times(1);
+
+    // Expectations for destruction of UnregisteredFile
+    EXPECT_CALL(msys, close(fd_buffered));
+    EXPECT_CALL(msys, close(fd_unbuffered));
+
+    UnregisteredFile uf{fd};
+}
+
+TEST_F(HipFileHandle, UnregistgeredFileClosesDupedFileDescriptorsWhenDestroyed)
+{
+    int fd_buffered{0x0D06F00D};
+    int fd_unbuffered{0x0BADD00D};
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper)
+        .fd_buffered(fd_buffered)
+        .fd_unbuffered(fd_unbuffered)
+        .build();
+    EXPECT_CALL(msys, close(fd_buffered));
+    EXPECT_CALL(msys, close(fd_unbuffered));
+    UnregisteredFile(97);
 }
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

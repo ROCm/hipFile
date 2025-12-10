@@ -5,6 +5,7 @@
 
 #include "context.h"
 #include "file.h"
+#include "file-descriptor.h"
 #include "mountinfo.h"
 #include "passkey.h"
 #include "sys.h"
@@ -35,8 +36,18 @@ UnregisteredFile::UnregisteredFile(int fd)
                                                  )},
       m_flags{Context<Sys>::get()->fcntl(fd, F_GETFL, 0)},
       m_mountinfo{
-          Context<LibMountHelper>::get()->getMountInfo(makedev(m_stx.stx_dev_major, m_stx.stx_dev_minor))}
+          Context<LibMountHelper>::get()->getMountInfo(makedev(m_stx.stx_dev_major, m_stx.stx_dev_minor))},
+      m_fd_buffered(FileDescriptor(Context<Sys>::get()->fcntl(fd, F_DUPFD_CLOEXEC, 0))),
+      m_fd_unbuffered(FileDescriptor(Context<Sys>::get()->fcntl(fd, F_DUPFD_CLOEXEC, 0)))
 {
+    if (m_flags & O_DIRECT) {
+        Context<Sys>::get()->fcntl(m_fd_buffered.get(), F_SETFL,
+                                   static_cast<unsigned long>(m_flags & ~O_DIRECT));
+    }
+    else {
+        Context<Sys>::get()->fcntl(m_fd_unbuffered.get(), F_SETFL,
+                                   static_cast<unsigned long>(m_flags | O_DIRECT));
+    }
 }
 
 int

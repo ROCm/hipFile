@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "file-descriptor.h"
 #include "hipfile.h"
 #include "mountinfo.h"
 #include "passkey.h"
@@ -61,7 +62,7 @@ public:
     std::optional<MountInfo> getMountInfo() const noexcept;
 
 private:
-    /// @brief The file descriptor
+    /// @brief The file descriptor provided by the client
     int m_fd;
 
     /// @brief Information provided by statx (2)
@@ -72,6 +73,12 @@ private:
 
     /// @brief Information obtained from /proc/self/mountinfo
     std::optional<MountInfo> m_mountinfo;
+
+    /// @brief hipFile's buffered duplicate of the client file descriptor
+    FileDescriptor m_fd_buffered;
+
+    /// @brief hipFile's unbuffered duplicate of the client file descriptor
+    FileDescriptor m_fd_unbuffered;
 };
 
 class IFile {
