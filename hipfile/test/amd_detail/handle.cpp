@@ -26,26 +26,84 @@
 
 using namespace hipFile;
 using namespace testing;
+using namespace std;
 
 // Put tests inside the macros to suppress the global constructor
 // warnings
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 
-void
-expect_file_registration(MSys &msys, MLibMountHelper &mlibmounthelper)
+struct ExpectUnregisteredFile;
+
+struct ExpectUnregisteredFileBuilder {
+    MSys                  &m_msys;
+    MLibMountHelper       &m_mlibmounthelper;
+    optional<struct statx> m_statx;
+    optional<int>          m_fcntl_flags;
+    optional<MountInfo>    m_mountinfo;
+
+    ExpectUnregisteredFileBuilder(MSys &msys, MLibMountHelper &mlibmounthelper)
+        : m_msys(msys), m_mlibmounthelper(mlibmounthelper)
+    {
+    }
+
+    ExpectUnregisteredFileBuilder &statx(const struct statx &statxbuf)
+    {
+        m_statx = statxbuf;
+        return *this;
+    }
+
+    ExpectUnregisteredFileBuilder &fcntl_flags(int flags)
+    {
+        m_fcntl_flags = flags;
+        return *this;
+    }
+
+    ExpectUnregisteredFileBuilder &mountinfo(const MountInfo &mountinfo)
+    {
+        m_mountinfo = mountinfo;
+        return *this;
+    }
+
+    ExpectUnregisteredFile build();
+};
+
+struct ExpectUnregisteredFile {
+    ExpectUnregisteredFile(const ExpectUnregisteredFileBuilder &builder)
+    {
+        if (builder.m_statx) {
+            EXPECT_CALL(builder.m_msys, statx).WillOnce(Return(builder.m_statx.value()));
+        }
+        else {
+            EXPECT_CALL(builder.m_msys, statx);
+        }
+
+        if (builder.m_fcntl_flags) {
+            EXPECT_CALL(builder.m_msys, fcntl(_, F_GETFL, 0)).WillOnce(Return(builder.m_fcntl_flags.value()));
+        }
+        else {
+            EXPECT_CALL(builder.m_msys, fcntl(_, F_GETFL, 0));
+        }
+
+        if (builder.m_mountinfo) {
+            EXPECT_CALL(builder.m_mlibmounthelper, getMountInfo)
+                .WillOnce(Return(builder.m_mountinfo.value()));
+        }
+        else {
+            EXPECT_CALL(builder.m_mlibmounthelper, getMountInfo);
+        }
+    }
+};
+
+ExpectUnregisteredFile
+ExpectUnregisteredFileBuilder::build()
 {
-    EXPECT_CALL(msys, statx);
-    EXPECT_CALL(msys, fcntl(_, F_GETFL, 0));
-    EXPECT_CALL(mlibmounthelper, getMountInfo);
+    return ExpectUnregisteredFile(*this);
 }
 
 void
-expect_file_registration(MSys &msys, MLibMountHelper &mlibmounthelper, struct statx stxbuf, int fcntl_flags,
-                         MountInfo mountinfo)
+expect_file_registration(MSys &msys, MLibMountHelper &mlibmounthelper)
 {
-    EXPECT_CALL(msys, statx).WillOnce(Return(stxbuf));
-    EXPECT_CALL(msys, fcntl(_, F_GETFL, 0)).WillOnce(Return(fcntl_flags));
-    EXPECT_CALL(mlibmounthelper, getMountInfo).WillOnce(Return(mountinfo));
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper).build();
 }
 
 struct HipFileHandle : public HipFileOpened {
@@ -57,7 +115,7 @@ TEST_F(HipFileHandle, register_handle_internal_linux_fd)
 {
     int fd{0xBADF00D};
 
-    expect_file_registration(msys, mlibmounthelper);
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper).build();
     ASSERT_NE(Context<DriverState>::get()->registerFile(fd), nullptr);
 }
 
@@ -72,7 +130,11 @@ TEST_F(HipFileHandle, file_initialization)
     mountinfo.type                         = FilesystemType::ext4;
     mountinfo.options.ext4.journaling_mode = ExtJournalingMode::ordered;
 
-    expect_file_registration(msys, mlibmounthelper, stxbuf, status_flags, mountinfo);
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper)
+        .statx(stxbuf)
+        .fcntl_flags(status_flags)
+        .mountinfo(mountinfo)
+        .build();
     auto fh{Context<DriverState>::get()->registerFile(fd)};
     auto file{Context<DriverState>::get()->getFile(fh)};
 
@@ -89,9 +151,9 @@ TEST_F(HipFileHandle, file_initialization)
 TEST_F(HipFileHandle, register_handle_internal_linux_fd_already_registered)
 {
     int fd{0xBADF00D};
-    expect_file_registration(msys, mlibmounthelper);
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper).build();
     ASSERT_NE(Context<DriverState>::get()->registerFile(fd), nullptr);
-    expect_file_registration(msys, mlibmounthelper);
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper).build();
     ASSERT_THROW(Context<DriverState>::get()->registerFile(fd), FileAlreadyRegistered);
 }
 
@@ -103,7 +165,7 @@ TEST_F(HipFileHandle, register_handle_linux_fd)
     rfd.type      = hipFileHandleTypeOpaqueFD;
     rfd.handle.fd = 0xBADF00D;
 
-    expect_file_registration(msys, mlibmounthelper);
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper).build();
     ASSERT_EQ(hipFileHandleRegister(&fh, &rfd), HIPFILE_SUCCESS);
     ASSERT_NE(fh, nullptr);
 }
@@ -158,10 +220,10 @@ TEST_F(HipFileHandle, register_handle_linux_fd_already_registered)
     rfd.type      = hipFileHandleTypeOpaqueFD;
     rfd.handle.fd = 0xBADF00D;
 
-    expect_file_registration(msys, mlibmounthelper);
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper).build();
     ASSERT_EQ(hipFileHandleRegister(&fh, &rfd), HIPFILE_SUCCESS);
     ASSERT_NE(fh, nullptr);
-    expect_file_registration(msys, mlibmounthelper);
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper).build();
     ASSERT_EQ(hipFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileHandleAlreadyRegistered));
 }
 
@@ -200,7 +262,7 @@ TEST_F(HipFileHandle, deregister_handle_doesnt_throw_if_not_registered)
 
 TEST_F(HipFileHandle, deregister_handle_internal)
 {
-    expect_file_registration(msys, mlibmounthelper);
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper).build();
     auto fh = Context<DriverState>::get()->registerFile(0xBADF00D);
     Context<DriverState>::get()->deregisterFile(fh);
     ASSERT_THROW(Context<DriverState>::get()->deregisterFile(fh), FileNotRegistered);
@@ -214,7 +276,7 @@ TEST_F(HipFileHandle, deregister_handle)
     rfd.type      = hipFileHandleTypeOpaqueFD;
     rfd.handle.fd = 0xBADF00D;
 
-    expect_file_registration(msys, mlibmounthelper);
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper).build();
     ASSERT_EQ(hipFileHandleRegister(&fh, &rfd), HIPFILE_SUCCESS);
     hipFileHandleDeregister(fh);
     hipFileHandleDeregister(fh);
@@ -222,7 +284,7 @@ TEST_F(HipFileHandle, deregister_handle)
 
 TEST_F(HipFileHandle, deregister_handle_internal_fails_when_operations_are_oustanding)
 {
-    expect_file_registration(msys, mlibmounthelper);
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper).build();
     auto fh = Context<DriverState>::get()->registerFile(0xBADF00D);
     {
         auto file = Context<DriverState>::get()->getFile(fh);
@@ -239,7 +301,7 @@ TEST_F(HipFileHandle, deregister_handle_fails_when_operations_are_oustanding)
     rfd.type      = hipFileHandleTypeOpaqueFD;
     rfd.handle.fd = 0xBADF00D;
 
-    expect_file_registration(msys, mlibmounthelper);
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper).build();
     ASSERT_EQ(hipFileHandleRegister(&fh, &rfd), HIPFILE_SUCCESS);
     {
         auto file = Context<DriverState>::get()->getFile(fh);
