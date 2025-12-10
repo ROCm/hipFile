@@ -2,7 +2,6 @@
 [global]
 ioengine=libhipfile
 rocm_io=hipfile
-direct=1
 gpu_dev_ids=0
 filename=fio.dat
 size=1G
