@@ -142,6 +142,22 @@ jobs:
                 }}
               )" >> "${AIS_GITHUB_OUTPUT}"
             '
+      # This information will be nice to have for debugging CPack configuration.
+      - name: Print package metadata for debugging.
+        run: |
+          docker exec \
+            -t \
+            -w /ais/hipFile/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              echo "$(
+                ${{
+                  inputs.platform == 'ubuntu' &&
+                  'dpkg-deb -I hipfile-dev*.deb' ||
+                  'rpm -qpi --requires hipfile-devel*.rpm'
+                }}
+              )"
+            '
       - name: Validate Metadata stored correctly
         run: |
           echo "hipFile package version: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_VERSION }}"
