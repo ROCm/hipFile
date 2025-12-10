@@ -4,6 +4,7 @@
 
 include(AISAddExecutable)
 include(AISUseGTest)
+find_package(Boost COMPONENTS program_options REQUIRED)
 
 set(SHARED_SOURCE_FILES
     "${CMAKE_SOURCE_DIR}/hipfile/test/common/magic-word.cpp"
@@ -22,6 +23,7 @@ set(TEST_SOURCE_FILES
     hipfile-api.cpp
     fallback.cpp
     fastpath.cpp
+    main.cpp
     mountinfo.cpp
     stream.cpp
 )
@@ -44,7 +46,7 @@ target_compile_options(internal_tests PRIVATE "-UNDEBUG")
 # Add gtest
 target_link_libraries(internal_tests PRIVATE GTest::gmock)
 target_link_libraries(internal_tests PRIVATE GTest::gtest)
-target_link_libraries(internal_tests PRIVATE GTest::gtest_main)
+target_link_libraries(internal_tests PRIVATE Boost::program_options)
 
 ais_gtest_discover_tests(
     internal_tests
