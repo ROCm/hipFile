@@ -33,6 +33,9 @@ function(ais_add_executable)
     add_executable(${arg_NAME} ${arg_SRCS})
     ais_set_compiler_flags(${arg_NAME})
 
+    # Turn sanitizers off for executables
+    target_compile_options(${arg_NAME} PRIVATE -fno-sanitize=all)
+
     get_target_property(linker_language ${arg_NAME} LINKER_LANGUAGE)
     if(linker_language STREQUAL "HIP")
         target_link_libraries(${arg_NAME} PRIVATE hip::device)
