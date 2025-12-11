@@ -120,10 +120,10 @@ jobs:
             /bin/bash -c '
               cpack -G ${{ inputs.platform == 'ubuntu' && 'DEB' || 'RPM' }}
             '
-      # CI can't really peer into CMake to capture this data ahead of time.
-      # We should only have a single package built so we can reasonably
-      # Just use a glob pattern on the expected package.
-      # For now, hardcode to the default DEV release.
+      # CI is unable to peer into CMake to capture this data ahead of time.
+      # We should only produce a single package so we can use a glob pattern
+      # to complete the relative path to select the package.
+      # For now, hardcode the glob pattern to the default DEV release package name.
       # (We will also hardcode arch as well.)
       - name: Capture package metadata
         id: pkg-metadata
