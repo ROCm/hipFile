@@ -184,6 +184,11 @@ jobs:
                 )
               }}
             '
+      - name: Copy hipFile package out of the container
+        run: |
+          docker cp \
+            "${AIS_CONTAINER_NAME}:/ais/hipFile/build/${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_FILENAME }}" \
+            ${GITHUB_WORKSPACE}
       - name: Clean CMake build directories
         run: |
           docker exec \
