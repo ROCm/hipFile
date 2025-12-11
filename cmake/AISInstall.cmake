@@ -71,5 +71,5 @@ set(CPACK_RPM_PACKAGE_LICENSE "MIT")
 rocm_create_package(
     NAME "hipFile"
     DESCRIPTION "The hipFile library"
-    MAINTAINER "hipfile-maintainer@amd.com <hipfile-maintainer@amd.com>"
+    MAINTAINER "hipfile-maintainer@amd.com"
 )
