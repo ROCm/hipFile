@@ -18,7 +18,7 @@ permissions:
 jobs:
   compile_on_AMD:
     outputs:
-      ais_hipfile_version: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_VERSION }}
+      ais_hipfile_pkg_version: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_VERSION }}
     runs-on: [ubuntu-24.04]
     steps:
       - name: Set early AIS CI environment variables
@@ -134,7 +134,7 @@ jobs:
             -w /ais/hipFile/build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
-              echo "AIS_HIPFILE_VERSION=$(
+              echo "AIS_HIPFILE_PKG_VERSION=$(
                 ${{
                   inputs.platform == 'ubuntu' &&
                   'dpkg-deb -f hipfile-dev*.deb "Version"' ||
@@ -160,8 +160,8 @@ jobs:
             '
       - name: Validate Metadata stored correctly
         run: |
-          echo "hipFile package version: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_VERSION }}"
-          if [[ -z "${{ steps.pkg-metadata.outputs.AIS_HIPFILE_VERSION }}" ]]; then exit 1; fi
+          echo "hipFile package version: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_VERSION }}"
+          if [[ -z "${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_VERSION }}" ]]; then exit 1; fi
       - name: Test installing the hipFile package.
         run: |
           docker exec \
