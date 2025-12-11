@@ -22,7 +22,7 @@ function(ais_add_docs_target AIS_DOC_PRETTY_NAME)
     # Set Doxyfile variables
     set(AIS_DOXYFILE_PROJECT_NAME  "${AIS_DOC_PRETTY_NAME}")
     set(AIS_DOXYFILE_PROJECT_BRIEF "${AIS_DOC_PRETTY_NAME} API documentation")
-    set(AIS_DOXYFILE_INPUT         "${CMAKE_SOURCE_DIR}/${AIS_DOC_LOWER_NAME}/include")
+    set(AIS_DOXYFILE_INPUT         "${CMAKE_SOURCE_DIR}/include")
 
     # Set the path to the documentation
     set(AIS_DOC_PATH "${CMAKE_CURRENT_BINARY_DIR}/${AIS_DOC_LOWER_NAME}")

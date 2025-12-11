@@ -5,9 +5,9 @@
 # CUDA-backed hipFile
 
 set(HIPFILE_SOURCES
+    "${HIPFILE_SRC_COMMON_PATH}/hipfile-common.cpp"
     hipfile.cpp
     hipfile-cufile.cpp
-    ../common/hipfile-common.cpp
 )
 
 # Will create hipfile_(static|shared)

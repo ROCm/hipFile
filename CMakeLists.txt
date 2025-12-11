@@ -28,9 +28,9 @@ set(AIS_LIBRARY_VERSION "${AIS_LIBRARY_MAJOR}.${AIS_LIBRARY_MINOR}.${AIS_LIBRARY
 # includes things like reordering struct fields that don't break the API.
 set(AIS_LIBRARY_SOVERSION "${AIS_LIBRARY_MAJOR}")
 
-project("ais"
+project("hipfile"
     VERSION ${AIS_LIBRARY_VERSION}
-    DESCRIPTION "High-performance I/O for AMD's ROCm platform"
+    DESCRIPTION "Direct-to-GPU IO for AMD's ROCm platform"
     LANGUAGES C CXX HIP
 )
 
@@ -215,9 +215,40 @@ if(NOT AIS_CAPABLE_DIR)
 endif()
 
 #-----------------------------------------------------------------------------
-# Subdirectories to configure/build
+# Configure hipFile
 #-----------------------------------------------------------------------------
-add_subdirectory(hipfile)
+
+# Set the path to the include directories for later use
+set(HIPFILE_INCLUDE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set(HIPFILE_AMD_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/amd_detail")
+set(HIPFILE_NVIDIA_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/nvidia_detail")
+set(HIPFILE_SRC_COMMON_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/common")
+set(HIPFILE_TEST_COMMON_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test/common")
+set(HIPFILE_AMD_TEST_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test/amd_detail")
+
+# Add the src directory depending on the HIP platform
+if(AIS_BUILD_NVIDIA_DETAIL)
+    add_subdirectory(src/nvidia_detail)
+else()
+    add_subdirectory(src/amd_detail)
+endif()
+
+# Add the testing directories
+if(BUILD_TESTING)
+    add_subdirectory(test)
+endif()
+if(BUILD_TESTING AND AIS_BUILD_AMD_DETAIL)
+    add_subdirectory(test/amd_detail)
+endif()
+
+# Add the aiscp example directory
+if(AIS_BUILD_EXAMPLES)
+    add_subdirectory(examples/aiscp)
+endif()
+
+#-----------------------------------------------------------------------------
+# Configure docs
+#-----------------------------------------------------------------------------
 if(AIS_BUILD_DOCS)
     add_subdirectory(docs)
 endif()

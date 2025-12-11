@@ -7,7 +7,7 @@ include(AISUseGTest)
 find_package(Boost COMPONENTS program_options REQUIRED)
 
 set(SHARED_SOURCE_FILES
-    "${CMAKE_SOURCE_DIR}/hipfile/test/common/magic-word.cpp"
+    "${HIPFILE_TEST_COMMON_PATH}/magic-word.cpp"
 )
 
 set(TEST_SOURCE_FILES
@@ -31,7 +31,7 @@ set(TEST_SOURCE_FILES
 set(TEST_SYSINCLS
     ${HIPFILE_AMD_SOURCE_PATH}
     ${HIPFILE_INCLUDE_PATH}
-    ${HIPFILE_TEST_INCLUDE_PATH}
+    ${HIPFILE_TEST_COMMON_PATH}
     ${HIPFILE_AMD_TEST_PATH}
 )
 

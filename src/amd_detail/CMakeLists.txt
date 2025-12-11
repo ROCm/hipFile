@@ -5,7 +5,7 @@
 # ROCm-backed hipFile
 
 set(HIPFILE_SOURCES
-    ../common/hipfile-common.cpp
+    "${HIPFILE_SRC_COMMON_PATH}/hipfile-common.cpp"
     async.cpp
     backend/asyncop-fallback.cpp
     backend/fallback.cpp
