@@ -43,13 +43,12 @@ that will be set by CMake.
 Options
 |Option|Default|Purpose|
 |------|-------|-------|
-|AIS\_USE\_CLANG\_TIDY|OFF|Run the `clang-tidy` tool|
-|AIS\_USE\_IWYU|OFF|Run the `include-what-you-use` tool|
+|AIS\_BUILD\_DOCS|OFF|Build API documentation (requires Doxygen)|
+|AIS\_BUILD\_EXAMPLES|ON|Build example programs|
+|AIS\_USE\_CLANG\_TIDY|OFF|Run the `clang-tidy` tool (clang only)|
+|AIS\_USE\_CODE\_COVERAGE|OFF|Generate code coverage information when tests are run (clang only)|
+|AIS\_USE\_IWYU|OFF|Run the `include-what-you-use` tool (clang only)|
 |AIS\_WARN\_UNSAFE\_BUFFER\_OPS|ON|Scan code for unsafe buffer operations (clang only, OFF for others)|
-|BUILD\_AIS\_DOCS|OFF|Build API documentation (requires Doxygen)|
-|BUILD\_AISCP|ON|Build `aiscp` example program|
-|BUILD\_CODE\_COVERAGE|OFF|Generate code coverage information when tests are run|
-|BUILD\_TESTING|ON|Build the test suite|
 
 Sanitizer options
 |Option|Default|Purpose|
@@ -99,7 +98,7 @@ following will add the default ROCm version of the tools to the path.
 export PATH=/opt/rocm/bin:/opt/rocm/llvm/bin:"$PATH"
 ```
 
-To generate code coverage information, the `BUILD_CODE_COVERAGE`
+To generate code coverage information, the `AIS_USE_CODE_COVERAGE`
 flag must be enabled when configuring. Run the build and test steps,
 then run the following to generate the summaries.
 ```

@@ -14,7 +14,7 @@ set(HIPFILE_TEST_INCLUDE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test/common")
 set(HIPFILE_AMD_TEST_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test/amd_detail")
 
 # Add the src directory depending on the HIP platform
-if(BUILD_NVIDIA_DETAIL)
+if(AIS_BUILD_NVIDIA_DETAIL)
     add_subdirectory(src/nvidia_detail)
 else()
     add_subdirectory(src/amd_detail)
@@ -24,11 +24,11 @@ endif()
 if(BUILD_TESTING)
     add_subdirectory(test)
 endif()
-if(BUILD_TESTING AND BUILD_AMD_DETAIL)
+if(BUILD_TESTING AND AIS_BUILD_AMD_DETAIL)
     add_subdirectory(test/amd_detail)
 endif()
 
 # Add the aiscp example directory
-if(BUILD_AISCP)
+if(AIS_BUILD_EXAMPLES)
     add_subdirectory(examples/aiscp)
 endif()

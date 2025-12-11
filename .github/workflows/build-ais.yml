@@ -68,8 +68,8 @@ jobs:
                 -DCMAKE_CXX_COMPILER=amdclang++ \
                 -DCMAKE_CXX_FLAGS="-Werror" \
                 -DCMAKE_HIP_PLATFORM=amd \
-                -DBUILD_AIS_DOCS=ON \
-                -DBUILD_CODE_COVERAGE=ON \
+                -DAIS_BUILD_DOCS=ON \
+                -DAIS_USE_CODE_COVERAGE=ON \
                 ..
             '
       - name: Build hipFile for the AMD platform (amdclang++)
@@ -174,7 +174,7 @@ jobs:
                 -DCMAKE_CXX_COMPILER=${{ matrix.alternate_compilers }} \
                 -DCMAKE_CXX_FLAGS="-Werror" \
                 -DCMAKE_HIP_PLATFORM=amd \
-                -DBUILD_AIS_DOCS=ON \
+                -DAIS_BUILD_DOCS=ON \
                 ..
             '
       - name: Build hipFile for the AMD platform (${{ matrix.alternate_compilers }})
@@ -255,7 +255,7 @@ jobs:
                 -DCMAKE_CXX_COMPILER=amdclang++ \
                 -DCMAKE_CXX_FLAGS="-Werror" \
                 -DCMAKE_HIP_PLATFORM=amd \
-                -DBUILD_AIS_DOCS=ON \
+                -DAIS_BUILD_DOCS=ON \
                 ..
             '
       - name: Build hipFile for the AMD platform (amdclang++)
@@ -398,7 +398,7 @@ jobs:
                 -DCMAKE_CXX_COMPILER=${{ matrix.supported_compilers }} \
                 -DCMAKE_CXX_FLAGS="-Werror" \
                 -DCMAKE_HIP_PLATFORM=nvidia \
-                -DBUILD_AIS_DOCS=ON \
+                -DAIS_BUILD_DOCS=ON \
                 ..
             '
       - name: Build hipFile for the NVIDIA platform (${{ matrix.supported_compilers }})

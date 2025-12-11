@@ -79,13 +79,13 @@ if(NOT CMAKE_HIP_PLATFORM STREQUAL "amd" AND NOT CMAKE_HIP_PLATFORM STREQUAL "nv
     message(FATAL_ERROR "Invalid CMAKE_HIP_PLATFORM: '${CMAKE_HIP_PLATFORM}'. Allowed values are 'amd' or 'nvidia'.")
 endif()
 
-# Set the platform variable
+# Set the platform variables (internal only)
 if(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
-    set(BUILD_AMD_DETAIL OFF)
-    set(BUILD_NVIDIA_DETAIL ON)
+    set(AIS_BUILD_AMD_DETAIL OFF)
+    set(AIS_BUILD_NVIDIA_DETAIL ON)
 else()
-    set(BUILD_AMD_DETAIL ON)
-    set(BUILD_NVIDIA_DETAIL OFF)
+    set(AIS_BUILD_AMD_DETAIL ON)
+    set(AIS_BUILD_NVIDIA_DETAIL OFF)
 endif()
 
 #-----------------------------------------------------------------------------
@@ -127,7 +127,7 @@ include(AISAddLibraries)
 # Code coverage (via llvm-cov)
 #
 # To use with the hipFile library:
-#   - Build with BUILD_CODE_COVERAGE set to ON
+#   - Build with AIS_USE_CODE_COVERAGE set to ON
 #   - Run `ctest .`
 #
 #   This should create a default.profraw file in each test directory
@@ -141,7 +141,7 @@ include(AISAddLibraries)
 # You can export the data to lcov or json
 #   - Run `llvm-cov export -instr-profile=ais.profdata -format=<json|lcov> > coverage.<lcov|json>`
 #-----------------------------------------------------------------------------
-option(BUILD_CODE_COVERAGE "Build with code coverage flags (llvm C++ only)" OFF)
+option(AIS_USE_CODE_COVERAGE "Build with code coverage flags (llvm C++ only)" OFF)
 
 #----------------------------------------------
 # Clang "safe buffer" warnings and suggestions
@@ -166,12 +166,12 @@ include(AISSanitizers)
 #-----------------------
 # aiscp example program
 #-----------------------
-option(BUILD_AISCP "Build aiscp example program" ON)
+option(AIS_BUILD_EXAMPLES "Build example programs" ON)
 
 #------
 # docs
 #------
-option(BUILD_AIS_DOCS "Build the hipFile docs (requires Doxygen)" OFF)
+option(AIS_BUILD_DOCS "Build the hipFile docs (requires Doxygen)" OFF)
 
 #-----------------------------------------------------------------------------
 # Find important packages for building the software
@@ -192,7 +192,7 @@ else()
 endif()
 
 # Find the cuFile library and headers on NVIDIA
-if(BUILD_NVIDIA_DETAIL)
+if(AIS_BUILD_NVIDIA_DETAIL)
     find_package(CUDAToolkit REQUIRED)
 
     if(CMAKE_VERSION VERSION_LESS "3.28")
@@ -218,7 +218,7 @@ endif()
 # Subdirectories to configure/build
 #-----------------------------------------------------------------------------
 add_subdirectory(hipfile)
-if(BUILD_AIS_DOCS)
+if(AIS_BUILD_DOCS)
     add_subdirectory(docs)
 endif()
 
