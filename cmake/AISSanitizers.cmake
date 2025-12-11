@@ -2,20 +2,20 @@
 #
 # SPDX-License-Identifier: MIT
 
-option(AIS_BUILD_SANITIZERS "Build with -fsanitize=address, leak, and undefined" OFF)
-option(AIS_BUILD_THREAD_SANITIZERS "Build with -fsanitize=thread (not compatible with AIS_BUILD_SANITIZERS)" OFF)
-option(AIS_BUILD_INTEGER_SANITIZERS "Build with -fsanitize=integer (clang only)" OFF)
+option(AIS_USE_SANITIZERS "Build with -fsanitize=address, leak, and undefined" OFF)
+option(AIS_USE_THREAD_SANITIZER "Build with -fsanitize=thread (not compatible with AIS_USE_SANITIZERS)" OFF)
+option(AIS_USE_INTEGER_SANITIZER "Build with -fsanitize=integer (clang only)" OFF)
 
-if(AIS_BUILD_THREAD_SANITIZERS)
+if(AIS_USE_THREAD_SANITIZER)
     message(WARNING "TSAN has known problems with higher levels of entropy, try using `sudo sysctl vm.mmap_rnd_bits=28` if you encounter errors concerning unexpected memory mappings.")
 endif()
 
 function(ais_add_sanitizers target)
-    if(AIS_BUILD_SANITIZERS AND AIS_BUILD_THREAD_SANITIZERS)
-        message(FATAL_ERROR "AIS_BUILD_SANITIZERS is not compatible with AIS_BUILD_THREAD_SANITIZERS")
+    if(AIS_USE_SANITIZERS AND AIS_USE_THREAD_SANITIZER)
+        message(FATAL_ERROR "AIS_USE_SANITIZERS is not compatible with AIS_USE_THREAD_SANITIZER")
     endif()
 
-    if(AIS_BUILD_SANITIZERS)
+    if(AIS_USE_SANITIZERS)
         # TODO: Consider other sanitizer options
         target_compile_options(${target} PRIVATE -fsanitize=address)
         target_link_options(${target} PRIVATE -fsanitize=address)
@@ -27,7 +27,7 @@ function(ais_add_sanitizers target)
         target_compile_options(${target} PRIVATE -fno-omit-frame-pointer)
     endif()
 
-    if(AIS_BUILD_THREAD_SANITIZERS)
+    if(AIS_USE_THREAD_SANITIZER)
         target_compile_options(${target} PRIVATE -fsanitize=thread)
         target_link_options(${target} PRIVATE -fsanitize=thread)
     endif()
@@ -37,7 +37,7 @@ function(ais_add_sanitizers target)
     # This has a very small runtime penalty (<1%) and will kill
     # the process if undefined integer behaviour occurs (like
     # wrapping a signed integer).
-    if(AIS_BUILD_INTEGER_SANITIZERS)
+    if(AIS_USE_INTEGER_SANITIZER)
         if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             set(integer_sanitize_flags
                 -fsanitize=integer

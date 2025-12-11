@@ -53,9 +53,9 @@ Options
 Sanitizer options
 |Option|Default|Purpose|
 |------|-------|-------|
-|AIS\_BUILD\_SANITIZERS|OFF|Build with -fsanitize=address, leak, and undefined|
-|AIS\_BUILD\_INTEGER\_SANITIZERS|OFF|Build with -fsanitize=integer (clang only)|
-|AIS\_BUILD\_THREAD\_SANITIZERS|OFF|Build with -fsanitize=thread (not compatible with AIS\_BUILD\_SANITIZERS)|
+|AIS\_USE\_SANITIZERS|OFF|Build with -fsanitize=address, leak, and undefined|
+|AIS\_USE\_INTEGER\_SANITIZER|OFF|Build with -fsanitize=integer (clang only)|
+|AIS\_USE\_THREAD\_SANITIZER|OFF|Build with -fsanitize=thread (not compatible with AIS\_USE\_SANITIZERS)|
 
 ### Build
 `cmake --build .`
@@ -110,7 +110,7 @@ The results will be wrote to `<path/to/repo>/build`, in the
 
 ### Documentation
 The API documentation is built using Doxygen. To build it, use the
-BUILD\_AIS\_DOCS option. This will build the documentation for any
+`AIS_BUILD_DOCS` option. This will build the documentation for any
 libraries that have been configured. As a special case, configuring
 the documentation without any library will build the documentation
 for BOTH libraries, allowing for a docs-only build.
