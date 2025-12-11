@@ -14,7 +14,7 @@ rocm_install(TARGETS hipfile_shared)
 
 # Install the headers
 rocm_install(
-    DIRECTORY ${CMAKE_SOURCE_DIR}/hipfile/include/
+    DIRECTORY ${CMAKE_SOURCE_DIR}/include/
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
