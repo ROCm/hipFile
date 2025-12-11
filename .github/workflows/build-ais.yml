@@ -1,6 +1,7 @@
 name: build_and_test # Mono-workflow - May be advantageous to split up
 run-name: Build, Test, and Analyze AIS
 env:
+  AIS_GHA_CMD_FILES_DOCKER_DIR: /root/github
   AIS_MOUNT_PATH: /mnt/ais/ext4
 on:
   workflow_call:
@@ -16,10 +17,14 @@ permissions:
   packages: read
 jobs:
   compile_on_AMD:
+    outputs:
+      ais_hipfile_version: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_VERSION }}
     runs-on: [ubuntu-24.04]
     steps:
       - name: Set early AIS CI environment variables
-        run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
+        run: |
+          echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "$GITHUB_ENV"
+          echo "AIS_GHA_CMD_FILES_DIR=${GITHUB_ENV%/*}" >> "$GITHUB_ENV"
       - name: Set AIS CI container name
         run: |
           echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{ inputs.platform }}" >> "$GITHUB_ENV"
@@ -43,6 +48,7 @@ jobs:
             --rm \
             --pull always \
             -v ${GITHUB_WORKSPACE}:/mnt/ais:ro \
+            -v "${AIS_GHA_CMD_FILES_DIR}:${{ env.AIS_GHA_CMD_FILES_DOCKER_DIR }}" \
             -v ${{ env.AIS_MOUNT_PATH }}:/mnt/ais-fs \
             --name ${AIS_CONTAINER_NAME} \
             ${{ inputs.ci_image }}
@@ -105,6 +111,71 @@ jobs:
               printf "\`\`\`\n"
             ' >> $GITHUB_STEP_SUMMARY
         if: ${{ inputs.platform == 'ubuntu' }}
+      - name: Create hipFile package
+        run: |
+          docker exec \
+            -t \
+            -w /ais/hipFile/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              cpack -G ${{ inputs.platform == 'ubuntu' && 'DEB' || 'RPM' }}
+            '
+      # CI is unable to peer into CMake to capture this data ahead of time.
+      # We should only produce a single package so we can use a glob pattern
+      # to complete the relative path to select the package.
+      # For now, hardcode the glob pattern to the default DEV release package name.
+      # (We will also hardcode arch as well.)
+      - name: Capture package metadata
+        id: pkg-metadata
+        run: |
+          docker exec \
+            -e "AIS_GITHUB_OUTPUT=${{ env.AIS_GHA_CMD_FILES_DOCKER_DIR }}/${GITHUB_OUTPUT##*/}" \
+            -t \
+            -w /ais/hipFile/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              echo "AIS_HIPFILE_VERSION=$(
+                ${{
+                  inputs.platform == 'ubuntu' &&
+                  'dpkg-deb -f hipfile-dev*.deb "Version"' ||
+                  'rpm -qp --qf "%{VERSION}" hipfile-devel*.rpm'
+                }}
+              )" >> "${AIS_GITHUB_OUTPUT}"
+            '
+      # This information will be nice to have for debugging CPack configuration.
+      - name: Print package metadata for debugging.
+        run: |
+          docker exec \
+            -t \
+            -w /ais/hipFile/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              echo "$(
+                ${{
+                  inputs.platform == 'ubuntu' &&
+                  'dpkg-deb -I hipfile-dev*.deb' ||
+                  'rpm -qpi --requires hipfile-devel*.rpm'
+                }}
+              )"
+            '
+      - name: Validate Metadata stored correctly
+        run: |
+          echo "hipFile package version: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_VERSION }}"
+          if [[ -z "${{ steps.pkg-metadata.outputs.AIS_HIPFILE_VERSION }}" ]]; then exit 1; fi
+      - name: Test installing the hipFile package.
+        run: |
+          docker exec \
+            -t \
+            -w /ais/hipFile/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              ${{
+                inputs.platform == 'ubuntu' && 'apt install -y ./hipfile-dev*.deb' ||
+                inputs.platform == 'rocky' && 'dnf install -y ./hipfile-devel*.rpm' ||
+                inputs.platform == 'suse' && 'zypper install -y --allow-unsigned-rpm ./hipfile-devel*.rpm' ||
+                'echo "Unknown platform."; exit 1'
+              }}
+            '
       - name: Clean CMake build directories
         run: |
           docker exec \

@@ -71,7 +71,8 @@ RUN zypper install -y \
         libopenssl-devel \
         llvm19-devel \
         rocm-device-libs \
-        rocthrust-devel
+        rocthrust-devel \
+        rpm-build
 
 # Configure system linker for ROCm
 RUN cat <<EOF > /etc/ld.so.conf.d/rocm.conf

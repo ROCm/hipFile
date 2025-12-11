@@ -34,10 +34,10 @@ jobs:
       platform: ${{ inputs.platform }}
   build_and_test:
     # Run after build_AIS_CI_image but only if build_AIS_CI_image passed or was skipped.
-    # always() check needed otherwise success() implicitly added.
+    # success() implicitly added if no other status check present.
     if: >-
       ${{
-        always() &&
+        !cancelled() &&
         (
           needs.build_AIS_CI_image.result == 'skipped' ||
           (
