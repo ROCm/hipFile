@@ -30,7 +30,7 @@ include(GoogleTest)
 function(ais_gtest_discover_tests target)
     cmake_language(CALL gtest_discover_tests ${ARGV})
 
-    if(BUILD_CODE_COVERAGE)
+    if(AIS_USE_CODE_COVERAGE)
         set(options)
         set(oneValueArgs TEST_LIST)
         set(multiValueArgs)

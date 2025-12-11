@@ -17,11 +17,11 @@ namespace hipFile {
 
 class MBuffer : public IBuffer {
 public:
-    MOCK_METHOD(void *, getBuffer, (), (const override));
-    MOCK_METHOD(size_t, getLength, (), (const override));
-    MOCK_METHOD(int, getFlags, (), (const override));
-    MOCK_METHOD(hipMemoryType, getType, (), (const override));
-    MOCK_METHOD(int, getGpuId, (), (const override));
+    MOCK_METHOD(void *, getBuffer, (), (const, override));
+    MOCK_METHOD(size_t, getLength, (), (const, override));
+    MOCK_METHOD(int, getFlags, (), (const, override));
+    MOCK_METHOD(hipMemoryType, getType, (), (const, override));
+    MOCK_METHOD(int, getGpuId, (), (const, override));
 };
 
 class MBufferMap : public BufferMap {
