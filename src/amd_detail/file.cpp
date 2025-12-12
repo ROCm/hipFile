@@ -5,6 +5,7 @@
 
 #include "context.h"
 #include "file.h"
+#include "file-descriptor.h"
 #include "mountinfo.h"
 #include "passkey.h"
 #include "sys.h"
@@ -26,7 +27,7 @@ using std::vector;
 namespace hipFile {
 
 UnregisteredFile::UnregisteredFile(int fd)
-    : client_fd(FileDescriptor::make_unmanaged(fd)),
+    : client_fd(FileDescriptor::make_unmanaged(fd)), buffered_fd{}, unbuffered_fd{},
       stx{Context<Sys>::get()->statx(fd, "", AT_EMPTY_PATH,
 #if defined(STATX_DIOALIGN)
                                      STATX_TYPE | STATX_MODE | STATX_DIOALIGN
@@ -37,6 +38,17 @@ UnregisteredFile::UnregisteredFile(int fd)
       flags{Context<Sys>::get()->fcntl(fd, F_GETFL, 0)},
       mountinfo{Context<LibMountHelper>::get()->getMountInfo(makedev(stx.stx_dev_major, stx.stx_dev_minor))}
 {
+    if (flags & O_DIRECT) {
+        unbuffered_fd = FileDescriptor::make_unmanaged(fd);
+        buffered_fd   = FileDescriptor::make_managed(Context<Sys>::get()->fcntl(fd, F_DUPFD_CLOEXEC, 0));
+        Context<Sys>::get()->fcntl(buffered_fd.get(), F_SETFL, static_cast<unsigned long>(flags & ~O_DIRECT));
+    }
+    else {
+        buffered_fd   = FileDescriptor::make_unmanaged(fd);
+        unbuffered_fd = FileDescriptor::make_managed(Context<Sys>::get()->fcntl(fd, F_DUPFD_CLOEXEC, 0));
+        Context<Sys>::get()->fcntl(unbuffered_fd.get(), F_SETFL,
+                                   static_cast<unsigned long>(flags | O_DIRECT));
+    }
 }
 
 hipFileHandle_t
@@ -46,7 +58,8 @@ IFile::getHandle() const
 }
 
 File::File(UnregisteredFile &&uf, const PassKey<FileMap> &)
-    : client_fd{std::move(uf.client_fd)}, stx{uf.stx}, status_flags{uf.flags}, mountinfo{uf.mountinfo}
+    : client_fd{std::move(uf.client_fd)}, buffered_fd{std::move(uf.buffered_fd)},
+      unbuffered_fd{std::move(uf.unbuffered_fd)}, stx{uf.stx}, status_flags{uf.flags}, mountinfo{uf.mountinfo}
 {
 }
 
@@ -54,6 +67,18 @@ int
 File::getClientFd() const
 {
     return client_fd.get();
+}
+
+int
+File::getBufferedFd() const
+{
+    return buffered_fd.get();
+}
+
+int
+File::getUnbufferedFd() const
+{
+    return unbuffered_fd.get();
 }
 
 const struct statx &

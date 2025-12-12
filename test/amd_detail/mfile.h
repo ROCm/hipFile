@@ -20,6 +20,8 @@ class MFile : public IFile {
 public:
     MOCK_METHOD(hipFileHandle_t, getHandle, (), (const, override));
     MOCK_METHOD(int, getClientFd, (), (const, override));
+    MOCK_METHOD(int, getBufferedFd, (), (const, override));
+    MOCK_METHOD(int, getUnbufferedFd, (), (const, override));
     MOCK_METHOD(const struct statx &, getStatx, (), (const, noexcept, override));
     MOCK_METHOD(int, getStatusFlags, (), (const, override));
     MOCK_METHOD(std::optional<MountInfo>, getMountInfo, (), (const, override));
