@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "file-descriptor.h"
 #include "hipfile.h"
 #include "mountinfo.h"
 #include "passkey.h"
@@ -49,7 +50,7 @@ public:
     UnregisteredFile(int fd);
 
     /// @brief The file descriptor provided by the client
-    int fd;
+    FileDescriptor client_fd;
 
     /// @brief Information provided by statx (2)
     struct statx stx;
@@ -69,7 +70,7 @@ public:
     /// @return The handle for this file
     virtual hipFileHandle_t getHandle() const;
 
-    virtual int                      getFd() const             = 0;
+    virtual int                      getClientFd() const       = 0;
     virtual const struct statx      &getStatx() const noexcept = 0;
     virtual int                      getStatusFlags() const    = 0;
     virtual std::optional<MountInfo> getMountInfo() const      = 0;
@@ -90,7 +91,7 @@ public:
     File(File &&)            = delete;
     File &operator=(File &&) = delete;
 
-    virtual int                      getFd() const override;
+    virtual int                      getClientFd() const override;
     virtual const struct statx      &getStatx() const noexcept override;
     virtual int                      getStatusFlags() const override;
     virtual std::optional<MountInfo> getMountInfo() const override;
@@ -101,8 +102,8 @@ public:
     File(UnregisteredFile &&uf, const PassKey<FileMap> &k);
 
 private:
-    /// @brief The file descriptor
-    int fd;
+    /// @brief The file descriptor provided by the client
+    FileDescriptor client_fd;
 
     /// @brief File status information obtained from statx (2)
     struct statx stx;

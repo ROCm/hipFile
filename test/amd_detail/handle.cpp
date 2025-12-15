@@ -139,7 +139,7 @@ TEST_F(HipFileHandle, file_initialization)
     auto file{Context<DriverState>::get()->getFile(fh)};
 
     EXPECT_EQ(fh, file->getHandle());
-    EXPECT_EQ(fd, file->getFd());
+    EXPECT_EQ(fd, file->getClientFd());
     auto file_stx{file->getStatx()};
     EXPECT_EQ(0, memcmp(&file_stx, &stxbuf, sizeof(stxbuf)));
     EXPECT_EQ(fd_flags, file->getStatusFlags());

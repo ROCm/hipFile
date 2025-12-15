@@ -25,14 +25,15 @@ using std::vector;
 
 namespace hipFile {
 
-UnregisteredFile::UnregisteredFile(int _fd)
-    : fd(_fd), stx{Context<Sys>::get()->statx(fd, "", AT_EMPTY_PATH,
+UnregisteredFile::UnregisteredFile(int fd)
+    : client_fd(FileDescriptor::make_unmanaged(fd)),
+      stx{Context<Sys>::get()->statx(fd, "", AT_EMPTY_PATH,
 #if defined(STATX_DIOALIGN)
-                                              STATX_TYPE | STATX_MODE | STATX_DIOALIGN
+                                     STATX_TYPE | STATX_MODE | STATX_DIOALIGN
 #else
-                                              STATX_TYPE | STATX_MODE
+                                     STATX_TYPE | STATX_MODE
 #endif
-                                              )},
+                                     )},
       flags{Context<Sys>::get()->fcntl(fd, F_GETFL, 0)},
       mountinfo{Context<LibMountHelper>::get()->getMountInfo(makedev(stx.stx_dev_major, stx.stx_dev_minor))}
 {
@@ -45,14 +46,14 @@ IFile::getHandle() const
 }
 
 File::File(UnregisteredFile &&uf, const PassKey<FileMap> &)
-    : fd{uf.fd}, stx{uf.stx}, status_flags{uf.flags}, mountinfo{uf.mountinfo}
+    : client_fd{std::move(uf.client_fd)}, stx{uf.stx}, status_flags{uf.flags}, mountinfo{uf.mountinfo}
 {
 }
 
 int
-File::getFd() const
+File::getClientFd() const
 {
-    return fd;
+    return client_fd.get();
 }
 
 const struct statx &
@@ -87,13 +88,13 @@ FileMap::getFile(hipFileHandle_t fh)
 hipFileHandle_t
 FileMap::registerFile(UnregisteredFile &&uf)
 {
-    if (from_fd.end() != from_fd.find(uf.fd)) {
+    if (from_fd.end() != from_fd.find(uf.client_fd.get())) {
         throw FileAlreadyRegistered();
     }
 
-    auto file                  = std::shared_ptr<IFile>(new File(std::move(uf), PassKey<FileMap>{}));
-    from_fd[file->getFd()]     = file;
-    from_fh[file->getHandle()] = file;
+    auto file                    = std::shared_ptr<IFile>(new File(std::move(uf), PassKey<FileMap>{}));
+    from_fd[file->getClientFd()] = file;
+    from_fh[file->getHandle()]   = file;
 
     return file->getHandle();
 }
@@ -111,7 +112,7 @@ FileMap::deregisterFile(hipFileHandle_t fh)
         throw FileOperationsOutstanding();
     }
 
-    from_fd.erase(itr->second->getFd());
+    from_fd.erase(itr->second->getClientFd());
     from_fh.erase(fh);
 }
 

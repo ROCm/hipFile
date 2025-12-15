@@ -247,14 +247,14 @@ struct FastpathIoParam : public FastpathTestBase, public TestWithParam<IoType> {
     {
         EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
         EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(DEFAULT_BUFFER_LENGTH));
-        EXPECT_CALL(*mfile, getFd).WillOnce(Return(DEFAULT_FILE_DESCRIPTOR));
+        EXPECT_CALL(*mfile, getClientFd).WillOnce(Return(DEFAULT_FILE_DESCRIPTOR));
     }
 
     void expect_io(int fd, void *bufptr, size_t buflen)
     {
         EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(bufptr));
         EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(buflen));
-        EXPECT_CALL(*mfile, getFd).WillOnce(Return(fd));
+        EXPECT_CALL(*mfile, getClientFd).WillOnce(Return(fd));
     }
 };
 
