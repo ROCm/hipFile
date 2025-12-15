@@ -29,7 +29,7 @@ public:
     FileDescriptor(FileDescriptor &&other) noexcept;
     FileDescriptor &operator=(FileDescriptor &&other) noexcept;
 
-    /// @brief Get the file desciptor
+    /// @brief Get the file descriptor
     /// @return The file descriptor
     int get() const;
 
