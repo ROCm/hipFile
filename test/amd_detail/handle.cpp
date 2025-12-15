@@ -41,8 +41,8 @@ struct ExpectUnregisteredFileBuilder {
     optional<struct statx> m_statx;
     optional<int>          m_fd_flags;
     optional<MountInfo>    m_mountinfo;
-    optional<int>          m_fd_dup;
-    optional<int>          m_fd_dup_flags;
+    optional<int>          m_open_fd;
+    optional<int>          m_open_flags;
 
     ExpectUnregisteredFileBuilder(MSys &msys, MLibMountHelper &mlibmounthelper)
         : m_msys(msys), m_mlibmounthelper(mlibmounthelper)
@@ -67,15 +67,15 @@ struct ExpectUnregisteredFileBuilder {
         return *this;
     }
 
-    ExpectUnregisteredFileBuilder &fd_dup(int fd_dup)
+    ExpectUnregisteredFileBuilder &open_fd(int fd)
     {
-        m_fd_dup = fd_dup;
+        m_open_fd = fd;
         return *this;
     }
 
-    ExpectUnregisteredFileBuilder &expect_fd_dup_flags(int flags)
+    ExpectUnregisteredFileBuilder &open_flags(int flags)
     {
-        m_fd_dup_flags = flags;
+        m_open_flags = flags;
         return *this;
     }
 
@@ -107,22 +107,15 @@ struct ExpectUnregisteredFile {
             EXPECT_CALL(builder.m_mlibmounthelper, getMountInfo);
         }
 
-        if (builder.m_fd_dup) {
-            EXPECT_CALL(builder.m_msys, fcntl(_, F_DUPFD_CLOEXEC, _))
-                .WillOnce(Return(builder.m_fd_dup.value()));
-        }
-        else {
-            EXPECT_CALL(builder.m_msys, fcntl(_, F_DUPFD_CLOEXEC, _)).WillOnce(Return(-1));
-        }
+        EXPECT_CALL(builder.m_msys, readlink);
 
-        if (builder.m_fd_dup_flags) {
-            EXPECT_CALL(builder.m_msys, fcntl(builder.m_fd_dup ? builder.m_fd_dup.value() : -1, F_SETFL,
-                                              static_cast<unsigned long>(builder.m_fd_dup_flags.value())))
-                .Times(1);
+        if (builder.m_open_flags) {
+            EXPECT_CALL(builder.m_msys, open(_, builder.m_open_flags.value()))
+                .WillOnce(Return(builder.m_open_fd ? builder.m_open_fd.value() : -1));
         }
         else {
-            EXPECT_CALL(builder.m_msys, fcntl(builder.m_fd_dup ? builder.m_fd_dup.value() : -1, F_SETFL, _))
-                .Times(1);
+            EXPECT_CALL(builder.m_msys, open(_, _))
+                .WillOnce(Return(builder.m_open_fd ? builder.m_open_fd.value() : -1));
         }
     }
 };
@@ -162,8 +155,8 @@ TEST_F(HipFileHandle, file_initialization)
     // In this test, the registered file is destroyed _after_ the mocks are
     // destroyed. Use an eventfd so that when FileDescriptor calls close, it
     // has a valid file descriptor to close.
-    int fd_dup{eventfd(0, 0)};
-    ASSERT_NE(fd_dup, -1);
+    int open_fd{eventfd(0, 0)};
+    ASSERT_NE(open_fd, -1);
 
     MountInfo mountinfo;
     mountinfo.type                         = FilesystemType::ext4;
@@ -173,7 +166,7 @@ TEST_F(HipFileHandle, file_initialization)
         .statx(stxbuf)
         .fd_flags(fd_flags)
         .mountinfo(mountinfo)
-        .fd_dup(fd_dup)
+        .open_fd(open_fd)
         .build();
     auto fh{Context<DriverState>::get()->registerFile(fd)};
     auto file{Context<DriverState>::get()->getFile(fh)};
@@ -181,7 +174,7 @@ TEST_F(HipFileHandle, file_initialization)
     EXPECT_EQ(fh, file->getHandle());
     EXPECT_EQ(fd, file->getClientFd());
     EXPECT_EQ(fd, file->getBufferedFd());
-    EXPECT_EQ(fd_dup, file->getUnbufferedFd());
+    EXPECT_EQ(open_fd, file->getUnbufferedFd());
     auto file_stx{file->getStatx()};
     EXPECT_EQ(0, memcmp(&file_stx, &stxbuf, sizeof(stxbuf)));
     EXPECT_EQ(fd_flags, file->getStatusFlags());
@@ -352,42 +345,72 @@ TEST_F(HipFileHandle, deregister_handle_fails_when_operations_are_oustanding)
     hipFileHandleDeregister(fh);
 }
 
-TEST_F(HipFileHandle, UnregisteredFileUnsetsODirectOnFdDupWhenInstantiatedWithUnbufferedFile)
+TEST_F(HipFileHandle, UnregisteredFileCreatesOpensBufferedIfClientFdIsUnbuffered)
 {
-    int fd_dup{888888};
+    int open_fd{888888};
 
     ExpectUnregisteredFileBuilder(msys, mlibmounthelper)
         .fd_flags(~0) // All flags, including O_DIRECT, set
-        .fd_dup(fd_dup)
-        .expect_fd_dup_flags(~O_DIRECT) // All flags, excluding O_DIRECT, set
+        .open_fd(open_fd)
+        .open_flags(~O_DIRECT) // All flags, excluding O_DIRECT, set
         .build();
 
     UnregisteredFile uf{777777};
 
-    EXPECT_CALL(msys, close(fd_dup));
+    EXPECT_CALL(msys, close(open_fd));
 }
 
-TEST_F(HipFileHandle, UnregisteredFileSetsODirectOnFdDupWhenInstantiatedWithBufferedFile)
+TEST_F(HipFileHandle, UnregisteredFileSetsCloseOnExecOnOpenedFile)
 {
-    int fd_dup{888888};
+    int open_fd{888888};
+
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper)
+        .fd_flags(0)
+        .open_fd(open_fd)
+        .open_flags(O_DIRECT | O_CLOEXEC)
+        .build();
+
+    UnregisteredFile uf{777777};
+
+    EXPECT_CALL(msys, close(open_fd));
+}
+
+TEST_F(HipFileHandle, UnregisteredFileMaintainsCloseOnExecOnOpenedFile)
+{
+    int open_fd{888888};
+
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper)
+        .fd_flags(O_DIRECT | O_CLOEXEC)
+        .open_fd(open_fd)
+        .open_flags(O_CLOEXEC)
+        .build();
+
+    UnregisteredFile uf{777777};
+
+    EXPECT_CALL(msys, close(open_fd));
+}
+
+TEST_F(HipFileHandle, UnregisteredFileOpensUnbufferedIfClientFdIsBuffered)
+{
+    int open_fd{888888};
 
     ExpectUnregisteredFileBuilder(msys, mlibmounthelper)
         .fd_flags(~O_DIRECT) // All flags, excluding O_DIRECT, set
-        .fd_dup(fd_dup)
-        .expect_fd_dup_flags(~0) // All flags, including O_DIRECT, set
+        .open_fd(open_fd)
+        .open_flags(~0) // All flags, including O_DIRECT, set
         .build();
 
     UnregisteredFile uf{777777};
 
-    EXPECT_CALL(msys, close(fd_dup));
+    EXPECT_CALL(msys, close(open_fd));
 }
 
-TEST_F(HipFileHandle, UnregistgeredFileClosesDupedFileDescriptorWhenDestroyed)
+TEST_F(HipFileHandle, UnregistgeredFileClosesOpenedFileWhenDestroyed)
 {
-    int fd_dup{888888};
-    ExpectUnregisteredFileBuilder(msys, mlibmounthelper).fd_dup(fd_dup).build();
+    int open_fd{888888};
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper).open_fd(open_fd).build();
     UnregisteredFile uf{777777};
-    EXPECT_CALL(msys, close(fd_dup));
+    EXPECT_CALL(msys, close(open_fd));
 }
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

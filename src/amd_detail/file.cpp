@@ -11,6 +11,7 @@
 #include "sys.h"
 
 #include <algorithm>
+#include <climits>
 #include <cstdlib>
 #include <fcntl.h>
 #include <iterator>
@@ -38,16 +39,20 @@ UnregisteredFile::UnregisteredFile(int fd)
       flags{Context<Sys>::get()->fcntl(fd, F_GETFL, 0)},
       mountinfo{Context<LibMountHelper>::get()->getMountInfo(makedev(stx.stx_dev_major, stx.stx_dev_minor))}
 {
+    vector<char> buf(PATH_MAX, '\0');
+    std::string  symlink_path = "/proc/self/fd/" + std::to_string(fd);
+    ssize_t      len = Context<Sys>::get()->readlink(symlink_path.c_str(), buf.data(), buf.size() - 1);
+    std::string  path(buf.data(), static_cast<unsigned long>(len));
+
     if (flags & O_DIRECT) {
         unbuffered_fd = FileDescriptor::make_unmanaged(fd);
-        buffered_fd   = FileDescriptor::make_managed(Context<Sys>::get()->fcntl(fd, F_DUPFD_CLOEXEC, 0));
-        Context<Sys>::get()->fcntl(buffered_fd.get(), F_SETFL, static_cast<unsigned long>(flags & ~O_DIRECT));
+        buffered_fd   = FileDescriptor::make_managed(
+            Context<Sys>::get()->open(path.c_str(), (flags | O_CLOEXEC) & ~O_DIRECT));
     }
     else {
         buffered_fd   = FileDescriptor::make_unmanaged(fd);
-        unbuffered_fd = FileDescriptor::make_managed(Context<Sys>::get()->fcntl(fd, F_DUPFD_CLOEXEC, 0));
-        Context<Sys>::get()->fcntl(unbuffered_fd.get(), F_SETFL,
-                                   static_cast<unsigned long>(flags | O_DIRECT));
+        unbuffered_fd = FileDescriptor::make_managed(
+            Context<Sys>::get()->open(path.c_str(), (flags | O_CLOEXEC) | O_DIRECT));
     }
 }
 
