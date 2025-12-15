@@ -24,13 +24,13 @@ throwOn(const L throw_value, R value)
 }
 
 int
-Sys::open(const char *pathname, int flags)
+Sys::open(const char *pathname, int flags) const
 {
     return throwOn<Sys::RuntimeError>(-1, ::open(pathname, flags));
 }
 
 int
-Sys::open(const char *pathname, int flags, mode_t mode)
+Sys::open(const char *pathname, int flags, mode_t mode) const
 {
     return throwOn<Sys::RuntimeError>(-1, ::open(pathname, flags, mode));
 }
@@ -67,7 +67,7 @@ Sys::pwrite(int fd, void *buf, size_t count, off_t offset) const
 }
 
 ssize_t
-Sys::readlink(const char *pathname, char *buf, size_t bufsize)
+Sys::readlink(const char *pathname, char *buf, size_t bufsize) const
 {
     return throwOn<Sys::RuntimeError>(-1, ::readlink(pathname, buf, bufsize));
 }
