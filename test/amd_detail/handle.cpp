@@ -405,7 +405,7 @@ TEST_F(HipFileHandle, UnregisteredFileOpensUnbufferedIfClientFdIsBuffered)
     EXPECT_CALL(msys, close(open_fd));
 }
 
-TEST_F(HipFileHandle, UnregistgeredFileClosesOpenedFileWhenDestroyed)
+TEST_F(HipFileHandle, UnregisteredFileClosesOpenedFileWhenDestroyed)
 {
     int open_fd{888888};
     ExpectUnregisteredFileBuilder(msys, mlibmounthelper).open_fd(open_fd).build();
