@@ -107,8 +107,6 @@ struct ExpectUnregisteredFile {
             EXPECT_CALL(builder.m_mlibmounthelper, getMountInfo);
         }
 
-        EXPECT_CALL(builder.m_msys, readlink);
-
         if (builder.m_open_flags) {
             EXPECT_CALL(builder.m_msys, open(_, builder.m_open_flags.value()))
                 .WillOnce(Return(builder.m_open_fd ? builder.m_open_fd.value() : -1));

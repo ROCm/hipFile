@@ -39,10 +39,7 @@ UnregisteredFile::UnregisteredFile(int fd)
       flags{Context<Sys>::get()->fcntl(fd, F_GETFL, 0)},
       mountinfo{Context<LibMountHelper>::get()->getMountInfo(makedev(stx.stx_dev_major, stx.stx_dev_minor))}
 {
-    vector<char> buf(PATH_MAX, '\0');
-    std::string  symlink_path = "/proc/self/fd/" + std::to_string(fd);
-    ssize_t      len = Context<Sys>::get()->readlink(symlink_path.c_str(), buf.data(), buf.size() - 1);
-    std::string  path(buf.data(), static_cast<unsigned long>(len));
+    std::string path = "/proc/self/fd/" + std::to_string(fd);
 
     if (flags & O_DIRECT) {
         unbuffered_fd = FileDescriptor::make_unmanaged(fd);
