@@ -86,8 +86,8 @@ Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer,
         try {
             switch (io_type) {
                 case IoType::Read:
-                    io_bytes = Context<Sys>::get()->pread(file->getUnbufferedFd(), bounce_buffer.get(), count,
-                                                          offset);
+                    io_bytes =
+                        Context<Sys>::get()->pread(file->getBufferedFd(), bounce_buffer.get(), count, offset);
                     if (io_bytes > 0) {
                         Context<Hip>::get()->hipMemcpy(device_buffer_position, bounce_buffer.get(),
                                                        static_cast<size_t>(io_bytes), hipMemcpyHostToDevice);
@@ -97,8 +97,9 @@ Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer,
                     Context<Hip>::get()->hipMemcpy(bounce_buffer.get(), device_buffer_position, count,
                                                    hipMemcpyDeviceToHost);
                     Context<Hip>::get()->hipStreamSynchronize(nullptr);
-                    io_bytes = Context<Sys>::get()->pwrite(file->getUnbufferedFd(), bounce_buffer.get(),
-                                                           count, offset);
+                    io_bytes = Context<Sys>::get()->pwrite(file->getBufferedFd(), bounce_buffer.get(), count,
+                                                           offset);
+                    Context<Sys>::get()->fdatasync(file->getBufferedFd());
                     break;
                 default:
                     throw std::runtime_error("Invalid IO type");

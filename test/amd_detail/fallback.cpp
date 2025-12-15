@@ -272,6 +272,7 @@ TEST_P(FallbackParam, fallback_io_truncates_size_to_MAX_RW_COUNT)
                 .WillRepeatedly(testing::Invoke([](int, void *, size_t count, hoff_t) -> ssize_t {
                     return static_cast<ssize_t>(count);
                 }));
+            EXPECT_CALL(msys, fdatasync).Times(AnyNumber());
             break;
         default:
             FAIL();
@@ -305,6 +306,7 @@ TEST_P(FallbackParam, fallback_io_allocates_chunk_sized_host_bounce_buffer)
             EXPECT_CALL(mhip, hipMemcpy);
             EXPECT_CALL(mhip, hipStreamSynchronize);
             EXPECT_CALL(msys, pwrite).WillOnce(testing::Return(0));
+            EXPECT_CALL(msys, fdatasync);
             break;
         default:
             FAIL();
@@ -346,6 +348,7 @@ struct FallbackWrite : public FallbackIo {
         EXPECT_CALL(mhip, hipStreamSynchronize).WillRepeatedly(testing::Return());
         EXPECT_CALL(msys, pwrite).WillRepeatedly(testing::Invoke(this, &FallbackWrite::fake_pwrite));
         EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
+        EXPECT_CALL(msys, fdatasync).Times(AnyNumber());
     }
 
     // Test if the file contains the correct data
