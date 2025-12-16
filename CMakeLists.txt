@@ -19,7 +19,8 @@ endif()
 set(AIS_LIBRARY_MAJOR 0)
 set(AIS_LIBRARY_MINOR 2)
 set(AIS_LIBRARY_PATCH 0)
-set(AIS_LIBRARY_VERSION "${AIS_LIBRARY_MAJOR}.${AIS_LIBRARY_MINOR}.${AIS_LIBRARY_PATCH}")
+set(AIS_LIBRARY_TWEAK 0)
+set(AIS_LIBRARY_VERSION "${AIS_LIBRARY_MAJOR}.${AIS_LIBRARY_MINOR}.${AIS_LIBRARY_PATCH}.${AIS_LIBRARY_TWEAK}")
 
 # Set the SOVERSION to the major library version (this is the default
 # but we set it explicitly to convey intent).
