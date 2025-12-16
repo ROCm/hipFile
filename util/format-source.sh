@@ -8,7 +8,9 @@
 COMMAND="clang-format"
 
 DIRS=(
-    "hipfile"
+    "examples"
+    "src"
+    "test"
 )
 
 if [ $# -eq 1 ]; then
