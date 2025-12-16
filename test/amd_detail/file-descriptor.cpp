@@ -37,7 +37,7 @@ TEST_F(HipFileFileDescriptor, ManagedFileDescriptorMoveCopyConstructor)
 {
     auto fd_a{FileDescriptor::make_managed(42)};
     auto fd_b{std::move(fd_a)};
-    ASSERT_EQ(fd_a.get(), -1);
+    ASSERT_EQ(fd_a.get(), -1); // NOLINT(clang-analyzer-cplusplus.Move)
     ASSERT_EQ(fd_b.get(), 42);
     EXPECT_CALL(msys, close(42));
 }
@@ -46,7 +46,7 @@ TEST_F(HipFileFileDescriptor, UnmanagedFileDescriptorMoveCopyConstructor)
 {
     auto fd_a{FileDescriptor::make_unmanaged(42)};
     auto fd_b{std::move(fd_a)};
-    ASSERT_EQ(fd_a.get(), -1);
+    ASSERT_EQ(fd_a.get(), -1); // NOLINT(clang-analyzer-cplusplus.Move)
     ASSERT_EQ(fd_b.get(), 42);
 }
 
@@ -56,7 +56,7 @@ TEST_F(HipFileFileDescriptor, ManagedFileDescriptorToManagedFileDescriptorMoveAs
     auto fd_b{FileDescriptor::make_managed(12)};
     EXPECT_CALL(msys, close(12));
     fd_b = std::move(fd_a);
-    ASSERT_EQ(fd_a.get(), -1);
+    ASSERT_EQ(fd_a.get(), -1); // NOLINT(clang-analyzer-cplusplus.Move)
     ASSERT_EQ(fd_b.get(), 42);
     EXPECT_CALL(msys, close(42));
 }
@@ -66,7 +66,7 @@ TEST_F(HipFileFileDescriptor, ManagedFileDescriptorToUnmanagedFileDescriptorMove
     auto fd_a{FileDescriptor::make_managed(42)};
     auto fd_b{FileDescriptor::make_unmanaged(12)};
     fd_b = std::move(fd_a);
-    ASSERT_EQ(fd_a.get(), -1);
+    ASSERT_EQ(fd_a.get(), -1); // NOLINT(clang-analyzer-cplusplus.Move)
     ASSERT_EQ(fd_b.get(), 42);
     EXPECT_CALL(msys, close(42));
 }
@@ -77,7 +77,7 @@ TEST_F(HipFileFileDescriptor, UnmanagedFileDescriptorToManagedFileDescriptorMove
     auto fd_b{FileDescriptor::make_managed(12)};
     EXPECT_CALL(msys, close(12));
     fd_b = std::move(fd_a);
-    ASSERT_EQ(fd_a.get(), -1);
+    ASSERT_EQ(fd_a.get(), -1); // NOLINT(clang-analyzer-cplusplus.Move)
     ASSERT_EQ(fd_b.get(), 42);
 }
 
@@ -86,7 +86,7 @@ TEST_F(HipFileFileDescriptor, UnmanagedFileDescriptorToUnmanagedFileDescriptorMo
     auto fd_a{FileDescriptor::make_unmanaged(42)};
     auto fd_b{FileDescriptor::make_unmanaged(12)};
     fd_b = std::move(fd_a);
-    ASSERT_EQ(fd_a.get(), -1);
+    ASSERT_EQ(fd_a.get(), -1); // NOLINT(clang-analyzer-cplusplus.Move)
     ASSERT_EQ(fd_b.get(), 42);
 }
 
