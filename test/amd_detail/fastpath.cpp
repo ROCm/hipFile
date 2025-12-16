@@ -102,7 +102,7 @@ TEST_F(FastpathTest, BufferedFile)
 
 TEST_F(FastpathTest, ScoreRejectsNegativeAlignedFileOffset)
 {
-    EXPECT_CALL(*mfile, getStatusFlags).WillOnce(Return(DEFAULT_FILE_FLAGS & ~O_DIRECT));
+    EXPECT_CALL(*mfile, getStatusFlags).WillOnce(Return(DEFAULT_FILE_FLAGS));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
 
@@ -113,7 +113,7 @@ TEST_F(FastpathTest, ScoreRejectsNegativeAlignedFileOffset)
 
 TEST_F(FastpathTest, ScoreRejectsNegativeAlignedBufferOffset)
 {
-    EXPECT_CALL(*mfile, getStatusFlags).WillOnce(Return(DEFAULT_FILE_FLAGS & ~O_DIRECT));
+    EXPECT_CALL(*mfile, getStatusFlags).WillOnce(Return(DEFAULT_FILE_FLAGS));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
 
