@@ -2,7 +2,12 @@
  *
  * SPDX-License-Identifier: MIT
  */
+
+#include "context.h"
 #include "environment.h"
+#include "sys.h"
+
+#include <strings.h>
 
 using namespace hipFile;
 using namespace std;

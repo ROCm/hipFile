@@ -7,6 +7,7 @@
 #include "backend/fallback.h"
 #include "buffer.h"
 #include "context.h"
+#include "file.h"
 #include "hip.h"
 #include "hipfile.h"
 #include "hipfile-test.h"
@@ -40,14 +41,7 @@
 
 using namespace hipFile;
 using namespace testing;
-
-using std::shared_ptr;
-using ::testing::Return;
-using ::testing::StrictMock;
-
-namespace hipFile {
-class IFile;
-}
+using namespace std;
 
 // Put tests inside the macros to suppress the global constructor
 // warnings

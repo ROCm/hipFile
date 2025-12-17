@@ -8,6 +8,7 @@
 // Just run the program. It takes no special arguments.
 
 #include "context.h"
+#include "file.h"
 #include "hipfile.h"
 #include "state.h"
 

@@ -5,13 +5,13 @@
 
 #pragma once
 
-#include "passkey.h"
-
 #include <cstddef>
 #include <hip/hip_runtime_api.h>
 #include <memory>
 #include <stdexcept>
 #include <unordered_map>
+
+template <typename T> class PassKey;
 
 namespace hipFile {
 

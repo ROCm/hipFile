@@ -4,9 +4,12 @@
  */
 
 #include "environment.h"
+#include "hipfile-warnings.h"
 #include "msys.h"
 
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
+#include <memory>
 
 using namespace hipFile;
 using namespace testing;

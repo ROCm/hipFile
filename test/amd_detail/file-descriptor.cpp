@@ -4,9 +4,13 @@
  */
 
 #include "file-descriptor.h"
+#include "hipfile-warnings.h"
 #include "msys.h"
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <memory>
+#include <utility>
 
 using namespace hipFile;
 using namespace testing;

@@ -5,9 +5,10 @@
 
 #include "sys.h"
 
-#include <bits/statx-generic.h>
 #include <fcntl.h>
+#include <stdlib.h>
 #include <sys/mman.h>
+#include <sys/stat.h> // IWYU pragma: keep
 #include <syslog.h>
 #include <unistd.h>
 

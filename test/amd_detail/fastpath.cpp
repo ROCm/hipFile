@@ -5,6 +5,7 @@
 
 #include "backend/fastpath.h"
 #include "hip.h"
+#include "hipfile.h"
 #include "hipfile-test.h"
 #include "hipfile-warnings.h"
 #include "io.h"

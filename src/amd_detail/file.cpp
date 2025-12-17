@@ -10,20 +10,13 @@
 #include "passkey.h"
 #include "sys.h"
 
-#include <algorithm>
-#include <climits>
-#include <cstdlib>
 #include <fcntl.h>
-#include <iterator>
 #include <utility>
+#include <string>
 #include <sys/sysmacros.h>
 #include <syslog.h>
-#include <vector>
 
-using std::optional;
-using std::shared_ptr;
-using std::transform;
-using std::vector;
+using namespace std;
 
 namespace hipFile {
 

@@ -9,7 +9,10 @@
 #include "mhip.h"
 #include "msys.h"
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <optional>
+#include <string>
 
 using namespace hipFile;
 using namespace testing;

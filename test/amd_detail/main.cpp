@@ -6,7 +6,8 @@
 #include "hipfile-warnings.h"
 #include "test-options.h"
 
-#include <chrono>
+#include <chrono> // IWYU pragma: keep
+#include <cstdlib>
 #include <gtest/gtest.h>
 #include <thread>
 

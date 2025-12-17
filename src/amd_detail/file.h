@@ -8,13 +8,14 @@
 #include "file-descriptor.h"
 #include "hipfile.h"
 #include "mountinfo.h"
-#include "passkey.h"
 
 #include <linux/stat.h>
 #include <memory>
 #include <optional>
 #include <stdexcept>
 #include <unordered_map>
+
+template <typename T> class PassKey;
 
 namespace hipFile {
 

@@ -17,11 +17,9 @@
 #include <mutex>
 #include <shared_mutex>
 #include <stdexcept>
+#include <utility>
 
-using std::shared_lock;
-using std::shared_mutex;
-using std::shared_ptr;
-using std::unique_lock;
+using namespace std;
 
 namespace hipFile {
 struct Backend;

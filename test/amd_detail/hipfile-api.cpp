@@ -13,6 +13,7 @@
 
 #include "batch/batch.h"
 #include "context.h"
+#include "file.h"
 #include "hip.h"
 #include "hipfile.h"
 #include "hipfile-private.h"

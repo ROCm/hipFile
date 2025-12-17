@@ -6,7 +6,6 @@
 #pragma once
 
 #include <cerrno>
-#include <cstddef>
 #include <cstdint>
 #include <linux/stat.h>
 #include <stdexcept>

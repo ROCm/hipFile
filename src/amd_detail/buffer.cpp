@@ -9,19 +9,13 @@
 #include "passkey.h"
 #include "sys.h"
 
-#include <algorithm>
 #include <cstdint>
-#include <cstdlib>
 #include <hip/hip_runtime_api.h>
-#include <iterator>
 #include <stdexcept>
 #include <syslog.h>
 #include <utility>
-#include <vector>
 
-using std::shared_ptr;
-using std::transform;
-using std::vector;
+using namespace std;
 
 namespace hipFile {
 

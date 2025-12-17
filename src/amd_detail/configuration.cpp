@@ -7,6 +7,8 @@
 #include "environment.h"
 #include "hip.h"
 
+#include <optional>
+
 using namespace hipFile;
 
 Configuration::Configuration() : m_fastpath(true), m_fallback(true)

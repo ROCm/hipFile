@@ -21,6 +21,7 @@
 #include <hip/hip_runtime_api.h>
 #include <memory>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 #include <sys/types.h>
 #include <system_error>
