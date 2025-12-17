@@ -220,6 +220,18 @@ jobs:
           if-no-files-found: error
           retention-days: 1
           compression-level: 0
+      - name: Copy hipFile build directory out of the container
+        run: |
+          docker cp \
+            "${AIS_CONTAINER_NAME}:/ais/hipFile/build" \
+            ${GITHUB_WORKSPACE}/hipfile-build
+      - name: Upload hipFile build directory as an Artifact
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
+        with:
+          name: hipfile-build-${{ inputs.platform }}
+          path: ${{ github.workspace }}/hipfile-build
+          if-no-files-found: error
+          retention-days: 1
       - name: Clean CMake build directories
         run: |
           docker exec \
