@@ -378,6 +378,7 @@ jobs:
             '
       - name: Copy hipFile build directory into the container
         run: |
+          chmod a+x ${GITHUB_WORKSPACE}/hipfile-build/examples/aiscp/aiscp
           docker cp \
             ${GITHUB_WORKSPACE}/hipfile-build \
             ${AIS_CONTAINER_NAME}:/ais/hipfile-build
@@ -387,6 +388,7 @@ jobs:
           echo "---------------------------------------"
           docker exec -t -w /ais/hipfile-build ${AIS_CONTAINER_NAME} /bin/bash -c 'ls -al .'
       - name: Generate build files for hipFile targeting the AMD platform (amdclang++)
+        if: false
         run: |
           docker exec \
             -t \
@@ -401,6 +403,7 @@ jobs:
                 ..
             '
       - name: Build hipFile for the AMD platform (amdclang++)
+        if: false
         run: |
           docker exec \
             -t \
@@ -413,7 +416,7 @@ jobs:
         run: |
           docker exec \
             -t \
-            -w /ais/hipFile/build \
+            -w /ais/hipfile-build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               ctest -V -L "system" --parallel
@@ -422,7 +425,7 @@ jobs:
         run: |
           docker exec \
             -t \
-            -w /ais/hipFile/build \
+            -w /ais/hipfile-build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               ctest -V -L "stress" --parallel
@@ -436,7 +439,7 @@ jobs:
             /bin/bash -c '
               HIPFILE_FORCE_COMPAT_MODE=true
                 /ais/hipFile/util/ci-aiscp-test.sh \
-                /ais/hipFile/build/examples/aiscp/aiscp
+                /ais/hipfile-build/examples/aiscp/aiscp
             '
       - name: Configure fio
         run: |
