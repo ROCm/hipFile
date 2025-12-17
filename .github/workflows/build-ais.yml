@@ -386,7 +386,7 @@ jobs:
         run: |
           ls -al ${GITHUB_WORKSPACE}/hipfile-build
           echo "---------------------------------------"
-          docker exec -t -w /ais/hipfile-build ${AIS_CONTAINER_NAME} /bin/bash -c 'ls -al .'
+          docker exec -t -w /ais/hipfile-build ${AIS_CONTAINER_NAME} /bin/bash -c 'ls -al .; ls -al /ais/hipfile-build/examples/aiscp'
       - name: Generate build files for hipFile targeting the AMD platform (amdclang++)
         if: false
         run: |
