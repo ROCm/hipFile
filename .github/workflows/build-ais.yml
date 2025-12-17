@@ -336,6 +336,11 @@ jobs:
           repository: ROCm/fio
           ref: hipFile
           path: fio
+      - name: Fetch hipFile build directory
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 #v7.0.0
+        with:
+          name: hipfile-build-${{ inputs.platform }}
+          path: ${{ github.workspace }}/hipfile-build
       - name: Authenticating to GitHub Container Registry
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3.6.0
         with:
@@ -371,6 +376,11 @@ jobs:
               mkdir /ais/hipFile/build
               mkdir /ais/fio/build
             '
+      - name: Copy hipFile build directory into the container
+        run: |
+          docker cp \
+            ${GITHUB_WORKSPACE}/hipfile-build \
+            ${AIS_CONTAINER_NAME}:/ais/hipfile-build
       - name: Generate build files for hipFile targeting the AMD platform (amdclang++)
         run: |
           docker exec \
