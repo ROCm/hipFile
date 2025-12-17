@@ -29,7 +29,6 @@
 #include "mstate.h"
 #include "msys.h"
 #include "state.h"
-#include "sys.h"
 
 #include <array>
 #include <cerrno>
@@ -39,6 +38,7 @@
 #include <memory>
 #include <stdexcept>
 #include <sys/types.h>
+#include <system_error>
 #include <vector>
 
 namespace hipFile {
@@ -190,7 +190,7 @@ TEST_P(HipFileIoParam, HipFileIoHandlesInvalidFileHandle)
 TEST_P(HipFileIoParam, HipFileIoHandlesSysRuntimeError)
 {
     EXPECT_CALL(*mbackend, score).WillOnce(Return(1));
-    EXPECT_CALL(*mbackend, io).WillOnce(Throw(Sys::RuntimeError(EBADFD)));
+    EXPECT_CALL(*mbackend, io).WillOnce(Throw(std::system_error(EBADFD, std::generic_category())));
     errno = 0;
     ASSERT_EQ(hipFileIo(GetParam(), file_handle, bufptr, buflen, 0, 0, mbackends), -1);
     ASSERT_EQ(errno, EBADFD);

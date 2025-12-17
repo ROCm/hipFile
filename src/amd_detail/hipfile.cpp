@@ -14,7 +14,6 @@
 #include "hipfile-warnings.h"
 #include "io.h"
 #include "state.h"
-#include "sys.h"
 
 #include <cerrno>
 #include <cstdint>
@@ -199,10 +198,6 @@ catch (const FileNotRegistered &) {
 }
 catch (const Hip::RuntimeError &e) {
     return -e.error;
-}
-catch (const Sys::RuntimeError &e) {
-    errno = e.error;
-    return -1;
 }
 catch (const std::system_error &e) {
     errno = e.code().value();

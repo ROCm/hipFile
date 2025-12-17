@@ -19,7 +19,6 @@
 #include "mmountinfo.h"
 #include "msys.h"
 #include "state.h"
-#include "sys.h"
 
 #include <array>
 #include <cassert>
@@ -36,6 +35,7 @@
 #include <stdexcept>
 #include <string>
 #include <sys/mman.h>
+#include <system_error>
 #include <unistd.h>
 #include <vector>
 
@@ -280,8 +280,8 @@ TEST_P(FallbackParam, fallback_io_throws_on_bounce_buffer_allocation_failure)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
-    EXPECT_CALL(msys, mmap).WillOnce(testing::Throw(Sys::RuntimeError()));
-    ASSERT_THROW(Fallback().io(io_type, file, buffer, 4096, 0, 0, 4096), Sys::RuntimeError);
+    EXPECT_CALL(msys, mmap).WillOnce(testing::Throw(std::system_error()));
+    ASSERT_THROW(Fallback().io(io_type, file, buffer, 4096, 0, 0, 4096), std::system_error);
 }
 
 TEST_P(FallbackParam, fallback_io_allocates_chunk_sized_host_bounce_buffer)
@@ -376,10 +376,10 @@ TEST_F(FallbackWrite, fallback_write_throws_on_pwrite_exception)
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(mhip, hipMemcpy);
     EXPECT_CALL(mhip, hipStreamSynchronize);
-    EXPECT_CALL(msys, pwrite).WillOnce(testing::Throw(Sys::RuntimeError()));
+    EXPECT_CALL(msys, pwrite).WillOnce(testing::Throw(std::system_error()));
     EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
 
-    ASSERT_THROW(Fallback().io(IoType::Write, file, buffer, buffer->getLength(), 0, 0), Sys::RuntimeError);
+    ASSERT_THROW(Fallback().io(IoType::Write, file, buffer, buffer->getLength(), 0, 0), std::system_error);
 }
 
 TEST_F(FallbackWrite, fallback_write_throws_on_hipmemcpy_failure)
@@ -606,9 +606,9 @@ TEST_F(FallbackRead, fallback_read_throws_on_pread_exception)
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
-    EXPECT_CALL(msys, pread).WillOnce(testing::Throw(Sys::RuntimeError()));
+    EXPECT_CALL(msys, pread).WillOnce(testing::Throw(std::system_error()));
     EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
-    ASSERT_THROW(Fallback().io(IoType::Read, file, buffer, 4096, 0, 0), Sys::RuntimeError);
+    ASSERT_THROW(Fallback().io(IoType::Read, file, buffer, 4096, 0, 0), std::system_error);
 }
 
 TEST_F(FallbackRead, fallback_read_throws_on_hipmemcpy_failure)
@@ -673,7 +673,7 @@ TEST_F(FallbackRead, fallback_read_handles_interrupted_pread)
 
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(msys, pread)
-        .WillOnce(testing::Throw(Sys::RuntimeError(EINTR)))
+        .WillOnce(testing::Throw(std::system_error(EINTR, std::generic_category())))
         .WillRepeatedly(testing::Invoke([this](int fd, void *buf, size_t count, hoff_t offset) -> ssize_t {
             return this->fake_pread(fd, buf, count, offset);
         }));

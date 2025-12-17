@@ -19,6 +19,7 @@
 #include <hip/driver_types.h>
 #include <stdexcept>
 #include <sys/mman.h>
+#include <system_error>
 
 using namespace hipFile;
 
@@ -105,8 +106,8 @@ Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer,
                     throw std::runtime_error("Invalid IO type");
             }
         }
-        catch (const Sys::RuntimeError &e) {
-            if (e.error == EINTR) {
+        catch (const std::system_error &e) {
+            if (e.code().value() == EINTR) {
                 continue;
             }
             throw;

@@ -9,7 +9,6 @@
 #include "mhip.h"
 #include "mmountinfo.h"
 #include "msys.h"
-#include "sys.h"
 
 #include <cerrno>
 #include <cstdint>
@@ -17,6 +16,7 @@
 #include <gtest/gtest.h>
 #include <hip/hip_runtime_api.h>
 #include <memory>
+#include <system_error>
 
 using namespace hipFile;
 using namespace testing;
@@ -105,7 +105,7 @@ TEST_F(HipFileDriverAdmin, HandleRegisterBadFD)
     descr.handle.fd = -1;
     descr.type      = hipFileHandleTypeOpaqueFD;
 
-    EXPECT_CALL(msys, statx).WillOnce(Throw(Sys::RuntimeError(EBADF)));
+    EXPECT_CALL(msys, statx).WillOnce(Throw(std::system_error(EBADF, std::generic_category())));
 
     ASSERT_EQ(hipFileUseCount(), 0);
     ASSERT_NE(hipFileHandleRegister(&handle, &descr), HIPFILE_SUCCESS);

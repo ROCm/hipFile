@@ -5,11 +5,14 @@
 
 #include "sys.h"
 
+#include <cerrno>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <sys/stat.h> // IWYU pragma: keep
+#include <sys/types.h>
 #include <syslog.h>
+#include <system_error>
 #include <unistd.h>
 
 namespace hipFile {
@@ -19,7 +22,7 @@ static inline R
 throwOn(const L throw_value, R value)
 {
     if (throw_value == value) {
-        throw Sys::RuntimeError();
+        throw std::system_error(errno, std::generic_category());
     }
     return value;
 }

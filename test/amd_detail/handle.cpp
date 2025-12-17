@@ -12,7 +12,6 @@
 #include "mmountinfo.h"
 #include "mountinfo.h"
 #include "state.h"
-#include "sys.h"
 
 #include <cerrno>
 #include <cstring>
@@ -24,6 +23,7 @@
 #include <optional>
 #include <stdexcept>
 #include <sys/eventfd.h>
+#include <system_error>
 
 using namespace hipFile;
 using namespace testing;
@@ -211,7 +211,7 @@ TEST_F(HipFileHandle, RocfileHandleRegisterStatxError)
     rfd.type      = hipFileHandleTypeOpaqueFD;
     rfd.handle.fd = 0xBADF00D;
 
-    EXPECT_CALL(msys, statx).WillOnce(Throw(Sys::RuntimeError(EBADF)));
+    EXPECT_CALL(msys, statx).WillOnce(Throw(std::system_error(EBADF, std::generic_category())));
 
     ASSERT_EQ(hipFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileInternalError));
 }
@@ -225,7 +225,7 @@ TEST_F(HipFileHandle, RocfileHandleRegisterFcntlError)
     rfd.handle.fd = 0xBADF00D;
 
     EXPECT_CALL(msys, statx);
-    EXPECT_CALL(msys, fcntl).WillOnce(Throw(Sys::RuntimeError(EBADF)));
+    EXPECT_CALL(msys, fcntl).WillOnce(Throw(std::system_error(EBADF, std::generic_category())));
 
     ASSERT_EQ(hipFileHandleRegister(&fh, &rfd), HipFileOpError(hipFileInternalError));
 }

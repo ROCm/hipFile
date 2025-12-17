@@ -5,17 +5,15 @@
 
 #pragma once
 
-#include <cerrno>
 #include <cstdint>
 #include <linux/stat.h>
-#include <stdexcept>
 #include <sys/stat.h>
 #include <sys/types.h>
 
 /* sys wraps system APIs used by hipFile which enables unit tests to mock system calls.
  *
  * The wrapper methods should
- *   - Throw a Sys::RuntimeError if the wrapped function fails
+ *   - Throw a std::system_error if the wrapped function fails
  *   - Use return values instead of out arguments when possible
  */
 
@@ -46,22 +44,6 @@ struct Sys {
     virtual int fcntl(int fd, int op, uintptr_t arg) const;
 
     virtual char *getenv(const char *name) const noexcept;
-
-    struct RuntimeError : public std::runtime_error {
-        /// The value of errno when RuntimeError was thrown
-        int error;
-
-        RuntimeError() : RuntimeError(errno)
-        {
-        }
-
-        // This constructor should be protected so that only unit tests can
-        // access it. But we need to modify the cmake target macros to allow us
-        // to include gtest.h
-        RuntimeError(int _error) : std::runtime_error("System Error"), error(_error)
-        {
-        }
-    };
 };
 
 }
