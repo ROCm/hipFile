@@ -70,10 +70,13 @@ File::getBufferedFd() const
     return buffered_fd.get();
 }
 
-int
+optional<int>
 File::getUnbufferedFd() const
 {
-    return unbuffered_fd.get();
+    if (unbuffered_fd) {
+        return unbuffered_fd.value().get();
+    }
+    return nullopt;
 }
 
 const struct statx &

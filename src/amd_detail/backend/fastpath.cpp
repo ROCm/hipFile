@@ -127,7 +127,7 @@ Fastpath::score(shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
 {
     bool accept_io{true};
 
-    accept_io &= !!(file->getStatusFlags() & O_DIRECT);
+    accept_io &= file->getUnbufferedFd().has_value();
 
     accept_io &= buffer->getType() == hipMemoryTypeDevice;
 
@@ -159,7 +159,7 @@ Fastpath::io(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, si
     size_t             nbytes{};
     size_t             buflen{buffer->getLength()};
 
-    handle.fd = file->getUnbufferedFd();
+    handle.fd = file->getUnbufferedFd().value();
 
     if (file_offset < 0) {
         throw std::invalid_argument("Negative file offset");
