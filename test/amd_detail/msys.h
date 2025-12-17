@@ -18,7 +18,6 @@ struct MSys : Sys {
     MSys() : co{this}
     {
     }
-    MOCK_METHOD(int, open, (const char *, int), (const, override));
     MOCK_METHOD(int, open, (const char *, int, mode_t), (const, override));
     MOCK_METHOD(void, close, (int), (const, override));
     MOCK_METHOD(void, fdatasync, (int), (const, override));

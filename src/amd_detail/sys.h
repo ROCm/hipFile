@@ -22,8 +22,7 @@ namespace hipFile {
 struct Sys {
     virtual ~Sys() = default;
 
-    virtual int  open(const char *pathname, int flags) const;
-    virtual int  open(const char *pathname, int flags, mode_t mode) const;
+    virtual int  open(const char *pathname, int flags, mode_t mode = 0) const;
     virtual void close(int fd) const;
 
     virtual void fdatasync(int fd) const;

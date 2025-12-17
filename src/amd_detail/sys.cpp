@@ -28,15 +28,14 @@ throwOn(const L throw_value, R value)
 }
 
 int
-Sys::open(const char *pathname, int flags) const
-{
-    return throwOn(-1, ::open(pathname, flags));
-}
-
-int
 Sys::open(const char *pathname, int flags, mode_t mode) const
 {
-    return throwOn(-1, ::open(pathname, flags, mode));
+    if (flags & O_CREAT) {
+        return throwOn(-1, ::open(pathname, flags, mode));
+    }
+    else {
+        return throwOn(-1, ::open(pathname, flags));
+    }
 }
 
 void

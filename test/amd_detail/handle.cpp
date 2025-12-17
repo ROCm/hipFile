@@ -108,11 +108,11 @@ struct ExpectUnregisteredFile {
         }
 
         if (builder.m_open_flags) {
-            EXPECT_CALL(builder.m_msys, open(_, builder.m_open_flags.value()))
+            EXPECT_CALL(builder.m_msys, open(_, builder.m_open_flags.value(), _))
                 .WillOnce(Return(builder.m_open_fd ? builder.m_open_fd.value() : -1));
         }
         else {
-            EXPECT_CALL(builder.m_msys, open(_, _))
+            EXPECT_CALL(builder.m_msys, open(_, _, _))
                 .WillOnce(Return(builder.m_open_fd ? builder.m_open_fd.value() : -1));
         }
     }
