@@ -458,6 +458,11 @@ jobs:
                 )
               }}
             '
+      # The hipFile packaging process has issues; notably:
+      # - Has a static lib but not shared lib.
+      # - Installs to /usr/local rather than /opt/rocm
+      # Leaving -Wl arg for now, but /usr/local is typically
+      # included by default by the compiler.
       - name: Configure fio
         run: |
           docker exec \
@@ -465,11 +470,12 @@ jobs:
             -w /ais/fio/build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
+              sed -i 's|-lhipfile|-lhipfile -lstdc++ -lmount|g' ../configure
               ROCM=/opt/rocm \
               HIPFILELIB=/usr/local/lib \
               HIP_PLATFORM=amd \
               CFLAGS="-I${ROCM}/include" \
-              LDFLAGS="-L${ROCM}/lib -L${HIPFILELIB} -Wl,-rpath,${HIPFILELIB}" \
+              LDFLAGS="-L${ROCM}/lib -Wl,-rpath,${HIPFILELIB}" \
               ../configure --enable-libhipfile
             '
       - name: Build fio
