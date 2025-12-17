@@ -441,6 +441,23 @@ jobs:
                 /ais/hipFile/util/ci-aiscp-test.sh \
                 /ais/hipfile-build/examples/aiscp/aiscp
             '
+      - name: Install the hipFile package
+        run: |
+          docker exec \
+            -t \
+            -w /ais/hipfile-build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              ${{
+                format(
+                  inputs.platform == 'ubuntu' && 'apt install -y ./{0}' ||
+                    inputs.platform == 'rocky' && 'dnf install -y ./{0}' ||
+                    inputs.platform == 'suse' && 'zypper install -y --allow-unsigned-rpm ./{0}' ||
+                    'echo "Unknown platform."; exit 1',
+                  needs.compile_on_AMD.outputs.ais_hipfile_pkg_filename
+                )
+              }}
+            '
       - name: Configure fio
         run: |
           docker exec \
@@ -449,10 +466,9 @@ jobs:
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               ROCM=/opt/rocm \
-              HIPFILE=/ais/hipfile-build \
-              HIPFILELIB=${HIPFILE}/src/amd_detail/ \
+              HIPFILELIB=/usr/local/lib \
               HIP_PLATFORM=amd \
-              CFLAGS="-I${ROCM}/include -I${HIPFILE}/include" \
+              CFLAGS="-I${ROCM}/include" \
               LDFLAGS="-L${ROCM}/lib -L${HIPFILELIB} -Wl,-rpath,${HIPFILELIB}" \
               ../configure --enable-libhipfile
             '
