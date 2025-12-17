@@ -280,7 +280,7 @@ TEST_P(FallbackParam, fallback_io_throws_on_bounce_buffer_allocation_failure)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
-    EXPECT_CALL(msys, mmap).WillOnce(testing::Throw(std::system_error()));
+    EXPECT_CALL(msys, mmap).WillOnce(testing::Throw(std::system_error(ENOMEM, std::generic_category())));
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 4096, 0, 0, 4096), std::system_error);
 }
 
