@@ -43,6 +43,7 @@ struct ExpectUnregisteredFileBuilder {
     optional<MountInfo>    m_mountinfo;
     optional<int>          m_open_fd;
     optional<int>          m_open_flags;
+    optional<int>          m_open_throws;
 
     ExpectUnregisteredFileBuilder(MSys &msys, MLibMountHelper &mlibmounthelper)
         : m_msys(msys), m_mlibmounthelper(mlibmounthelper)
@@ -69,6 +70,9 @@ struct ExpectUnregisteredFileBuilder {
 
     ExpectUnregisteredFileBuilder &open_fd(int fd)
     {
+        if (m_open_throws) {
+            throw "Cannot specify both open_throws(...) and open_fd(...)";
+        }
         m_open_fd = fd;
         return *this;
     }
@@ -76,6 +80,15 @@ struct ExpectUnregisteredFileBuilder {
     ExpectUnregisteredFileBuilder &open_flags(int flags)
     {
         m_open_flags = flags;
+        return *this;
+    }
+
+    ExpectUnregisteredFileBuilder &open_throws(int errno_)
+    {
+        if (m_open_fd) {
+            throw "Cannot specify both open_throws(...) and open_fd(...)";
+        }
+        m_open_throws = errno_;
         return *this;
     }
 
@@ -107,12 +120,20 @@ struct ExpectUnregisteredFile {
             EXPECT_CALL(builder.m_mlibmounthelper, getMountInfo);
         }
 
-        if (builder.m_open_flags) {
+        if (builder.m_open_throws && builder.m_open_flags) {
+            EXPECT_CALL(builder.m_msys, open(_, builder.m_open_flags.value(), _))
+                .WillOnce(Throw(std::system_error(builder.m_open_throws.value(), std::generic_category())));
+        }
+        else if (builder.m_open_throws) {
+            EXPECT_CALL(builder.m_msys, open)
+                .WillOnce(Throw(std::system_error(builder.m_open_throws.value(), std::generic_category())));
+        }
+        else if (builder.m_open_flags) {
             EXPECT_CALL(builder.m_msys, open(_, builder.m_open_flags.value(), _))
                 .WillOnce(Return(builder.m_open_fd ? builder.m_open_fd.value() : -1));
         }
         else {
-            EXPECT_CALL(builder.m_msys, open(_, _, _))
+            EXPECT_CALL(builder.m_msys, open)
                 .WillOnce(Return(builder.m_open_fd ? builder.m_open_fd.value() : -1));
         }
     }
@@ -409,6 +430,13 @@ TEST_F(HipFileHandle, UnregisteredFileClosesOpenedFileWhenDestroyed)
     ExpectUnregisteredFileBuilder(msys, mlibmounthelper).open_fd(open_fd).build();
     UnregisteredFile uf{777777};
     EXPECT_CALL(msys, close(open_fd));
+}
+
+TEST_F(HipFileHandle, UnregisteredFilesUnbufferedFdIsNulloptIfOpenThrowsEinval)
+{
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper).fd_flags(~O_DIRECT).open_throws(EINVAL).build();
+    UnregisteredFile uf{777777};
+    ASSERT_EQ(uf.unbuffered_fd, nullopt);
 }
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

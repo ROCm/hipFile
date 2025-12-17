@@ -15,6 +15,7 @@
 #include <string>
 #include <sys/sysmacros.h>
 #include <syslog.h>
+#include <system_error>
 
 using namespace std;
 
@@ -40,9 +41,16 @@ UnregisteredFile::UnregisteredFile(int fd)
             Context<Sys>::get()->open(path.c_str(), (flags | O_CLOEXEC) & ~O_DIRECT));
     }
     else {
-        buffered_fd   = FileDescriptor::make_unmanaged(fd);
-        unbuffered_fd = FileDescriptor::make_managed(
-            Context<Sys>::get()->open(path.c_str(), (flags | O_CLOEXEC) | O_DIRECT));
+        buffered_fd = FileDescriptor::make_unmanaged(fd);
+        try {
+            unbuffered_fd = FileDescriptor::make_managed(
+                Context<Sys>::get()->open(path.c_str(), (flags | O_CLOEXEC) | O_DIRECT));
+        }
+        catch (const std::system_error &e) {
+            if (e.code().value() == EINVAL) {
+                unbuffered_fd = nullopt;
+            }
+        }
     }
 }
 
