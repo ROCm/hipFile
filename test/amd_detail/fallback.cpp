@@ -376,7 +376,7 @@ TEST_F(FallbackWrite, fallback_write_throws_on_pwrite_exception)
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(mhip, hipMemcpy);
     EXPECT_CALL(mhip, hipStreamSynchronize);
-    EXPECT_CALL(msys, pwrite).WillOnce(testing::Throw(std::system_error()));
+    EXPECT_CALL(msys, pwrite).WillOnce(testing::Throw(std::system_error(EIO, std::generic_category())));
     EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
 
     ASSERT_THROW(Fallback().io(IoType::Write, file, buffer, buffer->getLength(), 0, 0), std::system_error);
