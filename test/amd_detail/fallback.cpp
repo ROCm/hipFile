@@ -606,7 +606,7 @@ TEST_F(FallbackRead, fallback_read_throws_on_pread_exception)
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
-    EXPECT_CALL(msys, pread).WillOnce(testing::Throw(std::system_error()));
+    EXPECT_CALL(msys, pread).WillOnce(testing::Throw(std::system_error(EIO, std::generic_category())));
     EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
     ASSERT_THROW(Fallback().io(IoType::Read, file, buffer, 4096, 0, 0), std::system_error);
 }
