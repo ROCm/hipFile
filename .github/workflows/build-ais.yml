@@ -449,8 +449,8 @@ jobs:
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               ROCM=/opt/rocm \
-              HIPFILE=/ais/hipFile \
-              HIPFILELIB=${HIPFILE}/build/src/amd_detail/ \
+              HIPFILE=/ais/hipfile-build \
+              HIPFILELIB=${HIPFILE}/src/amd_detail/ \
               HIP_PLATFORM=amd \
               CFLAGS="-I${ROCM}/include -I${HIPFILE}/include" \
               LDFLAGS="-L${ROCM}/lib -L${HIPFILELIB} -Wl,-rpath,${HIPFILELIB}" \
