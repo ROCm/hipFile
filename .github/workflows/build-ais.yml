@@ -381,6 +381,11 @@ jobs:
           docker cp \
             ${GITHUB_WORKSPACE}/hipfile-build \
             ${AIS_CONTAINER_NAME}:/ais/hipfile-build
+      - name: DEBUG - Check build dir contents
+        run: |
+          ls -al ${GITHUB_WORKSPACE}/hipfile-build
+          echo "---------------------------------------"
+          docker exec -t -w /ais/hipfile-build ${AIS_CONTAINER_NAME} /bin/bash -c 'ls -al .'
       - name: Generate build files for hipFile targeting the AMD platform (amdclang++)
         run: |
           docker exec \
