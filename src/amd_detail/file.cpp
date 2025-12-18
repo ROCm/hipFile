@@ -47,9 +47,10 @@ UnregisteredFile::UnregisteredFile(int fd)
                 Context<Sys>::get()->open(path.c_str(), (flags | O_CLOEXEC) | O_DIRECT));
         }
         catch (const std::system_error &e) {
-            if (e.code().value() == EINVAL) {
-                unbuffered_fd = nullopt;
+            if (e.code().value() != EINVAL) {
+                throw;
             }
+            unbuffered_fd = nullopt;
         }
     }
 }

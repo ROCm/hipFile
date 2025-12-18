@@ -439,4 +439,10 @@ TEST_F(HipFileHandle, UnregisteredFilesUnbufferedFdIsNulloptIfOpenThrowsEinval)
     ASSERT_EQ(uf.unbuffered_fd, nullopt);
 }
 
+TEST_F(HipFileHandle, UnregisteredFileConstructorThrowsOnErrOtherThanEinval)
+{
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper).fd_flags(~O_DIRECT).open_throws(EPERM).build();
+    ASSERT_THROW(UnregisteredFile{777777}, std::system_error);
+}
+
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON
