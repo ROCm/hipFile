@@ -9,6 +9,7 @@
 #include "file.h"
 #include "hip.h"
 #include "hipfile.h"
+#include "trace.h"
 #include "io.h"
 
 #include <cstdint>
@@ -187,6 +188,6 @@ Fastpath::io(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, si
         default:
             throw std::runtime_error("Invalid IoType");
     }
-
+    USDT_HIPFILE(ais_io, static_cast<unsigned long>(type), nbytes);
     return static_cast<ssize_t>(nbytes);
 }
