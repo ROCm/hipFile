@@ -123,6 +123,11 @@ include(AISAddLibraries)
 # Options
 #-----------------------------------------------------------------------------
 
+# rocm_create_package makes decisions on what type of package to produce
+# based on BUILD_SHARED_LIBS. If we don't set this here we will only get
+# a dev package.
+set(BUILD_SHARED_LIBS ON)
+
 #-----------------------------------------------------------------------------
 # Code coverage (via llvm-cov)
 #
