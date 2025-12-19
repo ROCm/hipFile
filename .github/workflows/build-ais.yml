@@ -157,17 +157,24 @@ jobs:
             -w /ais/hipFile/build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
-              echo "$(
-                ${{
-                  format(
-                    inputs.platform == 'ubuntu' && 'dpkg-deb -I {0}' || 'rpm -qpi --requires {0}',
-                    steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_FILENAME
-                  )
-                }}
-              )"
+              echo "Runtime Package:"
+              ${{
+                format(
+                  inputs.platform == 'ubuntu' && 'dpkg-deb -I {0}' || 'rpm -qpi --requires {0}',
+                  steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_FILENAME
+                )
+              }}
+              echo -e "\n\nDevelopment Package:"
+              ${{
+                format(
+                  inputs.platform == 'ubuntu' && 'dpkg-deb -I {0}' || 'rpm -qpi --requires {0}',
+                  steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_DEV_FILENAME
+                )
+              }}
             '
       - name: Validate Metadata stored correctly
         run: |
+          echo "hipFile package dev filename: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_DEV_FILENAME }}"
           echo "hipFile package filename: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_FILENAME }}"
           echo "hipFile package version: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_VERSION }}"
           if [[ -z "${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_VERSION }}" ]]; then exit 1; fi
