@@ -11,6 +11,7 @@
 #include "hip.h"
 #include "io.h"
 #include "sys.h"
+#include "trace.h"
 
 #include <algorithm>
 #include <cerrno>
@@ -118,6 +119,6 @@ Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer,
             break;
         }
     } while (static_cast<size_t>(total_io_bytes) < size);
-
+    USDT_HIPFILE(posix_io, static_cast<unsigned long>(io_type), total_io_bytes);
     return total_io_bytes;
 }
