@@ -18,6 +18,7 @@ permissions:
 jobs:
   compile_on_AMD:
     outputs:
+      ais_hipfile_pkg_dev_filename: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_DEV_FILENAME }}
       ais_hipfile_pkg_filename: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_FILENAME }}
       ais_hipfile_pkg_version: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_VERSION }}
     runs-on: [ubuntu-24.04]
@@ -135,7 +136,10 @@ jobs:
             -w /ais/hipFile/build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
-              AIS_HIPFILE_PKG_FILENAME="$(echo hipfile-dev*.${{ inputs.platform == 'ubuntu' && 'deb' || 'rpm' }})"
+              shopt -s nullglob
+              AIS_HIPFILE_PKG_DEV_FILENAME="$(echo hipfile-de{v,vel}{-,_}[0-9]*.{deb,rpm})"
+              AIS_HIPFILE_PKG_FILENAME="$(echo hipfile{-,_}[0-9]*.{deb,rpm})"
+              echo "AIS_HIPFILE_PKG_DEV_FILENAME=${AIS_HIPFILE_PKG_DEV_FILENAME}" >> "${AIS_GITHUB_OUTPUT}"
               echo "AIS_HIPFILE_PKG_FILENAME=${AIS_HIPFILE_PKG_FILENAME}" >> "${AIS_GITHUB_OUTPUT}"
               echo "AIS_HIPFILE_PKG_VERSION=$(
                 ${{
