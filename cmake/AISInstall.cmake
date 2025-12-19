@@ -68,6 +68,10 @@ set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE.md")
 set(CPACK_RPM_PACKAGE_LICENSE "MIT")
 
 # Create the package
+# rocm_create_package makes decisions on what type of package to produce
+# based on BUILD_SHARED_LIBS. If we don't set this here we will only get
+# a dev package.
+set(BUILD_SHARED_LIBS ON)
 rocm_create_package(
     NAME "hipFile"
     DESCRIPTION "The hipFile library"
