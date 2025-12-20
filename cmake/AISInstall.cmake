@@ -9,8 +9,7 @@ include(ROCMInstallTargets)
 include(ROCMCreatePackage)
 
 # Install the package
-rocm_install(TARGETS hipfile_static)
-rocm_install(TARGETS hipfile_shared)
+rocm_install(TARGETS hipfile)
 
 # Install the headers
 rocm_install(
@@ -56,7 +55,7 @@ if(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
 endif()
 
 # Export the targets
-set(target_list ${target_list} roc::hipfile_shared roc::hipfile_static)
+set(target_list ${target_list} roc::hipfile)
 
 rocm_export_targets(
     TARGETS ${target_list}
@@ -67,7 +66,16 @@ rocm_export_targets(
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE.md")
 set(CPACK_RPM_PACKAGE_LICENSE "MIT")
 
+# rocm-cmake sets CPACK_SET_DESTDIR on Linux, which conflicts with
+# asking for relocatable packages
+set(CPACK_PACKAGE_RELOCATABLE OFF)
+set(CPACK_RPM_PACKAGE_RELOCATABLE OFF)
+set(CPACK_DEB_PACKAGE_RELOCATABLE OFF)
+
 # Create the package
+#
+# Note that you will just get a dev package if you have BUILD_SHARED_LIBS
+# set to off (since there are no shared libraries to install).
 rocm_create_package(
     NAME "hipFile"
     DESCRIPTION "The hipFile library"

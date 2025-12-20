@@ -34,6 +34,9 @@ project("hipfile"
     LANGUAGES C CXX HIP
 )
 
+# Switch between building static and shared libraries
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+
 # Use position-independent code everywhere
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -122,11 +125,6 @@ include(AISAddLibraries)
 #-----------------------------------------------------------------------------
 # Options
 #-----------------------------------------------------------------------------
-
-# rocm_create_package makes decisions on what type of package to produce
-# based on BUILD_SHARED_LIBS. If we don't set this here we will only get
-# a dev package.
-set(BUILD_SHARED_LIBS ON)
 
 #-----------------------------------------------------------------------------
 # Code coverage (via llvm-cov)

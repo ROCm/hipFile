@@ -25,7 +25,7 @@ set(HIPFILE_SOURCES
     sys.cpp
 )
 
-# Will create hipfile_(static|shared)
+# Create hipfile target
 ais_add_libraries(
     NAME     hipfile
     DETAIL   amd

@@ -40,7 +40,7 @@ endif()
 
 ais_add_executable(
     NAME hipfile_tests
-    DEPS hipfile_shared
+    DEPS hipfile
     SRCS ${UNIT_TEST_SOURCE_FILES} ${SHARED_SOURCE_FILES}
     SYSINCLS ${TEST_SYSINCLS}
 )
@@ -58,7 +58,7 @@ ais_gtest_discover_tests(
 
 ais_add_executable(
     NAME hipfile_system_tests
-    DEPS hipfile_shared
+    DEPS hipfile
     SRCS ${SYSTEM_TEST_SOURCE_FILES} ${SHARED_SOURCE_FILES}
     SYSINCLS ${TEST_SYSINCLS}
 )
@@ -79,12 +79,12 @@ ais_gtest_discover_tests(
 ais_add_executable(
     NAME test_hipfile_basic
     SRCS legacy/test-hipfile.cpp
-    DEPS hipfile_shared
+    DEPS hipfile
 )
 ais_add_executable(
     NAME test_hipfile_batch
     SRCS legacy/test-hipfile-batch.cpp
-    DEPS hipfile_shared
+    DEPS hipfile
 )
 # ----------------------------------------
 

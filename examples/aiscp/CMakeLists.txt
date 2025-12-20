@@ -6,7 +6,7 @@ include(AISAddExecutable)
 
 ais_add_executable(
     NAME aiscp
-    DEPS hipfile_static
+    DEPS hipfile
     SRCS "aiscp.cpp"
     SYSINCLS ${HIPFILE_INCLUDE_PATH}
 )
