@@ -185,7 +185,7 @@ option(AIS_BUILD_EXAMPLES "Build example programs" ON)
 #------
 # docs
 #------
-option(AIS_BUILD_DOCS "Build the hipFile docs (requires Doxygen)" OFF)
+include(AISDocumentation)
 
 #-----------------------------------------------------------------------------
 # Find important packages for building the software
@@ -258,13 +258,6 @@ endif()
 # Add the aiscp example directory
 if(AIS_BUILD_EXAMPLES)
     add_subdirectory(examples/aiscp)
-endif()
-
-#-----------------------------------------------------------------------------
-# Configure docs
-#-----------------------------------------------------------------------------
-if(AIS_BUILD_DOCS)
-    add_subdirectory(docs)
 endif()
 
 #-----------------------------------------------------------------------------

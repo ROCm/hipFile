@@ -121,6 +121,6 @@ want a pdf, run `make pdf` in the `latex` directory, which will
 create a file named refman.pdf that you can rename.
 
 If you want to build the docs without compiling the libraries,
-you can just build the `doc` target:
+you can just build the `doc` target (if you've set `AIS_BUILD_DOCS`):
 
     `cmake --build . --target doc`
