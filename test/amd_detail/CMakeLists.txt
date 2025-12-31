@@ -38,7 +38,7 @@ set(TEST_SYSINCLS
 
 ais_add_executable(
     NAME internal_tests
-    DEPS hipfile_shared
+    DEPS hipfile
     SRCS ${TEST_SOURCE_FILES} ${SHARED_SOURCE_FILES}
     SYSINCLS ${TEST_SYSINCLS}
 )
@@ -63,7 +63,7 @@ ais_gtest_discover_tests(
 
 ais_add_executable(
     NAME state_mt
-    DEPS hipfile_shared
+    DEPS hipfile
     SRCS "state_mt.cpp"
     SYSINCLS ${HIPFILE_AMD_SOURCE_PATH} ${HIPFILE_INCLUDE_PATH}
 )
@@ -75,7 +75,7 @@ set_tests_properties(state_mt_test PROPERTIES LABELS "stress;internal")
 
 ais_add_executable(
     NAME batch_mt
-    DEPS hipfile_shared
+    DEPS hipfile
     SRCS "batch/batch_mt.cpp"
     SYSINCLS ${HIPFILE_AMD_SOURCE_PATH} ${HIPFILE_INCLUDE_PATH}
 )
