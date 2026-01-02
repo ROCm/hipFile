@@ -340,6 +340,14 @@ jobs:
           repository: ROCm/fio
           ref: hipFile
           path: fio
+      - name: Download hipFile runtime package
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 #v7.0.0
+        with:
+          name: ${{ needs.compile_on_AMD.outputs.ais_hipfile_pkg_filename }}
+      - name: Download hipFile development package
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 #v7.0.0
+        with:
+          name: ${{ needs.compile_on_AMD.outputs.ais_hipfile_pkg_dev_filename }}
       - name: Download hipFile build directory
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 #v7.0.0
         with:
@@ -379,6 +387,32 @@ jobs:
               cp -R /mnt/ais /ais
               mkdir /ais/hipFile/build
               mkdir /ais/fio/build
+            '
+      - name: Copy the hipFile packages into the container
+        run: |
+          docker cp \
+            ${GITHUB_WORKSPACE}/${{ needs.compile_on_AMD.outputs.ais_hipfile_pkg_filename }} \
+            "${AIS_CONTAINER_NAME}:/root"
+          docker cp \
+            ${GITHUB_WORKSPACE}/${{ needs.compile_on_AMD.outputs.ais_hipfile_pkg_dev_filename }} \
+            "${AIS_CONTAINER_NAME}:/root"
+      - name: Install the hipFile packages
+        run: |
+          docker exec \
+            -t \
+            -w /root \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              ${{
+                format(
+                  inputs.platform == 'ubuntu' && 'apt install -y ./{0} ./{1}' ||
+                    inputs.platform == 'rocky' && 'dnf install -y ./{0} ./{1}' ||
+                    inputs.platform == 'suse' && 'zypper install -y --allow-unsigned-rpm ./{0} ./{1}' ||
+                    'echo "Unknown platform."; exit 1',
+                  needs.compile_on_AMD.outputs.ais_hipfile_pkg_filename,
+                  needs.compile_on_AMD.outputs.ais_hipfile_pkg_dev_filename
+                )
+              }}
             '
       - name: Generate build files for hipFile targeting the AMD platform (amdclang++)
         run: |
