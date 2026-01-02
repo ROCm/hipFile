@@ -220,6 +220,22 @@ jobs:
           if-no-files-found: error
           retention-days: 1
           compression-level: 0
+      # CTestTestfiles.cmake hardcodes the absolute path of the GTest executables
+      # in the build directory. CTest relies on this metadata for execution. It is not
+      # trivial to modify this metadata, otherwise an installable test package could be
+      # used. For now, reuse the build directory.
+      - name: Copy hipFile build directory out of the container
+        run: |
+          docker cp \
+            "${AIS_CONTAINER_NAME}:/ais/hipFile/build" \
+            ${GITHUB_WORKSPACE}/hipfile-build-dir
+      - name: Upload runtime hipFile Package as an Artifact
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
+        with:
+          name: hipfile-build-dir-${{ inputs.platform }}
+          path: ${{ github.workspace }}/hipfile-build-dir
+          if-no-files-found: error
+          retention-days: 1
       - name: Clean CMake build directories
         run: |
           docker exec \
@@ -324,6 +340,11 @@ jobs:
           repository: ROCm/fio
           ref: hipFile
           path: fio
+      - name: Download hipFile build directory
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 #v7.0.0
+        with:
+          name: hipfile-build-dir-${{ inputs.platform }}
+          path: ${{ github.workspace }}/hipfile-build-dir
       - name: Authenticating to GitHub Container Registry
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3.6.0
         with:
