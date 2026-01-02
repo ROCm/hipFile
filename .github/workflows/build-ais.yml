@@ -454,6 +454,9 @@ jobs:
         if: ${{ always() }}
         run: |
           docker stop ${AIS_CONTAINER_NAME}
+      - name: Cleanup self-hosted runner workspace
+        if: ${{ always() }}
+        run: rm -rf ${GITHUB_WORKSPACE}/* ${GITHUB_WORKSPACE}/.*
   compile_on_NVIDIA:
     runs-on: [ubuntu-24.04]
     strategy:
