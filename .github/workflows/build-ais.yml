@@ -414,6 +414,19 @@ jobs:
                 )
               }}
             '
+      # GitHub Build Artifacts do not preserve file permissions, namely the executable bit.
+      - name: Fix file permissions on GTest executables
+        run: |
+          chmod a+x \
+            ${GITHUB_WORKSPACE}/hipfile-build-dir/test/hipfile_system_tests \
+            ${GITHUB_WORKSPACE}/hipfile-build-dir/test/amd_detail/batch_mt \
+            ${GITHUB_WORKSPACE}/hipfile-build-dir/test/amd_detail/state_mt \
+            ${GITHUB_WORKSPACE}/hipfile-build-dir/examples/aiscp/aiscp
+      - name: Copy the hipFile build directory into the container
+        run: |
+          docker cp \
+            ${GITHUB_WORKSPACE}/hipfile-build-dir/. \
+            "${AIS_CONTAINER_NAME}:/ais/hipFile/build"
       - name: Generate build files for hipFile targeting the AMD platform (amdclang++)
         run: |
           docker exec \
