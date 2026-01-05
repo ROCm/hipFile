@@ -469,8 +469,8 @@ jobs:
               HIPFILE=/ais/hipFile \
               HIPFILELIB=${HIPFILE}/build/src/amd_detail/ \
               HIP_PLATFORM=amd \
-              CFLAGS="-I${ROCM}/include -I${HIPFILE}/include" \
-              LDFLAGS="-L${ROCM}/lib -L${HIPFILELIB} -Wl,-rpath,${HIPFILELIB}" \
+              CFLAGS="-I${ROCM}/include" \
+              LDFLAGS="-L${ROCM}/lib -Wl,-rpath,${ROCM}/lib" \
               ../configure --enable-libhipfile
             '
       - name: Build fio
