@@ -427,29 +427,6 @@ jobs:
           docker cp \
             ${GITHUB_WORKSPACE}/hipfile-build-dir/. \
             "${AIS_CONTAINER_NAME}:/ais/hipFile/build"
-      - name: Generate build files for hipFile targeting the AMD platform (amdclang++)
-        run: |
-          docker exec \
-            -t \
-            -w /ais/hipFile/build \
-            ${AIS_CONTAINER_NAME} \
-            /bin/bash -c '
-              cmake \
-                -DCMAKE_CXX_COMPILER=amdclang++ \
-                -DCMAKE_CXX_FLAGS="-Werror" \
-                -DCMAKE_HIP_PLATFORM=amd \
-                -DAIS_BUILD_DOCS=ON \
-                ..
-            '
-      - name: Build hipFile for the AMD platform (amdclang++)
-        run: |
-          docker exec \
-            -t \
-            -w /ais/hipFile/build \
-            ${AIS_CONTAINER_NAME} \
-            /bin/bash -c '
-              cmake --build . --parallel
-            '
       - name: Run hipFile system tests for the AMD platform (amdclang++)
         run: |
           docker exec \
