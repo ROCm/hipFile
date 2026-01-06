@@ -117,6 +117,17 @@ list(APPEND CMAKE_PREFIX_PATH
     /opt/rocm/hip
 )
 
+# Set hipFile Install Path to the ROCm directory
+# Note: CMAKE_INSTALL_PREFIX is set to a default by project().
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "${ROCM_PATH}" CACHE PATH "The path where hipFile should be installed" FORCE)
+endif()
+
+# Fix library install directory to "lib" to be inline with the rest of ROCm
+# Note: If testing is enabled, installing GTest calls GNUInstallDirs which will
+#       set this before ROCMInstallTargets can set it.
+set(CMAKE_INSTALL_LIBDIR "lib" CACHE STRING "Directory name for installed ROCm libraries")
+
 #-----------------------------------------------------------------------------
 # Import useful things for later
 #-----------------------------------------------------------------------------
