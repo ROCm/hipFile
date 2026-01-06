@@ -160,14 +160,16 @@ jobs:
               echo "Runtime Package:"
               ${{
                 format(
-                  inputs.platform == 'ubuntu' && 'dpkg-deb -I {0}' || 'rpm -qpi --requires {0}',
+                  inputs.platform == 'ubuntu' && 'dpkg-deb -I {0} && dpkg-deb -c {0}' ||
+                    'rpm -qpil --requires {0}',
                   steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_FILENAME
                 )
               }}
               echo -e "\n\nDevelopment Package:"
               ${{
                 format(
-                  inputs.platform == 'ubuntu' && 'dpkg-deb -I {0}' || 'rpm -qpi --requires {0}',
+                  inputs.platform == 'ubuntu' && 'dpkg-deb -I {0} && dpkg-deb -c {0}' ||
+                    'rpm -qpil --requires {0}',
                   steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_DEV_FILENAME
                 )
               }}
