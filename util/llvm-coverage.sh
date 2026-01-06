@@ -48,5 +48,5 @@ if [ ! -s "$COV_FILES" ]; then
 fi
 
 llvm-profdata merge -output="$BUILD_DIR"/coverage.profdata --input-files="$COV_FILES"
-llvm-cov report "$COLOR_ARG" -instr-profile="$BUILD_DIR"/coverage.profdata -object="$BUILD_DIR"/hipfile/src/amd_detail/libhipfile.so >"$BUILD_DIR"/coverage-report.txt
-llvm-cov show "$COLOR_ARG" -instr-profile="$BUILD_DIR"/coverage.profdata -object="$BUILD_DIR"/hipfile/src/amd_detail/libhipfile.so >"$BUILD_DIR"/coverage-lines.txt
+llvm-cov report "$COLOR_ARG" -instr-profile="$BUILD_DIR"/coverage.profdata -object="$BUILD_DIR"/src/amd_detail/libhipfile.so >"$BUILD_DIR"/coverage-report.txt
+llvm-cov show "$COLOR_ARG" -instr-profile="$BUILD_DIR"/coverage.profdata -object="$BUILD_DIR"/src/amd_detail/libhipfile.so >"$BUILD_DIR"/coverage-lines.txt
