@@ -1,0 +1,204 @@
+name: ais-system-tests
+run-name: Run AIS System Tests
+env:
+  AIS_GHA_CMD_FILES_DOCKER_DIR: /root/github
+  AIS_MOUNT_PATH: /mnt/ais/ext4
+on:
+  workflow_call:
+    inputs:
+      ais_hipfile_pkg_dev_filename:
+        required: true
+        type: string
+      ais_hipfile_pkg_filename:
+        required: true
+        type: string
+      ci_image:
+        required: true
+        type: string
+      platform:
+        required: true
+        type: string
+permissions:
+  contents: read
+  packages: read
+jobs:
+  run_system_tests:
+    runs-on: [linux, AIS]
+    steps:
+      - name: Set early AIS CI environment variables
+        run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "${GITHUB_ENV}"
+      - name: Set AIS CI container name
+        run: |
+          echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{ inputs.platform }}" >> "${GITHUB_ENV}"
+      - name: Fetching hipFile repository...
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #v6.0.1
+        with:
+          path: hipFile
+      - name: Fetching fio repository...
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #v6.0.1
+        with:
+          repository: ROCm/fio
+          ref: hipFile
+          path: fio
+      - name: Download hipFile runtime package
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 #v7.0.0
+        with:
+          name: ${{ inputs.ais_hipfile_pkg_filename }}
+      - name: Download hipFile development package
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 #v7.0.0
+        with:
+          name: ${{ inputs.ais_hipfile_pkg_dev_filename }}
+      - name: Download hipFile build directory
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 #v7.0.0
+        with:
+          name: hipfile-build-dir-${{ inputs.platform }}
+          path: ${{ github.workspace }}/hipfile-build-dir
+      - name: Authenticating to GitHub Container Registry
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # Detach the container and run separate commands to it.
+      # Thus we can make separate explicit steps in the Github CI
+      # as if we were able to parameterize the container image in the first place.
+      - name: Starting Docker Container
+        run: |
+          docker run \
+            -dt \
+            --rm \
+            --device=/dev/kfd \
+            --device=/dev/dri \
+            --security-opt seccomp=unconfined \
+            --pull always \
+            -v ${GITHUB_WORKSPACE}:/mnt/ais:ro \
+            -v ${{ env.AIS_MOUNT_PATH }}:/mnt/ais-fs \
+            --name ${AIS_CONTAINER_NAME} \
+            ${{ inputs.ci_image }}
+      - name: Create hipfile IO test directory
+        run: |
+          docker exec -t ${AIS_CONTAINER_NAME} /bin/bash -c "mkdir -p /mnt/ais-fs/${AIS_CONTAINER_NAME}"
+      - name: Make copy of the code repository and create build directories
+        run: |
+          docker exec \
+            -t \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              cp -R /mnt/ais /ais
+              mkdir /ais/hipFile/build
+              mkdir /ais/fio/build
+            '
+      - name: Copy the hipFile packages into the container
+        run: |
+          docker cp \
+            ${GITHUB_WORKSPACE}/${{ inputs.ais_hipfile_pkg_filename }} \
+            "${AIS_CONTAINER_NAME}:/root"
+          docker cp \
+            ${GITHUB_WORKSPACE}/${{ inputs.ais_hipfile_pkg_dev_filename }} \
+            "${AIS_CONTAINER_NAME}:/root"
+      - name: Install the hipFile packages
+        run: |
+          docker exec \
+            -t \
+            -w /root \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              ${{
+                format(
+                  inputs.platform == 'ubuntu' && 'apt install -y ./{0} ./{1}' ||
+                    inputs.platform == 'rocky' && 'dnf install -y ./{0} ./{1}' ||
+                    inputs.platform == 'suse' && 'zypper install -y --allow-unsigned-rpm ./{0} ./{1}' ||
+                    'echo "Unknown platform."; exit 1',
+                  inputs.ais_hipfile_pkg_filename,
+                  inputs.ais_hipfile_pkg_dev_filename
+                )
+              }}
+            '
+      # GitHub Build Artifacts do not preserve file permissions, namely the executable bit.
+      - name: Fix file permissions on GTest executables
+        run: |
+          chmod a+x \
+            ${GITHUB_WORKSPACE}/hipfile-build-dir/test/hipfile_system_tests \
+            ${GITHUB_WORKSPACE}/hipfile-build-dir/test/amd_detail/batch_mt \
+            ${GITHUB_WORKSPACE}/hipfile-build-dir/test/amd_detail/state_mt \
+            ${GITHUB_WORKSPACE}/hipfile-build-dir/examples/aiscp/aiscp
+      - name: Copy the hipFile build directory into the container
+        run: |
+          docker cp \
+            ${GITHUB_WORKSPACE}/hipfile-build-dir/. \
+            "${AIS_CONTAINER_NAME}:/ais/hipFile/build"
+      - name: Run hipFile system tests for the AMD platform (amdclang++)
+        run: |
+          docker exec \
+            -t \
+            -w /ais/hipFile/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              ctest -V -L "system" --parallel
+            '
+      - name: Stress tests for hipFile targeting the AMD platform (amdclang++)
+        run: |
+          docker exec \
+            -t \
+            -w /ais/hipFile/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              ctest -V -L "stress" --parallel
+            '
+      - name: hipFile fallback/POSIX IO test using aiscp
+        run: |
+          docker exec \
+            -t \
+            -w /mnt/ais-fs/${AIS_CONTAINER_NAME} \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              HIPFILE_FORCE_COMPAT_MODE=true
+                /ais/hipFile/util/ci-aiscp-test.sh \
+                /ais/hipFile/build/examples/aiscp/aiscp
+            '
+      - name: Configure fio
+        run: |
+          docker exec \
+            -t \
+            -w /ais/fio/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              ROCM=/opt/rocm \
+              HIPFILE=/ais/hipFile \
+              HIPFILELIB=${HIPFILE}/build/src/amd_detail/ \
+              HIP_PLATFORM=amd \
+              CFLAGS="-I${ROCM}/include" \
+              LDFLAGS="-L${ROCM}/lib -Wl,-rpath,${ROCM}/lib" \
+              ../configure --enable-libhipfile
+            '
+      - name: Build fio
+        run: |
+          docker exec \
+            -t \
+            -w /ais/fio/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              make -j
+            '
+      - name: hipFile fallback/POSIX IO test using fio
+        run: |
+          docker exec \
+            -t \
+            -w /mnt/ais-fs/${AIS_CONTAINER_NAME} \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              HIPFILE_FORCE_COMPAT_MODE=true \
+                /ais/fio/build/fio \
+                /ais/hipFile/util/fio/write-read-verify.fio
+            '
+      - name: Destroy hipfile IO test directory
+        if: ${{ always() }}
+        run: |
+          docker exec -t ${AIS_CONTAINER_NAME} /bin/bash -c "rm -fr /mnt/ais-fs/${AIS_CONTAINER_NAME}"
+      - name: Cleanup & Stop the Docker container
+        if: ${{ always() }}
+        run: |
+          docker stop ${AIS_CONTAINER_NAME}
+      - name: Cleanup self-hosted runner workspace
+        if: ${{ always() }}
+        run: rm -rf ${GITHUB_WORKSPACE}/* ${GITHUB_WORKSPACE}/.*
