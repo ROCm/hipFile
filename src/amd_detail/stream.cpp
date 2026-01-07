@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 #include "context.h"
+#include "hip.h"
 #include "hipfile.h"
 #include "passkey.h"
 #include "stream.h"
@@ -17,8 +18,10 @@
 
 namespace hipFile {
 
-Stream::Stream(const hipStream_t _hip_stream, uint32_t flags, const PassKey<StreamMap> &)
-    : hip_stream{_hip_stream}, fixed_buf_offset{(flags & HIPFILE_STREAM_FIXED_BUF_OFFSET) != 0},
+Stream::Stream(const hipStream_t _hip_stream, hipDevice_t _device_id, uint32_t flags,
+               const PassKey<StreamMap> &)
+    : hip_stream{_hip_stream}, device_id{_device_id},
+      fixed_buf_offset{(flags & HIPFILE_STREAM_FIXED_BUF_OFFSET) != 0},
       fixed_file_offset{(flags & HIPFILE_STREAM_FIXED_FILE_OFFSET) != 0},
       fixed_io_size{(flags & HIPFILE_STREAM_FIXED_FILE_SIZE) != 0},
       page_aligned{(flags & HIPFILE_STREAM_PAGE_ALIGNED_INPUTS) != 0}
@@ -33,6 +36,11 @@ hipStream_t
 Stream::getHipStream() const
 {
     return hip_stream;
+}
+hipDevice_t
+Stream::getHipDevice() const
+{
+    return device_id;
 }
 bool
 Stream::fixedBufferOffset() const
@@ -67,7 +75,9 @@ StreamMap::registerStream(hipStream_t hip_stream, uint32_t flags)
         throw std::invalid_argument("Stream is already registered");
     }
 
-    auto stream = std::shared_ptr<Stream>(new Stream(hip_stream, flags, PassKey<StreamMap>{}));
+    hipDevice_t device_id = Context<Hip>::get()->hipStreamGetDevice(hip_stream);
+
+    auto stream = std::shared_ptr<Stream>(new Stream(hip_stream, device_id, flags, PassKey<StreamMap>{}));
     StreamMap::from_ptr[hip_stream] = stream;
 }
 
@@ -87,7 +97,8 @@ StreamMap::getStream(hipStream_t hip_stream)
 {
     auto itr = StreamMap::from_ptr.find(hip_stream);
     if (StreamMap::from_ptr.end() == itr) {
-        return std::shared_ptr<Stream>(new Stream(hip_stream, 0, PassKey<StreamMap>{}));
+        hipDevice_t device_id = Context<Hip>::get()->hipStreamGetDevice(hip_stream);
+        return std::shared_ptr<Stream>(new Stream(hip_stream, device_id, 0, PassKey<StreamMap>{}));
     }
 
     return itr->second;
