@@ -57,3 +57,25 @@ jobs:
           format('ghcr.io/rocm/hipfile/ais_ci_{0}:latest', inputs.platform)
         }}
       platform: ${{ inputs.platform }}
+  build_and_test_Nvidia:
+    if: >-
+      ${{
+        !cancelled() &&
+        (
+          needs.build_AIS_CI_image.result == 'skipped' ||
+          (
+            needs['AIS_CI_Pre-check'].outputs.changed_dockerfile == '1' &&
+            needs.build_AIS_CI_image.result == 'success'
+          )
+        )
+      }}
+    needs: [AIS_CI_Pre-check, build_AIS_CI_image]
+    uses: ./.github/workflows/build-ais-nvidia.yml
+    with:
+      ci_image: >-
+        ${{
+          needs.AIS_CI_Pre-check.outputs.changed_dockerfile == '1' &&
+          needs.build_AIS_CI_image.outputs.ci_image ||
+          format('ghcr.io/rocm/hipfile/ais_ci_{0}:latest', inputs.platform)
+        }}
+      platform: ${{ inputs.platform }}

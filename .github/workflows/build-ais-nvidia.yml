@@ -1,0 +1,101 @@
+name: build_ais_nvidia
+run-name: Build AIS for Nvidia platforms
+env:
+  AIS_MOUNT_PATH: /mnt/ais/ext4
+on:
+  workflow_call:
+    inputs:
+      ci_image:
+        required: true
+        type: string
+      platform:
+        required: true
+        type: string
+permissions:
+  contents: read
+  packages: read
+jobs:
+  compile_on_NVIDIA:
+    runs-on: [ubuntu-24.04]
+    strategy:
+      fail-fast: false
+      matrix:
+        supported_compilers:
+          - g++
+          - clang++
+    steps:
+      - name: Set early AIS CI environment variables
+        run: |
+          echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "${GITHUB_ENV}"
+          echo "AIS_SAFE_COMPILER_NAME=$(echo ${{ matrix.supported_compilers }} | sed 's|[\+]|plus|g')" >> "${GITHUB_ENV}"
+      - name: Set AIS CI container name
+        run: |
+          echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{ inputs.platform }}_${AIS_SAFE_COMPILER_NAME}" >> "${GITHUB_ENV}"
+      - name: Fetching code repository...
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #v6.0.1
+        with:
+          path: hipFile
+      - name: Authenticating to GitHub Container Registry
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # Detach the container and run separate commands to it.
+      # Thus we can make separate explicit steps in the Github CI
+      # as if we were able to parameterize the container image in the first place.
+      - name: Starting Docker Container
+        run: |
+          docker run \
+            -dt \
+            --rm \
+            --pull always \
+            -v ${GITHUB_WORKSPACE}:/mnt/ais:ro \
+            -v ${{ env.AIS_MOUNT_PATH }}:/mnt/ais-fs \
+            --name ${AIS_CONTAINER_NAME} \
+            ${{ inputs.ci_image }}
+      - name: Make copy of the code repository and create build directories
+        run: |
+          docker exec \
+            -t \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              cp -R /mnt/ais /ais
+              mkdir /ais/hipFile/build
+            '
+      - name: Generate build files for hipFile targeting the NVIDIA platform (${{ matrix.supported_compilers }})
+        run: |
+          docker exec \
+            -t \
+            -w /ais/hipFile/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              cmake \
+                -DCMAKE_CXX_COMPILER=${{ matrix.supported_compilers }} \
+                -DCMAKE_CXX_FLAGS="-Werror" \
+                -DCMAKE_HIP_PLATFORM=nvidia \
+                -DAIS_BUILD_DOCS=ON \
+                ..
+            '
+      - name: Build hipFile for the NVIDIA platform (${{ matrix.supported_compilers }})
+        run: |
+          docker exec \
+            -t \
+            -w /ais/hipFile/build \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              cmake --build . --parallel
+            '
+      - name: Clean CMake build directories
+        run: |
+          docker exec \
+            -t \
+            -w /ais/hipFile \
+            ${AIS_CONTAINER_NAME} \
+            /bin/bash -c '
+              rm -rf build/*
+            '
+      - name: Cleanup & Stop the Docker container
+        if: ${{ always() }}
+        run: |
+          docker stop ${AIS_CONTAINER_NAME}
