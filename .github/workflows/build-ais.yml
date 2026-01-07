@@ -3,6 +3,7 @@ run-name: Build, Test, and Analyze AIS
 env:
   AIS_GHA_CMD_FILES_DOCKER_DIR: /root/github
   AIS_MOUNT_PATH: /mnt/ais/ext4
+  AIS_PKG_TYPE: ${{ inputs.platform == 'ubuntu' && 'DEB' || 'RPM' }}
 on:
   workflow_call:
     inputs:
@@ -130,7 +131,7 @@ jobs:
             -w /ais/hipFile/build \
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
-              cpack -G ${{ inputs.platform == 'ubuntu' && 'DEB' || 'RPM' }}
+              cpack -G ${{ env.AIS_PKG_TYPE }}
             '
       # CI is unable to peer into CMake to capture this data ahead of time.
       # We should only produce a single package so we can use a glob pattern
@@ -153,7 +154,7 @@ jobs:
               echo "AIS_HIPFILE_PKG_FILENAME=${AIS_HIPFILE_PKG_FILENAME}" >> "${AIS_GITHUB_OUTPUT}"
               echo "AIS_HIPFILE_PKG_VERSION=$(
                 ${{
-                  inputs.platform == 'ubuntu' &&
+                  env.AIS_PKG_TYPE == 'DEB' &&
                   'dpkg-deb -f ${AIS_HIPFILE_PKG_FILENAME} "Version"' ||
                   'rpm -qp --qf "%{VERSION}" ${AIS_HIPFILE_PKG_FILENAME}'
                 }}
@@ -170,7 +171,7 @@ jobs:
               echo "Runtime Package:"
               ${{
                 format(
-                  inputs.platform == 'ubuntu' && 'dpkg-deb -I {0} && dpkg-deb -c {0}' ||
+                  env.AIS_PKG_TYPE == 'DEB' && 'dpkg-deb -I {0} && dpkg-deb -c {0}' ||
                     'rpm -qpil --requires {0}',
                   steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_FILENAME
                 )
@@ -178,7 +179,7 @@ jobs:
               echo -e "\n\nDevelopment Package:"
               ${{
                 format(
-                  inputs.platform == 'ubuntu' && 'dpkg-deb -I {0} && dpkg-deb -c {0}' ||
+                  env.AIS_PKG_TYPE == 'DEB' && 'dpkg-deb -I {0} && dpkg-deb -c {0}' ||
                     'rpm -qpil --requires {0}',
                   steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_DEV_FILENAME
                 )
