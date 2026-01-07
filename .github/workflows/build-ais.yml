@@ -504,9 +504,3 @@ jobs:
       - name: Cleanup self-hosted runner workspace
         if: ${{ always() }}
         run: rm -rf ${GITHUB_WORKSPACE}/* ${GITHUB_WORKSPACE}/.*
-### Disable until NVIDIA runners come back
-#  Run_hipFile_NVIDIA:
-#    uses: ./.github/workflows/hipfile-nvidia.yml
-#    needs: build_AIS_image
-#    with:
-#      platform: ${{inputs.platform}}
