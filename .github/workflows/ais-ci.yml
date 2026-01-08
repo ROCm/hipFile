@@ -59,6 +59,38 @@ jobs:
       cxx_compiler: amdclang++
       platform: ${{ inputs.platform }}
       upload_artifacts: true
+  build_and_test_other_compilers:
+    # Try building on other compilers, but keep as separate job.
+    # Removes issues regarding matrix job overwriting outputs and
+    # does not propagate failures.
+    if: >-
+      ${{
+        !cancelled() &&
+        (
+          needs.build_AIS_CI_image.result == 'skipped' ||
+          (
+            needs['AIS_CI_Pre-check'].outputs.changed_dockerfile == '1' &&
+            needs.build_AIS_CI_image.result == 'success'
+          )
+        )
+      }}
+    needs: [AIS_CI_Pre-check, build_AIS_CI_image]
+    strategy:
+      fail-fast: false
+      matrix:
+        cxx_compiler:
+          - clang++
+          - g++
+    uses: ./.github/workflows/build-ais.yml
+    with:
+      ci_image: >-
+        ${{
+          needs.AIS_CI_Pre-check.outputs.changed_dockerfile == '1' &&
+          needs.build_AIS_CI_image.outputs.ci_image ||
+          format('ghcr.io/rocm/hipfile/ais_ci_{0}:latest', inputs.platform)
+        }}
+      cxx_compiler: ${{ matrix.cxx_compiler }}
+      platform: ${{ inputs.platform }}
   AIS_system_tests:
     # If build_AIS_CI_image is skipped, this will be skipped by default due to the
     # chained dependency. Provide our own condition to override the default behaviour.

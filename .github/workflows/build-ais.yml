@@ -1,4 +1,4 @@
-name: build_and_test # Mono-workflow - May be advantageous to split up
+name: build_and_test
 run-name: Build, Test, and Analyze AIS
 env:
   AIS_GHA_CMD_FILES_DOCKER_DIR: /root/github
@@ -280,78 +280,6 @@ jobs:
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               rm -rf build/*
-            '
-      - name: Cleanup & Stop the Docker container
-        if: ${{ always() }}
-        run: |
-          docker stop ${AIS_CONTAINER_NAME}
-  compile_on_AMD_other:
-    runs-on: [ubuntu-24.04]
-    strategy:
-      fail-fast: false
-      matrix:
-        alternate_compilers:
-          - clang++
-          - g++
-    steps:
-      - name: Set early AIS CI environment variables
-        run: |
-          echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "${GITHUB_ENV}"
-          echo "AIS_SAFE_COMPILER_NAME=$(echo ${{ matrix.alternate_compilers}} | sed 's|[\+]|plus|g')" >> "${GITHUB_ENV}"
-      - name: Set AIS CI container name
-        run: |
-          echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{ inputs.platform }}_${AIS_SAFE_COMPILER_NAME}" >> "${GITHUB_ENV}"
-      - name: Fetching code repository...
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #v6.0.1
-        with:
-          path: hipFile
-      - name: Authenticating to GitHub Container Registry
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3.6.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Starting Docker Container
-        run: |
-          docker run \
-            -dt \
-            --rm \
-            --pull always \
-            -v ${GITHUB_WORKSPACE}:/mnt/ais:ro \
-            -v ${{ env.AIS_MOUNT_PATH }}:/mnt/ais-fs \
-            --name ${AIS_CONTAINER_NAME} \
-            ${{ inputs.ci_image }}
-      - name: Make copy of the code repository and create build directories
-        run: |
-          docker exec \
-            -t \
-            ${AIS_CONTAINER_NAME} \
-            /bin/bash -c '
-              cp -R /mnt/ais /ais
-              mkdir /ais/hipFile/build
-            '
-      - name: Generate build files for hipFile targeting the AMD platform (${{ matrix.alternate_compilers }})
-        run: |
-          docker exec \
-            -t \
-            -w /ais/hipFile/build \
-            ${AIS_CONTAINER_NAME} \
-            /bin/bash -c '
-              cmake \
-                -DCMAKE_CXX_COMPILER=${{ matrix.alternate_compilers }} \
-                -DCMAKE_CXX_FLAGS="-Werror" \
-                -DCMAKE_HIP_PLATFORM=amd \
-                -DAIS_BUILD_DOCS=ON \
-                ..
-            '
-      - name: Build hipFile for the AMD platform (${{ matrix.alternate_compilers }})
-        run: |
-          docker exec \
-            -t \
-            -w /ais/hipFile/build \
-            ${AIS_CONTAINER_NAME} \
-            /bin/bash -c '
-              cmake --build . --parallel
             '
       - name: Cleanup & Stop the Docker container
         if: ${{ always() }}
