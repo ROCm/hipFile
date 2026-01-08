@@ -24,13 +24,13 @@ jobs:
         run: |
           echo "changed_dockerfile=$(./util/files-changed.sh origin/${{ github.base_ref }} HEAD 'util/docker/DOCKERFILE.*')" >> ${GITHUB_OUTPUT}
   build_AIS_CI_image:
-    if: ${{ needs.AIS_CI_Pre-check.outputs.changed_dockerfile == '1' }}
     needs: AIS_CI_Pre-check
     permissions:
       contents: read
       packages: write
     uses: ./.github/workflows/build-ais-ci-image.yml
     with:
+      dockerfile_changed: ${{ needs.AIS_CI_Pre-check.outputs.changed_dockerfile == '1' }}
       platform: ${{ inputs.platform }}
   build_and_test:
     # Run after build_AIS_CI_image but only if build_AIS_CI_image passed or was skipped.
@@ -49,13 +49,7 @@ jobs:
     needs: [AIS_CI_Pre-check, build_AIS_CI_image]
     uses: ./.github/workflows/build-ais.yml
     with:
-      # If Dockerfile changed, use the new CI image. Otherwise, use 'latest'.
-      ci_image: >-
-        ${{
-          needs.AIS_CI_Pre-check.outputs.changed_dockerfile == '1' &&
-          needs.build_AIS_CI_image.outputs.ci_image ||
-          format('ghcr.io/rocm/hipfile/ais_ci_{0}:latest', inputs.platform)
-        }}
+      ci_image: ${{ needs.build_AIS_CI_image.outputs.ci_image }}
       cxx_compiler: amdclang++
       platform: ${{ inputs.platform }}
       upload_artifacts: true
@@ -83,12 +77,7 @@ jobs:
           - g++
     uses: ./.github/workflows/build-ais.yml
     with:
-      ci_image: >-
-        ${{
-          needs.AIS_CI_Pre-check.outputs.changed_dockerfile == '1' &&
-          needs.build_AIS_CI_image.outputs.ci_image ||
-          format('ghcr.io/rocm/hipfile/ais_ci_{0}:latest', inputs.platform)
-        }}
+      ci_image: ${{ needs.build_AIS_CI_image.outputs.ci_image }}
       cxx_compiler: ${{ matrix.cxx_compiler }}
       platform: ${{ inputs.platform }}
   AIS_system_tests:
@@ -100,12 +89,7 @@ jobs:
     with:
       ais_hipfile_pkg_dev_filename: ${{ needs.build_and_test.outputs.ais_hipfile_pkg_dev_filename }}
       ais_hipfile_pkg_filename: ${{ needs.build_and_test.outputs.ais_hipfile_pkg_filename }}
-      ci_image: >-
-        ${{
-          needs.AIS_CI_Pre-check.outputs.changed_dockerfile == '1' &&
-          needs.build_AIS_CI_image.outputs.ci_image ||
-          format('ghcr.io/rocm/hipfile/ais_ci_{0}:latest', inputs.platform)
-        }}
+      ci_image: ${{ needs.build_and_test.outputs.ci_image }}
       platform: ${{ inputs.platform }}
   build_and_test_Nvidia:
     if: >-
@@ -122,10 +106,5 @@ jobs:
     needs: [AIS_CI_Pre-check, build_AIS_CI_image]
     uses: ./.github/workflows/build-ais-nvidia.yml
     with:
-      ci_image: >-
-        ${{
-          needs.AIS_CI_Pre-check.outputs.changed_dockerfile == '1' &&
-          needs.build_AIS_CI_image.outputs.ci_image ||
-          format('ghcr.io/rocm/hipfile/ais_ci_{0}:latest', inputs.platform)
-        }}
+      ci_image: ${{ needs.build_AIS_CI_image.outputs.ci_image }}
       platform: ${{ inputs.platform }}

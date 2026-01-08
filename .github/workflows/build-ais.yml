@@ -38,6 +38,9 @@ on:
       ais_hipfile_pkg_version:
         description: "Version for the hipFile DEB/RPM packages."
         value: ${{ jobs.compile_on_AMD.outputs.ais_hipfile_pkg_version }}
+      ci_image:
+        description: "Echo ci_image for downstream jobs to consume."
+        value: ${{ inputs.ci_image }}
 permissions:
   contents: read
   packages: read
