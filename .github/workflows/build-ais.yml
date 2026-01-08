@@ -189,7 +189,8 @@ jobs:
               echo "Runtime Package:"
               ${{
                 format(
-                  env.AIS_PKG_TYPE == 'DEB' && 'dpkg-deb -I {0} && dpkg-deb -c {0}' ||
+                  env.AIS_PKG_TYPE == 'DEB' &&
+                    'dpkg-deb -I {0} && dpkg-deb -c {0}' ||
                     'rpm -qpil --requires {0}',
                   steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_FILENAME
                 )
@@ -197,7 +198,8 @@ jobs:
               echo -e "\n\nDevelopment Package:"
               ${{
                 format(
-                  env.AIS_PKG_TYPE == 'DEB' && 'dpkg-deb -I {0} && dpkg-deb -c {0}' ||
+                  env.AIS_PKG_TYPE == 'DEB' &&
+                    'dpkg-deb -I {0} && dpkg-deb -c {0}' ||
                     'rpm -qpil --requires {0}',
                   steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_DEV_FILENAME
                 )

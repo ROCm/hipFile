@@ -41,7 +41,7 @@ jobs:
         (
           needs.build_AIS_CI_image.result == 'skipped' ||
           (
-            needs['AIS_CI_Pre-check'].outputs.changed_dockerfile == '1' &&
+            needs.AIS_CI_Pre-check.outputs.changed_dockerfile == '1' &&
             needs.build_AIS_CI_image.result == 'success'
           )
         )
@@ -69,7 +69,7 @@ jobs:
         (
           needs.build_AIS_CI_image.result == 'skipped' ||
           (
-            needs['AIS_CI_Pre-check'].outputs.changed_dockerfile == '1' &&
+            needs.AIS_CI_Pre-check.outputs.changed_dockerfile == '1' &&
             needs.build_AIS_CI_image.result == 'success'
           )
         )
