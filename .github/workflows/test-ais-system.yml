@@ -3,6 +3,12 @@ run-name: Run AIS System Tests
 env:
   AIS_GHA_CMD_FILES_DOCKER_DIR: /root/github
   AIS_MOUNT_PATH: /mnt/ais/ext4
+  AIS_PKG_MGR: >-
+    ${{
+      inputs.platform == 'rocky' && 'dnf' ||
+      inputs.platform == 'suse' && 'zypper' ||
+      inputs.platform == 'ubuntu' && 'apt'
+    }}
 on:
   workflow_call:
     inputs:
@@ -105,9 +111,9 @@ jobs:
             /bin/bash -c '
               ${{
                 format(
-                  inputs.platform == 'ubuntu' && 'apt install -y ./{0} ./{1}' ||
-                    inputs.platform == 'rocky' && 'dnf install -y ./{0} ./{1}' ||
-                    inputs.platform == 'suse' && 'zypper install -y --allow-unsigned-rpm ./{0} ./{1}' ||
+                  env.AIS_PKG_MGR == 'apt' && 'apt install -y ./{0} ./{1}' ||
+                    env.AIS_PKG_MGR == 'dnf' && 'dnf install -y ./{0} ./{1}' ||
+                    env.AIS_PKG_MGR == 'zypper' && 'zypper install -y --allow-unsigned-rpm ./{0} ./{1}' ||
                     'echo "Unknown platform."; exit 1',
                   inputs.ais_hipfile_pkg_filename,
                   inputs.ais_hipfile_pkg_dev_filename
