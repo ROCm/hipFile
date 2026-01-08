@@ -10,6 +10,8 @@ env:
       inputs.platform == 'ubuntu' && 'apt'
     }}
   AIS_PKG_TYPE: ${{ inputs.platform == 'ubuntu' && 'DEB' || 'RPM' }}
+  # Code coverage report only vetted to work for amdclang++ on Ubuntu
+  AIS_USE_CODE_COVERAGE: ${{ inputs.cxx_compiler == 'amdclang++' && inputs.platform == 'ubuntu' }}
 on:
   workflow_call:
     inputs:
@@ -104,7 +106,7 @@ jobs:
                 -DCMAKE_CXX_FLAGS="-Werror" \
                 -DCMAKE_HIP_PLATFORM=amd \
                 -DAIS_BUILD_DOCS=ON \
-                -DAIS_USE_CODE_COVERAGE=ON \
+                -DAIS_USE_CODE_COVERAGE=${{ env.AIS_USE_CODE_COVERAGE == 'true' && 'ON' || 'OFF' }} \
                 ..
             '
       - name: Build hipFile for the AMD platform (${{ inputs.cxx_compiler }})
@@ -126,6 +128,7 @@ jobs:
               ctest -V -L "unit" --parallel
             '
       - name: Generate coverage summary (${{ inputs.cxx_compiler }})
+        if: ${{ env.AIS_USE_CODE_COVERAGE == 'true' }}
         run: |
           docker exec \
             -t \
@@ -139,7 +142,6 @@ jobs:
               cat coverage-report.txt
               printf "\`\`\`\n"
             ' >> ${GITHUB_STEP_SUMMARY}
-        if: ${{ inputs.platform == 'ubuntu' }}
       - name: Create hipFile package
         run: |
           docker exec \
