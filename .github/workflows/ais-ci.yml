@@ -56,6 +56,7 @@ jobs:
           needs.build_AIS_CI_image.outputs.ci_image ||
           format('ghcr.io/rocm/hipfile/ais_ci_{0}:latest', inputs.platform)
         }}
+      cxx_compiler: amdclang++
       platform: ${{ inputs.platform }}
       upload_artifacts: true
   AIS_system_tests:

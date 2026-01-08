@@ -16,6 +16,9 @@ on:
       ci_image:
         required: true
         type: string
+      cxx_compiler:
+        required: true
+        type: string
       platform:
         required: true
         type: string
@@ -38,6 +41,7 @@ permissions:
   packages: read
 jobs:
   compile_on_AMD:
+    name: compile_on_AMD (${{ inputs.cxx_compiler }})
     outputs:
       ais_hipfile_pkg_dev_filename: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_DEV_FILENAME }}
       ais_hipfile_pkg_filename: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_FILENAME }}
@@ -48,9 +52,11 @@ jobs:
         run: |
           echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "${GITHUB_ENV}"
           echo "AIS_GHA_CMD_FILES_DIR=${GITHUB_ENV%/*}" >> "${GITHUB_ENV}"
+          echo "AIS_SAFE_COMPILER_NAME=$(echo ${{ inputs.cxx_compiler}} | sed 's|[\+]|plus|g')" >> "${GITHUB_ENV}"
       - name: Set AIS CI container name
+        # We should expect that there are multiple instances of this job with different cxx_compilers.
         run: |
-          echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{ inputs.platform }}" >> "${GITHUB_ENV}"
+          echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{ inputs.platform }}_${AIS_SAFE_COMPILER_NAME}" >> "${GITHUB_ENV}"
       - name: Fetching code repository...
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #v6.0.1
         with:
@@ -86,7 +92,7 @@ jobs:
               cp -R /mnt/ais /ais
               mkdir /ais/hipFile/build
             '
-      - name: Generate build files for hipFile targeting the AMD platform (amdclang++)
+      - name: Generate build files for hipFile targeting the AMD platform (${{ inputs.cxx_compiler }})
         run: |
           docker exec \
             -t \
@@ -94,14 +100,14 @@ jobs:
             ${AIS_CONTAINER_NAME} \
             /bin/bash -c '
               cmake \
-                -DCMAKE_CXX_COMPILER=amdclang++ \
+                -DCMAKE_CXX_COMPILER=${{ inputs.cxx_compiler }} \
                 -DCMAKE_CXX_FLAGS="-Werror" \
                 -DCMAKE_HIP_PLATFORM=amd \
                 -DAIS_BUILD_DOCS=ON \
                 -DAIS_USE_CODE_COVERAGE=ON \
                 ..
             '
-      - name: Build hipFile for the AMD platform (amdclang++)
+      - name: Build hipFile for the AMD platform (${{ inputs.cxx_compiler }})
         run: |
           docker exec \
             -t \
@@ -110,7 +116,7 @@ jobs:
             /bin/bash -c '
               cmake --build . --parallel
             '
-      - name: Test hipFile for the AMD platform (amdclang++)
+      - name: Test hipFile for the AMD platform (${{ inputs.cxx_compiler }})
         run: |
           docker exec \
             -t \
@@ -119,7 +125,7 @@ jobs:
             /bin/bash -c '
               ctest -V -L "unit" --parallel
             '
-      - name: Generate coverage summary (amdclang++)
+      - name: Generate coverage summary (${{ inputs.cxx_compiler }})
         run: |
           docker exec \
             -t \
