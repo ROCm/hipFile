@@ -46,7 +46,7 @@ open_file(const char *path, int flags, mode_t mode, int *fd, hipFileHandle_t *ha
 
     hipfile_err = hipFileHandleRegister(handle, &descr);
     if (hipFileSuccess != hipfile_err.err) {
-        fprintf(stderr, "Could not register %s (%s)\n", path, hipFileOpStatusError(hipfile_err.err));
+        fprintf(stderr, "Could not register %s (%s)\n", path, hipFileGetOpErrorString(hipfile_err.err));
         close(*fd);
         return 1;
     }

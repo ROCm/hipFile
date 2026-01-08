@@ -174,5 +174,5 @@
 |`cuFileUseCount`|15.0| | | |`hipFileUseCount`|8.0.0| |8.0.0| | | |
 |`cuFileWrite`|15.0| | | |`hipFileWrite`|8.0.0| |8.0.0| | | |
 |`cuFileWriteAsync`|15.0| | | |`hipFileWriteAsync`|8.0.0| |8.0.0| | | |
-|`cufileop_status_error`|15.0| | | |`hipFileOpStatusError`|8.0.0| | | | | |
+|`cufileop_status_error`|15.0| | | |`hipFileGetOpErrorString`|8.0.0| | | | | |
 

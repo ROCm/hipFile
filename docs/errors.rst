@@ -58,5 +58,5 @@ via the ``hipFileError_t`` struct.
 
 Other functions
 ---------------
-* ``hipFileOpStatusError()`` returns a string that corresponds to a ``hipFileOpError_t`` value. It cannot fail.
+* ``hipFileGetOpErrorString()`` returns a string that corresponds to a ``hipFileOpError_t`` value. It cannot fail.
 * ``hipFileUseCount()`` returns the reference count of the library. It returns -1 on errors.

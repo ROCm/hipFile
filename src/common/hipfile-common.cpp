@@ -8,7 +8,7 @@
 #include <hip/hip_runtime_api.h>
 
 const char *
-hipFileOpStatusError(hipFileOpError_t status)
+hipFileGetOpErrorString(hipFileOpError_t status)
 {
     switch (status) {
         case hipFileSuccess:

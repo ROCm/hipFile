@@ -182,7 +182,7 @@ typedef enum hipFileOpError {
  * @return Description of the error encountered
  */
 HIPFILE_API
-const char *hipFileOpStatusError(hipFileOpError_t status);
+const char *hipFileGetOpErrorString(hipFileOpError_t status);
 
 // Ignoring return values from hipFile APIs is discouraged.
 // In C++17 and C23 and up, we can make that emit a warning.
@@ -230,7 +230,7 @@ typedef struct __HIPFILE_NODISCARD hipFileError {
  *
  * @return A string description of a hipFile error
  */
-#define HIPFILE_ERRSTR(hip_op_err) hipFileOpStatusError((hipFileOpError_t)abs(hip_op_err))
+#define HIPFILE_ERRSTR(hip_op_err) hipFileGetOpErrorString((hipFileOpError_t)abs(hip_op_err))
 
 /*!
  * @brief Determine if an error is a hipFile driver error
