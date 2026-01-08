@@ -57,6 +57,7 @@ jobs:
           format('ghcr.io/rocm/hipfile/ais_ci_{0}:latest', inputs.platform)
         }}
       platform: ${{ inputs.platform }}
+      upload_artifacts: true
   AIS_system_tests:
     # If build_AIS_CI_image is skipped, this will be skipped by default due to the
     # chained dependency. Provide our own condition to override the default behaviour.

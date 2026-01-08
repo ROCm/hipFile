@@ -19,6 +19,10 @@ on:
       platform:
         required: true
         type: string
+      upload_artifacts:
+        default: false
+        description: "Upload binaries and the build tree as artifacts to GitHub."
+        type: boolean
     outputs:
       ais_hipfile_pkg_dev_filename:
         description: "Filename for the hipFile development DEB/RPM package."
@@ -216,6 +220,7 @@ jobs:
               }}
             '
       - name: Copy hipFile packages out of the container
+        if: ${{ inputs.upload_artifacts }}
         run: |
           docker cp \
             "${AIS_CONTAINER_NAME}:/ais/hipFile/build/${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_DEV_FILENAME }}" \
@@ -224,6 +229,7 @@ jobs:
             "${AIS_CONTAINER_NAME}:/ais/hipFile/build/${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_FILENAME }}" \
             ${GITHUB_WORKSPACE}
       - name: Upload development hipFile Package as an Artifact
+        if: ${{ inputs.upload_artifacts }}
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
         with:
           name: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_DEV_FILENAME }}
@@ -232,6 +238,7 @@ jobs:
           retention-days: 1
           compression-level: 0
       - name: Upload runtime hipFile Package as an Artifact
+        if: ${{ inputs.upload_artifacts }}
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
         with:
           name: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_FILENAME }}
@@ -244,11 +251,13 @@ jobs:
       # trivial to modify this metadata, otherwise an installable test package could be
       # used. For now, reuse the build directory.
       - name: Copy hipFile build directory out of the container
+        if: ${{ inputs.upload_artifacts }}
         run: |
           docker cp \
             "${AIS_CONTAINER_NAME}:/ais/hipFile/build" \
             ${GITHUB_WORKSPACE}/hipfile-build-dir
       - name: Upload runtime hipFile Package as an Artifact
+        if: ${{ inputs.upload_artifacts }}
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
         with:
           name: hipfile-build-dir-${{ inputs.platform }}
