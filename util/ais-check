@@ -3,8 +3,8 @@
 """
 Check if the necessary AMD Infinity Storage (AIS) components are installed
 
-If all necessary components are installed the program exists with exit code 0.
-If components are missing the program exists with a non-zero exit code.
+If all necessary components are installed the program exits with exit code 0.
+If components are missing the program exits with a non-zero exit code.
 """
 
 import argparse
