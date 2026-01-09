@@ -80,10 +80,21 @@ def amdgpu_supports_ais():
     """
     Check if kfd_ais_rw_file is in the kernel's symbol table
     """
-    with open("/proc/kallsyms", "r") as kallsyms:
-        for line in kallsyms:
-            if "kfd_ais_rw_file" in line:
-                return True
+    try:
+        with open("/proc/kallsyms", "r") as kallsyms:
+            for line in kallsyms:
+                if "kfd_ais_rw_file" in line:
+                    return True
+    except FileNotFoundError:
+        print(
+            "Unable to open /proc/kallsyms: file not found",
+            file=sys.stderr,
+        )
+    except PermissionError:
+        print(
+            "Unable to open /proc/kallsyms: permission denied",
+            file=sys.stderr,
+        )
     return False
 
 
