@@ -61,7 +61,7 @@ def hip_runtime_supports_ais():
             0,
             ctypes.byref(symbol_status),
         )
-        if err == 1:
+        if err != 0:
             if symbol_status.value != 1:
                 symbol = symbol.decode("utf-8")
                 err_str = hip.hipGetErrorString(err).decode("utf-8")
