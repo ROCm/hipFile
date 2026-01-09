@@ -78,7 +78,7 @@ def hip_runtime_supports_ais():
 
 def amdgpu_supports_ais():
     """
-    Check if kfd_ais_fw_file is in the kernel's symbol table
+    Check if kfd_ais_rw_file is in the kernel's symbol table
     """
     with open("/proc/kallsyms", "r") as kallsyms:
         for line in kallsyms:
