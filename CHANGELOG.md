@@ -4,6 +4,7 @@
 ### Added
 
 ### Changed
+* Renamed `hipFileOpStatusError()` to `hipFileGetOpErrorString()`
 
 ### Removed
 * The rocFile library has been completely removed and the code is now a part of hipFile.
