@@ -29,6 +29,22 @@ on:
             jobs.build_AIS_image.result == 'success' && jobs.build_AIS_image.outputs.new_ci_image ||
             null
           }}
+      ci_image_build_satisfied:
+        description: |
+          Indicates if the CI image is in an acceptable state.
+          Set to 'true' if the CI image is unchanged, or if a new CI image was
+          built successfully. Otherwise 'false'.
+        value: >-
+          ${{
+            (
+              !inputs.dockerfile_changed &&
+              jobs.build_AIS_image.result == 'skipped'
+            ) ||
+            (
+              inputs.dockerfile_changed &&
+              jobs.build_AIS_image.result == 'success'
+            )
+          }}
 permissions:
   contents: read
   packages: write
