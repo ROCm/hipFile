@@ -5,6 +5,8 @@
 
 ### Changed
 * Renamed `hipFileOpStatusError()` to `hipFileGetOpErrorString()`
+* The `hipfile-doc` CMake target no longer exists (just use `doc`)
+* The `doc` CMake target only exists if the `AIS_BUILD_DOCS` option is enabled
 
 ### Removed
 * The rocFile library has been completely removed and the code is now a part of hipFile.
