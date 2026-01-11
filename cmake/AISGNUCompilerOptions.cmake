@@ -52,7 +52,8 @@ function(get_ais_gnu_warning_flags outvar compiler_version)
         -Wformat-truncation=2
         -Wformat-y2k
         -Winvalid-pch
-        -Wlong-long
+        # This is a warning for when using <C++11
+        #-Wlong-long
         -Wlogical-op
         -Wmissing-declarations
         -Wnormalized
