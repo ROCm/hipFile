@@ -17,6 +17,9 @@ rocm_install(
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
+# Install utilities
+install(PROGRAMS util/aischeck DESTINATION bin)
+
 # When we have RELEASE/DEV builds set up, we can split
 # where these dependencies are added.
 # For now, just add both runtime & dev deps.
