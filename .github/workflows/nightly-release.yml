@@ -1,0 +1,24 @@
+name: nightly-release
+run-name: Create a nightly release of hipFile
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+permissions:
+  contents: read
+  packages: write
+jobs:
+  # Can't use a matrix to avoid clobbering outputs.
+  # Could consider a more complex way of passing matrix outputs around via build artifacts.
+  build_rocky:
+    uses: ./.github/workflows/nightly-build-ais.yml
+    with:
+      platform: rocky
+  build_suse:
+    uses: ./.github/workflows/nightly-build-ais.yml
+    with:
+      platform: suse
+  build_ubuntu:
+    uses: ./.github/workflows/nightly-build-ais.yml
+    with:
+      platform: ubuntu
