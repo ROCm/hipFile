@@ -22,3 +22,36 @@ jobs:
     uses: ./.github/workflows/nightly-build-ais.yml
     with:
       platform: ubuntu
+  publish_release:
+    needs: [build_rocky, build_suse, build_ubuntu]
+    runs-on: [ubuntu-24.04]
+    permissions:
+      contents: write
+    steps:
+      - name: Fetch hipFile Repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #v6.0.1
+      - name: Download hipFile packages
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 #v7.0.0
+        with:
+          merge-multiple: true
+          # Currently only vetted for ubuntu, suse, and rocky.
+          # Best effort to only match runtime and development packages while
+          # avoiding any extras/testing packages.
+          pattern: hipfile{[-_][0-9],-dev_[0-9],-devel-[0-9]}*.{deb,rpm}
+      - name: List Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release list
+      - name: Create a release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          shopt -s nullglob
+          gh release create \
+            --notes "$(date)" \
+            --prerelease \
+            --target develop \
+            --title Nightly \
+            nightly \
+            hipfile{[-_][0-9],-dev_[0-9],-devel-[0-9]}*.{deb,rpm}
