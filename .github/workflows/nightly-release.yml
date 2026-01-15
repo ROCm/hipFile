@@ -9,22 +9,22 @@ permissions:
   contents: read
   packages: write
 jobs:
-  # Can't use a matrix to avoid clobbering outputs.
-  # Could consider a more complex way of passing matrix outputs around via build artifacts.
-  build_rocky:
+  # We can use a matrix job if we don't need to reference the outputs
+  # of each individual job within the matrix.
+  # This relies on using a glob pattern to reference the build artifacts.
+  build_nightly_hipFile:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - rocky
+          - suse
+          - ubuntu
     uses: ./.github/workflows/nightly-build-ais.yml
     with:
-      platform: rocky
-  build_suse:
-    uses: ./.github/workflows/nightly-build-ais.yml
-    with:
-      platform: suse
-  build_ubuntu:
-    uses: ./.github/workflows/nightly-build-ais.yml
-    with:
-      platform: ubuntu
+      platform: ${{ matrix.platform }}
   publish_release:
-    needs: [build_rocky, build_suse, build_ubuntu]
+    needs: [build_nightly_hipFile]
     runs-on: [ubuntu-24.04]
     permissions:
       contents: write
