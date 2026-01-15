@@ -106,6 +106,7 @@ main(int argc, char *argv[])
     }
 
     if (0 == file_size) {
+        exit_status = EXIT_SUCCESS;
         goto close_dst;
     }
 
