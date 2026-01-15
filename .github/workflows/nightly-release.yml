@@ -62,7 +62,13 @@ jobs:
         run: |
           shopt -s nullglob
           gh release create \
-            --notes "$(date)" \
+            --notes "
+              Nightly Build as of: $(date)
+
+              The packages contained here are not suitable for production workloads.
+              These packages are also not targeted to a particular ROCm version. Some caution
+              is needed if managing multiple ROCm versions on a system.
+            " \
             --prerelease \
             --target develop \
             --title Nightly \
