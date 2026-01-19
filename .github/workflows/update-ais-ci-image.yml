@@ -26,6 +26,7 @@ jobs:
   update_AIS_CI_image:
     env:
       AIS_CI_IMAGE_NAME: ais_ci_${{ matrix.supported_platforms }}
+      AIS_INPUT_PLATFORM: ${{ matrix.supported_platforms }}
     if: ${{ github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch' }}
     runs-on: [ubuntu-24.04]
     container: docker:28.5
@@ -47,7 +48,7 @@ jobs:
       - name: Set target AIS CI Image
         id: ci-image
         run: |
-          echo "AIS_CI_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME}}:latest" \
+          echo "AIS_CI_IMAGE=${AIS_DOCKER_REGISTRY}/${AIS_CI_IMAGE_NAME}:latest" \
             >> "${GITHUB_OUTPUT}"
       - name: Set Docker Cache Instruction
         id: use-cache
@@ -71,9 +72,9 @@ jobs:
       - name: Build & Push latest image for AIS CI
         run: |
           docker buildx build \
-            -f ${GITHUB_WORKSPACE}/util/docker/DOCKERFILE.${{ env.AIS_CI_IMAGE_NAME }} \
+            -f ${GITHUB_WORKSPACE}/util/docker/DOCKERFILE.${AIS_CI_IMAGE_NAME} \
             --label "org.opencontainers.image.description= \
-              Latest AIS CI Image for ${{ matrix.supported_platforms }}." \
+              Latest AIS CI Image for ${AIS_INPUT_PLATFORM}." \
             --cache-to=type=registry,ref="${{ steps.ci-image.outputs.AIS_CI_IMAGE }}-cache" \
             ${{ steps.use-cache.outputs.CACHE_FROM_CMD }} \
             --push \
