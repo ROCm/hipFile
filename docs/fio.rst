@@ -22,4 +22,4 @@ To build fio with hipfile support use the following: ::
 
 Use the example workload file from the fio repository: ::
 
-    $ GPU_DEV_IDS=0 FIO_DIR=PATH_TO_EXT_OR_XFS_DIRECTORY ~/fio/fio ~/fio/examples/libhipfile-hipfile.fio
+    $ GPU_DEV_IDS=0 FIO_DIR=PATH_TO_EXT4_OR_XFS_DIRECTORY ~/fio/fio ~/fio/examples/libhipfile-hipfile.fio
