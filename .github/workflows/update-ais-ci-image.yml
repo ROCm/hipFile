@@ -1,5 +1,7 @@
 name: update_CI_image
 run-name: Update latest CI image
+env:
+  AIS_DOCKER_REGISTRY: ghcr.io/rocm/hipfile
 on:
   pull_request_target: # A.K.A. This is a privileged action. See `pull_request`.
     types:
@@ -23,7 +25,6 @@ permissions:
 jobs:
   update_AIS_CI_image:
     env:
-      AIS_DOCKER_REGISTRY: ghcr.io/rocm/hipfile
       AIS_CI_IMAGE_NAME: ais_ci_${{ matrix.supported_platforms }}
     if: ${{ github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch' }}
     runs-on: [ubuntu-24.04]

@@ -1,6 +1,7 @@
 name: new_CI_image
 run-name: Build the Docker image for AIS CI.
 env:
+  AIS_CI_IMAGE_NAME: ais_ci_${{ inputs.platform }}
   AIS_DOCKER_REGISTRY: ghcr.io/rocm/hipfile
   AIS_PR_BASE_URL: https://github.com/ROCm/hipFile/pull
 on:
@@ -51,8 +52,6 @@ permissions:
 jobs:
   build_AIS_image:
     if: ${{ inputs.dockerfile_changed }}
-    env:
-      AIS_CI_IMAGE_NAME: ais_ci_${{ inputs.platform }}
     runs-on: [ubuntu-24.04]
     container: docker:28.5
     outputs:
