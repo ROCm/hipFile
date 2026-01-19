@@ -55,14 +55,14 @@ jobs:
             --rm \
             --pull always \
             -v ${GITHUB_WORKSPACE}:/mnt/ais:ro \
-            -v ${AIS_MOUNT_PATH}:/mnt/ais-fs \
-            --name ${AIS_CONTAINER_NAME} \
-            ${AIS_INPUT_CI_IMAGE}
+            -v "${AIS_MOUNT_PATH}:/mnt/ais-fs" \
+            --name "${AIS_CONTAINER_NAME}" \
+            "${AIS_INPUT_CI_IMAGE}"
       - name: Make copy of the code repository and create build directories
         run: |
           docker exec \
             -t \
-            ${AIS_CONTAINER_NAME} \
+            "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
               cp -R /mnt/ais /ais
               mkdir /ais/hipFile/build
@@ -73,10 +73,10 @@ jobs:
             -e "_AIS_INPUT_CXX_COMPILER=${AIS_INPUT_CXX_COMPILER}" \
             -t \
             -w /ais/hipFile/build \
-            ${AIS_CONTAINER_NAME} \
+            "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
               cmake \
-                -DCMAKE_CXX_COMPILER=${_AIS_INPUT_CXX_COMPILER} \
+                -DCMAKE_CXX_COMPILER="${_AIS_INPUT_CXX_COMPILER}" \
                 -DCMAKE_CXX_FLAGS="-Werror" \
                 -DCMAKE_HIP_PLATFORM=nvidia \
                 -DAIS_BUILD_DOCS=ON \
@@ -87,7 +87,7 @@ jobs:
           docker exec \
             -t \
             -w /ais/hipFile/build \
-            ${AIS_CONTAINER_NAME} \
+            "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
               cmake --build . --parallel
             '
@@ -96,14 +96,14 @@ jobs:
           docker exec \
             -t \
             -w /ais/hipFile \
-            ${AIS_CONTAINER_NAME} \
+            "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
               rm -rf build/*
             '
       - name: Cleanup & Stop the Docker container
         if: ${{ always() }}
         run: |
-          docker stop ${AIS_CONTAINER_NAME}
+          docker stop "${AIS_CONTAINER_NAME}"
 ### Disable until NVIDIA runners come back
 #  Run_hipFile_NVIDIA:
 #    uses: ./.github/workflows/hipfile-nvidia.yml
