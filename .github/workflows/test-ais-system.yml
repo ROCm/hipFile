@@ -2,6 +2,10 @@ name: ais-system-tests
 run-name: Run AIS System Tests
 env:
   AIS_GHA_CMD_FILES_DOCKER_DIR: /root/github
+  AIS_INPUT_HIPFILE_PKG_DEV_FILENAME: ${{ inputs.ais_hipfile_pkg_dev_filename }}
+  AIS_INPUT_HIPFILE_PKG_FILENAME: ${{ inputs.ais_hipfile_pkg_filename }}
+  AIS_INPUT_CI_IMAGE: ${{ inputs.ci_image }}
+  AIS_INPUT_PLATFORM: ${{ inputs.platform }}
   AIS_MOUNT_PATH: /mnt/ais/ext4
   AIS_PKG_MGR: >-
     ${{
@@ -35,7 +39,7 @@ jobs:
         run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "${GITHUB_ENV}"
       - name: Set AIS CI container name
         run: |
-          echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{ inputs.platform }}" >> "${GITHUB_ENV}"
+          echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${AIS_INPUT_PLATFORM}" >> "${GITHUB_ENV}"
       - name: Fetching hipFile repository...
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #v6.0.1
         with:
@@ -78,17 +82,17 @@ jobs:
             --security-opt seccomp=unconfined \
             --pull always \
             -v ${GITHUB_WORKSPACE}:/mnt/ais:ro \
-            -v ${{ env.AIS_MOUNT_PATH }}:/mnt/ais-fs \
-            --name ${AIS_CONTAINER_NAME} \
-            ${{ inputs.ci_image }}
+            -v "${AIS_MOUNT_PATH}:/mnt/ais-fs" \
+            --name "${AIS_CONTAINER_NAME}" \
+            "${AIS_INPUT_CI_IMAGE}"
       - name: Create hipfile IO test directory
         run: |
-          docker exec -t ${AIS_CONTAINER_NAME} /bin/bash -c "mkdir -p /mnt/ais-fs/${AIS_CONTAINER_NAME}"
+          docker exec -t "${AIS_CONTAINER_NAME}" /bin/bash -c "mkdir -p /mnt/ais-fs/${AIS_CONTAINER_NAME}"
       - name: Make copy of the code repository and create build directories
         run: |
           docker exec \
             -t \
-            ${AIS_CONTAINER_NAME} \
+            "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
               cp -R /mnt/ais /ais
               mkdir /ais/hipFile/build
@@ -97,23 +101,23 @@ jobs:
       - name: Copy the hipFile packages into the container
         run: |
           docker cp \
-            ${GITHUB_WORKSPACE}/${{ inputs.ais_hipfile_pkg_filename }} \
+            "${GITHUB_WORKSPACE}/${AIS_INPUT_HIPFILE_PKG_FILENAME}" \
             "${AIS_CONTAINER_NAME}:/root"
           docker cp \
-            ${GITHUB_WORKSPACE}/${{ inputs.ais_hipfile_pkg_dev_filename }} \
+            "${GITHUB_WORKSPACE}/${AIS_INPUT_HIPFILE_PKG_DEV_FILENAME}" \
             "${AIS_CONTAINER_NAME}:/root"
       - name: Install the hipFile packages
         run: |
           docker exec \
             -t \
             -w /root \
-            ${AIS_CONTAINER_NAME} \
+            "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
               ${{
                 format(
-                  env.AIS_PKG_MGR == 'apt' && 'apt install -y ./{0} ./{1}' ||
-                    env.AIS_PKG_MGR == 'dnf' && 'dnf install -y ./{0} ./{1}' ||
-                    env.AIS_PKG_MGR == 'zypper' && 'zypper install -y --allow-unsigned-rpm ./{0} ./{1}' ||
+                  env.AIS_PKG_MGR == 'apt' && 'apt install -y "./{0}" "./{1}"' ||
+                    env.AIS_PKG_MGR == 'dnf' && 'dnf install -y "./{0}" "./{1}"' ||
+                    env.AIS_PKG_MGR == 'zypper' && 'zypper install -y --allow-unsigned-rpm "./{0}" "./{1}"' ||
                     'echo "Unknown platform."; exit 1',
                   inputs.ais_hipfile_pkg_filename,
                   inputs.ais_hipfile_pkg_dev_filename
@@ -138,7 +142,7 @@ jobs:
           docker exec \
             -t \
             -w /ais/hipFile/build \
-            ${AIS_CONTAINER_NAME} \
+            "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
               ctest -V -L "system" --parallel
             '
@@ -147,7 +151,7 @@ jobs:
           docker exec \
             -t \
             -w /ais/hipFile/build \
-            ${AIS_CONTAINER_NAME} \
+            "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
               ctest -V -L "stress" --parallel
             '
@@ -155,8 +159,8 @@ jobs:
         run: |
           docker exec \
             -t \
-            -w /mnt/ais-fs/${AIS_CONTAINER_NAME} \
-            ${AIS_CONTAINER_NAME} \
+            -w "/mnt/ais-fs/${AIS_CONTAINER_NAME}" \
+            "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
               HIPFILE_FORCE_COMPAT_MODE=true
                 /ais/hipFile/util/ci-aiscp-test.sh \
@@ -167,7 +171,7 @@ jobs:
           docker exec \
             -t \
             -w /ais/fio/build \
-            ${AIS_CONTAINER_NAME} \
+            "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
               ROCM=/opt/rocm \
               HIPFILE=/ais/hipFile \
@@ -182,7 +186,7 @@ jobs:
           docker exec \
             -t \
             -w /ais/fio/build \
-            ${AIS_CONTAINER_NAME} \
+            "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
               make -j
             '
@@ -191,7 +195,7 @@ jobs:
           docker exec \
             -t \
             -w /mnt/ais-fs/${AIS_CONTAINER_NAME} \
-            ${AIS_CONTAINER_NAME} \
+            "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
               HIPFILE_FORCE_COMPAT_MODE=true \
                 /ais/fio/build/fio \
@@ -200,11 +204,11 @@ jobs:
       - name: Destroy hipfile IO test directory
         if: ${{ always() }}
         run: |
-          docker exec -t ${AIS_CONTAINER_NAME} /bin/bash -c "rm -fr /mnt/ais-fs/${AIS_CONTAINER_NAME}"
+          docker exec -t "${AIS_CONTAINER_NAME}" /bin/bash -c "rm -fr /mnt/ais-fs/${AIS_CONTAINER_NAME}"
       - name: Cleanup & Stop the Docker container
         if: ${{ always() }}
         run: |
-          docker stop ${AIS_CONTAINER_NAME}
+          docker stop "${AIS_CONTAINER_NAME}"
       - name: Cleanup self-hosted runner workspace
         if: ${{ always() }}
         run: rm -rf ${GITHUB_WORKSPACE}/* ${GITHUB_WORKSPACE}/.*
