@@ -8,7 +8,7 @@ FROM opensuse/leap:${SUSE_VERSION}
 LABEL org.opencontainers.image.source=https://github.com/ROCm/hipFile
 ARG SUSE_MAJOR_VERSION
 ARG SUSE_VERSION
-ARG ROCm_VERSION=6.4.2
+ARG ROCm_VERSION=7.1.1
 
 # The initial pull takes some time. Expect ~2.5 minutes to complete.
 RUN zypper refresh
@@ -33,16 +33,6 @@ RUN cat <<EOF > /etc/zypp/repos.d/rocm.repo
 [ROCm-${ROCm_VERSION}]
 name=ROCm${ROCm_VERSION}
 baseurl=https://repo.radeon.com/rocm/zyp/${ROCm_VERSION}/main
-enabled=1
-priority=50
-gpgcheck=1
-gpgkey=https://repo.radeon.com/rocm/rocm.gpg.key
-EOF
-
-RUN cat <<EOF > /etc/zypp/repos.d/amdgpu.repo
-[amdgpu-${ROCm_VERSION}]
-name=amdgpu${ROCm_VERSION}
-baseurl=https://repo.radeon.com/amdgpu/${ROCm_VERSION}/sle/${SUSE_VERSION}/main/$(uname -m)
 enabled=1
 priority=50
 gpgcheck=1

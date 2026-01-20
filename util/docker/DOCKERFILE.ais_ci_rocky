@@ -9,7 +9,7 @@ LABEL org.opencontainers.image.source=https://github.com/ROCm/hipFile
 # Brings ROCKY_VERSION in-scope
 ARG ROCKY_MAJOR_VERSION
 ARG ROCKY_VERSION
-ARG ROCm_VERSION=6.4.2
+ARG ROCm_VERSION=7.1.1
 
 # Update repo and install program dependencies.
 # microdnf is too stripped down, install full dnf.
@@ -38,16 +38,6 @@ RUN cat <<EOF > /etc/yum.repos.d/rocm.repo
 [ROCm-${ROCm_VERSION}]
 name=ROCm${ROCm_VERSION}
 baseurl=https://repo.radeon.com/rocm/el${ROCKY_MAJOR_VERSION}/${ROCm_VERSION}/main
-enabled=1
-priority=50
-gpgcheck=1
-gpgkey=https://repo.radeon.com/rocm/rocm.gpg.key
-EOF
-
-RUN cat <<EOF > /etc/yum.repos.d/amdgpu.repo
-[amdgpu-${ROCm_VERSION}]
-name=amdgpu${ROCm_VERSION}
-baseurl=https://repo.radeon.com/amdgpu/${ROCm_VERSION}/rhel/${ROCKY_VERSION}/main/$(uname -m)
 enabled=1
 priority=50
 gpgcheck=1

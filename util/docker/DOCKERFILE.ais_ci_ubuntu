@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.source=https://github.com/ROCm/hipFile
 ARG UBUNTU_CODENAME
 ARG UBUNTU_MAJOR_VERSION=24
 ARG UBUNTU_MINOR_VERSION=04
-ARG ROCm_VERSION=6.4.2
+ARG ROCm_VERSION=7.1.1
 
 RUN apt update && \
     apt install -y \
@@ -22,7 +22,6 @@ RUN curl https://repo.radeon.com/rocm/rocm.gpg.key | \
 # Manually setup ROCm Package Repos
 RUN cat <<EOF > /etc/apt/sources.list.d/rocm.list
 deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/${ROCm_VERSION} ${UBUNTU_CODENAME} main
-deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/${ROCm_VERSION}/ubuntu ${UBUNTU_CODENAME} main
 EOF
 
 RUN cat <<EOF > /etc/apt/preferences.d/rocm-pin-600
