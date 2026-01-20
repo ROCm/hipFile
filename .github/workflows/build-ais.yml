@@ -233,8 +233,8 @@ jobs:
               ${{
                 format(
                   env.AIS_PKG_MGR == 'apt' && 'apt install -y "./{0}" "./{1}"' ||
-                    env.AIS_PKG_MGR == 'dnf' && 'dnf install -y "./{0}" "./{1}"' ||
-                    env.AIS_PKG_MGR == 'zypper' && 'zypper install -y --allow-unsigned-rpm "./{0}" "./{1}"' ||
+                    env.AIS_PKG_MGR == 'dnf' && 'dnf install -y --cacheonly "./{0}" "./{1}"' ||
+                    env.AIS_PKG_MGR == 'zypper' && 'zypper --no-refresh install -y --allow-unsigned-rpm "./{0}" "./{1}"' ||
                     'echo "Unknown platform."; exit 1',
                   steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_DEV_FILENAME,
                   steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_FILENAME
