@@ -67,8 +67,7 @@ jobs:
               Nightly Build as of: $(date)
 
               The packages contained here are not suitable for production workloads.
-              These packages are also not targeted to a particular ROCm version. Some caution
-              is needed if managing multiple ROCm versions on a system.
+              These packages are currently tied to the current version of our CI (6.4.2).
             " \
             --prerelease \
             --target develop \

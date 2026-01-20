@@ -10,6 +10,7 @@ env:
       inputs.platform == 'ubuntu' && 'apt'
     }}
   AIS_PKG_TYPE: ${{ inputs.platform == 'ubuntu' && 'DEB' || 'RPM' }}
+  AIS_ROCM_VERSION: 6.4.2
   # Code coverage report only vetted to work for amdclang++ on Ubuntu
   AIS_USE_CODE_COVERAGE: ${{ inputs.cxx_compiler == 'amdclang++' && inputs.platform == 'ubuntu' }}
 on:
@@ -100,6 +101,7 @@ jobs:
       - name: Generate build files for hipFile targeting the AMD platform (${{ inputs.cxx_compiler }})
         run: |
           docker exec \
+            -e "_AIS_ROCM_VERSION=${AIS_ROCM_VERSION}" \
             -t \
             -w /ais/hipFile/build \
             ${AIS_CONTAINER_NAME} \
@@ -110,6 +112,7 @@ jobs:
                 -DCMAKE_HIP_PLATFORM=amd \
                 -DAIS_BUILD_DOCS=ON \
                 -DAIS_USE_CODE_COVERAGE=${{ env.AIS_USE_CODE_COVERAGE == 'true' && 'ON' || 'OFF' }} \
+                -DROCM_PATH="/opt/rocm-${_AIS_ROCM_VERSION}" \
                 ..
             '
       - name: Build hipFile for the AMD platform (${{ inputs.cxx_compiler }})
