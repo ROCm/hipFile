@@ -1,6 +1,8 @@
 name: build_ais_nvidia
 run-name: Build AIS for Nvidia platforms
 env:
+  AIS_INPUT_CI_IMAGE: ${{ inputs.ci_image }}
+  AIS_INPUT_PLATFORM: ${{ inputs.platform }}
   AIS_MOUNT_PATH: /mnt/ais/ext4
 on:
   workflow_call:
@@ -16,6 +18,8 @@ permissions:
   packages: read
 jobs:
   compile_on_NVIDIA:
+    env:
+      AIS_INPUT_CXX_COMPILER: ${{ matrix.supported_compilers }}
     runs-on: [ubuntu-24.04]
     strategy:
       fail-fast: false
@@ -27,10 +31,10 @@ jobs:
       - name: Set early AIS CI environment variables
         run: |
           echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "${GITHUB_ENV}"
-          echo "AIS_SAFE_COMPILER_NAME=$(echo ${{ matrix.supported_compilers }} | sed 's|[\+]|plus|g')" >> "${GITHUB_ENV}"
+          echo "AIS_SAFE_COMPILER_NAME=$(echo ${AIS_INPUT_CXX_COMPILER} | sed 's|[\+]|plus|g')" >> "${GITHUB_ENV}"
       - name: Set AIS CI container name
         run: |
-          echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${{ inputs.platform }}_${AIS_SAFE_COMPILER_NAME}" >> "${GITHUB_ENV}"
+          echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${AIS_INPUT_PLATFORM}_${AIS_SAFE_COMPILER_NAME}" >> "${GITHUB_ENV}"
       - name: Fetching code repository...
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #v6.0.1
         with:
@@ -51,14 +55,14 @@ jobs:
             --rm \
             --pull always \
             -v ${GITHUB_WORKSPACE}:/mnt/ais:ro \
-            -v ${{ env.AIS_MOUNT_PATH }}:/mnt/ais-fs \
-            --name ${AIS_CONTAINER_NAME} \
-            ${{ inputs.ci_image }}
+            -v "${AIS_MOUNT_PATH}:/mnt/ais-fs" \
+            --name "${AIS_CONTAINER_NAME}" \
+            "${AIS_INPUT_CI_IMAGE}"
       - name: Make copy of the code repository and create build directories
         run: |
           docker exec \
             -t \
-            ${AIS_CONTAINER_NAME} \
+            "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
               cp -R /mnt/ais /ais
               mkdir /ais/hipFile/build
@@ -66,12 +70,13 @@ jobs:
       - name: Generate build files for hipFile targeting the NVIDIA platform (${{ matrix.supported_compilers }})
         run: |
           docker exec \
+            -e "_AIS_INPUT_CXX_COMPILER=${AIS_INPUT_CXX_COMPILER}" \
             -t \
             -w /ais/hipFile/build \
-            ${AIS_CONTAINER_NAME} \
+            "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
               cmake \
-                -DCMAKE_CXX_COMPILER=${{ matrix.supported_compilers }} \
+                -DCMAKE_CXX_COMPILER="${_AIS_INPUT_CXX_COMPILER}" \
                 -DCMAKE_CXX_FLAGS="-Werror" \
                 -DCMAKE_HIP_PLATFORM=nvidia \
                 -DAIS_BUILD_DOCS=ON \
@@ -82,7 +87,7 @@ jobs:
           docker exec \
             -t \
             -w /ais/hipFile/build \
-            ${AIS_CONTAINER_NAME} \
+            "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
               cmake --build . --parallel
             '
@@ -91,17 +96,17 @@ jobs:
           docker exec \
             -t \
             -w /ais/hipFile \
-            ${AIS_CONTAINER_NAME} \
+            "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
               rm -rf build/*
             '
       - name: Cleanup & Stop the Docker container
         if: ${{ always() }}
         run: |
-          docker stop ${AIS_CONTAINER_NAME}
+          docker stop "${AIS_CONTAINER_NAME}"
 ### Disable until NVIDIA runners come back
 #  Run_hipFile_NVIDIA:
 #    uses: ./.github/workflows/hipfile-nvidia.yml
 #    needs: build_AIS_image
 #    with:
-#      platform: ${{inputs.platform}}
+#      platform: ${AIS_INPUT_PLATFORM}

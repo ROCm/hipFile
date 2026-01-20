@@ -1,6 +1,7 @@
 name: new_CI_image
 run-name: Build the Docker image for AIS CI.
 env:
+  AIS_CI_IMAGE_NAME: ais_ci_${{ inputs.platform }}
   AIS_DOCKER_REGISTRY: ghcr.io/rocm/hipfile
   AIS_PR_BASE_URL: https://github.com/ROCm/hipFile/pull
 on:
@@ -51,8 +52,6 @@ permissions:
 jobs:
   build_AIS_image:
     if: ${{ inputs.dockerfile_changed }}
-    env:
-      AIS_CI_IMAGE_NAME: ais_ci_${{ inputs.platform }}
     runs-on: [ubuntu-24.04]
     container: docker:28.5
     outputs:
@@ -65,9 +64,9 @@ jobs:
       - name: Set target AIS CI Image
         id: ci-image
         run: |
-          echo "AIS_CI_IMAGE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME}}:${AIS_CI_IMAGE_TAG}" \
+          echo "AIS_CI_IMAGE=${AIS_DOCKER_REGISTRY}/${AIS_CI_IMAGE_NAME}:${AIS_CI_IMAGE_TAG}" \
             >> "${GITHUB_OUTPUT}"
-          echo "AIS_CI_LATEST_CACHE=${{ env.AIS_DOCKER_REGISTRY }}/${{ env.AIS_CI_IMAGE_NAME}}:latest-cache" \
+          echo "AIS_CI_LATEST_CACHE=${AIS_DOCKER_REGISTRY}/${AIS_CI_IMAGE_NAME}:latest-cache" \
             >> "${GITHUB_OUTPUT}"
       - name: Fetching code repository...
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #v6.0.1
@@ -86,14 +85,14 @@ jobs:
       - name: Build base image for AIS CI
         run: |
           docker buildx build \
-            -f ${GITHUB_WORKSPACE}/util/docker/DOCKERFILE.${{ env.AIS_CI_IMAGE_NAME }} \
+            -f "${GITHUB_WORKSPACE}/util/docker/DOCKERFILE.${AIS_CI_IMAGE_NAME}" \
             --label "org.opencontainers.image.description= \
-              ${{ env.AIS_CI_IMAGE_NAME }} Development Image for AIS CI using branch \
+              ${AIS_CI_IMAGE_NAME} Development Image for AIS CI using branch \
               ${{ github.head_ref }} for PR #${AIS_PR_NUMBER}. \
-              PR URL: ${{ env.AIS_PR_BASE_URL }}/${AIS_PR_NUMBER}" \
+              PR URL: ${AIS_PR_BASE_URL}/${AIS_PR_NUMBER}" \
             --build-arg BUILDKIT_INLINE_CACHE=1 \
-            --cache-from=type=registry,ref=${{ steps.ci-image.outputs.AIS_CI_IMAGE }} \
-            --cache-from=type=registry,ref=${{ steps.ci-image.outputs.AIS_CI_LATEST_CACHE }} \
+            --cache-from=type=registry,ref="${{ steps.ci-image.outputs.AIS_CI_IMAGE }}" \
+            --cache-from=type=registry,ref="${{ steps.ci-image.outputs.AIS_CI_LATEST_CACHE }}" \
             --push \
-            -t ${{ steps.ci-image.outputs.AIS_CI_IMAGE }} \
+            -t "${{ steps.ci-image.outputs.AIS_CI_IMAGE }}" \
             ${GITHUB_WORKSPACE}
