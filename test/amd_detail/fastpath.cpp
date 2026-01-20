@@ -446,6 +446,29 @@ TEST_P(FastpathIoParam, IoDoesNotMaskSystemError)
                  std::system_error);
 }
 
+// Ensure IO size is truncated to MAX_RW_COUNT
+TEST_P(FastpathIoParam, IoSizeIsTrucatedToMaxRWCount)
+{
+    StrictMock<MHip> mhip;
+
+    const size_t buffer_size{SIZE_MAX};
+    const size_t io_size{SIZE_MAX};
+
+    expect_io(DEFAULT_UNBUFFERED_FD, DEFAULT_BUFFER_ADDR, buffer_size);
+    switch (GetParam()) {
+        case IoType::Read:
+            EXPECT_CALL(mhip, hipAmdFileRead(_, _, MAX_RW_COUNT, _)).WillOnce(Return(MAX_RW_COUNT));
+            break;
+        case IoType::Write:
+            EXPECT_CALL(mhip, hipAmdFileWrite(_, _, MAX_RW_COUNT, _)).WillOnce(Return(MAX_RW_COUNT));
+            break;
+        default:
+            FAIL() << "Invalid IoType";
+    }
+
+    ASSERT_EQ(Fastpath().io(GetParam(), mfile, mbuffer, io_size, 0, 0), MAX_RW_COUNT);
+}
+
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathIoParam, Values(IoType::Read, IoType::Write));
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

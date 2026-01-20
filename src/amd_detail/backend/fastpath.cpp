@@ -177,6 +177,12 @@ Fastpath::io(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, si
         throw std::invalid_argument("IO could overflow buffer");
     }
 
+    // Currently, when IO sizes > MAX_RW_COUNT are submitted to amdgpu/kfd an
+    // Illegal Seek error is returned. To avoid this, hipFile limits IO size to
+    // MAX_RW_COUNT. When amdgpu/kdf properly handles IO sizes > MAX_RW_COUNT
+    // this can be removed.
+    size = std::min(size, MAX_RW_COUNT);
+
     switch (type) {
         case IoType::Read:
             nbytes = Context<Hip>::get()->hipAmdFileRead(handle, devptr, size, file_offset);
