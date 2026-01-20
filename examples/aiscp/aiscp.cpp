@@ -152,7 +152,7 @@ main(int argc, char *argv[])
         while (nwrite < nread) {
             nbytes =
                 hipFileWrite(dst_handle, devbuf, alignUp(static_cast<size_t>(nread - nwrite), block_size),
-                             ncopy + nwrite, static_cast<hoff_t>(nwrite));
+                             ncopy + nwrite, nwrite);
             if (nbytes < 0) {
                 fprintf(stderr, "Could not write to %s (%zd) (%s)\n", dst_path, nbytes,
                         IS_HIPFILE_ERR(nbytes) ? HIPFILE_ERRSTR(nbytes) : strerror(errno));
