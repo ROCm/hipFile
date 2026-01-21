@@ -447,7 +447,7 @@ TEST_P(FastpathIoParam, IoDoesNotMaskSystemError)
 }
 
 // Ensure IO size is truncated to MAX_RW_COUNT
-TEST_P(FastpathIoParam, IoSizeIsTrucatedToMaxRWCount)
+TEST_P(FastpathIoParam, IoSizeIsTruncatedToMaxRWCount)
 {
     StrictMock<MHip> mhip;
 
