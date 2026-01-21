@@ -201,6 +201,17 @@ jobs:
                 /ais/fio/build/fio \
                 /ais/hipFile/util/fio/write-read-verify.fio
             '
+      - name: hipFile AIS IO test using fio
+        run: |
+          docker exec \
+            -t \
+            -w /mnt/ais-fs/${AIS_CONTAINER_NAME} \
+            "${AIS_CONTAINER_NAME}" \
+            /bin/bash -c '
+              HIPFILE_FORCE_COMPAT_MODE=false \
+                /ais/fio/build/fio \
+                /ais/hipFile/util/fio/write-read-verify.fio
+            '
       - name: Destroy hipfile IO test directory
         if: ${{ always() }}
         run: |
