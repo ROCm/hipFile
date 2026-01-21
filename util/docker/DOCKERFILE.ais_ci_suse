@@ -8,7 +8,7 @@ FROM opensuse/leap:${SUSE_VERSION}
 LABEL org.opencontainers.image.source=https://github.com/ROCm/hipFile
 ARG SUSE_MAJOR_VERSION
 ARG SUSE_VERSION
-ARG ROCm_VERSION=7.1.1
+ARG ROCm_VERSION=7.2
 
 # The initial pull takes some time. Expect ~2.5 minutes to complete.
 RUN zypper refresh

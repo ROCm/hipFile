@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.source=https://github.com/ROCm/hipFile
 ARG UBUNTU_CODENAME
 ARG UBUNTU_MAJOR_VERSION=24
 ARG UBUNTU_MINOR_VERSION=04
-ARG ROCm_VERSION=7.1.1
+ARG ROCm_VERSION=7.2
 
 RUN apt update && \
     apt install -y \

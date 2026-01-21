@@ -14,7 +14,7 @@ env:
       inputs.platform == 'ubuntu' && 'apt'
     }}
   AIS_PKG_TYPE: ${{ inputs.platform == 'ubuntu' && 'DEB' || 'RPM' }}
-  AIS_ROCM_VERSION: 7.1.1
+  AIS_ROCM_VERSION: 7.2.0
   # Code coverage report only vetted to work for amdclang++ on Ubuntu
   AIS_USE_CODE_COVERAGE: ${{ inputs.cxx_compiler == 'amdclang++' && inputs.platform == 'ubuntu' }}
 on:
