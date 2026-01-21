@@ -24,7 +24,7 @@
 #include <unistd.h>
 
 /// @brief AISCP_CHUNK_SIZE defines the maximum size of each aiscp IO operation.
-/// Currently AISCP_CHUNKS_SIZE is defined to match the maximum IO size on Linux
+/// Currently AISCP_CHUNK_SIZE is defined to match the maximum IO size on Linux
 /// (MAX_RW_COUNT).
 #ifndef AISCP_CHUNK_SIZE
 #define AISCP_CHUNK_SIZE 0x7ffff000LU
