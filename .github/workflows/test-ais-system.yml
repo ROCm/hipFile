@@ -208,7 +208,7 @@ jobs:
             -w /mnt/ais-fs/${AIS_CONTAINER_NAME} \
             "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
-              HIPFILE_FORCE_COMPAT_MODE=false \
+              HIPFILE_ALLOW_COMPAT_MODE=false \
                 /ais/fio/build/fio \
                 /ais/hipFile/util/fio/write-read-verify.fio
             '
