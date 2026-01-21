@@ -179,7 +179,7 @@ Fastpath::io(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, si
 
     // Currently, when IO sizes > MAX_RW_COUNT are submitted to amdgpu/kfd an
     // Illegal Seek error is returned. To avoid this, hipFile limits IO size to
-    // MAX_RW_COUNT. When amdgpu/kdf properly handles IO sizes > MAX_RW_COUNT
+    // MAX_RW_COUNT. When amdgpu/kfd properly handles IO sizes > MAX_RW_COUNT
     // this can be removed.
     size = std::min(size, MAX_RW_COUNT);
 
