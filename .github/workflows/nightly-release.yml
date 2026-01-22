@@ -1,10 +1,12 @@
 name: nightly-release
 run-name: Create a nightly release of hipFile
-
 on:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
 permissions:
   contents: read
   packages: write
