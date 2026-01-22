@@ -88,6 +88,15 @@ alignUp(size_t value, size_t align)
     return (value + align - 1) & ~(align - 1);
 }
 
+/// @brief Determines if value is a power of two
+/// @param value The value to inspect
+/// @return True if value is a power of two, false otherwise
+static inline bool
+is_power_of_two(size_t value)
+{
+    return (value > 0) && ((value & (value - 1)) == 0);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -116,6 +125,10 @@ main(int argc, char *argv[])
         }
         file_size  = static_cast<size_t>(statbuf.st_size);
         block_size = static_cast<size_t>(statbuf.st_blksize);
+        if (!is_power_of_two(block_size)) {
+            fprintf(stderr, "Blocksize is not a power of two (%zu)", block_size);
+            goto program_exit;
+        }
     }
 
     if (open_file(dst_path, O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH, &dst_fd,
