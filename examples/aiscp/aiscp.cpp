@@ -107,7 +107,8 @@ main(int argc, char *argv[])
     hipError_t      hip_err;
     int             exit_status = EXIT_FAILURE;
     size_t          buffer_size, file_size, block_size;
-    ssize_t         ncopy{}, nwrite{}, nread{}, nbytes{};
+    ssize_t         nwrite{}, nread{}, nbytes{};
+    hoff_t          file_offset{};
 
     if (argc != 3) {
         fprintf(stderr, "Usage: %s SOURCE DEST\n", argv[0]);
@@ -154,7 +155,7 @@ main(int argc, char *argv[])
 
     // Copy the file chunk-by-chunk until we hit EOF
     do {
-        nread = hipFileRead(src_handle, devbuf, buffer_size, ncopy, 0);
+        nread = hipFileRead(src_handle, devbuf, buffer_size, file_offset, 0);
         if (nread < 0) {
             fprintf(stderr, "Could not read from %s (%zd) (%s)\n", src_path, nread,
                     IS_HIPFILE_ERR(nread) ? HIPFILE_ERRSTR(nread) : strerror(errno));
@@ -165,7 +166,7 @@ main(int argc, char *argv[])
         while (nwrite < nread) {
             nbytes =
                 hipFileWrite(dst_handle, devbuf, align_up(static_cast<size_t>(nread - nwrite), block_size),
-                             ncopy + nwrite, nwrite);
+                             file_offset + nwrite, nwrite);
             if (nbytes < 0) {
                 fprintf(stderr, "Could not write to %s (%zd) (%s)\n", dst_path, nbytes,
                         IS_HIPFILE_ERR(nbytes) ? HIPFILE_ERRSTR(nbytes) : strerror(errno));
@@ -173,7 +174,7 @@ main(int argc, char *argv[])
             }
             nwrite += nbytes;
         }
-        ncopy += nread;
+        file_offset += nread;
     } while (nread > 0);
 
     if (-1 == ftruncate(dst_fd, static_cast<off_t>(file_size))) {
