@@ -528,6 +528,9 @@ hipFileError_t hipFileBufDeregister(const void *buffer_base);
  * @brief Synchronously read data from a file into a GPU buffer
  * @ingroup file
  *
+ * hipFileRead() will transfer at most 0x7ffff000 (2,147,479,552) bytes,
+ * returning the number of bytes actually transferred.
+ *
  * @param [in] fh            Opaque file handle for GPU IO operations
  * @param [in] buffer_base   Base address of the GPU buffer
  * @param [in] size          Number of bytes that should be read
@@ -545,6 +548,9 @@ ssize_t hipFileRead(hipFileHandle_t fh, void *buffer_base, size_t size, hoff_t f
 /*!
  * @brief Synchronously write data from a GPU buffer to a file
  * @ingroup file
+ *
+ * hipFileWrite() will transfer at most 0x7ffff000 (2,147,479,552) bytes,
+ * returning the number of bytes actually transferred.
  *
  * @param [in] fh            Opaque file handle for GPU IO operations
  * @param [in] buffer_base   Base address of the GPU buffer

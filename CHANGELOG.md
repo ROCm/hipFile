@@ -7,6 +7,7 @@
 * Renamed `hipFileOpStatusError()` to `hipFileGetOpErrorString()`
 * The `hipfile-doc` CMake target no longer exists (just use `doc`)
 * The `doc` CMake target only exists if the `AIS_BUILD_DOCS` option is enabled
+* `hipFileRead()`/`hipFileWrite()` will transfer at most 0x7ffff000 (2,147,479,552) bytes returning the number of bytes actually transferred
 
 ### Removed
 * The rocFile library has been completely removed and the code is now a part of hipFile.
