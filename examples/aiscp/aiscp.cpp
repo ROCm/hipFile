@@ -83,7 +83,7 @@ close_file(const char *path, int fd, hipFileHandle_t handle)
 /// @param align Value will be rounded up to a multiple of align
 /// @return Value rounded up to a multiple of align.
 static inline size_t
-alignUp(size_t value, size_t align)
+align_up(size_t value, size_t align)
 {
     return (value + align - 1) & ~(align - 1);
 }
@@ -145,7 +145,7 @@ main(int argc, char *argv[])
         goto close_dst;
     }
 
-    buffer_size = alignUp(std::min(file_size, AISCP_CHUNK_SIZE), block_size);
+    buffer_size = align_up(std::min(file_size, AISCP_CHUNK_SIZE), block_size);
     hip_err     = hipMalloc(&devbuf, buffer_size);
     if (hipSuccess != hip_err) {
         fprintf(stderr, "Could not allocate device buffer (%d)", hip_err);
@@ -164,7 +164,7 @@ main(int argc, char *argv[])
         nwrite = 0;
         while (nwrite < nread) {
             nbytes =
-                hipFileWrite(dst_handle, devbuf, alignUp(static_cast<size_t>(nread - nwrite), block_size),
+                hipFileWrite(dst_handle, devbuf, align_up(static_cast<size_t>(nread - nwrite), block_size),
                              ncopy + nwrite, nwrite);
             if (nbytes < 0) {
                 fprintf(stderr, "Could not write to %s (%zd) (%s)\n", dst_path, nbytes,
