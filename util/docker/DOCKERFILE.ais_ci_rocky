@@ -48,7 +48,6 @@ EOF
 # clang version == 19
 # libssl-dev == openssl-devel
 # llvm-dev == llvm-devel
-# librocthrust-dev == rocthrust-devel
 # Defaults to gcc11. On 9.6 gcc14 seems to be present.
 #   Use gcc13 to match Ubuntu24.
 RUN dnf makecache && \
@@ -64,7 +63,6 @@ RUN dnf makecache && \
         libmount-devel \
         llvm-devel \
         openssl-devel \
-        rocthrust-devel \
         rpm-build
 
 # Configure system linker for ROCm

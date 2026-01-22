@@ -41,7 +41,6 @@ RUN apt update && \
         hip-dev \
         libboost-program-options-dev \
         libmount-dev \
-        librocthrust-dev \
         libssl-dev \
         llvm-dev \
         rocm-llvm-dev
