@@ -166,6 +166,17 @@ jobs:
                 /ais/hipFile/util/ci-aiscp-test.sh \
                 /ais/hipFile/build/examples/aiscp/aiscp
             '
+      - name: hipFile fastpath/AIS IO test using aiscp
+        run: |
+          docker exec \
+            -t \
+            -w "/mnt/ais-fs/${AIS_CONTAINER_NAME}" \
+            "${AIS_CONTAINER_NAME}" \
+            /bin/bash -c '
+              HIPFILE_ALLOW_COMPAT_MODE=false
+                /ais/hipFile/util/ci-aiscp-test.sh \
+                /ais/hipFile/build/examples/aiscp/aiscp
+            '
       - name: Configure fio
         run: |
           docker exec \
