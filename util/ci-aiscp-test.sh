@@ -27,7 +27,7 @@ DST="$TMPDIR/rand.dat.cp"
 echo "Source: $SRC"
 echo "Dest:   $DST"
 
-head --bytes 1G /dev/urandom > "$SRC"
+head --bytes 1M /dev/urandom > "$SRC"
 
 "$AISCP" "$SRC" "$DST"
 
