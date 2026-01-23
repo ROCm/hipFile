@@ -205,10 +205,10 @@ include(AISIWYU)
 #-------------------
 include(AISSanitizers)
 
-#-----------------------
-# aiscp example program
-#-----------------------
-option(AIS_BUILD_EXAMPLES "Build example programs" ON)
+#------------------
+# Example programs
+#------------------
+option(AIS_INSTALL_EXAMPLES "Install example programs" ON)
 
 #------
 # docs
@@ -283,8 +283,8 @@ if(BUILD_TESTING AND AIS_BUILD_AMD_DETAIL)
     add_subdirectory(test/amd_detail)
 endif()
 
-# Add the aiscp example directory
-if(AIS_BUILD_EXAMPLES)
+# Add the example directory
+if(AIS_INSTALL_EXAMPLES)
     add_subdirectory(examples/aiscp)
 endif()
 

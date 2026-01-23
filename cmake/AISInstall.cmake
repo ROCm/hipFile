@@ -8,7 +8,7 @@
 include(ROCMInstallTargets)
 include(ROCMCreatePackage)
 
-# Install the package
+# Install the library
 rocm_install(TARGETS hipfile)
 
 # Install the headers
@@ -19,6 +19,21 @@ rocm_install(
 
 # Install AIS tools
 install(PROGRAMS tools/ais-check/ais-check DESTINATION bin)
+
+# Install example code
+# Since the input DIRECTORY is `examples` don't include it in
+# the DESTINATION path or you'll get `examples/examples/*` output
+if(AIS_INSTALL_EXAMPLES)
+    install(
+        DIRECTORY ${CMAKE_SOURCE_DIR}/examples
+        DESTINATION share/doc/${CMAKE_PROJECT_NAME}
+        FILES_MATCHING
+            PATTERN "*.cpp"
+            PATTERN "*.h"
+            PATTERN "CMakeLists.txt"
+            PATTERN "README.md"
+    )
+endif()
 
 # When we have RELEASE/DEV builds set up, we can split
 # where these dependencies are added.
