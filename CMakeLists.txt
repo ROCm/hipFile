@@ -97,15 +97,43 @@ endif()
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 #-----------------------------------------------------------------------------
-# Set the path to ROCm
+# Set ROCm Version and Install Path
+#
+# Values are set with the following prioritization in case of redundant declarations:
+# 1) CMake Argument
+# 2) Environment Variables
+# 3) Default Values
+#
+# Note: project(... LANGUAGES HIP) only looks at $ENV{ROCM_PATH} and will ignore
+#       ROCM_PATH set as a CMake Argument.
 #-----------------------------------------------------------------------------
+# If ROCM_VERSION was set in the environment, seed it with that
+if(NOT DEFINED ROCM_VERSION AND DEFINED ENV{ROCM_VERSION})
+    set(ROCM_VERSION "$ENV{ROCM_VERSION}")
+endif()
+
 # If ROCM_PATH was set in the environment, seed it with that
 if(DEFINED ENV{ROCM_PATH})
     set(ROCM_INITIAL_PATH "$ENV{ROCM_PATH}")
+elseif(DEFINED ROCM_VERSION)
+    # Infer default based on ROCM_VERSION
+    set(ROCM_INITIAL_PATH "/opt/rocm-${ROCM_VERSION}")
 else()
+    # Default install location symlink
     set(ROCM_INITIAL_PATH "/opt/rocm")
 endif()
 set(ROCM_PATH "${ROCM_INITIAL_PATH}" CACHE PATH "The path to the ROCm installation")
+
+# Fallback if ROCM_VERSION not specified. Get from version file in ROCM_PATH
+if(NOT DEFINED ROCM_VERSION)
+    file(READ "${ROCM_PATH}/.info/version" _rocm_version_file)
+    string(REGEX MATCH "^([0-9]+\\.[0-9]+\\.[0-9]+)" _matched_rocm_version "${_rocm_version_file}")
+    set(ROCM_VERSION "${_matched_rocm_version}")
+endif()
+set(ROCM_VERSION "${ROCM_VERSION}" CACHE STRING "The version of ROCm to build with")
+
+message(STATUS "Using ROCM_VERSION: ${ROCM_VERSION}")
+message(STATUS "ROCM_PATH set to: ${ROCM_PATH}")
 
 # Add ROCm search paths
 list(APPEND CMAKE_PREFIX_PATH
