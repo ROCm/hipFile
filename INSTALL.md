@@ -18,7 +18,7 @@ wget https://github.com/ROCm/hipFile/releases/download/nightly/hipfile-dev_0.2.0
 sudo dpkg -i hipfile-dev_0.2.0_amd64.deb hipfile_0.2.0-_amd64.deb
 ```
 
-hipFile currently works on local NVMe disks. To setup a new NVMe device we can partition it, create a filesystem on the partition, and mount it. Below we use the device `/dev/nvme1n1`. Make sure you use the correct device in your system.
+hipFile currently works on local NVMe disks. To set up a new NVMe device we can partition it, create a filesystem on the partition, and mount it. Below we use the device `/dev/nvme1n1`. Make sure you use the correct device in your system.
 
 ```
 sudo apt install gdisk
