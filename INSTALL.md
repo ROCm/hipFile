@@ -47,6 +47,7 @@ To verify the fast path is working, copy a file with compatibility mode disabled
 dd if=/dev/random of=/mnt/ext4/"$USER"/source bs=4K count=16
 # Copy file
 HIPFILE_ALLOW_COMPAT_MODE=false ./aiscp /mnt/ext4/"$USER"/source /mnt/ext4/"$USER"/dest
+md5sum /mnt/ext4/"$USER"/source /mnt/ext4/"$USER"/dest
 ```
 
 ## Building hipFile
