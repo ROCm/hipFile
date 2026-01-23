@@ -1,5 +1,36 @@
 # Install guide for hipFile
 
+## Quick Install Guide
+
+hipFile depends on ROCm 7.2. Install ROCm and amdgpu-dkms, as described in the [ROCm quick start installation guide](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/install/quick-start.html).
+
+On Ubuntu 24.04, the installation process is as follows. First, install a couple of needed packages.
+
+```
+sudo apt install libmount-dev wget
+```
+
+Then, install the nightly hipFile packages.
+
+```
+wget https://github.com/ROCm/hipFile/releases/download/nightly/hipfile_0.2.0-_amd64.deb
+wget https://github.com/ROCm/hipFile/releases/download/nightly/hipfile-dev_0.2.0_amd64.deb
+sudo dpkg -i hipfile-dev_0.2.0_amd64.deb hipfile_0.2.0-_amd64.deb
+```
+
+Now, we can download and compile the aiscp test program.
+
+```
+wget https://raw.githubusercontent.com/ROCm/hipFile/refs/heads/develop/examples/aiscp/aiscp.cpp
+amdclang++ -D__HIP_PLATFORM_AMD__ -L/opt/rocm/lib -I/opt/rocm/include -lamdhip64 -lhipfile aiscp.cpp -o aiscp
+```
+
+To verify the fast path is working, copy a file with compatibility mode disabled. This should run successfully if the source and destination paths are on filesystems supporting O_DIRECT.
+
+```
+HIPFILE_ALLOW_COMPAT_MODE=false ./aiscp <source> <destination>
+```
+
 ## Building hipFile
 
 > [!NOTE]
