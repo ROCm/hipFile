@@ -18,6 +18,21 @@ wget https://github.com/ROCm/hipFile/releases/download/nightly/hipfile-dev_0.2.0
 sudo dpkg -i hipfile-dev_0.2.0_amd64.deb hipfile_0.2.0-_amd64.deb
 ```
 
+hipFile currently works on local NVMe disks. To setup a new NVMe device we can partition it, create a filesystem on the partition, and mount it. Below we use the device `/dev/nvme1n1`. Make sure you use the correct device in your system.
+
+```
+sudo apt install gdisk
+# Add partition spanning entire device
+sudo sgdisk -n 1:0:0 /dev/nvme1n1
+# Create and mount filesystem
+sudo mkfs.ext4 /dev/nvme1n1p1
+sudo mkdir /mnt/ext4
+sudo mount /dev/nvme1n1p1 /mnt/ext4 -o data=ordered
+# Create directory accessible by current user
+sudo mkdir /mnt/ext4/"$USER"
+sudo chown "$USER": /mnt/ext4/"$USER"
+```
+
 Now, we can download and compile the aiscp test program.
 
 ```
@@ -28,7 +43,10 @@ amdclang++ -D__HIP_PLATFORM_AMD__ -L/opt/rocm/lib -I/opt/rocm/include -lamdhip64
 To verify the fast path is working, copy a file with compatibility mode disabled. This should run successfully if the source and destination paths are on filesystems supporting O_DIRECT.
 
 ```
-HIPFILE_ALLOW_COMPAT_MODE=false ./aiscp <source> <destination>
+# Create a random input file
+dd if=/dev/random of=/mnt/ext4/"$USER"/source bs=4K count=16
+# Copy file
+HIPFILE_ALLOW_COMPAT_MODE=false ./aiscp /mnt/ext4/"$USER"/source /mnt/ext4/"$USER"/dest
 ```
 
 ## Building hipFile
