@@ -13,7 +13,7 @@ AMD Infinity Storage library that supports IO directly to the GPU.
 
 ## Installing and Using hipFile
 
-See [INSTALL](INSTALL.md) in the project root for a list of supported hardware and compilers as well as build and install instructions.
+See [INSTALL.md](INSTALL.md) in the project root for a list of supported hardware and compilers as well as build and install instructions.
 
 ### hipify support
 
