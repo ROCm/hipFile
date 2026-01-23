@@ -9,12 +9,11 @@
 [![CodeQL](https://github.com/ROCm/hipFile/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/ROCm/hipFile/actions/workflows/github-code-scanning/codeql)
 [![Coverity](https://scan.coverity.com/projects/hipFile/badge.svg)](https://scan.coverity.com/projects/hipFile)
 
-AMD Infinity Storage library that supports IO directly to the GPU
+AMD Infinity Storage library that supports IO directly to the GPU.
 
-## Building hipFile
+## Installing and Using hipFile
 
-See the INSTALL.md file in the project root for a list of supported
-hardware and compilers as well as build and install instructions.
+See [INSTALL](INSTALL.md) in the project root for a list of supported hardware and compilers as well as build and install instructions.
 
 ### hipify support
 
