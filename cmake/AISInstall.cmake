@@ -75,6 +75,27 @@ set(CPACK_PACKAGE_RELOCATABLE OFF)
 set(CPACK_RPM_PACKAGE_RELOCATABLE OFF)
 set(CPACK_DEB_PACKAGE_RELOCATABLE OFF)
 
+# Set DEB/RPM Release Information
+# rocm_create_package checks if following variables are defined in the environment:
+#   - CPACK_DEBIAN_PACKAGE_RELEASE
+#   - CPACK_RPM_PACKAGE_RELEASE
+#   - ROCM_LIBPATCH_VERSION
+# If ENV{CPACK_*_PACKAGE_RELEASE} is not defined, it will fallback to use ${PROJECT_VERSION_TWEAK}.
+# See https://github.com/ROCm/ROCm/blob/8aa43d132f0d541eb5303dc532f5931cb80ad87a/tools/rocm-build/envsetup.sh#L77-L78
+# If ENV{ROCM_LIBPATCH_VERSION} is not defined, the ROCm version will not be appended to the project version.
+# ROCM_LIBPATCH_VERSION is ROCM_VERSION with '.' replaced by '0'.
+# See: https://github.com/ROCm/ROCm/blob/8aa43d132f0d541eb5303dc532f5931cb80ad87a/tools/rocm-build/envsetup.sh#L94
+
+if(NOT DEFINED ENV{CPACK_DEBIAN_PACKAGE_RELEASE} AND NOT DEFINED ENV{CPACK_RPM_PACKAGE_RELEASE})
+    set(PROJECT_VERSION_TWEAK "local")
+endif()
+
+# Let's prefer to include the ROCm Version even on a non-release build.
+if(NOT DEFINED ENV{ROCM_LIBPATCH_VERSION})
+    string(REPLACE "." "0" _rocm_libpatch_version "${ROCM_VERSION}")
+    set(ENV{ROCM_LIBPATCH_VERSION} "${_rocm_libpatch_version}")
+endif()
+
 # Create the package
 #
 # Note that you will just get a dev package if you have BUILD_SHARED_LIBS
