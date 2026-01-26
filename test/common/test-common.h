@@ -53,32 +53,32 @@ rfill(void *buffer, uint64_t len, uint32_t seed = 97)
 }
 
 struct Tmpfile {
-    int fd;
+    int         fd;
+    std::string path;
 
-    Tmpfile()
+    Tmpfile() : Tmpfile{"."}
     {
-        char path_template[] = "hipFile.XXXXXX";
-        if ((fd = mkstemp(path_template)) == -1) {
-            throw std::runtime_error("Could not create temporary file");
-        }
-        if (unlink(path_template) == -1) {
-            throw std::runtime_error("Could not unlink temporary file)");
-        }
     }
 
-    Tmpfile(std::string directory)
+    Tmpfile(std::string directory) : path{directory}
     {
-        directory += "/hipFile.XXXXXX";
-        if ((fd = mkstemp(directory.data())) == -1) {
+        path += "/hipFile.XXXXXX";
+        if ((fd = mkstemp(path.data())) == -1) {
             throw std::runtime_error("Could not create temporary file");
         }
-        if (unlink(directory.c_str()) == -1) {
+
+#ifdef __HIP_PLATFORM_AMD__
+        if (unlink(path.c_str()) == -1) {
             throw std::runtime_error("Could not unlink temporary file)");
         }
+#endif
     }
 
     ~Tmpfile()
     {
+#ifdef __HIP_PLATFORM_NVIDIA__
+        unlink(path.c_str());
+#endif
         close(fd);
     }
 };
