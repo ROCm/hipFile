@@ -2,8 +2,10 @@ name: build_and_test
 run-name: Build, Test, and Analyze AIS
 env:
   AIS_GHA_CMD_FILES_DOCKER_DIR: /root/github
+  AIS_INPUT_BUILD_ID: ${{ inputs.build_id }}
   AIS_INPUT_CI_IMAGE: ${{ inputs.ci_image }}
   AIS_INPUT_CXX_COMPILER: ${{ inputs.cxx_compiler }}
+  AIS_INPUT_JOB_DESIGNATOR: ${{ inputs.job_designator }}
   AIS_INPUT_PLATFORM: ${{ inputs.platform }}
   AIS_INPUT_UPLOAD_ARTIFACTS: ${{ inputs.upload_artifacts }}
   AIS_MOUNT_PATH: /mnt/ais/ext4
@@ -20,11 +22,20 @@ env:
 on:
   workflow_call:
     inputs:
+      build_id:
+        default: 9999
+        description: "Number assigned by the build orchestrator."
+        required: false
+        type: number
       ci_image:
         required: true
         type: string
       cxx_compiler:
         required: true
+        type: string
+      job_designator:
+        description: "Qualifies the type of job building hipFile."
+        required: false
         type: string
       platform:
         required: true
@@ -59,6 +70,12 @@ jobs:
     runs-on: [ubuntu-24.04]
     steps:
       - name: Set early AIS CI environment variables
+        # ROCm Build Environment Args
+        # - JOB_DESIGNATOR
+        # - BUILD_ID
+        # - SLES_BUILD_ID_PREFIX (will be instead be set in SUSE based DOCKERFILE's)
+        # - CPACK_<TYPE>_PACKAGE_RELEASE (made up of the above)
+        # See: https://github.com/ROCm/ROCm/blob/8aa43d132f0d541eb5303dc532f5931cb80ad87a/tools/rocm-build/envsetup.sh#L25-L42
         run: |
           echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "${GITHUB_ENV}"
           echo "AIS_GHA_CMD_FILES_DIR=${GITHUB_ENV%/*}" >> "${GITHUB_ENV}"
@@ -108,10 +125,14 @@ jobs:
           docker exec \
             -e "_AIS_INPUT_CXX_COMPILER=${AIS_INPUT_CXX_COMPILER}" \
             -e "_AIS_ROCM_VERSION=${AIS_ROCM_VERSION}" \
+            -e "BUILD_ID=${AIS_INPUT_BUILD_ID}" \
+            -e "JOB_DESIGNATOR=${AIS_INPUT_JOB_DESIGNATOR}" \
             -t \
             -w /ais/hipFile/build \
             "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
+              export CPACK_DEBIAN_PACKAGE_RELEASE="${JOB_DESIGNATOR}${SLES_BUILD_ID_PREFIX}${BUILD_ID}~$(source /etc/os-release && echo ${VERSION_ID})"
+              export CPACK_RPM_PACKAGE_RELEASE="${JOB_DESIGNATOR}${SLES_BUILD_ID_PREFIX}${BUILD_ID}"
               cmake \
                 -DCMAKE_CXX_COMPILER="${_AIS_INPUT_CXX_COMPILER}" \
                 -DCMAKE_CXX_FLAGS="-Werror" \
