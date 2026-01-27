@@ -31,7 +31,7 @@ on:
           Otherwise, returns the current CI image name & tag.
         value: >-
           ${{ 
-            jobs.build_AIS_image.result == 'skipped' && format('ghcr.io/{0}/ais_ci_{1}:latest-rocm{2}', github.repository, inputs.platform, inputs.rocm_version) ||
+            jobs.build_AIS_image.result == 'skipped' && jobs.get_latest_AIS_image.outputs.new_ci_image ||
             jobs.build_AIS_image.result == 'success' && jobs.build_AIS_image.outputs.new_ci_image ||
             null
           }}
@@ -55,6 +55,19 @@ permissions:
   contents: read
   packages: write
 jobs:
+  # GitHub Actions does not have a built-in toLower() function which has made a lot of
+  # people sad. https://github.com/orgs/community/discussions/25768
+  get_latest_AIS_image:
+    if: ${{ ! inputs.dockerfile_changed }}
+    runs-on: [ubuntu-24.04]
+    outputs:
+      new_ci_image: ${{ steps.ci-image.outputs.AIS_CI_IMAGE }}
+    steps:
+      - name: Set default CI image
+        id: ci-image
+        run: |
+          AIS_CI_IMAGE="${AIS_DOCKER_REGISTRY}/${AIS_CI_IMAGE_NAME}:latest-rocm${AIS_INPUT_ROCM_VERSION}"
+          echo "AIS_CI_IMAGE=$(printf '%s' ${AIS_CI_IMAGE} | tr '[:upper:]' '[:lower:]')" >> "${GITHUB_OUTPUT}"
   build_AIS_image:
     if: ${{ inputs.dockerfile_changed }}
     runs-on: [ubuntu-24.04]
