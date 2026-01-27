@@ -262,7 +262,7 @@ TEST_P(FastpathAlignedBufferOffsetsParam, Score)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
 #endif
 
-    ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_BUFFER_OFFSET, GetParam()),
+    ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, GetParam()),
               SCORE_ACCEPT);
 }
 
