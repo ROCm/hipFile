@@ -207,7 +207,8 @@ TEST_P(FastpathUnalignedIoSizesParam, Score)
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathUnalignedIoSizesParam,
-                         Values(-DEFAULT_OFFSET_ALIGN + 1, 1, DEFAULT_OFFSET_ALIGN - 1));
+                         Values(1, DEFAULT_OFFSET_ALIGN >> 1, DEFAULT_OFFSET_ALIGN - 1,
+                                DEFAULT_OFFSET_ALIGN + 1));
 
 struct FastpathAlignedFileOffsetsParam : public FastpathTestBase, public TestWithParam<hoff_t> {};
 
