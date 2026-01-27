@@ -147,7 +147,8 @@ Fastpath::score(shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
 
     accept_io &= !(size & offset_align_mask);
     accept_io &= !(file_offset & static_cast<int64_t>(offset_align_mask));
-    accept_io &= !(buffer_offset & static_cast<int64_t>(mem_align_mask));
+    auto buffer_address{reinterpret_cast<intptr_t>(buffer->getBuffer())};
+    accept_io &= !((buffer_address + buffer_offset) & static_cast<int64_t>(mem_align_mask));
 
     return accept_io ? 100 : -1;
 }
