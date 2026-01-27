@@ -263,11 +263,14 @@ TEST_P(FastpathAlignedBufferOffsetsParam, Score)
 #endif
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, GetParam()),
-              SCORE_ACCEPT);
+              GetParam() >= 0 ? SCORE_ACCEPT : SCORE_REJECT);
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathAlignedBufferOffsetsParam,
-                         Values(-DEFAULT_MEM_ALIGN, 0, DEFAULT_MEM_ALIGN));
+                         Values(-static_cast<hoff_t>(DEFAULT_MEM_ALIGN << 2),
+                                -static_cast<hoff_t>(DEFAULT_MEM_ALIGN << 1),
+                                -static_cast<hoff_t>(DEFAULT_MEM_ALIGN), 0, DEFAULT_MEM_ALIGN,
+                                DEFAULT_MEM_ALIGN << 1, DEFAULT_MEM_ALIGN << 2));
 
 /// @brief Tests negative and unaligned buffer offsets
 struct FastpathUnalignedBufferOffsetsParam : public FastpathTestBase, public TestWithParam<hoff_t> {};
