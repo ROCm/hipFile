@@ -288,7 +288,12 @@ TEST_P(FastpathUnalignedBufferOffsetsParam, Score)
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathUnalignedBufferOffsetsParam,
-                         Values(-DEFAULT_MEM_ALIGN + 1, 1, DEFAULT_MEM_ALIGN - 1));
+                         Values(-static_cast<hoff_t>(DEFAULT_MEM_ALIGN << 2) - 1,
+                                -static_cast<hoff_t>(DEFAULT_MEM_ALIGN << 1) + 1,
+                                -static_cast<hoff_t>(DEFAULT_MEM_ALIGN) - 1,
+                                -static_cast<hoff_t>(DEFAULT_MEM_ALIGN >> 1), 1, DEFAULT_MEM_ALIGN >> 1,
+                                DEFAULT_MEM_ALIGN - 1, (DEFAULT_MEM_ALIGN << 1) + 1,
+                                (DEFAULT_MEM_ALIGN << 2) - 1));
 
 struct FastpathIoParam : public FastpathTestBase, public TestWithParam<IoType> {
 
