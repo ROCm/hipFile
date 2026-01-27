@@ -221,11 +221,14 @@ TEST_P(FastpathAlignedFileOffsetsParam, Score)
 #endif
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, GetParam(), DEFAULT_BUFFER_OFFSET),
-              SCORE_ACCEPT);
+              GetParam() >= 0 ? SCORE_ACCEPT : SCORE_REJECT);
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathAlignedFileOffsetsParam,
-                         Values(-DEFAULT_OFFSET_ALIGN, 0, DEFAULT_OFFSET_ALIGN));
+                         Values(-static_cast<hoff_t>(DEFAULT_OFFSET_ALIGN << 2),
+                                -static_cast<hoff_t>(DEFAULT_OFFSET_ALIGN << 1),
+                                -static_cast<hoff_t>(DEFAULT_OFFSET_ALIGN), 0, DEFAULT_OFFSET_ALIGN,
+                                DEFAULT_OFFSET_ALIGN << 1, DEFAULT_OFFSET_ALIGN << 2));
 
 struct FastpathUnalignedFileOffsetsParam : public FastpathTestBase, public TestWithParam<hoff_t> {};
 
