@@ -126,6 +126,7 @@ jobs:
               mkdir /ais/hipFile/build
             '
       - name: Generate build files for hipFile targeting the AMD platform (${{ inputs.cxx_compiler }})
+        # ${SLES_BUILD_ID} is mentioned for all platforms to match current ROCm build implementation.
         run: |
           docker exec \
             -e "_AIS_INPUT_CXX_COMPILER=${AIS_INPUT_CXX_COMPILER}" \

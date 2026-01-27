@@ -90,7 +90,7 @@ if(NOT DEFINED ENV{CPACK_DEBIAN_PACKAGE_RELEASE} AND NOT DEFINED ENV{CPACK_RPM_P
     set(PROJECT_VERSION_TWEAK "local")
 endif()
 
-# Let's prefer to include the ROCm Version even on a non-release build.
+# Prefer to include the ROCm libpatch version even on a non-release build.
 if(NOT DEFINED ENV{ROCM_LIBPATCH_VERSION})
     string(REPLACE "." "0" _rocm_libpatch_version "${ROCM_VERSION}")
     set(ENV{ROCM_LIBPATCH_VERSION} "${_rocm_libpatch_version}")

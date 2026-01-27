@@ -35,7 +35,9 @@ RUN zypper refresh
 #     dnf install -y ./amdgpu_install.rpm
 # Method 2: Manually create repo file.
 
-# ROCM_PKG_REPO_VERSION removes the version PATCH if it equals 0.
+# ROCM_PKG_REPO_VERSION normalizes the ROCm version used in the package repo URL.
+# If the PATCH component is 0, the PATCH of the version is dropped. Otherwise no
+# modification is made.
 RUN ROCM_PKG_REPO_VERSION="$(echo ${ROCM_PKG_REPO_OVERRIDE:-$ROCM_VERSION} | sed -E 's|([^.]+\.[^.]+)\.0$|\1|')"; \
     cat <<EOF > /etc/zypp/repos.d/rocm.repo
 [ROCm-${ROCM_VERSION}]
