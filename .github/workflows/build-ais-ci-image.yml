@@ -2,7 +2,7 @@ name: new_CI_image
 run-name: Build the Docker image for AIS CI.
 env:
   AIS_CI_IMAGE_NAME: ais_ci_${{ inputs.platform }}
-  AIS_DOCKER_REGISTRY: ghcr.io/rocm/hipfile
+  AIS_DOCKER_REGISTRY: ghcr.io/${{ github.repository }}
   AIS_INPUT_ROCM_VERSION: ${{ inputs.rocm_version }}
   AIS_PR_BASE_URL: https://github.com/ROCm/hipFile/pull
 on:
@@ -31,7 +31,7 @@ on:
           Otherwise, returns the current CI image name & tag.
         value: >-
           ${{ 
-            jobs.build_AIS_image.result == 'skipped' && format('ghcr.io/rocm/hipfile/ais_ci_{0}:latest-rocm{1}', inputs.platform, inputs.rocm_version) ||
+            jobs.build_AIS_image.result == 'skipped' && format('ghcr.io/{0}/ais_ci_{1}:latest-rocm{2}', github.repository, inputs.platform, inputs.rocm_version) ||
             jobs.build_AIS_image.result == 'success' && jobs.build_AIS_image.outputs.new_ci_image ||
             null
           }}
@@ -69,10 +69,10 @@ jobs:
       - name: Set target AIS CI Image
         id: ci-image
         run: |
-          echo "AIS_CI_IMAGE=${AIS_DOCKER_REGISTRY}/${AIS_CI_IMAGE_NAME}:${AIS_CI_IMAGE_TAG}" \
-            >> "${GITHUB_OUTPUT}"
-          echo "AIS_CI_LATEST_CACHE=${AIS_DOCKER_REGISTRY}/${AIS_CI_IMAGE_NAME}:latest-rocm${AIS_INPUT_ROCM_VERSION}-cache" \
-            >> "${GITHUB_OUTPUT}"
+          AIS_CI_IMAGE="${AIS_DOCKER_REGISTRY}/${AIS_CI_IMAGE_NAME}:${AIS_CI_IMAGE_TAG}"
+          echo "AIS_CI_IMAGE=$(printf '%s' ${AIS_CI_IMAGE} | tr '[:upper:]' '[:lower:]')" >> "${GITHUB_OUTPUT}"
+          AIS_CI_LATEST_CACHE="${AIS_DOCKER_REGISTRY}/${AIS_CI_IMAGE_NAME}:latest-rocm${AIS_INPUT_ROCM_VERSION}-cache"
+          echo "AIS_CI_LATEST_CACHE=$(printf '%s' ${AIS_CI_LATEST_CACHE} | tr '[:upper:]' '[:lower:]')" >> "${GITHUB_OUTPUT}"
       - name: Fetching code repository...
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
       - name: Authenticating to GitHub Container Registry.
