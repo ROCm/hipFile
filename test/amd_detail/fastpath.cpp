@@ -245,7 +245,12 @@ TEST_P(FastpathUnalignedFileOffsetsParam, Score)
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathUnalignedFileOffsetsParam,
-                         Values(-DEFAULT_OFFSET_ALIGN + 1, 1, DEFAULT_OFFSET_ALIGN - 1));
+                         Values(-static_cast<hoff_t>(DEFAULT_OFFSET_ALIGN << 2) - 1,
+                                -static_cast<hoff_t>(DEFAULT_OFFSET_ALIGN << 1) + 1,
+                                -static_cast<hoff_t>(DEFAULT_OFFSET_ALIGN) - 1,
+                                -static_cast<hoff_t>(DEFAULT_OFFSET_ALIGN >> 1), 1, DEFAULT_OFFSET_ALIGN >> 1,
+                                DEFAULT_OFFSET_ALIGN - 1, (DEFAULT_OFFSET_ALIGN << 1) + 1,
+                                (DEFAULT_OFFSET_ALIGN << 2) - 1));
 
 struct FastpathAlignedBufferOffsetsParam : public FastpathTestBase, public TestWithParam<hoff_t> {};
 
