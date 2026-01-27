@@ -8,7 +8,12 @@ LABEL org.opencontainers.image.source=https://github.com/ROCm/hipFile
 ARG UBUNTU_CODENAME
 ARG UBUNTU_MAJOR_VERSION=24
 ARG UBUNTU_MINOR_VERSION=04
-ARG ROCm_VERSION=7.2
+ARG ROCM_VERSION=7.2.0
+
+# If the target ROCm Version on the package repository is non-standard, you can forcibly
+# set the ROCm version used in the package repo URL.
+# Ex. Package 7.0_alpha installs 7.0.0
+ARG ROCM_PKG_REPO_OVERRIDE
 
 RUN apt update && \
     apt install -y \
@@ -20,8 +25,10 @@ RUN curl https://repo.radeon.com/rocm/rocm.gpg.key | \
     gpg --dearmor >> /etc/apt/keyrings/rocm.gpg
 
 # Manually setup ROCm Package Repos
-RUN cat <<EOF > /etc/apt/sources.list.d/rocm.list
-deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/${ROCm_VERSION} ${UBUNTU_CODENAME} main
+# ROCM_PKG_REPO_VERSION removes the version PATCH if it equals 0.
+RUN ROCM_PKG_REPO_VERSION="$(echo ${ROCM_PKG_REPO_OVERRIDE:-$ROCM_VERSION} | sed -E 's|([^.]+\.[^.]+)\.0$|\1|')"; \
+    cat <<EOF > /etc/apt/sources.list.d/rocm.list
+deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/${ROCM_PKG_REPO_VERSION} ${UBUNTU_CODENAME} main
 EOF
 
 RUN cat <<EOF > /etc/apt/preferences.d/rocm-pin-600
@@ -69,6 +76,9 @@ RUN apt update && \
 
 # Add ROCm and CUDA bin directories to the path
 ENV PATH=/usr/local/cuda/bin:/opt/rocm/bin:${PATH}
+
+# Environment Build Arg for ROCm
+ENV ROCM_VERSION="${ROCM_VERSION}"
 
 # AIS Code Repository Mount Point
 VOLUME /mnt/ais

@@ -36,6 +36,8 @@ jobs:
           - rocky
           - suse
           - ubuntu
+        rocm_versions:
+          - 7.2.0
     steps:
       - name: Fetching code repository...
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
@@ -48,7 +50,7 @@ jobs:
       - name: Set target AIS CI Image
         id: ci-image
         run: |
-          echo "AIS_CI_IMAGE=${AIS_DOCKER_REGISTRY}/${AIS_CI_IMAGE_NAME}:latest" \
+          echo "AIS_CI_IMAGE=${AIS_DOCKER_REGISTRY}/${AIS_CI_IMAGE_NAME}:latest-rocm${{ matrix.rocm_versions }}" \
             >> "${GITHUB_OUTPUT}"
       - name: Set Docker Cache Instruction
         id: use-cache
@@ -74,7 +76,8 @@ jobs:
           docker buildx build \
             -f "${GITHUB_WORKSPACE}/util/docker/DOCKERFILE.${AIS_CI_IMAGE_NAME}" \
             --label "org.opencontainers.image.description= \
-              Latest AIS CI Image for ${AIS_INPUT_PLATFORM}." \
+              Latest AIS CI Image for ${AIS_INPUT_PLATFORM} using ROCm ${{ matrix.rocm_versions }}." \
+            --build-arg ROCM_VERSION=${{ matrix.rocm_versions }} \
             --cache-to=type=registry,ref="${{ steps.ci-image.outputs.AIS_CI_IMAGE }}-cache" \
             ${{ steps.use-cache.outputs.CACHE_FROM_CMD }} \
             --push \

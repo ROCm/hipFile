@@ -6,6 +6,10 @@ on:
       platform:
         required: true
         type: string
+      rocm_version:
+        description: "Target ROCm MAJOR.MINOR.PATCH Version."
+        required: true
+        type: string
 permissions:
   contents: read
   packages: read
@@ -32,6 +36,7 @@ jobs:
     with:
       dockerfile_changed: ${{ needs.AIS_CI_Pre-check.outputs.changed_dockerfile == '1' }}
       platform: ${{ inputs.platform }}
+      rocm_version: ${{ inputs.rocm_version }}
   build_and_test:
     # cancelled() needed. Otherwise success() implicitly added and fails if build_AIS_CI_image skipped.
     if: ${{ !cancelled() && needs.build_AIS_CI_image.outputs.ci_image_build_satisfied == 'true' }}
@@ -41,6 +46,7 @@ jobs:
       ci_image: ${{ needs.build_AIS_CI_image.outputs.ci_image }}
       cxx_compiler: amdclang++
       platform: ${{ inputs.platform }}
+      rocm_version: ${{ inputs.rocm_version }}
       upload_artifacts: true
   build_and_test_other_compilers:
     # Try building on other compilers, but keep as separate job.
@@ -59,6 +65,7 @@ jobs:
       ci_image: ${{ needs.build_AIS_CI_image.outputs.ci_image }}
       cxx_compiler: ${{ matrix.cxx_compiler }}
       platform: ${{ inputs.platform }}
+      rocm_version: ${{ inputs.rocm_version }}
   AIS_system_tests:
     # cancelled() needed. Otherwise success() implicitly added and fails if the chained
     # dependency build_AIS_CI_image is skipped.
@@ -70,6 +77,7 @@ jobs:
       ais_hipfile_pkg_filename: ${{ needs.build_and_test.outputs.ais_hipfile_pkg_filename }}
       ci_image: ${{ needs.build_and_test.outputs.ci_image }}
       platform: ${{ inputs.platform }}
+      rocm_version: ${{ inputs.rocm_version }}
   build_and_test_Nvidia:
     if: ${{ !cancelled() && needs.build_AIS_CI_image.outputs.ci_image_build_satisfied == 'true' }}
     needs: [AIS_CI_Pre-check, build_AIS_CI_image]
@@ -77,3 +85,4 @@ jobs:
     with:
       ci_image: ${{ needs.build_AIS_CI_image.outputs.ci_image }}
       platform: ${{ inputs.platform }}
+      rocm_version: ${{ inputs.rocm_version }}

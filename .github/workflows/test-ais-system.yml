@@ -6,6 +6,7 @@ env:
   AIS_INPUT_HIPFILE_PKG_FILENAME: ${{ inputs.ais_hipfile_pkg_filename }}
   AIS_INPUT_CI_IMAGE: ${{ inputs.ci_image }}
   AIS_INPUT_PLATFORM: ${{ inputs.platform }}
+  AIS_INPUT_ROCM_VERSION: ${{ inputs.rocm_version }}
   AIS_MOUNT_PATH: /mnt/ais/ext4
   AIS_PKG_MGR: >-
     ${{
@@ -28,6 +29,10 @@ on:
       platform:
         required: true
         type: string
+      rocm_version:
+        description: "Target ROCm MAJOR.MINOR.PATCH Version."
+        required: true
+        type: string
 permissions:
   contents: read
   packages: read
@@ -39,7 +44,7 @@ jobs:
         run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "${GITHUB_ENV}"
       - name: Set AIS CI container name
         run: |
-          echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${AIS_INPUT_PLATFORM}" >> "${GITHUB_ENV}"
+          echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER}_${{ github.job }}_${AIS_INPUT_PLATFORM}_${AIS_INPUT_ROCM_VERSION}" >> "${GITHUB_ENV}"
       - name: Fetching hipFile repository...
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
         with:
@@ -184,7 +189,7 @@ jobs:
             -w /ais/fio/build \
             "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
-              ROCM=/opt/rocm \
+              ROCM=/opt/rocm-${ROCM_VERSION} \
               HIPFILE=/ais/hipFile \
               HIPFILELIB=${HIPFILE}/build/src/amd_detail/ \
               HIP_PLATFORM=amd \

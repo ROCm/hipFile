@@ -16,7 +16,7 @@ env:
       inputs.platform == 'ubuntu' && 'apt'
     }}
   AIS_PKG_TYPE: ${{ inputs.platform == 'ubuntu' && 'DEB' || 'RPM' }}
-  AIS_ROCM_VERSION: 7.2.0
+  AIS_INPUT_ROCM_VERSION: ${{ inputs.rocm_version }}
   # Code coverage report only vetted to work for amdclang++ on Ubuntu
   AIS_USE_CODE_COVERAGE: ${{ inputs.cxx_compiler == 'amdclang++' && inputs.platform == 'ubuntu' }}
 on:
@@ -38,6 +38,10 @@ on:
         required: false
         type: string
       platform:
+        required: true
+        type: string
+      rocm_version:
+        description: "Target ROCm MAJOR.MINOR.PATCH Version."
         required: true
         type: string
       upload_artifacts:
@@ -75,6 +79,7 @@ jobs:
         # - BUILD_ID
         # - SLES_BUILD_ID_PREFIX (will be instead be set in SUSE based DOCKERFILE's)
         # - CPACK_<TYPE>_PACKAGE_RELEASE (made up of the above)
+        # - ROCM_VERSION (set in DOCKERFILE)
         # See: https://github.com/ROCm/ROCm/blob/8aa43d132f0d541eb5303dc532f5931cb80ad87a/tools/rocm-build/envsetup.sh#L25-L42
         run: |
           echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "${GITHUB_ENV}"
@@ -84,7 +89,7 @@ jobs:
         # We should expect that there are multiple instances of this job with different cxx_compilers.
         # On non-pull_request triggering workflows, AIS_PR_NUMBER may be empty.
         run: |
-          echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER:=${{ github.run_id }}}_${{ github.job }}_${AIS_INPUT_PLATFORM}_${AIS_SAFE_COMPILER_NAME}" >> "${GITHUB_ENV}"
+          echo "AIS_CONTAINER_NAME=${AIS_PR_NUMBER:=${{ github.run_id }}}_${{ github.job }}_${AIS_INPUT_PLATFORM}_${AIS_INPUT_ROCM_VERSION}_${AIS_SAFE_COMPILER_NAME}" >> "${GITHUB_ENV}"
       - name: Fetching code repository...
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
         with:
@@ -124,7 +129,6 @@ jobs:
         run: |
           docker exec \
             -e "_AIS_INPUT_CXX_COMPILER=${AIS_INPUT_CXX_COMPILER}" \
-            -e "_AIS_ROCM_VERSION=${AIS_ROCM_VERSION}" \
             -e "BUILD_ID=${AIS_INPUT_BUILD_ID}" \
             -e "JOB_DESIGNATOR=${AIS_INPUT_JOB_DESIGNATOR}" \
             -t \
@@ -139,7 +143,7 @@ jobs:
                 -DCMAKE_HIP_PLATFORM=amd \
                 -DAIS_BUILD_DOCS=ON \
                 -DAIS_USE_CODE_COVERAGE=${{ env.AIS_USE_CODE_COVERAGE == 'true' && 'ON' || 'OFF' }} \
-                -DROCM_PATH="/opt/rocm-${_AIS_ROCM_VERSION}" \
+                -DROCM_VERSION="${ROCM_VERSION}" \
                 ..
             '
       - name: Build hipFile for the AMD platform (${{ inputs.cxx_compiler }})

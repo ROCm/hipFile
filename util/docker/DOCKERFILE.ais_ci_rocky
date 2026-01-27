@@ -9,7 +9,12 @@ LABEL org.opencontainers.image.source=https://github.com/ROCm/hipFile
 # Brings ROCKY_VERSION in-scope
 ARG ROCKY_MAJOR_VERSION
 ARG ROCKY_VERSION
-ARG ROCm_VERSION=7.2
+ARG ROCM_VERSION=7.2.0
+
+# If the target ROCm Version on the package repository is non-standard, you can forcibly
+# set the ROCm version used in the package repo URL.
+# Ex. Package 7.0_alpha installs 7.0.0
+ARG ROCM_PKG_REPO_OVERRIDE
 
 # Update repo and install program dependencies.
 # microdnf is too stripped down, install full dnf.
@@ -34,10 +39,13 @@ RUN microdnf install -y \
 #         -o amdgpu_install.rpm && \
 #     dnf install -y ./amdgpu_install.rpm
 # Method 2: Manually create repo file.
-RUN cat <<EOF > /etc/yum.repos.d/rocm.repo
-[ROCm-${ROCm_VERSION}]
-name=ROCm${ROCm_VERSION}
-baseurl=https://repo.radeon.com/rocm/el${ROCKY_MAJOR_VERSION}/${ROCm_VERSION}/main
+
+# ROCM_PKG_REPO_VERSION removes the version PATCH if it equals 0.
+RUN ROCM_PKG_REPO_VERSION="$(echo ${ROCM_PKG_REPO_OVERRIDE:-$ROCM_VERSION} | sed -E 's|([^.]+\.[^.]+)\.0$|\1|')"; \
+    cat <<EOF > /etc/yum.repos.d/rocm.repo
+[ROCm-${ROCM_VERSION}]
+name=ROCm${ROCM_VERSION}
+baseurl=https://repo.radeon.com/rocm/el${ROCKY_MAJOR_VERSION}/${ROCM_PKG_REPO_VERSION}/main
 enabled=1
 priority=50
 gpgcheck=1
@@ -93,6 +101,9 @@ RUN dnf module enable -y nvidia-driver:570-open && \
 
 # Add ROCm and CUDA bin directories to the path
 ENV PATH=/usr/local/cuda/bin:/opt/rocm/bin:${PATH}
+
+# Environment Build Arg for ROCm
+ENV ROCM_VERSION="${ROCM_VERSION}"
 
 # .rc and .profile files are not automatically read on non-login,
 # non-interactive shells. Tell Bash to read a minimal .profile

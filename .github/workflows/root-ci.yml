@@ -28,6 +28,9 @@ jobs:
           - rocky
           - suse
           - ubuntu
+        rocm_versions:
+          - 7.2.0
     uses: ./.github/workflows/ais-ci.yml
     with:
       platform: ${{ matrix.supported_platforms }}
+      rocm_version: ${{ matrix.rocm_versions }}

@@ -6,6 +6,10 @@ on:
       platform:
         required: true
         type: string
+      rocm_version:
+        description: "Target ROCm MAJOR.MINOR.PATCH Version."
+        required: true
+        type: string
     outputs:
       ais_hipfile_pkg_dev_filename:
         description: "Filename for the hipFile development DEB/RPM package."
@@ -23,6 +27,7 @@ jobs:
     with:
       dockerfile_changed: false
       platform: ${{ inputs.platform }}
+      rocm_version: ${{ inputs.rocm_version }}
   build_hipFile:
     if: ${{ !cancelled() && needs.get_AIS_CI_image.outputs.ci_image_build_satisfied == 'true' }}
     needs: [get_AIS_CI_image]
@@ -32,3 +37,4 @@ jobs:
       cxx_compiler: amdclang++
       platform: ${{ inputs.platform }}
       upload_artifacts: true
+      rocm_version: ${{ inputs.rocm_version }}
