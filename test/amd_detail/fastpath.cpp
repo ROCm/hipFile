@@ -54,8 +54,8 @@ operator==(const hipAmdFileHandle_t &lhs, const hipAmdFileHandle_t &rhs)
 // Provide default values for variables used in fastpath tests
 struct FastpathTestBase {
     const size_t        DEFAULT_IO_SIZE{1024 * 1024};
-    void *const         DEFAULT_BUFFER_ADDR{reinterpret_cast<void *>(0x600DB10C)};
-    const off_t         DEFAULT_BUFFER_OFFSET{512};
+    void *const         DEFAULT_BUFFER_ADDR{reinterpret_cast<void *>(0xABAD'CAFE'0000'0000)};
+    const off_t         DEFAULT_BUFFER_OFFSET{DEFAULT_MEM_ALIGN};
     const size_t        DEFAULT_BUFFER_LENGTH{DEFAULT_IO_SIZE + static_cast<size_t>(DEFAULT_BUFFER_OFFSET)};
     const hipMemoryType DEFAULT_BUFFER_TYPE{hipMemoryTypeDevice};
     const optional<int> DEFAULT_UNBUFFERED_FD{7};
@@ -78,6 +78,18 @@ struct FastpathTestBase {
 };
 
 struct FastpathTest : public FastpathTestBase, public Test {};
+
+TEST_F(FastpathTest, TestDefaults)
+{
+    ASSERT_FALSE((DEFAULT_MEM_ALIGN & (DEFAULT_MEM_ALIGN - 1)));
+    ASSERT_TRUE(DEFAULT_MEM_ALIGN > 1);
+    ASSERT_FALSE((DEFAULT_OFFSET_ALIGN & (DEFAULT_OFFSET_ALIGN - 1)));
+    ASSERT_TRUE(DEFAULT_OFFSET_ALIGN > 1);
+    ASSERT_FALSE((reinterpret_cast<uintptr_t>(DEFAULT_BUFFER_ADDR) & (DEFAULT_MEM_ALIGN - 1)));
+    ASSERT_FALSE((DEFAULT_BUFFER_OFFSET & (DEFAULT_MEM_ALIGN - 1)));
+    ASSERT_FALSE((DEFAULT_IO_SIZE & (DEFAULT_OFFSET_ALIGN - 1)));
+    ASSERT_FALSE((DEFAULT_FILE_OFFSET & (DEFAULT_OFFSET_ALIGN - 1)));
+}
 
 TEST_F(FastpathTest, UnbufferedFdAvailable)
 {
