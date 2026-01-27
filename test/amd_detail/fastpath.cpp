@@ -189,7 +189,8 @@ TEST_P(FastpathAlignedIoSizesParam, Score)
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathAlignedIoSizesParam,
-                         Values(-DEFAULT_OFFSET_ALIGN, 0, DEFAULT_OFFSET_ALIGN));
+                         Values(0, DEFAULT_OFFSET_ALIGN, DEFAULT_OFFSET_ALIGN << 1,
+                                DEFAULT_OFFSET_ALIGN << 2));
 
 struct FastpathUnalignedIoSizesParam : public FastpathTestBase, public TestWithParam<size_t> {};
 
