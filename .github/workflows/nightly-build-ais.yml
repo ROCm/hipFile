@@ -35,6 +35,7 @@ jobs:
     with:
       ci_image: ${{ needs.get_AIS_CI_image.outputs.ci_image }}
       cxx_compiler: amdclang++
+      job_designator: "nightly."
       platform: ${{ inputs.platform }}
       upload_artifacts: true
       rocm_version: ${{ inputs.rocm_version }}
