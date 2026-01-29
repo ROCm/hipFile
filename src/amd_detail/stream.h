@@ -41,7 +41,7 @@ public:
     virtual bool                         pageAligned() const override;
     virtual std::unique_lock<std::mutex> getLock() override;
 
-    Stream(const hipStream_t hip_stream, hipDevice_t device_id, uint32_t flags, const PassKey<StreamMap> &k);
+    Stream(const hipStream_t hip_stream, uint32_t flags, const PassKey<StreamMap> &k);
 
 private:
     Stream(const Stream &)             = delete;

@@ -77,7 +77,6 @@ TEST_F(HipFileStream, get_stream_with_unregistered_stream_works)
 
 TEST_F(HipFileStream, register_with_invalid_flags_throws)
 {
-    EXPECT_CALL(mhip, hipStreamGetDevice);
     ASSERT_THROW(stream_map.registerStream(nonnull_stream, HIPFILE_STREAM_FLAGS_MASK + 1),
                  std::invalid_argument);
 }
