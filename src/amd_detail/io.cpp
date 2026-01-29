@@ -18,7 +18,7 @@ paramsValid(const std::shared_ptr<IBuffer> &buffer, size_t size, hoff_t file_off
     if (buffer_offset < 0) {
         return false;
     }
-    if (buffer_length < static_cast<size_t>(buffer_offset)) {
+    if (buffer_length <= static_cast<size_t>(buffer_offset)) {
         return false;
     }
     if (buffer_length - static_cast<size_t>(buffer_offset) < size) {

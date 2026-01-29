@@ -60,24 +60,10 @@ ssize_t
 Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
              hoff_t file_offset, hoff_t buffer_offset, size_t chunk_size)
 {
-    size_t buflen{buffer->getLength()};
-
     size = min(size, hipFile::MAX_RW_COUNT);
 
-    if (file_offset < 0) {
-        throw std::invalid_argument("Negative file offset");
-    }
-
-    if (buffer_offset < 0) {
-        throw std::invalid_argument("Negative buffer offset");
-    }
-
-    if (buflen <= static_cast<size_t>(buffer_offset)) {
-        throw std::invalid_argument("Buffer offset larger than buffer length");
-    }
-
-    if (buflen - static_cast<size_t>(buffer_offset) < size) {
-        throw std::invalid_argument("IO could overflow buffer");
+    if (!paramsValid(buffer, size, file_offset, buffer_offset)) {
+        throw std::invalid_argument("The selected file or buffer region is invalid");
     }
 
     auto ptr     = Context<Sys>::get()->mmap(nullptr, chunk_size, PROT_READ | PROT_WRITE,
