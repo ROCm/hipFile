@@ -15,7 +15,8 @@ namespace hipFile {
 __global__ void
 hipFileMemcpyKernel(AsyncOpFallback *op)
 {
-    const size_t  start_idx                  = threadIdx.x + blockDim.x * blockIdx.x;
+    // Expects to be called with a single block
+    const size_t  start_idx                  = threadIdx.x;
     const ssize_t bytes_transferred_internal = op->bytes_transferred_internal;
 
     if (bytes_transferred_internal < 0)
