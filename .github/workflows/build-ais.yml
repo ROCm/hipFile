@@ -147,6 +147,7 @@ jobs:
                 -DAIS_BUILD_DOCS=ON \
                 -DAIS_USE_CODE_COVERAGE=${{ env.AIS_USE_CODE_COVERAGE == 'true' && 'ON' || 'OFF' }} \
                 -DROCM_VERSION="${ROCM_VERSION}" \
+                -DAIS_CAPABLE_DIR=/mnt/ais-fs \
                 ..
             '
       - name: Build hipFile for the AMD platform (${{ inputs.cxx_compiler }})

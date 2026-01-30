@@ -23,6 +23,7 @@ set(SYSTEM_TEST_SOURCE_FILES
     system/buffer.cpp
     system/config.cpp
     system/driver.cpp
+    system/io.cpp
     system/main.cpp
     system/version.cpp
 )
