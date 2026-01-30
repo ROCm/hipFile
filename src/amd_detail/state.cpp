@@ -92,7 +92,7 @@ DriverState::deregisterBuffer(const void *buf)
 }
 
 shared_ptr<IBuffer>
-DriverState::getBuffer(const void *buf)
+DriverState::getRegisteredBuffer(const void *buf)
 {
     unique_lock<shared_mutex> ulock{state_mutex};
 

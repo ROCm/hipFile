@@ -119,7 +119,7 @@ struct FallbackIo : public HipFileOpened {
 
         expect_buffer_registration(mhip, hipMemoryTypeDevice);
         Context<DriverState>::get()->registerBuffer(buffer_data.data(), buffer_data.size(), 0);
-        buffer = Context<DriverState>::get()->getBuffer(buffer_data.data());
+        buffer = Context<DriverState>::get()->getRegisteredBuffer(buffer_data.data());
 
         expect_file_registration(msys, mlibmounthelper);
         file = Context<DriverState>::get()->getFile(Context<DriverState>::get()->registerFile(0xBADF00D));
@@ -182,7 +182,7 @@ struct FallbackParam : ::testing::TestWithParam<IoType> {
         expect_buffer_registration(mhip, hipMemoryTypeDevice);
         void *buf = reinterpret_cast<void *>(0xFEFEFEFE);
         Context<DriverState>::get()->registerBuffer(buf, 4096, 0);
-        buffer = Context<DriverState>::get()->getBuffer(buf);
+        buffer = Context<DriverState>::get()->getRegisteredBuffer(buf);
 
         expect_file_registration(msys, mlibmounthelper);
         file = Context<DriverState>::get()->getFile(Context<DriverState>::get()->registerFile(0xBADF00D));
@@ -248,7 +248,7 @@ TEST_P(FallbackParam, fallback_io_truncates_size_to_MAX_RW_COUNT)
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
     auto buf = reinterpret_cast<void *>(0xABABABAB);
     Context<DriverState>::get()->registerBuffer(buf, MAX_RW_COUNT + 1, 0);
-    auto big_buffer = Context<DriverState>::get()->getBuffer(buf);
+    auto big_buffer = Context<DriverState>::get()->getRegisteredBuffer(buf);
 
     EXPECT_CALL(msys, mmap).WillOnce(testing::Return(reinterpret_cast<void *>(0xFEFEFEFE)));
     switch (io_type) {

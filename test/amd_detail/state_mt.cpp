@@ -243,7 +243,7 @@ thread_function(int id)
                     uniform_int_distribution<size_t> vec_dist{0, buffers.size() - 1};
                     size_t                           idx = vec_dist(gen);
 
-                    auto data = ds->getBuffer(buffers[idx]);
+                    auto data = ds->getRegisteredBuffer(buffers[idx]);
 
                     // TODO: Maintain a data collection to ensure there are no races
                     //       on the data
