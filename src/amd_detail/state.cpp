@@ -100,7 +100,7 @@ DriverState::getRegisteredBuffer(const void *buf)
         throw DriverNotInitialized();
     }
 
-    return buffer_map->getBuffer(buf);
+    return buffer_map->getRegisteredBuffer(buf);
 }
 
 shared_ptr<IBuffer>

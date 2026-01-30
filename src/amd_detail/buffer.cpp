@@ -135,7 +135,7 @@ BufferMap::deregisterBuffer(const void *buf)
 }
 
 shared_ptr<IBuffer>
-BufferMap::getBuffer(const void *buf)
+BufferMap::getRegisteredBuffer(const void *buf)
 {
     auto itr = from_ptr.find(buf);
     if (from_ptr.end() == itr) {

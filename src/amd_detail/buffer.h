@@ -134,7 +134,7 @@ public:
     /// @attention A shared_lock on HipFileMutex must be held
     /// @param buf Buffer pointer
     /// @return A registered buffer
-    virtual std::shared_ptr<IBuffer> getBuffer(const void *buf);
+    virtual std::shared_ptr<IBuffer> getRegisteredBuffer(const void *buf);
 
     /// @brief Look up a registered buffer. Returns a temporary unregistered
     ///        buffer if no matching buffer is found.
