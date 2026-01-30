@@ -102,7 +102,7 @@ public:
     virtual std::shared_ptr<IBuffer> getBuffer(const void *buf);
 
     /// @brief Look up a registered buffer. Returns a temporary unregistered
-    ///        buffer (of size length, using flags) if no matching buffer is found.
+    ///        buffer if no matching buffer is found.
     /// @param [in] buf Buffer pointer
     /// @param [in] length Buffer length
     /// @param [in] flags Buffer flags (unused)

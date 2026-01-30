@@ -89,6 +89,14 @@ public:
     /// @param k  Key class instance (see passkey.h)
     Buffer(const void *buf, size_t length, int flags, const PassKey<BufferMap> &k);
 
+    /// @brief Creates a buffer.
+    ///
+    /// The length of the buffer is determined by querying the hip runtime
+    ///
+    /// @param buf Buffer pointer
+    /// @param k  Key class instance (see passkey.h)
+    Buffer(const void *buf, const PassKey<BufferMap> &k);
+
 private:
     /// @brief Pointer to a hip allocated buffer
     void *buffer;
@@ -129,7 +137,7 @@ public:
     virtual std::shared_ptr<IBuffer> getBuffer(const void *buf);
 
     /// @brief Look up a registered buffer. Returns a temporary unregistered
-    ///        buffer (of size length, using flags) if no matching buffer is found.
+    ///        buffer if no matching buffer is found.
     /// @attention A shared_lock on HipFileMutex must be held
     /// @param buf Buffer pointer
     /// @param length Buffer length

@@ -100,11 +100,14 @@ TEST_P(HipFileIo, ReadToUnregisteredBufferAtOffset)
     hoff_t io_buffer_offset{4096};
     size_t io_size{unregistered_device_buffer_size - static_cast<size_t>(io_buffer_offset)};
 
-    // When we create a temporary buffer to handle the hipFileRead(), we pass in
-    // the io size to Buffer's constructor as the buffer's size. Before issuing
-    // the IO, the backends (fastpath/fallback) check if the IO would overflow
-    // the buffer. This check fails with temporary buffers because,
-    // size < size + offset when 0 < offset.
+    ASSERT_EQ(io_size, hipFileRead(tmpfile_handle, unregistered_device_buffer, io_size, 0, io_buffer_offset));
+}
+
+TEST_P(HipFileIo, ReadToUnregisteredBufferAtOffsetReturnsErrorIfOverflow)
+{
+    hoff_t io_buffer_offset{4096};
+    size_t io_size{unregistered_device_buffer_size};
+
     ASSERT_EQ(-hipFileInvalidValue,
               hipFileRead(tmpfile_handle, unregistered_device_buffer, io_size, 0, io_buffer_offset));
 }
