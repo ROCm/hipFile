@@ -284,16 +284,6 @@ TEST_F(HipFileBuffer, get_buffer_returns_registered_buffer)
               Context<DriverState>::get()->getBuffer(nonnull_ptr));
 }
 
-TEST_F(HipFileBuffer, get_buffer_throws_if_length_larger_than_registered_length)
-{
-    StrictMock<MHip> mhip;
-    size_t           buffer_length = 0;
-    expect_buffer_registration(mhip, hipMemoryTypeDevice);
-    Context<DriverState>::get()->registerBuffer(nonnull_ptr, buffer_length, 0);
-    ASSERT_THROW(Context<DriverState>::get()->getBuffer(nonnull_ptr, buffer_length + 1, 0),
-                 std::invalid_argument);
-}
-
 TEST_F(HipFileBuffer, get_buffer_throws_on_getPointerAttributes_error)
 {
     StrictMock<MHip> mhip;

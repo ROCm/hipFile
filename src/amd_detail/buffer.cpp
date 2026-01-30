@@ -149,6 +149,7 @@ shared_ptr<IBuffer>
 BufferMap::getBuffer(const void *buf, size_t length, int flags)
 {
     (void)flags;
+    (void)length;
 
     auto itr = from_ptr.find(buf);
 
@@ -157,11 +158,6 @@ BufferMap::getBuffer(const void *buf, size_t length, int flags)
         return std::shared_ptr<IBuffer>(new Buffer(buf, PassKey<BufferMap>{}));
     }
     else {
-        // If we found a registered buffer, it's an error if the
-        // length parameter doesn't match what we found
-        if (itr->second->getLength() < length) {
-            throw std::invalid_argument("bad length parameter");
-        }
         return itr->second;
     }
 }

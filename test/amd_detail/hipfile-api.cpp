@@ -174,13 +174,6 @@ TEST_P(HipFileIoParam, HipFileIoHandlesUnsupportedHipMemoryType)
     }
 }
 
-TEST_P(HipFileIoParam, HipFileIoHandlesInvalidRegisteredBufferLength)
-{
-    StrictMock<MHip> mhip;
-    ASSERT_EQ(hipFileIo(GetParam(), file_handle, bufptr, buflen + 1, 0, 0, mbackends),
-              -static_cast<ssize_t>(hipFileInvalidValue));
-}
-
 TEST_P(HipFileIoParam, HipFileIoHandlesInvalidFileHandle)
 {
     auto invalid_handle{reinterpret_cast<hipFileHandle_t>(0xdeadbeef)};
