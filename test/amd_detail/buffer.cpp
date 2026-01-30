@@ -271,7 +271,7 @@ TEST_F(HipFileBuffer, get_buffer_makes_temporary_buffer)
 {
     StrictMock<MHip> mhip;
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
-    auto buffer = Context<DriverState>::get()->getBuffer(nonnull_ptr, 0, 0);
+    auto buffer = Context<DriverState>::get()->getBuffer(nonnull_ptr);
     ASSERT_EQ(buffer.use_count(), 1);
 }
 
@@ -280,7 +280,7 @@ TEST_F(HipFileBuffer, get_buffer_returns_registered_buffer)
     StrictMock<MHip> mhip;
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
     Context<DriverState>::get()->registerBuffer(nonnull_ptr, 0, 0);
-    ASSERT_EQ(Context<DriverState>::get()->getBuffer(nonnull_ptr, 0, 0),
+    ASSERT_EQ(Context<DriverState>::get()->getBuffer(nonnull_ptr),
               Context<DriverState>::get()->getRegisteredBuffer(nonnull_ptr));
 }
 
@@ -288,7 +288,7 @@ TEST_F(HipFileBuffer, get_buffer_throws_on_getPointerAttributes_error)
 {
     StrictMock<MHip> mhip;
     EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
-    ASSERT_THROW(Context<DriverState>::get()->getBuffer(nonnull_ptr, 1, 0), Hip::RuntimeError);
+    ASSERT_THROW(Context<DriverState>::get()->getBuffer(nonnull_ptr), Hip::RuntimeError);
 }
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

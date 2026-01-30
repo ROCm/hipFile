@@ -104,13 +104,13 @@ DriverState::getRegisteredBuffer(const void *buf)
 }
 
 shared_ptr<IBuffer>
-DriverState::getBuffer(const void *buf, size_t length, int flags)
+DriverState::getBuffer(const void *buf)
 {
     // NOTE: This mutex only protects the map, so we'll
     //       also need to protect the data
     shared_lock<shared_mutex> slock{state_mutex};
 
-    return buffer_map->getBuffer(buf, length, flags);
+    return buffer_map->getBuffer(buf);
 }
 
 //
@@ -190,7 +190,7 @@ DriverState::getStream(hipStream_t hip_stream)
 //
 
 file_buffer_pair
-DriverState::getFileAndBuffer(hipFileHandle_t fh, const void *buf, size_t length, int flags)
+DriverState::getFileAndBuffer(hipFileHandle_t fh, const void *buf)
 {
     // NOTE: This mutex only protects the map, so we'll
     //       also need to protect the data
@@ -200,7 +200,7 @@ DriverState::getFileAndBuffer(hipFileHandle_t fh, const void *buf, size_t length
         throw DriverNotInitialized();
     }
 
-    return {file_map->getFile(fh), buffer_map->getBuffer(buf, length, flags)};
+    return {file_map->getFile(fh), buffer_map->getBuffer(buf)};
 }
 
 //
@@ -208,8 +208,7 @@ DriverState::getFileAndBuffer(hipFileHandle_t fh, const void *buf, size_t length
 //
 
 file_buffer_stream_tuple
-DriverState::getFileBufferAndStream(hipFileHandle_t fh, const void *buf, size_t length, int flags,
-                                    hipStream_t hipStream)
+DriverState::getFileBufferAndStream(hipFileHandle_t fh, const void *buf, hipStream_t hipStream)
 {
     shared_lock<shared_mutex> slock{state_mutex};
 
@@ -217,8 +216,7 @@ DriverState::getFileBufferAndStream(hipFileHandle_t fh, const void *buf, size_t 
         throw DriverNotInitialized();
     }
 
-    return {file_map->getFile(fh), buffer_map->getBuffer(buf, length, flags),
-            stream_map->getStream(hipStream)};
+    return {file_map->getFile(fh), buffer_map->getBuffer(buf), stream_map->getStream(hipStream)};
 }
 
 //

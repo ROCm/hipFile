@@ -137,12 +137,11 @@ public:
     virtual std::shared_ptr<IBuffer> getRegisteredBuffer(const void *buf);
 
     /// @brief Look up a registered buffer. Returns a temporary unregistered
-    ///        buffer if no matching buffer is found.
+    ///        buffer if no registered buffer is found.
     /// @attention A shared_lock on HipFileMutex must be held
     /// @param buf Buffer pointer
-    /// @param length Buffer length
     /// @return A registered or temporary unregistered buffer
-    virtual std::shared_ptr<IBuffer> getBuffer(const void *buf, size_t length, int flags);
+    virtual std::shared_ptr<IBuffer> getBuffer(const void *buf);
 
     virtual void clear();
 

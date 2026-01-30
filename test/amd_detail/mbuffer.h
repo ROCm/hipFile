@@ -32,8 +32,7 @@ public:
     MOCK_METHOD(void, registerBuffer, (const void *bufptr, size_t length, int flags), (override));
     MOCK_METHOD(void, deregisterBuffer, (const void *bufptr), (override));
     MOCK_METHOD(std::shared_ptr<IBuffer>, getRegisteredBuffer, (const void *bufptr), (override));
-    MOCK_METHOD(std::shared_ptr<IBuffer>, getBuffer, (const void *bufptr, size_t length, int flags),
-                (override));
+    MOCK_METHOD(std::shared_ptr<IBuffer>, getBuffer, (const void *bufptr), (override));
     MOCK_METHOD(void, clear, (), (override));
 };
 

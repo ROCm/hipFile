@@ -146,11 +146,8 @@ BufferMap::getRegisteredBuffer(const void *buf)
 }
 
 shared_ptr<IBuffer>
-BufferMap::getBuffer(const void *buf, size_t length, int flags)
+BufferMap::getBuffer(const void *buf)
 {
-    (void)flags;
-    (void)length;
-
     auto itr = from_ptr.find(buf);
 
     if (from_ptr.end() == itr) {

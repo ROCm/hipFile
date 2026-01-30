@@ -169,7 +169,7 @@ ssize_t
 hipFileIo(IoType type, hipFileHandle_t fh, const void *buffer_base, size_t size, hoff_t file_offset,
           hoff_t buffer_offset, const vector<shared_ptr<Backend>> &backends)
 try {
-    auto [file, buffer] = Context<DriverState>::get()->getFileAndBuffer(fh, buffer_base, size, 0);
+    auto [file, buffer] = Context<DriverState>::get()->getFileAndBuffer(fh, buffer_base);
     int                      score{-1};
     std::shared_ptr<Backend> backend{};
 
@@ -423,7 +423,7 @@ try {
     checkNull({buffer_base, size_p, file_offset_p, buffer_offset_p, bytes_transferred_p});
 
     auto [file, buffer, stream] =
-        Context<DriverState>::get()->getFileBufferAndStream(fh, buffer_base, *size_p, 0, hipStream);
+        Context<DriverState>::get()->getFileBufferAndStream(fh, buffer_base, hipStream);
     Fallback().async_io(io_type, file, buffer, size_p, file_offset_p, buffer_offset_p, bytes_transferred_p,
                         stream);
 
