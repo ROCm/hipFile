@@ -24,6 +24,7 @@
 #include "state.h"
 
 #include <array>
+#include <backend.h>
 #include <cstdint>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -151,6 +152,24 @@ TEST_F(HipFileAsyncOp, AsyncOpFallback_new_uses_pinned_host_memory)
     EXPECT_CALL(mhip, hipHostFree(Eq(op_data.get())));
     auto op = std::shared_ptr<AsyncOpFallback>(new AsyncOpFallback{
         IoType::Read, file, buffer, stream, &size, &file_offset, &buffer_offset, &bytes_transferred});
+}
+
+TEST_F(HipFileAsyncOp, AsyncOpFallbackLimitsMaxIoSize)
+{
+    size_t size              = 4_GiB;
+    hoff_t file_offset       = 0;
+    hoff_t buffer_offset     = 0;
+    hoff_t bytes_transferred = 0;
+    auto   op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
+    auto   bounce_buffer     = std::shared_ptr<void>(new uint8_t[1_KiB]);
+    EXPECT_CALL(mhip, hipHostMalloc(hipFile::MAX_RW_COUNT, _)).WillOnce(Return(bounce_buffer.get()));
+    EXPECT_CALL(mhip, hipHostMalloc(sizeof(AsyncOpFallback), _)).WillOnce(Return(op_data.get()));
+    EXPECT_CALL(mhip, hipHostGetDevicePointer(Eq(bounce_buffer.get()), _));
+    EXPECT_CALL(mhip, hipHostFree(Eq(bounce_buffer.get())));
+    EXPECT_CALL(mhip, hipHostFree(Eq(op_data.get())));
+    auto op = std::shared_ptr<AsyncOpFallback>(new AsyncOpFallback{
+        IoType::Read, file, buffer, stream, &size, &file_offset, &buffer_offset, &bytes_transferred});
+    ASSERT_EQ(op->submitted_size, hipFile::MAX_RW_COUNT);
 }
 
 TEST_F(HipFileAsyncOp, AsyncOpFallback_new_failure_throws_bad_alloc)
@@ -438,6 +457,19 @@ TEST_P(FallbackAsyncIO, sizeTooLargeReturnsError)
                  std::invalid_argument);
 }
 
+TEST_P(FallbackAsyncIO, paramsValidUsesLimitedSize)
+{
+    size = 4_GiB;
+    EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(2_GiB));
+    // Use GPU mismatch to exit function early. These functions are only called because the size was limited
+    // and now does not exceed the buffer size.
+    EXPECT_CALL(*mbuffer, getGpuId).WillOnce(Return(0));
+    EXPECT_CALL(*mstream, getHipDevice).WillOnce(Return(1));
+    EXPECT_THROW(Fallback().async_io(io_type, mfile, mbuffer, &size, &file_offset, &buffer_offset,
+                                     &bytes_written, mstream),
+                 std::invalid_argument);
+}
+
 TEST_P(FallbackAsyncIO, fileOffsetNegativeReturnsError)
 {
     file_offset = -1;
@@ -595,6 +627,21 @@ TEST_F(AsyncIoOpCleanup, cleanupInvalidOpSetsError)
     EXPECT_CALL(masync_monitor, completeOp).WillOnce(Throw(std::invalid_argument("error")));
     async_io_cleanup(op.get());
     ASSERT_EQ(*op->bytes_transferred, -hipFileInternalError);
+}
+
+struct AsyncIoOpLimitedSize : public AsyncIoOp {
+    void SetUp() override
+    {
+        size = hipFile::MAX_RW_COUNT + 1;
+        AsyncIoOp::SetUp();
+    }
+};
+
+TEST_F(AsyncIoOpLimitedSize, bindLimitsSize)
+{
+    EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(hipFile::MAX_RW_COUNT));
+    async_io_bind_params(op.get());
+    ASSERT_EQ(std::get<size_t>(op->size), hipFile::MAX_RW_COUNT);
 }
 
 struct AsyncIoOpBindParams {

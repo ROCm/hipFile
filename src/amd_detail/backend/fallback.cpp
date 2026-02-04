@@ -122,7 +122,9 @@ Fallback::async_io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBu
                    hoff_t *file_offset_p, hoff_t *buffer_offset_p, ssize_t *bytes_transferred_p,
                    std::shared_ptr<IStream> stream)
 {
-    if (!paramsValid(buffer, *size_p, *file_offset_p, *buffer_offset_p)) {
+    size_t limited_size = min(*size_p, hipFile::MAX_RW_COUNT);
+
+    if (!paramsValid(buffer, limited_size, *file_offset_p, *buffer_offset_p)) {
         throw std::invalid_argument("The selected file or buffer region is invalid");
     }
 
@@ -199,7 +201,7 @@ async_io_bind_params(void *userargs)
     const hoff_t *file_offset = get_variant_ptr(op->file_offset);
     op->file_offset.emplace<const hoff_t>(*file_offset);
     const size_t *size = get_variant_ptr(op->size);
-    op->size           = *size;
+    op->size           = std::min(*size, hipFile::MAX_RW_COUNT);
 
     if (std::get<size_t>(op->size) > op->submitted_size) {
         op->bytes_transferred_internal = -hipFileInvalidValue;
