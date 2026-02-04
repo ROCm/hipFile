@@ -239,12 +239,12 @@ async_io_cpu_copy(void *userargs)
         return;
     }
 
-    try {
-        while (bytes_transferred < size) {
-            void *cur_buf_position = reinterpret_cast<void *>(
-                reinterpret_cast<uintptr_t>(op->bounceBufferHostPtr()) + bytes_transferred);
-            hoff_t cur_file_offset = file_offset + static_cast<hoff_t>(bytes_transferred);
-            size_t remaining_bytes = size - bytes_transferred;
+    while (bytes_transferred < size) {
+        void *cur_buf_position = reinterpret_cast<void *>(
+            reinterpret_cast<uintptr_t>(op->bounceBufferHostPtr()) + bytes_transferred);
+        hoff_t cur_file_offset = file_offset + static_cast<hoff_t>(bytes_transferred);
+        size_t remaining_bytes = size - bytes_transferred;
+        try {
             switch (op->io_type) {
                 case IoType::Read:
                     ret = Context<Sys>::get()->pread(op->file->getBufferedFd(), cur_buf_position,
@@ -257,18 +257,19 @@ async_io_cpu_copy(void *userargs)
                 default:
                     throw std::runtime_error("Invalid IO type");
             }
-            if (ret == 0) {
-                break;
-            }
-            bytes_transferred += static_cast<size_t>(ret);
         }
-        op->bytes_transferred_internal = static_cast<ssize_t>(bytes_transferred);
+        catch (const std::system_error &e) {
+            if (e.code().value() == EINTR) {
+                continue;
+            }
+            op->bytes_transferred_internal = -1;
+            return;
+        }
+        if (ret == 0) {
+            break;
+        }
+        bytes_transferred += static_cast<size_t>(ret);
     }
-    catch (std::system_error &e) {
-        op->bytes_transferred_internal = -1;
-    }
-    catch (Hip::RuntimeError &e) {
-        op->bytes_transferred_internal = -hipFileDriverError;
-    }
+    op->bytes_transferred_internal = static_cast<ssize_t>(bytes_transferred);
 }
 }
