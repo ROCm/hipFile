@@ -60,9 +60,12 @@ endif()
 # Export the targets
 set(target_list ${target_list} roc::hipfile)
 
+# Kitware recommends making the namespace match the package name
+# to work with the Common Package Specification, but since the
+# rest of ROCm doesn't do that, we'll stick with hip::
 rocm_export_targets(
     TARGETS ${target_list}
-    NAMESPACE roc::
+    NAMESPACE hip::
 )
 
 # CPack license setup
