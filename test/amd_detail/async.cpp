@@ -442,8 +442,8 @@ TEST_P(FallbackAsyncIO, bufferOffsetNegativeReturnsError)
 
 TEST_P(FallbackAsyncIO, bufferOffsetTooLargeReturnsError)
 {
-    buffer_offset = 1024 * 1024 + 1;
-    EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(1024 * 1024));
+    buffer_offset = 1024 * 1024;
+    EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(buffer_offset));
     EXPECT_THROW(Fallback().async_io(io_type, mfile, mbuffer, &size, &file_offset, &buffer_offset,
                                      &bytes_written, mstream),
                  std::invalid_argument);
