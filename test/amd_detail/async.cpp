@@ -25,6 +25,7 @@
 
 #include <array>
 #include <backend.h>
+#include <cerrno>
 #include <cstdint>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -683,7 +684,7 @@ TEST_P(AsyncIoOpWithParams, cpuIOReturnsFullSize)
     ASSERT_EQ(op->bytes_transferred_internal, size);
 }
 
-TEST_P(AsyncIoOpWithParams, cpuCopyReadPreadErrorReturnsError)
+TEST_P(AsyncIoOpWithParams, cpuCopyReadPreadPwriteErrorReturnsError)
 {
     if (io_type == IoType::Read) {
         EXPECT_CALL(msys, pread).WillOnce(Throw(std::system_error(3, std::generic_category())));
@@ -694,6 +695,24 @@ TEST_P(AsyncIoOpWithParams, cpuCopyReadPreadErrorReturnsError)
     EXPECT_CALL(*mfile, getBufferedFd);
     async_io_cpu_copy(op.get());
     ASSERT_EQ(op->bytes_transferred_internal, -1);
+}
+
+TEST_P(AsyncIoOpWithParams, cpuCopyReadPreadPwriteRetriesOnEINTR)
+{
+    if (io_type == IoType::Read) {
+        EXPECT_CALL(msys, pread)
+            .WillOnce(Throw(std::system_error(EINTR, std::generic_category())))
+            .WillOnce(Return(size));
+    }
+    else {
+        EXPECT_CALL(msys, pwrite)
+            .WillOnce(Throw(std::system_error(EINTR, std::generic_category())))
+            .WillOnce(Return(size));
+    }
+    EXPECT_CALL(*mfile, getBufferedFd).Times(2);
+    async_io_cpu_copy(op.get());
+
+    ASSERT_EQ(op->bytes_transferred_internal, size);
 }
 
 INSTANTIATE_TEST_SUITE_P(AsyncIoOpWithParamsSuite, AsyncIoOpWithParams,
