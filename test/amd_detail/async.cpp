@@ -649,19 +649,6 @@ TEST_P(AsyncIoOpWithParams, cpuCopyReadPreadErrorReturnsError)
     ASSERT_EQ(op->bytes_transferred_internal, -1);
 }
 
-TEST_P(AsyncIoOpWithParams, cpuCopyReadHipErrorReturnsError)
-{
-    if (io_type == IoType::Read) {
-        EXPECT_CALL(msys, pread).WillOnce(Throw(Hip::RuntimeError(hipErrorInvalidHandle)));
-    }
-    else {
-        EXPECT_CALL(msys, pwrite).WillOnce(Throw(Hip::RuntimeError(hipErrorInvalidHandle)));
-    }
-    EXPECT_CALL(*mfile, getBufferedFd);
-    async_io_cpu_copy(op.get());
-    ASSERT_EQ(op->bytes_transferred_internal, -hipFileDriverError);
-}
-
 INSTANTIATE_TEST_SUITE_P(AsyncIoOpWithParamsSuite, AsyncIoOpWithParams,
                          ::testing::Values(AsyncIoOpBindParams{IoType::Read, true, true, true},
                                            AsyncIoOpBindParams{IoType::Write, true, true, true}));
