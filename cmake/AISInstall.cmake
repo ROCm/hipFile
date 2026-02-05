@@ -17,8 +17,8 @@ rocm_install(
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-# Install utilities
-install(PROGRAMS util/aischeck DESTINATION bin)
+# Install AIS tools
+install(PROGRAMS tools/ais-check/ais-check DESTINATION bin)
 
 # When we have RELEASE/DEV builds set up, we can split
 # where these dependencies are added.
