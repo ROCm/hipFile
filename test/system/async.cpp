@@ -61,7 +61,15 @@ static bool
 isGpuMemory(void *mem)
 {
     hipPointerAttribute_t attrs;
-    assert(hipPointerGetAttributes(&attrs, mem) == hipSuccess);
+    hipError_t            err = hipPointerGetAttributes(&attrs, mem);
+
+#ifdef __HIP_PLATFORM_NVIDIA__
+    // NVIDIA doesn't support pointers allocated outside of runtime
+    if (err == hipErrorInvalidValue) {
+        return false;
+    }
+#endif
+    assert(err == hipSuccess);
     return attrs.type == hipMemoryTypeDevice;
 }
 
