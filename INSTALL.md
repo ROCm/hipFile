@@ -54,7 +54,7 @@ wget https://raw.githubusercontent.com/ROCm/hipFile/refs/heads/develop/examples/
 amdclang++ -D__HIP_PLATFORM_AMD__ -L/opt/rocm/lib -I/opt/rocm/include -lamdhip64 -lhipfile aiscp.cpp -o aiscp
 ```
 
-To verify the fast path is working, copy a file with compatibility mode disabled. This should run successfully if the source and destination paths are on filesystems supporting O_DIRECT.
+To verify the fast path is working, copy a file with compatibility mode disabled. This should run successfully if the source and destination paths are on filesystems supporting `O_DIRECT`.
 
 ```
 # Create a random input file
@@ -84,7 +84,7 @@ Supported filesystems: Only ext4 is supported at this time
 
 Targeting NVIDIA requires cuFile to be installed
 
-Multipath NVMe devices are not supported at this time. If you are using a multipath-supporting device, you may need to disable multipath in the nvme_core kernel driver. On Ubuntu 24.04, this can be done by running the following:
+Multipath NVMe devices are not supported at this time. If you are using a multipath-supporting device, you may need to disable multipath in the nvme\_core kernel driver. On Ubuntu 24.04, this can be done by running the following:
 
 ```
 sudo bash -c 'echo "options nvme_core multipath=N" > /etc/modprobe.d/nvme_core.conf'
