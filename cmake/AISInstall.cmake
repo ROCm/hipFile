@@ -30,8 +30,22 @@ if(AIS_INSTALL_EXAMPLES)
         FILES_MATCHING
             PATTERN "*.cpp"
             PATTERN "*.h"
-            PATTERN "CMakeLists.txt"
             PATTERN "README.md"
+    )
+
+    # Create the installed CMakeLists.txt files from the templates.
+    # The CMakeLists.txt files in the examples tree use our build
+    # flags and infrastructure so we can ensure they well-vetted
+    # and these can't be installed.
+
+    # aiscp
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/examples/aiscp/CMakeLists.install.in"
+        "examples/aiscp/CMakeLists.txt"
+    )
+    install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/examples/aiscp/CMakeLists.txt"
+        DESTINATION "share/doc/${CMAKE_PROJECT_NAME}/examples/aiscp/"
     )
 endif()
 
@@ -61,19 +75,19 @@ if(CMAKE_HIP_PLATFORM STREQUAL "amd")
     rocm_package_add_rpm_dependencies(DEPENDS libmount-devel)
 endif()
 
-# Nvidia Runtime Dependencies
-if(CMAKE_HIP_PLATFORM STREQUAL "nvidida")
+# NVIDIA Runtime Dependencies
+if(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
     rocm_package_add_dependencies(DEPENDS libcufile)
 endif()
 
-# Nvidia Development Dependencies
+# NVIDIA Development Dependencies
 if(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
     rocm_package_add_deb_dependencies(DEPENDS libcufile-dev)
     rocm_package_add_rpm_dependencies(DEPENDS libcufile-devel)
 endif()
 
 # Export the targets
-set(target_list ${target_list} roc::hipfile)
+set(target_list ${target_list} hip::hipfile)
 
 # Kitware recommends making the namespace match the package name
 # to work with the Common Package Specification, but since the
