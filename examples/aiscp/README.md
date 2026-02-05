@@ -13,4 +13,4 @@ cmake --build .
 
 Running it is simple. It works like the Linux `cp` command.
 
-`cp SOURCE DEST`
+`aiscp SOURCE DEST`

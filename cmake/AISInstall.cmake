@@ -35,7 +35,7 @@ if(AIS_INSTALL_EXAMPLES)
 
     # Create the installed CMakeLists.txt files from the templates.
     # The CMakeLists.txt files in the examples tree use our build
-    # flags and infrastructure so we can ensure they well-vetted
+    # flags and infrastructure so we can ensure they are well-vetted
     # and these can't be installed.
 
     # aiscp
