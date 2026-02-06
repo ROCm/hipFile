@@ -4,6 +4,7 @@
  */
 
 #include "async.h"
+#include "backend.h"
 #include "backend/asyncop-fallback.h"
 #include "backend/fallback.h"
 #include "context.h"
@@ -24,7 +25,6 @@
 #include "state.h"
 
 #include <array>
-#include <backend.h>
 #include <cerrno>
 #include <cstdint>
 #include <gmock/gmock.h>
