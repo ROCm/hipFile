@@ -69,7 +69,7 @@ struct Tmpfile {
 
 #ifdef __HIP_PLATFORM_AMD__
         if (unlink(path.c_str()) == -1) {
-            throw std::runtime_error("Could not unlink temporary file)");
+            throw std::runtime_error("Could not unlink temporary file");
         }
 #endif
     }
