@@ -498,6 +498,7 @@ TEST_P(HipAsyncReadWriteStreamFixedWithParams, nullBytesReadReturnsError)
               HipFileOpError(hipFileInvalidValue));
 }
 
+// cuFile accepts operation and returns error through bytes_transferred
 TEST_P(HipAsyncReadWriteStreamFixedWithParams, ioSizeTooLargeForBuffer)
 {
     io_size += 4096;
@@ -507,9 +508,12 @@ TEST_P(HipAsyncReadWriteStreamFixedWithParams, ioSizeTooLargeForBuffer)
 #else
     ASSERT_EQ(io_op(fh, dev_ptr, &io_size, &file_offset, &buffer_offset, &bytes_transferred, stream),
               HIPFILE_SUCCESS);
+    ASSERT_EQ(hipStreamSynchronize(stream), hipSuccess);
+    ASSERT_EQ(bytes_transferred, -hipFileInvalidMappingSize);
 #endif
 }
 
+// cuFile accepts operation and returns error through bytes_transferred
 TEST_P(HipAsyncReadWriteStreamFixedWithParams, fileOffsetNegative)
 {
     file_offset = -4096;
@@ -519,9 +523,12 @@ TEST_P(HipAsyncReadWriteStreamFixedWithParams, fileOffsetNegative)
 #else
     ASSERT_EQ(io_op(fh, dev_ptr, &io_size, &file_offset, &buffer_offset, &bytes_transferred, stream),
               HIPFILE_SUCCESS);
+    ASSERT_EQ(hipStreamSynchronize(stream), hipSuccess);
+    ASSERT_EQ(bytes_transferred, -hipFileInvalidValue);
 #endif
 }
 
+// cuFile accepts operation and returns error through bytes_transferred
 TEST_P(HipAsyncReadWriteStreamFixedWithParams, bufferOffsetNegative)
 {
     buffer_offset = -4096;
@@ -531,9 +538,12 @@ TEST_P(HipAsyncReadWriteStreamFixedWithParams, bufferOffsetNegative)
 #else
     ASSERT_EQ(io_op(fh, dev_ptr, &io_size, &file_offset, &buffer_offset, &bytes_transferred, stream),
               HIPFILE_SUCCESS);
+    ASSERT_EQ(hipStreamSynchronize(stream), hipSuccess);
+    ASSERT_EQ(bytes_transferred, -hipFileInternalError);
 #endif
 }
 
+// cuFile accepts operation and returns error through bytes_transferred
 TEST_P(HipAsyncReadWriteStreamFixedWithParams, bufferOffsetTooLarge)
 {
     buffer_offset = static_cast<hoff_t>(buffer_size) + 4096;
@@ -543,6 +553,8 @@ TEST_P(HipAsyncReadWriteStreamFixedWithParams, bufferOffsetTooLarge)
 #else
     ASSERT_EQ(io_op(fh, dev_ptr, &io_size, &file_offset, &buffer_offset, &bytes_transferred, stream),
               HIPFILE_SUCCESS);
+    ASSERT_EQ(hipStreamSynchronize(stream), hipSuccess);
+    ASSERT_EQ(bytes_transferred, -hipFileInvalidMappingSize);
 #endif
 }
 
