@@ -86,8 +86,8 @@ if(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
     rocm_package_add_rpm_dependencies(DEPENDS libcufile-devel)
 endif()
 
-# Export the targets
-set(target_list ${target_list} hip::hipfile)
+# Export the hipfile target
+set(target_list hip::hipfile)
 
 # Kitware recommends making the namespace match the package name
 # to work with the Common Package Specification, but since the
