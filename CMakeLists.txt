@@ -37,14 +37,6 @@ project("hipfile"
 # Switch between building static and shared libraries
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
-# Use position-independent code everywhere
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-# Everything uses C++17, which is mandatory, and we disable extensions (so no -std=gnu++17)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 # Set the list of build types for ccmake/CMake GUI
 #
 # This turns the build type box into a multi-select so you don't have to
