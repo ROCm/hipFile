@@ -29,7 +29,7 @@ function(ais_add_libraries)
 
     # Set C++ standard
     target_compile_features(${arg_NAME} PUBLIC cxx_std_17)
-    set_target_properties(${arg_NAME} PROPERTIES CXX_EXTENSIONS NO)
+    set_target_properties(${arg_NAME} PROPERTIES CXX_EXTENSIONS OFF)
 
     # Set position-independent code
     set_target_properties(${arg_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
