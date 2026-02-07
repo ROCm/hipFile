@@ -15,7 +15,7 @@ if(AIS_BUILD_DOCS)
     find_package(Doxygen REQUIRED)
 
     # Set Doxygen input (pasted into Doxyfile.in)
-    set(AIS_DOXYFILE_INPUT "${CMAKE_SOURCE_DIR}/include")
+    set(AIS_DOXYFILE_INPUT "${PROJECT_SOURCE_DIR}/include")
 
     # Set the path to the documentation
     set(AIS_DOC_PATH "${CMAKE_CURRENT_BINARY_DIR}/docs")

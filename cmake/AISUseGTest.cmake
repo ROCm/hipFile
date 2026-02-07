@@ -46,7 +46,7 @@ function(ais_gtest_discover_tests target)
         set_property(
             DIRECTORY APPEND PROPERTY
             TEST_INCLUDE_FILES
-            "${CMAKE_SOURCE_DIR}/cmake/AISSetCoverageFile.cmake"
+            "${PROJECT_SOURCE_DIR}/cmake/AISSetCoverageFile.cmake"
             "${coverage_include_file}"
         )
 

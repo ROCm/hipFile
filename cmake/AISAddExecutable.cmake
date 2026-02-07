@@ -72,5 +72,5 @@ function(ais_add_executable)
         target_include_directories(${arg_NAME} SYSTEM PRIVATE ${incl})
     endforeach()
 
-    target_include_directories(${arg_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/shared")
+    target_include_directories(${arg_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/shared")
 endfunction()
