@@ -86,7 +86,7 @@ endif()
 #-----------------------------------------------------------------------------
 # Include our custom CMake code in the module path
 #-----------------------------------------------------------------------------
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 #-----------------------------------------------------------------------------
 # Set ROCm Version and Install Path
