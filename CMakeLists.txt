@@ -253,6 +253,7 @@ endif()
 #-----------------------------------------------------------------------------
 
 # Set the path to the include directories for later use
+set(HIPFILE_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 set(HIPFILE_INCLUDE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(HIPFILE_AMD_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/amd_detail")
 set(HIPFILE_NVIDIA_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/nvidia_detail")

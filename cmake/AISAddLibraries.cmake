@@ -93,7 +93,7 @@ function(ais_add_libraries)
     endif()
 
     # Add the common include path
-    target_include_directories(${arg_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/shared")
+    target_include_directories(${arg_NAME} PRIVATE "${HIPFILE_ROOT_PATH}/shared")
 
     # Set compiler flags
     ais_set_compiler_flags(${arg_NAME})
