@@ -18,13 +18,13 @@ wget https://github.com/ROCm/hipFile/releases/download/nightly/hipfile-dev_0.2.0
 sudo dpkg -i hipfile-dev_0.2.0_amd64.deb hipfile_0.2.0-_amd64.deb
 ```
 
-We can verify that the HIP runtime and the amdgpu kernel module support AIS by running aischeck.
+We can verify that the HIP runtime and the amdgpu kernel module support AIS by running ais-check.
 
 ```
-/opt/rocm/bin/aischeck
+/opt/rocm/bin/ais-check
 ```
 
-Successful output from aischeck will show true for both:
+Successful output from ais-check will show true for both:
 
 ```
 AIS support in:
@@ -54,7 +54,7 @@ wget https://raw.githubusercontent.com/ROCm/hipFile/refs/heads/develop/examples/
 amdclang++ -D__HIP_PLATFORM_AMD__ -L/opt/rocm/lib -I/opt/rocm/include -lamdhip64 -lhipfile aiscp.cpp -o aiscp
 ```
 
-To verify the fast path is working, copy a file with compatibility mode disabled. This should run successfully if the source and destination paths are on filesystems supporting O_DIRECT.
+To verify the fast path is working, copy a file with compatibility mode disabled. This should run successfully if the source and destination paths are on filesystems supporting `O_DIRECT`.
 
 ```
 # Create a random input file
@@ -84,7 +84,7 @@ Supported filesystems: Only ext4 is supported at this time
 
 Targeting NVIDIA requires cuFile to be installed
 
-Multipath NVMe devices are not supported at this time. If you are using a multipath-supporting device, you may need to disable multipath in the nvme_core kernel driver. On Ubuntu 24.04, this can be done by running the following:
+Multipath NVMe devices are not supported at this time. If you are using a multipath-supporting device, you may need to disable multipath in the nvme\_core kernel driver. On Ubuntu 24.04, this can be done by running the following:
 
 ```
 sudo bash -c 'echo "options nvme_core multipath=N" > /etc/modprobe.d/nvme_core.conf'
@@ -108,7 +108,7 @@ Options
 |Option|Default|Purpose|
 |------|-------|-------|
 |AIS\_BUILD\_DOCS|OFF|Build API documentation (requires Doxygen)|
-|AIS\_BUILD\_EXAMPLES|ON|Build example programs|
+|AIS\_INSTALL\_EXAMPLES|ON|Install example programs|
 |AIS\_USE\_CLANG\_TIDY|OFF|Run the `clang-tidy` tool (clang only)|
 |AIS\_USE\_CODE\_COVERAGE|OFF|Generate code coverage information when tests are run (clang only)|
 |AIS\_USE\_IWYU|OFF|Run the `include-what-you-use` tool (clang only)|
