@@ -110,12 +110,12 @@ struct HipFileAsyncOpStreamParams
 
 TEST_P(HipFileAsyncOpStreamParams, asyncOp_construction_has_correct_variants)
 {
-    size_t size              = 100;
-    hoff_t file_offset       = 0;
-    hoff_t buffer_offset     = 0;
-    hoff_t bytes_transferred = 0;
-    auto   op = std::make_shared<AsyncOp>(IoType::Read, file, buffer, stream, &size, &file_offset,
-                                          &buffer_offset, &bytes_transferred);
+    size_t  size              = 100;
+    hoff_t  file_offset       = 0;
+    hoff_t  buffer_offset     = 0;
+    ssize_t bytes_transferred = 0;
+    auto    op = std::make_shared<AsyncOp>(IoType::Read, file, buffer, stream, &size, &file_offset,
+                                           &buffer_offset, &bytes_transferred);
 
     // Unfixed flags will be pointers
     if (flags & HIPFILE_STREAM_FIXED_BUF_OFFSET) {
@@ -141,12 +141,12 @@ INSTANTIATE_TEST_SUITE_P(StreamSuite, HipFileAsyncOpStreamParams, hipfileFlagsPo
 
 TEST_F(HipFileAsyncOp, AsyncOpFallback_new_uses_pinned_host_memory)
 {
-    size_t size              = 100;
-    hoff_t file_offset       = 0;
-    hoff_t buffer_offset     = 0;
-    hoff_t bytes_transferred = 0;
-    auto   op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
-    auto   bounce_buffer     = std::shared_ptr<void>(new uint8_t[size]);
+    size_t  size              = 100;
+    hoff_t  file_offset       = 0;
+    hoff_t  buffer_offset     = 0;
+    ssize_t bytes_transferred = 0;
+    auto    op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
+    auto    bounce_buffer     = std::shared_ptr<void>(new uint8_t[size]);
     EXPECT_CALL(mhip, hipHostMalloc).WillOnce(Return(op_data.get())).WillOnce(Return(bounce_buffer.get()));
     EXPECT_CALL(mhip, hipHostGetDevicePointer(Eq(bounce_buffer.get()), _));
     EXPECT_CALL(mhip, hipHostFree(Eq(bounce_buffer.get())));
@@ -157,12 +157,12 @@ TEST_F(HipFileAsyncOp, AsyncOpFallback_new_uses_pinned_host_memory)
 
 TEST_F(HipFileAsyncOp, AsyncOpFallbackLimitsMaxIoSize)
 {
-    size_t size              = 4_GiB;
-    hoff_t file_offset       = 0;
-    hoff_t buffer_offset     = 0;
-    hoff_t bytes_transferred = 0;
-    auto   op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
-    auto   bounce_buffer     = std::shared_ptr<void>(new uint8_t[1_KiB]);
+    size_t  size              = 4_GiB;
+    hoff_t  file_offset       = 0;
+    hoff_t  buffer_offset     = 0;
+    ssize_t bytes_transferred = 0;
+    auto    op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
+    auto    bounce_buffer     = std::shared_ptr<void>(new uint8_t[1_KiB]);
     EXPECT_CALL(mhip, hipHostMalloc(hipFile::MAX_RW_COUNT, _)).WillOnce(Return(bounce_buffer.get()));
     EXPECT_CALL(mhip, hipHostMalloc(sizeof(AsyncOpFallback), _)).WillOnce(Return(op_data.get()));
     EXPECT_CALL(mhip, hipHostGetDevicePointer(Eq(bounce_buffer.get()), _));
@@ -175,11 +175,11 @@ TEST_F(HipFileAsyncOp, AsyncOpFallbackLimitsMaxIoSize)
 
 TEST_F(HipFileAsyncOp, AsyncOpFallback_new_failure_throws_bad_alloc)
 {
-    size_t size              = 100;
-    hoff_t file_offset       = 0;
-    hoff_t buffer_offset     = 0;
-    hoff_t bytes_transferred = 0;
-    auto   op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
+    size_t  size              = 100;
+    hoff_t  file_offset       = 0;
+    hoff_t  buffer_offset     = 0;
+    ssize_t bytes_transferred = 0;
+    auto    op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
     EXPECT_CALL(mhip, hipHostMalloc).WillOnce(Throw(Hip::RuntimeError(hipErrorOutOfMemory)));
     EXPECT_THROW(std::shared_ptr<AsyncOpFallback>(new AsyncOpFallback{IoType::Read, file, buffer, stream,
                                                                       &size, &file_offset, &buffer_offset,
@@ -189,11 +189,11 @@ TEST_F(HipFileAsyncOp, AsyncOpFallback_new_failure_throws_bad_alloc)
 
 TEST_F(HipFileAsyncOp, AsyncOpFallback_bounce_alloc_failure_throws)
 {
-    size_t size              = 100;
-    hoff_t file_offset       = 0;
-    hoff_t buffer_offset     = 0;
-    hoff_t bytes_transferred = 0;
-    auto   op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
+    size_t  size              = 100;
+    hoff_t  file_offset       = 0;
+    hoff_t  buffer_offset     = 0;
+    ssize_t bytes_transferred = 0;
+    auto    op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
     EXPECT_CALL(mhip, hipHostMalloc)
         .WillOnce(Return(op_data.get()))
         .WillOnce(Throw(Hip::RuntimeError(hipErrorOutOfMemory)));
@@ -206,12 +206,12 @@ TEST_F(HipFileAsyncOp, AsyncOpFallback_bounce_alloc_failure_throws)
 
 TEST_F(HipFileAsyncOp, AsyncOpFallback_bounce_buffer_deleter_failure_calls_syslog)
 {
-    size_t size              = 100;
-    hoff_t file_offset       = 0;
-    hoff_t buffer_offset     = 0;
-    hoff_t bytes_transferred = 0;
-    auto   op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
-    auto   bounce_buffer     = std::shared_ptr<void>(new uint8_t[size]);
+    size_t  size              = 100;
+    hoff_t  file_offset       = 0;
+    hoff_t  buffer_offset     = 0;
+    ssize_t bytes_transferred = 0;
+    auto    op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
+    auto    bounce_buffer     = std::shared_ptr<void>(new uint8_t[size]);
     EXPECT_CALL(mhip, hipHostMalloc).WillOnce(Return(op_data.get())).WillOnce(Return(bounce_buffer.get()));
     EXPECT_CALL(mhip, hipHostGetDevicePointer(Eq(bounce_buffer.get()), _));
     EXPECT_CALL(mhip, hipHostFree(Eq(bounce_buffer.get())))
@@ -224,12 +224,12 @@ TEST_F(HipFileAsyncOp, AsyncOpFallback_bounce_buffer_deleter_failure_calls_syslo
 
 TEST_F(HipFileAsyncOp, AsyncOpFallback_delete_failure_calls_syslog)
 {
-    size_t size              = 100;
-    hoff_t file_offset       = 0;
-    hoff_t buffer_offset     = 0;
-    hoff_t bytes_transferred = 0;
-    auto   op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
-    auto   bounce_buffer     = std::shared_ptr<void>(new uint8_t[size]);
+    size_t  size              = 100;
+    hoff_t  file_offset       = 0;
+    hoff_t  buffer_offset     = 0;
+    ssize_t bytes_transferred = 0;
+    auto    op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
+    auto    bounce_buffer     = std::shared_ptr<void>(new uint8_t[size]);
     EXPECT_CALL(mhip, hipHostMalloc).WillOnce(Return(op_data.get())).WillOnce(Return(bounce_buffer.get()));
     EXPECT_CALL(mhip, hipHostGetDevicePointer(Eq(bounce_buffer.get()), _));
     EXPECT_CALL(mhip, hipHostFree(Eq(bounce_buffer.get())));
@@ -258,7 +258,7 @@ struct HipFileAsyncOpFallbackMethods : public HipFileAsyncOp {
     size_t                           size                  = 100;
     hoff_t                           file_offset           = 0;
     hoff_t                           buffer_offset         = 0;
-    hoff_t                           bytes_transferred     = 0;
+    ssize_t                          bytes_transferred     = 0;
     std::shared_ptr<void>            bounce_buffer;
     std::shared_ptr<AsyncOpFallback> op;
 };
@@ -281,12 +281,12 @@ struct HipFileAsyncMonitor : HipFileAsyncOp {
 
 TEST_F(HipFileAsyncMonitor, addOp_and_completeOp_with_valid_params_works)
 {
-    size_t size              = 100;
-    hoff_t file_offset       = 0;
-    hoff_t buffer_offset     = 0;
-    hoff_t bytes_transferred = 0;
-    auto   op = std::make_shared<AsyncOp>(IoType::Read, file, buffer, stream, &size, &file_offset,
-                                          &buffer_offset, &bytes_transferred);
+    size_t  size              = 100;
+    hoff_t  file_offset       = 0;
+    hoff_t  buffer_offset     = 0;
+    ssize_t bytes_transferred = 0;
+    auto    op = std::make_shared<AsyncOp>(IoType::Read, file, buffer, stream, &size, &file_offset,
+                                           &buffer_offset, &bytes_transferred);
 
     monitor.addOp(op);
     EXPECT_NO_THROW(monitor.completeOp(op.get()));
@@ -299,12 +299,12 @@ TEST_F(HipFileAsyncMonitor, completeOp_with_invalid_op_throws)
 
 TEST_F(HipFileAsyncMonitor, addOp_without_completeOp_prints_error_on_AsyncMonitor_destruction)
 {
-    size_t size              = 100;
-    hoff_t file_offset       = 0;
-    hoff_t buffer_offset     = 0;
-    hoff_t bytes_transferred = 0;
-    auto   op = std::make_unique<AsyncOp>(IoType::Read, file, buffer, stream, &size, &file_offset,
-                                          &buffer_offset, &bytes_transferred);
+    size_t  size              = 100;
+    hoff_t  file_offset       = 0;
+    hoff_t  buffer_offset     = 0;
+    ssize_t bytes_transferred = 0;
+    auto    op = std::make_unique<AsyncOp>(IoType::Read, file, buffer, stream, &size, &file_offset,
+                                           &buffer_offset, &bytes_transferred);
     monitor.addOp(std::move(op));
     EXPECT_CALL(msys, syslog);
 }
@@ -370,10 +370,10 @@ TEST_P(HipFileReadWriteAsync, nullBytesTransferredReturnsError)
 
 TEST_P(HipFileReadWriteAsync, unregisteredFileReturnsError)
 {
-    size_t size          = 1;
-    hoff_t file_offset   = 0;
-    hoff_t buffer_offset = 0;
-    hoff_t bytes_written = 0;
+    size_t  size          = 1;
+    hoff_t  file_offset   = 0;
+    hoff_t  buffer_offset = 0;
+    ssize_t bytes_written = 0;
 
     ASSERT_EQ(io_op(nonnull_void, nonnull_void, &size, &file_offset, &buffer_offset, &bytes_written,
                     nonnull_stream),
@@ -428,7 +428,7 @@ struct FallbackAsyncIO : public HipFileOpened, public ::testing::WithParamInterf
     size_t                               size;
     hoff_t                               file_offset;
     hoff_t                               buffer_offset;
-    hoff_t                               bytes_written;
+    ssize_t                              bytes_written;
 };
 
 TEST_P(FallbackAsyncIO, bufferOffsetNegativeReturnsError)
@@ -568,7 +568,7 @@ struct AsyncIoOp : public ::testing::Test {
     size_t                               size                = 1_MiB;
     hoff_t                               file_offset         = 0;
     hoff_t                               buffer_offset       = 0;
-    hoff_t                               bytes_transferred   = 0;
+    ssize_t                              bytes_transferred   = 0;
     bool                                 fixed_buffer_offset = false;
     bool                                 fixed_file_offset   = false;
     bool                                 fixed_io_size       = false;
