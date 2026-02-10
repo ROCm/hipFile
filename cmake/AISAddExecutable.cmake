@@ -33,6 +33,10 @@ function(ais_add_executable)
     add_executable(${arg_NAME} ${arg_SRCS})
     ais_set_compiler_flags(${arg_NAME})
 
+    # Set C++ standard
+    target_compile_features(${arg_NAME} PRIVATE cxx_std_17)
+    set_target_properties(${arg_NAME} PROPERTIES CXX_EXTENSIONS OFF)
+
     # Turn sanitizers off for executables
     target_compile_options(${arg_NAME} PRIVATE -fno-sanitize=all)
 
