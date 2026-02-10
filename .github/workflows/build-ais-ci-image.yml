@@ -67,7 +67,7 @@ jobs:
         id: ci-image
         run: |
           AIS_CI_IMAGE="${AIS_DOCKER_REGISTRY}/${AIS_CI_IMAGE_NAME}:latest-rocm${AIS_INPUT_ROCM_VERSION}"
-          echo "AIS_CI_IMAGE=$(printf '%s' ${AIS_CI_IMAGE} | tr '[:upper:]' '[:lower:]')" >> "${GITHUB_OUTPUT}"
+          echo "AIS_CI_IMAGE=$(printf '%s' "${AIS_CI_IMAGE}" | tr '[:upper:]' '[:lower:]')" >> "${GITHUB_OUTPUT}"
   build_AIS_image:
     if: ${{ inputs.dockerfile_changed }}
     runs-on: [ubuntu-24.04]
@@ -83,9 +83,9 @@ jobs:
         id: ci-image
         run: |
           AIS_CI_IMAGE="${AIS_DOCKER_REGISTRY}/${AIS_CI_IMAGE_NAME}:${AIS_CI_IMAGE_TAG}"
-          echo "AIS_CI_IMAGE=$(printf '%s' ${AIS_CI_IMAGE} | tr '[:upper:]' '[:lower:]')" >> "${GITHUB_OUTPUT}"
+          echo "AIS_CI_IMAGE=$(printf '%s' "${AIS_CI_IMAGE}" | tr '[:upper:]' '[:lower:]')" >> "${GITHUB_OUTPUT}"
           AIS_CI_LATEST_CACHE="${AIS_DOCKER_REGISTRY}/${AIS_CI_IMAGE_NAME}:latest-rocm${AIS_INPUT_ROCM_VERSION}-cache"
-          echo "AIS_CI_LATEST_CACHE=$(printf '%s' ${AIS_CI_LATEST_CACHE} | tr '[:upper:]' '[:lower:]')" >> "${GITHUB_OUTPUT}"
+          echo "AIS_CI_LATEST_CACHE=$(printf '%s' "${AIS_CI_LATEST_CACHE}" | tr '[:upper:]' '[:lower:]')" >> "${GITHUB_OUTPUT}"
       - name: Fetching code repository...
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
       - name: Authenticating to GitHub Container Registry.
