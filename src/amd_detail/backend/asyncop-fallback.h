@@ -26,6 +26,7 @@ enum class IoType;
 namespace hipFile {
 
 struct AsyncOpFallback : AsyncOp {
+    size_t      submitted_size;
     ssize_t     bytes_transferred_internal;
     void *const gpu_buffer;
     void       *bounce_buffer_dev_ptr;

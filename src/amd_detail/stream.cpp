@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 #include "context.h"
+#include "hip.h"
 #include "hipfile.h"
 #include "passkey.h"
 #include "stream.h"
@@ -10,6 +11,7 @@
 
 #include <hip/hip_runtime_api.h>
 #include <memory>
+#include <mutex>
 #include <syslog.h>
 #include <stdexcept>
 #include <utility>
@@ -17,7 +19,7 @@
 namespace hipFile {
 
 Stream::Stream(const hipStream_t _hip_stream, uint32_t flags, const PassKey<StreamMap> &)
-    : hip_stream{_hip_stream}, fixed_buf_offset{(flags & HIPFILE_STREAM_FIXED_BUF_OFFSET) != 0},
+    : hip_stream{_hip_stream}, device_id{0}, fixed_buf_offset{(flags & HIPFILE_STREAM_FIXED_BUF_OFFSET) != 0},
       fixed_file_offset{(flags & HIPFILE_STREAM_FIXED_FILE_OFFSET) != 0},
       fixed_io_size{(flags & HIPFILE_STREAM_FIXED_FILE_SIZE) != 0},
       page_aligned{(flags & HIPFILE_STREAM_PAGE_ALIGNED_INPUTS) != 0}
@@ -26,12 +28,19 @@ Stream::Stream(const hipStream_t _hip_stream, uint32_t flags, const PassKey<Stre
     if ((flags & HIPFILE_STREAM_FLAGS_MASK) != flags) {
         throw std::invalid_argument("Invalid flags for stream");
     }
+
+    device_id = Context<Hip>::get()->hipStreamGetDevice(hip_stream);
 }
 
 hipStream_t
 Stream::getHipStream() const
 {
     return hip_stream;
+}
+hipDevice_t
+Stream::getHipDevice() const
+{
+    return device_id;
 }
 bool
 Stream::fixedBufferOffset() const
@@ -52,6 +61,11 @@ bool
 Stream::pageAligned() const
 {
     return page_aligned;
+}
+std::unique_lock<std::mutex>
+Stream::getLock()
+{
+    return std::unique_lock<std::mutex>{mutex};
 }
 
 void

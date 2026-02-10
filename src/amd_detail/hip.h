@@ -69,6 +69,11 @@ struct Hip {
     virtual uint64_t hipAmdFileWrite(hipAmdFileHandle_t handle, void *devicePtr, uint64_t size,
                                      int64_t file_offset) const;
     virtual HipMemAddressRange hipMemGetAddressRange(hipDeviceptr_t dptr) const;
+    virtual void               hipLaunchHostFunc(hipStream_t stream, hipHostFn_t fn, void *user_data) const;
+    virtual void hipLaunchKernel(const void *function_address, dim3 numBlocks, dim3 dimBlocks, void **args,
+                                 size_t sharedMemBytes, hipStream_t stream) const;
+    virtual int  hipDeviceGetAttribute(hipDeviceAttribute_t attr, int device_id) const;
+    virtual hipDevice_t hipStreamGetDevice(hipStream_t stream) const;
 
     struct RuntimeError : public std::runtime_error {
         hipError_t error;

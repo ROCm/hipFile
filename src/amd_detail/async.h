@@ -57,8 +57,8 @@ public:
     virtual ~AsyncMonitor();
     AsyncMonitor();
 
-    void addOp(std::shared_ptr<AsyncOp> op);
-    void completeOp(AsyncOp *op);
+    virtual void addOp(std::shared_ptr<AsyncOp> op);
+    virtual void completeOp(AsyncOp *op);
 
 private:
     void                                                 completion_thread();

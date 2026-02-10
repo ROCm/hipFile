@@ -40,6 +40,14 @@ struct MHip : Hip {
                 (hipAmdFileHandle_t handle, void *devicePtr, uint64_t size, int64_t file_offset),
                 (const, override));
     MOCK_METHOD(HipMemAddressRange, hipMemGetAddressRange, (hipDeviceptr_t dptr), (const, override));
+    MOCK_METHOD(void, hipLaunchHostFunc, (hipStream_t stream, hipHostFn_t fn, void *user_data),
+                (const, override));
+    MOCK_METHOD(void, hipLaunchKernel,
+                (const void *function_address, dim3 numBlocks, dim3 dimBlocks, void **args,
+                 size_t sharedMemBytes, hipStream_t stream),
+                (const, override));
+    MOCK_METHOD(int, hipDeviceGetAttribute, (hipDeviceAttribute_t attr, int device_id), (const, override));
+    MOCK_METHOD(hipDevice_t, hipStreamGetDevice, (hipStream_t stream), (const, override));
 };
 
 }
