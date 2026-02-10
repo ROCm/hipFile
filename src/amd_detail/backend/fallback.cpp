@@ -221,7 +221,7 @@ async_io_cleanup(void *userargs)
     try {
         Context<AsyncMonitor>::get()->completeOp(op);
     }
-    catch (std::invalid_argument &e) {
+    catch (const std::invalid_argument &) {
         *bytes_transferred = -hipFileInternalError;
         return;
     }
