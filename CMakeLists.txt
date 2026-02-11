@@ -37,6 +37,16 @@ project("hipfile"
 # Switch between building static and shared libraries
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
+# Set the path to the include directories for later use
+# Do this early so we can use these later, in functions, etc.
+set(HIPFILE_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
+set(HIPFILE_INCLUDE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set(HIPFILE_AMD_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/amd_detail")
+set(HIPFILE_NVIDIA_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/nvidia_detail")
+set(HIPFILE_SRC_COMMON_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/common")
+set(HIPFILE_TEST_COMMON_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test/common")
+set(HIPFILE_AMD_TEST_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test/amd_detail")
+
 # Set the list of build types for ccmake/CMake GUI
 #
 # This turns the build type box into a multi-select so you don't have to
@@ -251,15 +261,6 @@ endif()
 #-----------------------------------------------------------------------------
 # Configure hipFile
 #-----------------------------------------------------------------------------
-
-# Set the path to the include directories for later use
-set(HIPFILE_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
-set(HIPFILE_INCLUDE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/include")
-set(HIPFILE_AMD_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/amd_detail")
-set(HIPFILE_NVIDIA_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/nvidia_detail")
-set(HIPFILE_SRC_COMMON_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/common")
-set(HIPFILE_TEST_COMMON_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test/common")
-set(HIPFILE_AMD_TEST_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test/amd_detail")
 
 # Add the src directory depending on the HIP platform
 if(AIS_BUILD_NVIDIA_DETAIL)
