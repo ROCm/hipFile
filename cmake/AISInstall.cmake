@@ -13,7 +13,7 @@ rocm_install(TARGETS hipfile)
 
 # Install the headers
 rocm_install(
-    DIRECTORY ${PROJECT_SOURCE_DIR}/include/
+    DIRECTORY ${HIPFILE_ROOT_PATH}/include/
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
@@ -25,7 +25,7 @@ install(PROGRAMS tools/ais-check/ais-check DESTINATION bin)
 # the DESTINATION path or you'll get `examples/examples/*` output
 if(AIS_INSTALL_EXAMPLES)
     install(
-        DIRECTORY ${PROJECT_SOURCE_DIR}/examples
+        DIRECTORY ${HIPFILE_ROOT_PATH}/examples
         DESTINATION share/doc/${CMAKE_PROJECT_NAME}
         FILES_MATCHING
             PATTERN "*.cpp"
@@ -98,7 +98,7 @@ rocm_export_targets(
 )
 
 # CPack license setup
-set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE.md")
+set(CPACK_RESOURCE_FILE_LICENSE "${HIPFILE_ROOT_PATH}/LICENSE.md")
 set(CPACK_RPM_PACKAGE_LICENSE "MIT")
 
 # rocm-cmake sets CPACK_SET_DESTDIR on Linux, which conflicts with
