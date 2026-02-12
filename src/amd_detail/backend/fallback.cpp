@@ -138,8 +138,8 @@ Fallback::async_io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBu
         return;
     }
 
-    auto op = std::shared_ptr<AsyncOpFallback>(new AsyncOpFallback(
-        type, file, buffer, stream, size_p, file_offset_p, buffer_offset_p, bytes_transferred_p));
+    auto op = std::make_shared<AsyncOpFallback>(type, file, buffer, stream, size_p, file_offset_p,
+                                                buffer_offset_p, bytes_transferred_p);
     Context<AsyncMonitor>::get()->addOp(op);
     auto  op_dev_ptr     = op->devPtr();
     void *kernel_args[1] = {&op_dev_ptr};
