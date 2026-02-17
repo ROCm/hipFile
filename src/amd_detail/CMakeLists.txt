@@ -23,6 +23,7 @@ set(HIPFILE_SOURCES
     io.cpp
     mountinfo.cpp
     state.cpp
+    stats.cpp
     stream.cpp
     sys.cpp
 )

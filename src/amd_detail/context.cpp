@@ -7,6 +7,7 @@
 #include "hip.h"
 #include "hipfile-warnings.h"
 #include "state.h"
+#include "stats.h"
 #include "sys.h"
 
 namespace hipFile {
@@ -15,6 +16,7 @@ HipFileInit::HipFileInit()
 {
     Context<Hip>::get();
     Context<Sys>::get();
+    Context<StatsServer>::get();
     Context<DriverState>::get();
 }
 
