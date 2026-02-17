@@ -6,6 +6,7 @@
 #include "hipfile-test.h"
 #include "mstats.h"
 #include "stats.h"
+#include "msys.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -36,5 +37,18 @@ STAT_TEST(FastPathRead)
 STAT_TEST(FastPathWrite)
 STAT_TEST(FallbackPathRead)
 STAT_TEST(FallbackPathWrite)
+
+TEST_F(HipFileStats, StatsServerLifetime)
+{
+    StrictMock<MSys> msys{};
+    char             buff[sizeof(Stats)];
+    EXPECT_CALL(msys, memfd_create).WillOnce(testing::Return(10));
+    EXPECT_CALL(msys, fcntl).WillOnce(testing::Return(0));
+    EXPECT_CALL(msys, ftruncate);
+    EXPECT_CALL(msys, mmap).WillOnce(testing::Return(&buff));
+    EXPECT_CALL(msys, munmap);
+    EXPECT_CALL(msys, close);
+    StatsServer srvr{};
+}
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

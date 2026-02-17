@@ -4,8 +4,11 @@
  */
 #pragma once
 
+#include "file-descriptor.h"
+
 #include <array>
 #include <atomic>
+#include <memory>
 
 namespace hipFile {
 
@@ -48,10 +51,14 @@ public:
     virtual ~StatsServer();
     virtual Stats *getStats()
     {
-        return m_stats;
+        return m_stats.get();
     }
 
+    static void statsDeleter(Stats *s);
+    using UniqueStats = std::unique_ptr<Stats, decltype(&StatsServer::statsDeleter)>;
+
 private:
-    Stats *m_stats{nullptr};
+    FileDescriptor m_fd;
+    UniqueStats    m_stats;
 };
 }
