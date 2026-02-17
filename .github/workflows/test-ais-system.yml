@@ -8,6 +8,15 @@ env:
   AIS_INPUT_PLATFORM: ${{ inputs.platform }}
   AIS_INPUT_ROCM_VERSION: ${{ inputs.rocm_version }}
   AIS_MOUNT_PATH: /mnt/ais/ext4
+  AIS_PKG_INSTALL_CMD: >-
+    ${{
+      case(
+        inputs.platform == 'rocky', 'dnf install -y',
+        inputs.platform == 'suse', 'zypper install -y --allow-unsigned-rpm',
+        inputs.platform == 'ubuntu', 'apt update; apt install -y',
+        ''
+      )
+    }}
   AIS_PKG_MGR: >-
     ${{
       inputs.platform == 'rocky' && 'dnf' ||
@@ -186,8 +195,15 @@ jobs:
       - name: Cleanup self-hosted runner workspace
         if: ${{ always() }}
         run: rm -rf ${GITHUB_WORKSPACE}/* ${GITHUB_WORKSPACE}/.*
+  build_FIO:
+    uses: ROCm/fio/.github/workflows/build-fio.yml@rildixon/ci-hook-for-hipfile
+    with:
+      ais_hipfile_pkg_filename: ${{ inputs.ais_hipfile_pkg_filename }}
+      ais_hipfile_pkg_dev_filename: ${{ inputs.ais_hipfile_pkg_dev_filename }}
+      platform: ${{ inputs.platform }}
   run_FIO_tests:
     runs-on: [linux, AIS]
+    needs: [build_FIO]
     steps:
       - name: Set early AIS CI environment variables
         run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "${GITHUB_ENV}"
@@ -213,6 +229,26 @@ jobs:
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 #v7.0.0
         with:
           name: ${{ inputs.ais_hipfile_pkg_dev_filename }}
+      - name: Download FIO runtime package
+        # Fedora-based distro's need to download multiple packages as the FIO IO engines
+        # are dynamically linked instead of built into the FIO executable.
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 #v7.0.0
+        with:
+          artifact-ids: >-
+            ${{
+              case(
+                inputs.platform == 'rocky',
+                format(
+                  '{0},{1}',
+                  needs.build_FIO.outputs.fio_pkg_fedora_artifact_id,
+                  needs.build_FIO.outputs.fio_pkg_fedora_hipfile_engine_artifact_id
+                ),
+                inputs.platform == 'suse', needs.build_FIO.outputs.fio_pkg_suse_artifact_id,
+                inputs.platform == 'ubuntu', needs.build_FIO.outputs.fio_pkg_debian_artifact_id,
+                'unknown-platform-declared'
+              )
+            }}
+          merge-multiple: true
       - name: Authenticating to GitHub Container Registry
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 #v3.7.0
         with:
@@ -253,6 +289,8 @@ jobs:
             "${GITHUB_WORKSPACE}/${AIS_INPUT_HIPFILE_PKG_DEV_FILENAME}" \
             "${AIS_CONTAINER_NAME}:/root"
       - name: Install the hipFile packages
+        # Note: We need to re-run the `ldconfig` post-install step.
+        #       This really should just be done automatically by the ROCm package.
         run: |
           docker exec \
             -t \
@@ -261,7 +299,7 @@ jobs:
             /bin/bash -c '
               ${{
                 format(
-                  env.AIS_PKG_MGR == 'apt' && 'apt install -y "./{0}" "./{1}"' ||
+                  env.AIS_PKG_MGR == 'apt' && 'apt update; apt install -y "./{0}" "./{1}"' ||
                     env.AIS_PKG_MGR == 'dnf' && 'dnf install -y --cacheonly "./{0}" "./{1}"' ||
                     env.AIS_PKG_MGR == 'zypper' && 'zypper --no-refresh install -y --allow-unsigned-rpm "./{0}" "./{1}"' ||
                     'echo "Unknown platform."; exit 1',
@@ -269,30 +307,76 @@ jobs:
                   inputs.ais_hipfile_pkg_dev_filename
                 )
               }}
+              ldconfig
             '
-      - name: Configure fio
+      - name: Copy the FIO packages into the container
+        env:
+          FIO_RUNTIME_PKG_FILENAME: >-
+            ${{
+              case(
+                inputs.platform == 'rocky', needs.build_FIO.outputs.fio_pkg_fedora_filename,
+                inputs.platform == 'suse', needs.build_FIO.outputs.fio_pkg_suse_filename,
+                inputs.platform == 'ubuntu', needs.build_FIO.outputs.fio_pkg_debian_filename,
+                ''
+              )
+            }}
+          FIO_HIPFILE_ENGINE_PKG_FILENAME: >-
+            ${{
+              case(
+                inputs.platform == 'rocky', needs.build_FIO.outputs.fio_pkg_fedora_hipfile_engine_filename,
+                ''
+              )
+            }}
+        run: |
+          docker cp \
+            "${GITHUB_WORKSPACE}/${FIO_RUNTIME_PKG_FILENAME}" \
+            "${AIS_CONTAINER_NAME}:/root"
+          ${{
+            case(
+              inputs.platform == 'rocky',
+                'docker cp \
+                  "${GITHUB_WORKSPACE}/${FIO_HIPFILE_ENGINE_PKG_FILENAME}" \
+                  "${AIS_CONTAINER_NAME}:/root"
+                ',
+              ''
+            )
+          }}
+      - name: Install the FIO packages
+        env:
+          FIO_RUNTIME_PKG_FILENAME: >-
+            ${{
+              case(
+                inputs.platform == 'rocky', needs.build_FIO.outputs.fio_pkg_fedora_filename,
+                inputs.platform == 'suse', needs.build_FIO.outputs.fio_pkg_suse_filename,
+                inputs.platform == 'ubuntu', needs.build_FIO.outputs.fio_pkg_debian_filename,
+                ''
+              )
+            }}
+          FIO_HIPFILE_ENGINE_PKG_FILENAME: >-
+            ${{
+              case(
+                inputs.platform == 'rocky', needs.build_FIO.outputs.fio_pkg_fedora_hipfile_engine_filename,
+                ''
+              )
+            }}
         run: |
           docker exec \
             -t \
-            -w /ais/fio/build \
+            -w /root \
             "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
-              ROCM=/opt/rocm-${ROCM_VERSION} \
-              HIPFILE=/ais/hipFile \
-              HIPFILELIB=${HIPFILE}/build/src/amd_detail/ \
-              HIP_PLATFORM=amd \
-              CFLAGS="-I${ROCM}/include" \
-              LDFLAGS="-L${ROCM}/lib -Wl,-rpath,${ROCM}/lib" \
-              ../configure --enable-libhipfile
-            '
-      - name: Build fio
-        run: |
-          docker exec \
-            -t \
-            -w /ais/fio/build \
-            "${AIS_CONTAINER_NAME}" \
-            /bin/bash -c '
-              make -j
+              ls -al
+              ${{
+                format(
+                  '{0} {1}',
+                  env.AIS_PKG_INSTALL_CMD,
+                  case(
+                    inputs.platform == 'rocky',
+                      format('./{0} ./{1}', env.FIO_RUNTIME_PKG_FILENAME, env.FIO_HIPFILE_ENGINE_PKG_FILENAME),
+                    format('./{0}', env.FIO_RUNTIME_PKG_FILENAME)
+                  )
+                )
+              }}
             '
       - name: hipFile fallback/POSIX IO test using fio
         run: |
@@ -302,7 +386,7 @@ jobs:
             "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
               HIPFILE_FORCE_COMPAT_MODE=true \
-                /ais/fio/build/fio \
+                fio \
                 /ais/hipFile/util/fio/write-read-verify.fio
             '
       - name: hipFile AIS IO test using fio
@@ -313,7 +397,7 @@ jobs:
             "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
               HIPFILE_ALLOW_COMPAT_MODE=false \
-                /ais/fio/build/fio \
+                fio \
                 /ais/hipFile/util/fio/write-read-verify.fio
             '
       - name: Destroy hipfile IO test directory
