@@ -159,7 +159,7 @@ TEST_F(FastpathTest, ScoreRejectsBufferAddressPlusBufferOffsetIsUnaligned)
                                                   (DEFAULT_MEM_ALIGN >> 1))));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET,
-                               -static_cast<hoff_t>(DEFAULT_MEM_ALIGN)),
+                               static_cast<hoff_t>(DEFAULT_MEM_ALIGN)),
               SCORE_REJECT);
 }
 
