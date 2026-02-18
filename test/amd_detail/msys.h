@@ -42,5 +42,6 @@ struct MSys : Sys {
     MOCK_METHOD(char *, getenv, (const char *name), (const, noexcept, override));
 
     MOCK_METHOD(int, memfd_create, (const char *name, unsigned int flags), (const, override));
+    MOCK_METHOD(int, eventfd, (unsigned int, int), (const, override));
 };
 }

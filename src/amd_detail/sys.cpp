@@ -8,6 +8,7 @@
 #include <cerrno>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <sys/eventfd.h>
 #include <sys/mman.h>
 #include <sys/stat.h> // IWYU pragma: keep
 #include <sys/types.h>
@@ -126,6 +127,12 @@ int
 Sys::memfd_create(const char *name, unsigned int flags) const
 {
     return throwOn(-1, ::memfd_create(name, flags));
+}
+
+int
+Sys::eventfd(unsigned int initval, int flags) const
+{
+    return throwOn(-1, ::eventfd(initval, flags));
 }
 
 }

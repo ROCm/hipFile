@@ -46,6 +46,7 @@ struct Sys {
     virtual char *getenv(const char *name) const noexcept;
 
     virtual int memfd_create(const char *name, unsigned int flags) const;
+    virtual int eventfd(unsigned int initval, int flags) const;
 };
 
 }

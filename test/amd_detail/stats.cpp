@@ -43,11 +43,12 @@ TEST_F(HipFileStats, StatsServerLifetime)
     StrictMock<MSys> msys{};
     char             buff[sizeof(Stats)];
     EXPECT_CALL(msys, memfd_create).WillOnce(testing::Return(10));
+    EXPECT_CALL(msys, eventfd).WillOnce(testing::Return(11));
     EXPECT_CALL(msys, fcntl).WillOnce(testing::Return(0));
     EXPECT_CALL(msys, ftruncate);
     EXPECT_CALL(msys, mmap).WillOnce(testing::Return(&buff));
     EXPECT_CALL(msys, munmap);
-    EXPECT_CALL(msys, close);
+    EXPECT_CALL(msys, close).Times(2);
     StatsServer srvr{};
 }
 

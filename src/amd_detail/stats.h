@@ -9,6 +9,7 @@
 #include <array>
 #include <atomic>
 #include <memory>
+#include <thread>
 
 namespace hipFile {
 
@@ -58,7 +59,10 @@ public:
     using UniqueStats = std::unique_ptr<Stats, decltype(&StatsServer::statsDeleter)>;
 
 private:
+    void           threadFn();
     FileDescriptor m_fd;
+    FileDescriptor m_efd;
     UniqueStats    m_stats;
+    std::thread    m_thread;
 };
 }
