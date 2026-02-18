@@ -14,6 +14,7 @@
 #include "hip.h"
 #include "hipfile.h"
 #include "io.h"
+#include "stats.h"
 #include "sys.h"
 #include "stream.h"
 #include "util.h"
@@ -114,6 +115,16 @@ Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer,
         }
     } while (static_cast<size_t>(total_io_bytes) < size);
 
+    switch (io_type) {
+        case IoType::Read:
+            statsAddFallbackPathRead(static_cast<size_t>(total_io_bytes));
+            break;
+        case IoType::Write:
+            statsAddFallbackPathWrite(static_cast<size_t>(total_io_bytes));
+            break;
+        default:
+            break;
+    }
     return total_io_bytes;
 }
 

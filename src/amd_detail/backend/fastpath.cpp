@@ -10,6 +10,7 @@
 #include "hip.h"
 #include "hipfile.h"
 #include "io.h"
+#include "stats.h"
 
 #include <cstdint>
 #include <fcntl.h>
@@ -183,6 +184,15 @@ Fastpath::io(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, si
         default:
             throw std::runtime_error("Invalid IoType");
     }
-
+    switch (type) {
+        case IoType::Read:
+            statsAddFastPathRead(nbytes);
+            break;
+        case IoType::Write:
+            statsAddFastPathWrite(nbytes);
+            break;
+        default:
+            break;
+    }
     return static_cast<ssize_t>(nbytes);
 }
