@@ -100,7 +100,9 @@ def amdgpu_supports_ais():
 
 def main(args):
     """
-    Run the program
+    Parse command-line arguments, check AIS support in HIP Runtime and
+    amdgpu, optionally print the results, and return an exit code indicating
+    whether all required components support AIS.
     """
 
     parser = argparse.ArgumentParser()
