@@ -81,7 +81,7 @@ def amdgpu_supports_ais():
     Check if kfd_ais_rw_file is in the kernel's symbol table
     """
     try:
-        with open("/proc/kallsyms", "r") as kallsyms:
+        with open("/proc/kallsyms", "r", encoding="utf-8") as kallsyms:
             for line in kallsyms:
                 if "kfd_ais_rw_file" in line:
                     return True
@@ -99,6 +99,12 @@ def amdgpu_supports_ais():
 
 
 def main(args):
+    """
+    Parse command-line arguments, check AIS support in HIP Runtime and
+    amdgpu, optionally print the results, and return an exit code indicating
+    whether all required components support AIS.
+    """
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-q", "--quiet", action="store_true", help="Silence regular output"
