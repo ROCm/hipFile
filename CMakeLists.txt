@@ -212,6 +212,12 @@ include(AISSanitizers)
 #------------------
 option(AIS_INSTALL_EXAMPLES "Install example programs" ON)
 
+#------------------
+# Tool programs
+#------------------
+option(AIS_INSTALL_TOOLS "Install tool programs" ON)
+
+
 #------
 # docs
 #------
@@ -281,6 +287,12 @@ endif()
 if(AIS_INSTALL_EXAMPLES)
     add_subdirectory(examples/aiscp)
 endif()
+
+# Add tools directory
+if(AIS_INSTALL_TOOLS AND AIS_BUILD_AMD_DETAIL)
+    add_subdirectory(tools/ais-stats)
+endif()
+
 
 #-----------------------------------------------------------------------------
 # Set up installs (must come AFTER target creation)

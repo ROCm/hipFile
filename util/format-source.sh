@@ -11,6 +11,7 @@ DIRS=(
     "examples"
     "src"
     "test"
+    "tools"
 )
 
 if [ $# -eq 1 ]; then
