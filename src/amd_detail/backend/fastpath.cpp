@@ -134,18 +134,21 @@ Fastpath::score(shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
     accept_io &= 0 <= file_offset;
     accept_io &= 0 <= buffer_offset;
 
+    uint64_t mem_align_mask{4096 - 1};
+    uint64_t offset_align_mask{4096 - 1};
+
 #if defined(STATX_DIOALIGN)
     const struct statx &stx{file->getStatx()};
     accept_io &= !!(stx.stx_mask & STATX_DIOALIGN);
     accept_io &= stx.stx_dio_offset_align && stx.stx_dio_mem_align;
-    accept_io &= !(size & (stx.stx_dio_offset_align - 1));
-    accept_io &= !(file_offset & (stx.stx_dio_offset_align - 1));
-    accept_io &= !(buffer_offset & (stx.stx_dio_mem_align - 1));
-#else
-    accept_io &= !(size & 0xFFF);
-    accept_io &= !(file_offset & 0xFFF);
-    accept_io &= !(buffer_offset & 0xFFF);
+    mem_align_mask    = stx.stx_dio_mem_align - 1;
+    offset_align_mask = stx.stx_dio_offset_align - 1;
 #endif
+
+    accept_io &= !(size & offset_align_mask);
+    accept_io &= !(file_offset & static_cast<int64_t>(offset_align_mask));
+    auto buffer_address{reinterpret_cast<intptr_t>(buffer->getBuffer())};
+    accept_io &= !((buffer_address + buffer_offset) & static_cast<int64_t>(mem_align_mask));
 
     return accept_io ? 100 : -1;
 }

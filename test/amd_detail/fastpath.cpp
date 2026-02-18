@@ -54,8 +54,8 @@ operator==(const hipAmdFileHandle_t &lhs, const hipAmdFileHandle_t &rhs)
 // Provide default values for variables used in fastpath tests
 struct FastpathTestBase {
     const size_t        DEFAULT_IO_SIZE{1024 * 1024};
-    void *const         DEFAULT_BUFFER_ADDR{reinterpret_cast<void *>(0x600DB10C)};
-    const off_t         DEFAULT_BUFFER_OFFSET{512};
+    void *const         DEFAULT_BUFFER_ADDR{reinterpret_cast<void *>(0xABAD'CAFE'0000'0000)};
+    const off_t         DEFAULT_BUFFER_OFFSET{DEFAULT_MEM_ALIGN};
     const size_t        DEFAULT_BUFFER_LENGTH{DEFAULT_IO_SIZE + static_cast<size_t>(DEFAULT_BUFFER_OFFSET)};
     const hipMemoryType DEFAULT_BUFFER_TYPE{hipMemoryTypeDevice};
     const optional<int> DEFAULT_UNBUFFERED_FD{7};
@@ -79,11 +79,26 @@ struct FastpathTestBase {
 
 struct FastpathTest : public FastpathTestBase, public Test {};
 
+TEST_F(FastpathTest, TestDefaults)
+{
+    ASSERT_FALSE((DEFAULT_MEM_ALIGN & (DEFAULT_MEM_ALIGN - 1)));
+    ASSERT_TRUE(DEFAULT_MEM_ALIGN > 1);
+    ASSERT_FALSE((DEFAULT_OFFSET_ALIGN & (DEFAULT_OFFSET_ALIGN - 1)));
+    ASSERT_TRUE(DEFAULT_OFFSET_ALIGN > 1);
+    ASSERT_FALSE((reinterpret_cast<uintptr_t>(DEFAULT_BUFFER_ADDR) & (DEFAULT_MEM_ALIGN - 1)));
+    ASSERT_FALSE((DEFAULT_BUFFER_OFFSET & (DEFAULT_MEM_ALIGN - 1)));
+    ASSERT_FALSE((DEFAULT_IO_SIZE & (DEFAULT_OFFSET_ALIGN - 1)));
+    ASSERT_FALSE((DEFAULT_FILE_OFFSET & (DEFAULT_OFFSET_ALIGN - 1)));
+}
+
 TEST_F(FastpathTest, UnbufferedFdAvailable)
 {
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
+#if defined(STATX_DIOALIGN)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
+#endif
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
               SCORE_ACCEPT);
@@ -93,7 +108,10 @@ TEST_F(FastpathTest, UnbufferedFdNotAvailable)
 {
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(nullopt));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
+#if defined(STATX_DIOALIGN)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
+#endif
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
               SCORE_REJECT);
@@ -103,7 +121,10 @@ TEST_F(FastpathTest, ScoreRejectsNegativeAlignedFileOffset)
 {
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
+#if defined(STATX_DIOALIGN)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
+#endif
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, -static_cast<hoff_t>(DEFAULT_OFFSET_ALIGN),
                                DEFAULT_BUFFER_OFFSET),
@@ -114,10 +135,31 @@ TEST_F(FastpathTest, ScoreRejectsNegativeAlignedBufferOffset)
 {
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
+#if defined(STATX_DIOALIGN)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
+#endif
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
 
-    ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_BUFFER_OFFSET,
+    ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET,
                                -static_cast<hoff_t>(DEFAULT_MEM_ALIGN)),
+              SCORE_REJECT);
+}
+
+TEST_F(FastpathTest, ScoreRejectsBufferAddressPlusBufferOffsetIsUnaligned)
+{
+    EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
+    EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
+#if defined(STATX_DIOALIGN)
+    EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
+#endif
+    // The DEFAULT_BUFFER_ADDR is DEFAULT_MEM_ALIGN aligned. Ensure that this
+    // test's buffer is not DEFAULT_MEM_ALIGN aligned.
+    EXPECT_CALL(*mbuffer, getBuffer)
+        .WillOnce(Return(reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(DEFAULT_BUFFER_ADDR) +
+                                                  (DEFAULT_MEM_ALIGN >> 1))));
+
+    ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET,
+                               static_cast<hoff_t>(DEFAULT_MEM_ALIGN)),
               SCORE_REJECT);
 }
 
@@ -127,7 +169,10 @@ TEST_P(FastpathSupportedHipMemoryParam, Score)
 {
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(GetParam()));
+#if defined(STATX_DIOALIGN)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
+#endif
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
               SCORE_ACCEPT);
@@ -141,7 +186,10 @@ TEST_P(FastpathUnsupportedHipMemoryParam, Score)
 {
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(GetParam()));
+#if defined(STATX_DIOALIGN)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
+#endif
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
               SCORE_REJECT);
@@ -156,14 +204,18 @@ TEST_P(FastpathAlignedIoSizesParam, Score)
 {
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
+#if defined(STATX_DIOALIGN)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
+#endif
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, GetParam(), DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
               SCORE_ACCEPT);
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathAlignedIoSizesParam,
-                         Values(-DEFAULT_OFFSET_ALIGN, 0, DEFAULT_OFFSET_ALIGN));
+                         Values(0, DEFAULT_OFFSET_ALIGN, DEFAULT_OFFSET_ALIGN << 1,
+                                DEFAULT_OFFSET_ALIGN << 2));
 
 struct FastpathUnalignedIoSizesParam : public FastpathTestBase, public TestWithParam<size_t> {};
 
@@ -171,14 +223,18 @@ TEST_P(FastpathUnalignedIoSizesParam, Score)
 {
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
+#if defined(STATX_DIOALIGN)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
+#endif
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, GetParam(), DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
               SCORE_REJECT);
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathUnalignedIoSizesParam,
-                         Values(-DEFAULT_OFFSET_ALIGN + 1, 1, DEFAULT_OFFSET_ALIGN - 1));
+                         Values(1, DEFAULT_OFFSET_ALIGN >> 1, DEFAULT_OFFSET_ALIGN - 1,
+                                DEFAULT_OFFSET_ALIGN + 1));
 
 struct FastpathAlignedFileOffsetsParam : public FastpathTestBase, public TestWithParam<hoff_t> {};
 
@@ -186,14 +242,20 @@ TEST_P(FastpathAlignedFileOffsetsParam, Score)
 {
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
+#if defined(STATX_DIOALIGN)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
+#endif
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, GetParam(), DEFAULT_BUFFER_OFFSET),
-              SCORE_ACCEPT);
+              GetParam() >= 0 ? SCORE_ACCEPT : SCORE_REJECT);
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathAlignedFileOffsetsParam,
-                         Values(-DEFAULT_OFFSET_ALIGN, 0, DEFAULT_OFFSET_ALIGN));
+                         Values(-static_cast<hoff_t>(DEFAULT_OFFSET_ALIGN << 2),
+                                -static_cast<hoff_t>(DEFAULT_OFFSET_ALIGN << 1),
+                                -static_cast<hoff_t>(DEFAULT_OFFSET_ALIGN), 0, DEFAULT_OFFSET_ALIGN,
+                                DEFAULT_OFFSET_ALIGN << 1, DEFAULT_OFFSET_ALIGN << 2));
 
 struct FastpathUnalignedFileOffsetsParam : public FastpathTestBase, public TestWithParam<hoff_t> {};
 
@@ -201,14 +263,22 @@ TEST_P(FastpathUnalignedFileOffsetsParam, Score)
 {
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
+#if defined(STATX_DIOALIGN)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
+#endif
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, GetParam(), DEFAULT_BUFFER_OFFSET),
               SCORE_REJECT);
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathUnalignedFileOffsetsParam,
-                         Values(-DEFAULT_OFFSET_ALIGN + 1, 1, DEFAULT_OFFSET_ALIGN - 1));
+                         Values(-static_cast<hoff_t>(DEFAULT_OFFSET_ALIGN << 2) - 1,
+                                -static_cast<hoff_t>(DEFAULT_OFFSET_ALIGN << 1) + 1,
+                                -static_cast<hoff_t>(DEFAULT_OFFSET_ALIGN) - 1,
+                                -static_cast<hoff_t>(DEFAULT_OFFSET_ALIGN >> 1), 1, DEFAULT_OFFSET_ALIGN >> 1,
+                                DEFAULT_OFFSET_ALIGN - 1, (DEFAULT_OFFSET_ALIGN << 1) + 1,
+                                (DEFAULT_OFFSET_ALIGN << 2) - 1));
 
 struct FastpathAlignedBufferOffsetsParam : public FastpathTestBase, public TestWithParam<hoff_t> {};
 
@@ -216,14 +286,20 @@ TEST_P(FastpathAlignedBufferOffsetsParam, Score)
 {
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
+#if defined(STATX_DIOALIGN)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
+#endif
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
 
-    ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_BUFFER_OFFSET, GetParam()),
-              SCORE_ACCEPT);
+    ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, GetParam()),
+              GetParam() >= 0 ? SCORE_ACCEPT : SCORE_REJECT);
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathAlignedBufferOffsetsParam,
-                         Values(-DEFAULT_MEM_ALIGN, 0, DEFAULT_MEM_ALIGN));
+                         Values(-static_cast<hoff_t>(DEFAULT_MEM_ALIGN << 2),
+                                -static_cast<hoff_t>(DEFAULT_MEM_ALIGN << 1),
+                                -static_cast<hoff_t>(DEFAULT_MEM_ALIGN), 0, DEFAULT_MEM_ALIGN,
+                                DEFAULT_MEM_ALIGN << 1, DEFAULT_MEM_ALIGN << 2));
 
 /// @brief Tests negative and unaligned buffer offsets
 struct FastpathUnalignedBufferOffsetsParam : public FastpathTestBase, public TestWithParam<hoff_t> {};
@@ -232,14 +308,22 @@ TEST_P(FastpathUnalignedBufferOffsetsParam, Score)
 {
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
+#if defined(STATX_DIOALIGN)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
+#endif
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, GetParam()),
               SCORE_REJECT);
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathUnalignedBufferOffsetsParam,
-                         Values(-DEFAULT_MEM_ALIGN + 1, 1, DEFAULT_MEM_ALIGN - 1));
+                         Values(-static_cast<hoff_t>(DEFAULT_MEM_ALIGN << 2) - 1,
+                                -static_cast<hoff_t>(DEFAULT_MEM_ALIGN << 1) + 1,
+                                -static_cast<hoff_t>(DEFAULT_MEM_ALIGN) - 1,
+                                -static_cast<hoff_t>(DEFAULT_MEM_ALIGN >> 1), 1, DEFAULT_MEM_ALIGN >> 1,
+                                DEFAULT_MEM_ALIGN - 1, (DEFAULT_MEM_ALIGN << 1) + 1,
+                                (DEFAULT_MEM_ALIGN << 2) - 1));
 
 struct FastpathIoParam : public FastpathTestBase, public TestWithParam<IoType> {
 
