@@ -47,6 +47,7 @@ struct Sys {
 
     virtual int memfd_create(const char *name, unsigned int flags) const;
     virtual int eventfd(unsigned int initval, int flags) const;
+    virtual int pidfd_open(pid_t pid, unsigned int flags) const;
 };
 
 }

@@ -47,6 +47,39 @@ sendFd(int sock, int fd) noexcept
     return 0;
 }
 
+static int
+recvFd(int sockfd) noexcept
+{
+    int      data, fd;
+    iovec    iov{&data, sizeof(data)};
+    msghdr   msgh;
+    cmsghdr *cmsgp;
+
+    union {
+        char    buff[CMSG_SPACE(sizeof(int))];
+        cmsghdr align;
+    } controlMsg;
+
+    msgh.msg_name       = nullptr;
+    msgh.msg_namelen    = 0;
+    msgh.msg_iov        = &iov;
+    msgh.msg_iovlen     = 1;
+    msgh.msg_control    = controlMsg.buff;
+    msgh.msg_controllen = sizeof(controlMsg.buff);
+
+    if (recvmsg(sockfd, &msgh, 0) == -1)
+        return -1;
+
+    cmsgp = CMSG_FIRSTHDR(&msgh);
+    if (cmsgp == NULL || cmsgp->cmsg_len != CMSG_LEN(sizeof(int)) || cmsgp->cmsg_level != SOL_SOCKET ||
+        cmsgp->cmsg_type != SCM_RIGHTS) {
+        errno = EINVAL;
+        return -1;
+    }
+    memcpy(&fd, CMSG_DATA(cmsgp), sizeof(int));
+    return fd;
+}
+
 static void
 populateSocketAddr(sockaddr_un &addr, pid_t pid) noexcept
 {
@@ -121,6 +154,85 @@ StatsServer::threadFn()
         }
     }
     close(sock);
+}
+
+StatsClient::StatsClient(pid_t p)
+    : m_pfd{FileDescriptor::make_managed(Context<Sys>::get()->pidfd_open(p, 0))}, m_pid{p}
+{
+}
+
+bool
+StatsClient::pollProcess(int timeout)
+{
+    if (m_pfd.get() == -1) {
+        return true;
+    }
+    pollfd pfd{m_pfd.get(), POLLIN, 0};
+    return poll(&pfd, 1, timeout) > 0;
+}
+
+bool
+StatsClient::connectServer()
+{
+    FileDescriptor sock{FileDescriptor::make_managed(socket(AF_UNIX, SOCK_STREAM, 0))};
+    if (sock.get() == -1) {
+        return false;
+    }
+    int success{-1};
+
+    sockaddr_un addr;
+    populateSocketAddr(addr, m_pid);
+    for (int timeout{0}; !pollProcess(timeout); ++timeout) { // backoff on connect attempts
+        success = connect(sock.get(), reinterpret_cast<sockaddr *>(&addr), sizeof(struct sockaddr_un));
+        if (success == 0) {
+            break;
+        }
+    }
+    if (success == -1) {
+        return false;
+    }
+    m_sfd = FileDescriptor::make_managed(recvFd(sock.get()));
+    return true;
+}
+
+bool
+StatsClient::generateReport(std::ostream &stream)
+{
+    if (m_sfd.get() == -1) {
+        return false;
+    }
+    void *shm = mmap(nullptr, sizeof(Stats), PROT_READ, MAP_SHARED, m_sfd.get(), 0);
+    if (shm == reinterpret_cast<void *>(-1)) {
+        return false;
+    }
+    Stats *stats = reinterpret_cast<Stats *>(shm);
+    if (stats == nullptr) {
+        return false;
+    }
+    switch (stats->version) {
+        case 1:
+            generateReportV1(stream, stats);
+            break;
+        default:
+            break;
+    }
+    munmap(stats, sizeof(Stats));
+    return true;
+}
+
+void
+StatsClient::generateReportV1(std::ostream &stream, const Stats *stats)
+{
+    if (stats == nullptr) {
+        return;
+    }
+    stream << "Total fast path reads (B): " << stats->getCounter(StatsCounters::TotalFastPathReadBytes).load()
+           << "\nTotal fast path writes (B): "
+           << stats->getCounter(StatsCounters::TotalFastPathWriteBytes).load()
+           << "\nTotal fallback path reads (B): "
+           << stats->getCounter(StatsCounters::TotalFallbackPathReadBytes).load()
+           << "\nTotal fallback path writes (B): "
+           << stats->getCounter(StatsCounters::TotalFallbackPathWriteBytes).load() << '\n';
 }
 
 void

@@ -10,6 +10,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <sstream>
 
 using namespace hipFile;
 
@@ -50,6 +51,22 @@ TEST_F(HipFileStats, StatsServerLifetime)
     EXPECT_CALL(msys, munmap);
     EXPECT_CALL(msys, close).Times(2);
     StatsServer srvr{};
+}
+
+TEST_F(HipFileStats, GenerateReportV1)
+{
+    Stats              stats{};
+    std::ostringstream os{};
+    stats.getCounter(StatsCounters::TotalFastPathReadBytes)      = 2;
+    stats.getCounter(StatsCounters::TotalFastPathWriteBytes)     = 4;
+    stats.getCounter(StatsCounters::TotalFallbackPathReadBytes)  = 6;
+    stats.getCounter(StatsCounters::TotalFallbackPathWriteBytes) = 8;
+    StatsClient::generateReportV1(os, &stats);
+    std::string str{os.str()};
+    ASSERT_GT(std::string::npos, str.find('2'));
+    ASSERT_GT(std::string::npos, str.find('4'));
+    ASSERT_GT(std::string::npos, str.find('6'));
+    ASSERT_GT(std::string::npos, str.find('8'));
 }
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

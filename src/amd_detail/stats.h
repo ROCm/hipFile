@@ -9,6 +9,7 @@
 #include <array>
 #include <atomic>
 #include <memory>
+#include <ostream>
 #include <thread>
 
 namespace hipFile {
@@ -64,5 +65,19 @@ private:
     FileDescriptor m_efd;
     UniqueStats    m_stats;
     std::thread    m_thread;
+};
+
+class StatsClient {
+public:
+    explicit StatsClient(pid_t p);
+    bool pollProcess(int timeout);
+    bool connectServer();
+    bool generateReport(std::ostream &stream);
+
+    static void generateReportV1(std::ostream &stream, const Stats *stats);
+
+private:
+    FileDescriptor m_pfd, m_sfd;
+    pid_t          m_pid{0};
 };
 }

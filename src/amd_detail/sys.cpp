@@ -11,6 +11,7 @@
 #include <sys/eventfd.h>
 #include <sys/mman.h>
 #include <sys/stat.h> // IWYU pragma: keep
+#include <sys/syscall.h>
 #include <sys/types.h>
 #include <syslog.h>
 #include <system_error>
@@ -133,6 +134,12 @@ int
 Sys::eventfd(unsigned int initval, int flags) const
 {
     return throwOn(-1, ::eventfd(initval, flags));
+}
+
+int
+Sys::pidfd_open(pid_t pid, unsigned int flags) const
+{
+    return throwOn(-1, static_cast<int>(::syscall(SYS_pidfd_open, pid, flags)));
 }
 
 }

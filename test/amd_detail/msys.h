@@ -43,5 +43,6 @@ struct MSys : Sys {
 
     MOCK_METHOD(int, memfd_create, (const char *name, unsigned int flags), (const, override));
     MOCK_METHOD(int, eventfd, (unsigned int, int), (const, override));
+    MOCK_METHOD(int, pidfd_open, (pid_t, unsigned int), (const, override));
 };
 }
