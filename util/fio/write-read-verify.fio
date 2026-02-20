@@ -4,8 +4,8 @@ ioengine=libhipfile
 rocm_io=hipfile
 gpu_dev_ids=0
 filename=fio.dat
-size=1G
-bs=1M
+size=1M
+bs=4K
 verify=md5
 numjobs=1
 
