@@ -69,7 +69,6 @@ target_link_libraries(hipfile_system_tests PRIVATE Boost::program_options)
 ais_gtest_discover_tests(
     hipfile_system_tests
     EXTRA_ARGS --ais-capable-dir ${AIS_CAPABLE_DIR}
-    WORKING_DIRECTORY ${AIS_CAPABLE_DIR}
     PROPERTIES "LABELS;system;LABELS;hipfile"
     TEST_LIST hipfile_system_tests
 )
