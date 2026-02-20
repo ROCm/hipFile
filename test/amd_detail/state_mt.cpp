@@ -243,7 +243,7 @@ thread_function(int id)
                     uniform_int_distribution<size_t> vec_dist{0, buffers.size() - 1};
                     size_t                           idx = vec_dist(gen);
 
-                    auto data = ds->getBuffer(buffers[idx]);
+                    auto data = ds->getRegisteredBuffer(buffers[idx]);
 
                     // TODO: Maintain a data collection to ensure there are no races
                     //       on the data
@@ -257,7 +257,7 @@ thread_function(int id)
                     uniform_int_distribution<size_t> vec_dist{0, buffers.size() - 1};
                     size_t                           idx = vec_dist(gen);
 
-                    auto data = ds->getBuffer(buffers[idx], ALLOC_SIZE, 0);
+                    auto data = ds->getBuffer(buffers[idx]);
 
                     // TODO: Maintain a data collection to ensure there are no races
                     //       on the data
@@ -291,7 +291,7 @@ thread_function(int id)
                     idx      = buf_dist(gen);
                     auto buf = buffers[idx];
 
-                    auto [file, buffer] = ds->getFileAndBuffer(fh, buf, ALLOC_SIZE, 0);
+                    auto [file, buffer] = ds->getFileAndBuffer(fh, buf);
 
                     // TODO: Maintain a data collection to ensure there are no races
                     //       on the data
@@ -318,8 +318,7 @@ thread_function(int id)
                     idx             = stream_dist(gen);
                     auto hip_stream = hip_streams[idx];
 
-                    auto [file, buffer, stream] =
-                        ds->getFileBufferAndStream(fh, buf, ALLOC_SIZE, 0, hip_stream);
+                    auto [file, buffer, stream] = ds->getFileBufferAndStream(fh, buf, hip_stream);
                 } break;
 
                 default:

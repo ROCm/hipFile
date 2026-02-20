@@ -99,15 +99,13 @@ public:
     /// @brief Look up a registered buffer using the buffer pointer
     /// @param [in] buf Buffer pointer
     /// @return A registered buffer
-    virtual std::shared_ptr<IBuffer> getBuffer(const void *buf);
+    virtual std::shared_ptr<IBuffer> getRegisteredBuffer(const void *buf);
 
     /// @brief Look up a registered buffer. Returns a temporary unregistered
-    ///        buffer (of size length, using flags) if no matching buffer is found.
+    ///        buffer if no matching buffer is found.
     /// @param [in] buf Buffer pointer
-    /// @param [in] length Buffer length
-    /// @param [in] flags Buffer flags (unused)
     /// @return A registered or temporary unregistered buffer
-    virtual std::shared_ptr<IBuffer> getBuffer(const void *buf, size_t length, int flags);
+    virtual std::shared_ptr<IBuffer> getBuffer(const void *buf);
 
     //
     // File interface
@@ -158,19 +156,17 @@ public:
     /// This combined file + buffer getter reduces the number of lock calls.
     ///
     /// Like the buffer getter, this function emits a temporary unregistered buffer
-    /// (of size length, using flags) if no matching buffer is found.
+    /// if no matching registered buffer is found.
     ///
     /// @param [in]  fh      File handle
     /// @param [in]  buf     Buffer pointer
-    /// @param [in]  length  Buffer length
-    /// @param [in]  flags   Buffer flags (unused)
-    virtual file_buffer_pair getFileAndBuffer(hipFileHandle_t fh, const void *buf, size_t length, int flags);
+    virtual file_buffer_pair getFileAndBuffer(hipFileHandle_t fh, const void *buf);
 
     //
     // Buffer, file, and stream calls
     //
     virtual file_buffer_stream_tuple getFileBufferAndStream(hipFileHandle_t fh, const void *buf,
-                                                            size_t length, int flags, hipStream_t hipStream);
+                                                            hipStream_t hipStream);
 
     //
     // Reference counts

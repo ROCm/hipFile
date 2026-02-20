@@ -122,8 +122,8 @@ BatchContext::submit_operations(const hipFileIOParams_t *params, unsigned num_pa
         auto param_copy = std::make_unique<const hipFileIOParams_t>(params[i]);
         // flags currently unused. Ambiguous if flags in hipFileBatchIOSubmit is for buffer or
         // file flags.
-        auto [_file, _buffer] = Context<DriverState>::get()->getFileAndBuffer(
-            param_copy->fh, param_copy->u.batch.devPtr_base, param_copy->u.batch.size, 0);
+        auto [_file, _buffer] =
+            Context<DriverState>::get()->getFileAndBuffer(param_copy->fh, param_copy->u.batch.devPtr_base);
         auto op = std::make_shared<BatchOperation>(std::move(param_copy), _buffer, _file);
 
         pending_ops.push_back(op);

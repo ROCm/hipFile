@@ -174,13 +174,6 @@ TEST_P(HipFileIoParam, HipFileIoHandlesUnsupportedHipMemoryType)
     }
 }
 
-TEST_P(HipFileIoParam, HipFileIoHandlesInvalidRegisteredBufferLength)
-{
-    StrictMock<MHip> mhip;
-    ASSERT_EQ(hipFileIo(GetParam(), file_handle, bufptr, buflen + 1, 0, 0, mbackends),
-              -static_cast<ssize_t>(hipFileInvalidValue));
-}
-
 TEST_P(HipFileIoParam, HipFileIoHandlesInvalidFileHandle)
 {
     auto invalid_handle{reinterpret_cast<hipFileHandle_t>(0xdeadbeef)};
@@ -242,8 +235,7 @@ TEST_P(HipFileIoBackendSelectionParam, HipFileIoThrowsIfThereAreNoBackends)
 {
     auto backends{std::vector<std::shared_ptr<Backend>>()};
 
-    EXPECT_CALL(mds, getFileAndBuffer(handle, buffer, io_size, flags))
-        .WillOnce(Return(file_buffer_pair{mfile, mbuffer}));
+    EXPECT_CALL(mds, getFileAndBuffer(handle, buffer)).WillOnce(Return(file_buffer_pair{mfile, mbuffer}));
     EXPECT_CALL(mds, getBackends).WillOnce(Return(backends));
 
     switch (io_type) {
@@ -264,8 +256,7 @@ TEST_P(HipFileIoBackendSelectionParam, HipFileIoThrowsIfAllBackendsRejectTheIO)
 {
     std::vector<std::shared_ptr<Backend>> backends{mbe1, mbe2, mbe3};
 
-    EXPECT_CALL(mds, getFileAndBuffer(handle, buffer, io_size, flags))
-        .WillOnce(Return(file_buffer_pair{mfile, mbuffer}));
+    EXPECT_CALL(mds, getFileAndBuffer(handle, buffer)).WillOnce(Return(file_buffer_pair{mfile, mbuffer}));
     EXPECT_CALL(mds, getBackends).WillOnce(Return(backends));
     EXPECT_CALL(*mbe1, score(Eq(mfile), Eq(mbuffer), io_size, file_offset, buffer_offset))
         .WillOnce(Return(-1));
@@ -292,8 +283,7 @@ TEST_P(HipFileIoBackendSelectionParam, HipFileIoIssuesIoToHighestScoringBackend)
 {
     std::vector<std::shared_ptr<Backend>> backends{mbe1, mbe2, mbe3};
 
-    EXPECT_CALL(mds, getFileAndBuffer(handle, buffer, io_size, flags))
-        .WillOnce(Return(file_buffer_pair{mfile, mbuffer}));
+    EXPECT_CALL(mds, getFileAndBuffer(handle, buffer)).WillOnce(Return(file_buffer_pair{mfile, mbuffer}));
     EXPECT_CALL(mds, getBackends).WillOnce(Return(backends));
     EXPECT_CALL(*mbe1, score(Eq(mfile), Eq(mbuffer), io_size, file_offset, buffer_offset))
         .WillOnce(Return(0));

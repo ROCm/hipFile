@@ -60,6 +60,24 @@ Buffer::Buffer(const void *_buffer, size_t _length, int _flags, const PassKey<Bu
     }
 }
 
+Buffer::Buffer(const void *_buffer, const PassKey<BufferMap> &)
+    : buffer{const_cast<void *>(_buffer)}, length{}, flags{}
+{
+    if (!buffer) {
+        throw std::invalid_argument("Buffer pointer cannot be null.");
+    }
+
+    hipPointerAttribute_t _attrs = Context<Hip>::get()->hipPointerGetAttributes(buffer);
+    if (_attrs.type != hipMemoryTypeDevice) {
+        throw InvalidMemoryType();
+    }
+    type   = _attrs.type;
+    gpu_id = _attrs.device;
+
+    HipMemAddressRange range{Context<Hip>::get()->hipMemGetAddressRange(buffer)};
+    length = range.size - (reinterpret_cast<uintptr_t>(buffer) - reinterpret_cast<uintptr_t>(range.base));
+}
+
 void *
 Buffer::getBuffer() const
 {
@@ -117,7 +135,7 @@ BufferMap::deregisterBuffer(const void *buf)
 }
 
 shared_ptr<IBuffer>
-BufferMap::getBuffer(const void *buf)
+BufferMap::getRegisteredBuffer(const void *buf)
 {
     auto itr = from_ptr.find(buf);
     if (from_ptr.end() == itr) {
@@ -128,21 +146,15 @@ BufferMap::getBuffer(const void *buf)
 }
 
 shared_ptr<IBuffer>
-BufferMap::getBuffer(const void *buf, size_t length, int flags)
+BufferMap::getBuffer(const void *buf)
 {
     auto itr = from_ptr.find(buf);
 
     if (from_ptr.end() == itr) {
-        // If the buffer hasn't been registered, use an unregistered
-        // temporary Buffer object
-        return std::shared_ptr<IBuffer>(new Buffer(buf, length, flags, PassKey<BufferMap>{}));
+        // Create a temporary buffer
+        return std::shared_ptr<IBuffer>(new Buffer(buf, PassKey<BufferMap>{}));
     }
     else {
-        // If we found a registered buffer, it's an error if the
-        // length parameter doesn't match what we found
-        if (itr->second->getLength() < length) {
-            throw std::invalid_argument("bad length parameter");
-        }
         return itr->second;
     }
 }

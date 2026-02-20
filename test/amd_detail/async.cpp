@@ -380,20 +380,6 @@ TEST_P(HipFileReadWriteAsync, unregisteredFileReturnsError)
               HipFileOpError(hipFileHandleNotRegistered));
 }
 
-TEST_P(HipFileReadWriteAsync, registeredBufferLengthTooLongReturnsError)
-{
-    size_t bufferLength = 100;
-    expect_buffer_registration(mhip, hipMemoryTypeDevice);
-    Context<DriverState>::get()->registerBuffer(nonnull_void, bufferLength, 0);
-    bufferLength++;
-    EXPECT_CALL(msys, statx);
-    EXPECT_CALL(msys, fcntl);
-    EXPECT_CALL(msys, open);
-    ASSERT_EQ(io_op(Context<DriverState>::get()->registerFile(0), nonnull_void, &bufferLength, nonnull_offset,
-                    nonnull_offset, nonnull_ssize, nonnull_stream),
-              HipFileOpError(hipFileInvalidValue));
-}
-
 TEST_P(HipFileReadWriteAsync, badAllocReturnsHipErrorOutOfMemory)
 {
     MDriverState driver;
