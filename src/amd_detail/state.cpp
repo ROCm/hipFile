@@ -94,7 +94,7 @@ DriverState::deregisterBuffer(const void *buf)
 shared_ptr<IBuffer>
 DriverState::getRegisteredBuffer(const void *buf)
 {
-    unique_lock<shared_mutex> ulock{state_mutex};
+    shared_lock<shared_mutex> slock{state_mutex};
 
     if (ref_count == 0) {
         throw DriverNotInitialized();
