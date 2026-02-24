@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-
+# pylint: disable=invalid-name
 """
 Check if the necessary AMD Infinity Storage (AIS) components are installed
 
@@ -7,11 +7,12 @@ If all necessary components are installed the program exits with exit code 0.
 If components are missing the program exits with a non-zero exit code.
 """
 
+# pylint: enable=invalid-name
+
 import argparse
 import ctypes
 import ctypes.util
 import sys
-
 
 def hip_runtime_supports_ais():
     """
