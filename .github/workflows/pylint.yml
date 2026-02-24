@@ -34,5 +34,5 @@ jobs:
           echo "$FILES"
           for f in $FILES
           do
-            python -m pylint $f
+            python -m pylint "$f"
           done
