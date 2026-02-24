@@ -5,6 +5,7 @@ on:
     paths:
       - '**.cmake'
       - '**/CMakeLists.txt'
+      - '.github/workflows/cmakelint.yml'
 permissions:
   contents: read
 jobs:
