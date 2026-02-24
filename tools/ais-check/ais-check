@@ -98,7 +98,7 @@ def amdgpu_supports_ais():
     return False
 
 
-def main(args):
+def main():
     """
     Parse command-line arguments, check AIS support in HIP Runtime and
     amdgpu, optionally print the results, and return an exit code indicating
@@ -125,4 +125,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+    sys.exit(main())
