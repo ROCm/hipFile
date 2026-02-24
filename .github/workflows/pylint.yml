@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - '**.py'
-      - 'ais-check'
+      - '**/ais-check'
 permissions:
   contents: read
 jobs:
