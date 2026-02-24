@@ -5,6 +5,7 @@ on:
     paths:
       - '**.py'
       - '**/ais-check'
+      - '.github/workflows/pylint.yml'
 permissions:
   contents: read
 jobs:
