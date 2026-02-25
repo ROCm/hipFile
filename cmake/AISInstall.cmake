@@ -107,6 +107,20 @@ set(CPACK_PACKAGE_RELOCATABLE OFF)
 set(CPACK_RPM_PACKAGE_RELOCATABLE OFF)
 set(CPACK_DEB_PACKAGE_RELOCATABLE OFF)
 
+# Some RPMs set dependencies on a library automatically instead
+# of a manually defined package name via the AutoRequires &
+# AutoProvides RPM features.
+# ROCmCreatePackage however disables AUTOREQPROV by default.
+# The RPM spec does not clearly state how setting AUTOREPROV &
+# AUTOREQ / AUTOPREV to different values behaves. On observation,
+# AUTOREQPROV supersedes the others and continues the build.
+# Ref: https://ftp.rpm.org/max-rpm/s1-rpm-specref-preamble.html#S3-RPM-SPECREF-AUTOREQPROV
+set(CPACK_RPM_PACKAGE_AUTOREQPROV "") # Forcibly 'unset' this variable and don't let ROCmCreatePackage set it.
+set(CPACK_RPM_PACKAGE_AUTOPROV ON)
+set(CPACK_RPM_PACKAGE_AUTOREQ OFF)
+# Alternatively, we could set CPACK_RPM_PACKAGE_PROVIDES,
+# but then we would have to maintain it...
+
 # Set DEB/RPM Release Information
 # rocm_create_package checks if following variables are defined in the environment:
 #   - CPACK_DEBIAN_PACKAGE_RELEASE
