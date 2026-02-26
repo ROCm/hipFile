@@ -112,10 +112,10 @@ set(CPACK_DEB_PACKAGE_RELOCATABLE OFF)
 # AutoProvides RPM features.
 # ROCmCreatePackage however disables AUTOREQPROV by default.
 # The RPM spec does not clearly state how setting AUTOREPROV &
-# AUTOREQ / AUTOPREV to different values behaves. On observation,
+# AUTOREQ / AUTOPROV to different values behaves. On observation,
 # AUTOREQPROV supersedes the others and continues the build.
 # Ref: https://ftp.rpm.org/max-rpm/s1-rpm-specref-preamble.html#S3-RPM-SPECREF-AUTOREQPROV
-set(CPACK_RPM_PACKAGE_AUTOREQPROV "") # Forcibly 'unset' this variable and don't let ROCmCreatePackage set it.
+set(CPACK_RPM_PACKAGE_AUTOREQPROV "") # Intentionally set to an empty value so ROCmCreatePackage treats it as defined and does not override it.
 set(CPACK_RPM_PACKAGE_AUTOPROV ON)
 set(CPACK_RPM_PACKAGE_AUTOREQ OFF)
 # Alternatively, we could set CPACK_RPM_PACKAGE_PROVIDES,

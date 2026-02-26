@@ -215,12 +215,6 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
         with:
           path: hipFile
-      - name: Fetching fio repository...
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
-        with:
-          repository: ROCm/fio
-          ref: hipFile
-          path: fio
       - name: Download hipFile runtime package
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 #v7.0.0
         with:
@@ -245,7 +239,7 @@ jobs:
                 ),
                 inputs.platform == 'suse', needs.build_FIO.outputs.fio_pkg_suse_artifact_id,
                 inputs.platform == 'ubuntu', needs.build_FIO.outputs.fio_pkg_debian_artifact_id,
-                'unknown-platform-declared'
+                format('Platform "{0}" is not supported by build_FIO.', inputs.platform)
               )
             }}
           merge-multiple: true
@@ -271,15 +265,6 @@ jobs:
       - name: Create hipfile IO test directory
         run: |
           docker exec -t "${AIS_CONTAINER_NAME}" /bin/bash -c "mkdir -p /mnt/ais-fs/${AIS_CONTAINER_NAME}"
-      - name: Make copy of the code repository and create build directories
-        run: |
-          docker exec \
-            -t \
-            "${AIS_CONTAINER_NAME}" \
-            /bin/bash -c '
-              cp -R /mnt/ais /ais
-              mkdir /ais/fio/build
-            '
       - name: Copy the hipFile packages into the container
         run: |
           docker cp \
@@ -387,7 +372,7 @@ jobs:
             /bin/bash -c '
               HIPFILE_FORCE_COMPAT_MODE=true \
                 fio \
-                /ais/hipFile/util/fio/write-read-verify.fio
+                /mnt/ais/hipFile/util/fio/write-read-verify.fio
             '
       - name: hipFile AIS IO test using fio
         run: |
@@ -398,7 +383,7 @@ jobs:
             /bin/bash -c '
               HIPFILE_ALLOW_COMPAT_MODE=false \
                 fio \
-                /ais/hipFile/util/fio/write-read-verify.fio
+                /mnt/ais/hipFile/util/fio/write-read-verify.fio
             '
       - name: Destroy hipfile IO test directory
         if: ${{ always() }}
