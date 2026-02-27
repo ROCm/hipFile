@@ -81,7 +81,7 @@ If CMake can't find hipcc/nvcc, you can set `-DCMAKE_HIP_COMPILER=<path>`
 
 Supported platforms: Linux (Windows may be supported in a future release)
 
-Supported filesystems: Only ext4 is supported at this time
+Supported filesystems: Only ext4 and xfs are supported at this time
 
 Targeting NVIDIA requires cuFile to be installed
 
@@ -95,8 +95,12 @@ sudo systemctl reboot
 
 ### Prerequisites
 
-> [!NOTE]
-> hipFile relies on the unreleased [ROCm 7.2](https://github.com/ROCm/TheRock) libraries and associated [amdgpu](https://github.com/ROCm/amdgpu) drivers. We will update the install instructions when these are released.
+* CMake >= 3.21
+* C++ >= 17 (tested w/ clang++ & g++, we don't use GNU extensions)
+* ROCm >= 7.2
+* amdgpu >= 30.10.1
+* Boost
+* libmount
 
 ### Configure
 
