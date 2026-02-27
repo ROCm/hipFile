@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hipfile"
+version = "0.1.0"
+description = "Python bindings for AMD hipFile – GPU-direct storage on ROCm"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.8"
+keywords = ["amd", "rocm", "hip", "gpu", "storage", "io", "gpudirect"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: System :: Hardware",
+]
+
+# Runtime: pure ctypes, no mandatory third-party deps
+dependencies = []
+
+[project.optional-dependencies]
+# Install AMD ROCm Python packages if available
+rocm = [
+    "amdsmi",
+]
+# PyTorch integration
+torch = [
+    "torch",
+]
+dev = [
+    "pytest",
+    "pytest-cov",
+]
+
+[project.urls]
+Homepage    = "https://github.com/ROCm/hipFile"
+"Bug Reports" = "https://github.com/ROCm/hipFile/issues"
+"Bindings Issue" = "https://github.com/ROCm/hipFile/issues/201"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["hipfile*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
