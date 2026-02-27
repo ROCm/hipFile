@@ -35,6 +35,6 @@ jobs:
           echo "$FILES"
           for f in $FILES
           do
-            python -m black --check "$f"
+            python -m black --check --diff "$f"
             python -m pylint "$f"
           done
