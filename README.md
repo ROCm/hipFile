@@ -20,7 +20,7 @@ See [INSTALL.md](INSTALL.md) in the project root for a list of supported hardwar
 The develop branch of [ROCm/HIPIFY](https://github.com/ROCm/HIPIFY) now has
 support for hipFile. The hipFile changes are not yet in a public release.
 
-A cuFile --> hipFile API map can be found [here](docs/cuFile_API_supported_by_HIP.md)
+A cuFile --> hipFile API map can be found [here](https://github.com/ROCm/HIPIFY/blob/amd-develop/docs/reference/tables/cuFile_API_supported_by_HIP.md)
 
 ### fio support
 
