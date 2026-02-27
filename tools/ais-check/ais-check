@@ -14,6 +14,7 @@ import ctypes
 import ctypes.util
 import sys
 
+
 def hip_runtime_supports_ais():
     """
     Check if hipAmdFileRead and hipAmdFileWrite are available in HIP
