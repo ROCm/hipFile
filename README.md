@@ -17,10 +17,8 @@ See [INSTALL.md](INSTALL.md) in the project root for a list of supported hardwar
 
 ### hipify support
 
-We've created a fork of [ROCm/HIPIFY](https://github.com/ROCm/HIPIFY) at
-[derobins/HIPIFY](https://github.com/derobins/HIPIFY). Changes to support
-hipFile can be found in the `hipFile` branch. Please note that this branch
-is a work in progress and may not be fully functional.
+The develop branch of [ROCm/HIPIFY](https://github.com/ROCm/HIPIFY) now has
+support for hipFile. The hipFile changes are not yet in a public release.
 
 A cuFile --> hipFile API map can be found [here](docs/cuFile_API_supported_by_HIP.md)
 
@@ -28,5 +26,5 @@ A cuFile --> hipFile API map can be found [here](docs/cuFile_API_supported_by_HI
 
 We've created a fork of [axboe/fio](https://github.com/axboe/fio) at
 [ROCm/fio](https://github.com/ROCm/fio). Changes to support a
-libhipfile engine can be found in the `hipFile` branch. Please note
-that this fork is a work in progress and may not be fully functional.
+libhipfile engine can be found in the `hipFile` branch. We package
+unofficial releases of this branch [here](https://github.com/ROCm/fio/releases).
