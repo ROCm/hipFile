@@ -460,7 +460,7 @@ typedef void *hipFileHandle_t;
  * @param [out] fh    Opaque file handle for GPU IO operations
  * @param [in]  descr Parameters for opening the file
  *
- * @return hipFileError_t describing the result of the operation
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileDriverNotInitialized
  * @return hipFileIONotSupported
@@ -495,7 +495,7 @@ void hipFileHandleDeregister(hipFileHandle_t fh);
  * @param [in] length      Size of the allocated buffer in bytes
  * @param [in] flags       Control flags for this buffer
  *
- * @return hipFileError_t describing the result of the operation
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileDriverError
  * @return hipFileHipDriverError
@@ -516,6 +516,7 @@ hipFileError_t hipFileBufRegister(const void *buffer_base, size_t length, int fl
  *
  * @param [in] buffer_base Base address of the GPU buffer
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileInvalidValue
  * @return hipFileMemoryNotRegistered
@@ -582,6 +583,7 @@ ssize_t hipFileWrite(hipFileHandle_t fh, const void *buffer_base, size_t size, h
  * `hipFileBufRegister()` or `hipFileHandleRegister()` will trigger
  * library initialization and increment the library's reference count.
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileDriverNotInitialized
  * @return hipFileDriverVersionMismatch
@@ -604,6 +606,7 @@ hipFileError_t hipFileDriverOpen(void);
  * Explicitly closing the library is not required; the library's state will be
  * destroyed automatically at program exit.
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileDriverClosing
  * @return hipFileDriverNotInitialized
@@ -629,6 +632,7 @@ int64_t hipFileUseCount(void);
  *
  * @param [out] props See `hipFileDriverProps_t` for what properties are reported
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileDriverNotInitialized
  * @return hipFileDriverVersionMismatch
@@ -647,6 +651,7 @@ hipFileError_t hipFileDriverGetProperties(hipFileDriverProps_t *props);
  * @param [in] poll_threshold_size Maximum IO size (in KiB) for which polling is
  *                                 used when enabled
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileDriverNotInitialized
  * @return hipFileDriverUnsupportedLimit
@@ -663,6 +668,7 @@ hipFileError_t hipFileDriverSetPollMode(bool poll, size_t poll_threshold_size);
  *
  * @param [in] max_direct_io_size Maximum IO chunk size (in KiB) for each IO request
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileDriverNotInitialized
  * @return hipFileDriverUnsupportedLimit
@@ -679,6 +685,7 @@ hipFileError_t hipFileDriverSetMaxDirectIOSize(size_t max_direct_io_size);
  *
  * @param [in] max_cache_size Maximum GPU memory (in KiB) that can be reserved for bounce buffers
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileDriverNotInitialized
  * @return hipFileDriverUnsupportedLimit
@@ -695,6 +702,7 @@ hipFileError_t hipFileDriverSetMaxCacheSize(size_t max_cache_size);
  *
  * @param [in] max_pinned_size Maximum GPU memory (in KiB) that can be pinned
  *
+ * @return \hipFileError_t
  * @return hipSuccess
  * @return hipFileDriverNotInitialized
  * @return hipFileDriverUnsupportedLimit
@@ -780,6 +788,7 @@ typedef void *hipFileBatchHandle_t;
  * @param [out] batch_idp Opaque handle for batch operations
  * @param [in] max_nr     Maximum number of requests that can be submitted to this batch handle
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileInternalError
  */
@@ -797,6 +806,7 @@ hipFileError_t hipFileBatchIOSetUp(hipFileBatchHandle_t *batch_idp, unsigned max
  *                               each request.
  * @param [in]     flags Control Flags for the batch IO. Currently unused.
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileInternalError
  */
@@ -817,6 +827,7 @@ hipFileError_t hipFileBatchIOSubmit(hipFileBatchHandle_t batch_idp, unsigned nr,
  * @param [out] iocbp An array containing up to `nr` statuses from the overall batch operation
  * @param [in] timeout Maximum amount of time this function should poll for status updates
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileInvalidValue
  */
@@ -830,6 +841,7 @@ hipFileError_t hipFileBatchIOGetStatus(hipFileBatchHandle_t batch_idp, unsigned 
  *
  * @param [in] batch_idp Opaque handle for batch operations
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileInvalidValue
  */
@@ -886,6 +898,7 @@ void hipFileBatchIODestroy(hipFileBatchHandle_t batch_idp);
  * @param [in]  stream          The hipStream to enqueue this async IO request.
  *                              If NULL, this request will be synchronous.
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileDriverError
  * @return hipFileHipDriverError
@@ -908,6 +921,7 @@ hipFileError_t hipFileReadAsync(hipFileHandle_t fh, void *buffer_base, size_t *s
  * @param [in]  stream          The hipStream to enqueue this async IO request.
  *                              If NULL, this request will be synchronous.
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileDriverError
  * @return hipFileHipDriverError
@@ -925,6 +939,7 @@ hipFileError_t hipFileWriteAsync(hipFileHandle_t fh, void *buffer_base, size_t *
  * @param [in] flags Flags that can optimize stream processing if parameters
  *                   are known/are aligned at time of request submission
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFilePlatformNotSupported
  * @return hipFileDriverError
@@ -939,6 +954,7 @@ hipFileError_t hipFileStreamRegister(hipStream_t stream, unsigned flags);
  *
  * @param [in] stream The stream used for async IO requests
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFilePlatformNotSupported
  * @return hipFileInvalidValue
@@ -960,6 +976,7 @@ hipFileError_t hipFileStreamDeregister(hipStream_t stream);
  *
  * @note Parameters can be set to NULL to ignore that part of the version
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  */
 HIPFILE_API
@@ -1024,6 +1041,7 @@ typedef enum hipFileStringConfigParameter_t {
  * @param param The configuration parameter
  * @param value The location to store the value of the configuration parameter
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileInvalidValue If param is invalid
  *
@@ -1040,6 +1058,7 @@ hipFileError_t hipFileGetParameterSizeT(hipFileSizeTConfigParameter_t param, siz
  * @param param The configuration parameter
  * @param value The location to store the value of the configuration parameter
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileInvalidValue If param is invalid
  *
@@ -1057,6 +1076,7 @@ hipFileError_t hipFileGetParameterBool(hipFileBoolConfigParameter_t param, bool 
  * @param desc_str The location to store the value of the configuration parameter
  * @param len      The length of the desc_str parameter
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileInvalidValue If param is invalid
  *
@@ -1073,6 +1093,7 @@ hipFileError_t hipFileGetParameterString(hipFileStringConfigParameter_t param, c
  * @param param The configuration parameter
  * @param value The value of the configuration parameter
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileInvalidValue If param is invalid
  * @return hipFileDriverAlreadyOpen If the driver is currently open
@@ -1090,6 +1111,7 @@ hipFileError_t hipFileSetParameterSizeT(hipFileSizeTConfigParameter_t param, siz
  * @param param The configuration parameter
  * @param value The value of the configuration parameter
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileInvalidValue If param is invalid
  * @return hipFileDriverAlreadyOpen If the driver is currently open
@@ -1107,6 +1129,7 @@ hipFileError_t hipFileSetParameterBool(hipFileBoolConfigParameter_t param, bool 
  * @param param    The configuration parameter
  * @param desc_str The value of the configuration parameter
  *
+ * @return \hipFileError_t
  * @return hipFileSuccess
  * @return hipFileInvalidValue If param is invalid
  * @return hipFileDriverAlreadyOpen If the driver is currently open
