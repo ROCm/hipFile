@@ -282,7 +282,7 @@ jobs:
             ${GITHUB_WORKSPACE}
       - name: Upload development hipFile Package as an Artifact
         if: ${{ inputs.upload_artifacts }}
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7.0.0
         with:
           name: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_DEV_FILENAME }}
           path: ${{ format('{0}/{1}', github.workspace, steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_DEV_FILENAME) }}
@@ -291,7 +291,7 @@ jobs:
           compression-level: 0
       - name: Upload runtime hipFile Package as an Artifact
         if: ${{ inputs.upload_artifacts }}
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7.0.0
         with:
           name: ${{ steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_FILENAME }}
           path: ${{ format('{0}/{1}', github.workspace, steps.pkg-metadata.outputs.AIS_HIPFILE_PKG_FILENAME) }}
@@ -310,7 +310,7 @@ jobs:
             ${GITHUB_WORKSPACE}/hipfile-build-dir
       - name: Upload runtime hipFile Package as an Artifact
         if: ${{ inputs.upload_artifacts }}
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7.0.0
         with:
           name: hipfile-build-dir-${{ inputs.platform }}
           path: ${{ github.workspace }}/hipfile-build-dir
