@@ -40,7 +40,7 @@ if(AIS_INSTALL_EXAMPLES)
 
     # aiscp
     configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/examples/aiscp/CMakeLists.install.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/examples/aiscp/CMakeLists.install.cmake"
         "examples/aiscp/CMakeLists.txt"
     )
     install(FILES
