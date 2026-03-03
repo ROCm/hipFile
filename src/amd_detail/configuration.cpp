@@ -11,7 +11,7 @@
 
 using namespace hipFile;
 
-Configuration::Configuration() : m_fastpath(true), m_fallback(true)
+Configuration::Configuration() : m_fastpath(true), m_fallback(true), m_statsLevel(0)
 {
     auto maybe_env_force_compat{Environment::force_compat_mode()};
     if (maybe_env_force_compat && maybe_env_force_compat.value()) {
@@ -23,6 +23,11 @@ Configuration::Configuration() : m_fastpath(true), m_fallback(true)
     auto maybe_env_allow_compat{Environment::allow_compat_mode()};
     if (maybe_env_allow_compat && !maybe_env_allow_compat.value()) {
         m_fallback = false;
+    }
+
+    auto maybe_stats_level{Environment::stats_level()};
+    if (maybe_stats_level) {
+        m_statsLevel = maybe_stats_level.value();
     }
 }
 
@@ -36,4 +41,10 @@ bool
 Configuration::fallback() const noexcept
 {
     return m_fallback;
+}
+
+unsigned int
+Configuration::statsLevel() const noexcept
+{
+    return m_statsLevel;
 }

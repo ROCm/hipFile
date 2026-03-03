@@ -27,6 +27,7 @@ struct ConfigurationExpectationBuilder {
     StrictMock<MHip>           &m_mhip;
     std::optional<const char *> m_env_force_compat_mode;
     std::optional<const char *> m_env_allow_compat_mode;
+    std::optional<const char *> m_env_stats_level;
     void                       *m_hip_amd_file_read{reinterpret_cast<void *>(0xDEADBEEF)};
     void                       *m_hip_amd_file_write{reinterpret_cast<void *>(0x0BADF00D)};
 
@@ -44,6 +45,12 @@ struct ConfigurationExpectationBuilder {
     ConfigurationExpectationBuilder &env_allow_compat_mode(const char *value)
     {
         m_env_allow_compat_mode = value;
+        return *this;
+    }
+
+    ConfigurationExpectationBuilder &env_stats_level(const char *value)
+    {
+        m_env_stats_level = value;
         return *this;
     }
 
@@ -79,6 +86,14 @@ struct ConfigurationExpectation {
         }
         else {
             EXPECT_CALL(builder.m_msys, getenv(StrEq(hipFile::Environment::ALLOW_COMPAT_MODE)));
+        }
+
+        if (builder.m_env_stats_level) {
+            EXPECT_CALL(builder.m_msys, getenv(StrEq(hipFile::Environment::STATS_LEVEL)))
+                .WillOnce(Return(const_cast<char *>(builder.m_env_stats_level.value())));
+        }
+        else {
+            EXPECT_CALL(builder.m_msys, getenv(StrEq(hipFile::Environment::STATS_LEVEL)));
         }
 
         EXPECT_CALL(builder.m_mhip, hipRuntimeGetVersion).Times(2);
@@ -146,6 +161,18 @@ TEST_F(HipFileConfiguration, FallbackDisabledIfAllowCompatModeEnvironmentVariabl
 {
     ConfigurationExpectationBuilder{msys, mhip}.env_allow_compat_mode("false").build();
     ASSERT_FALSE(Configuration().fallback());
+}
+
+TEST_F(HipFileConfiguration, StatsLevelEnvironmentVariableIsNotSetOrInvalid)
+{
+    ConfigurationExpectationBuilder{msys, mhip}.build();
+    ASSERT_EQ(0, Configuration().statsLevel());
+}
+
+TEST_F(HipFileConfiguration, StatsLevelEnvironmentVariableIsSet)
+{
+    ConfigurationExpectationBuilder{msys, mhip}.env_stats_level("1").build();
+    ASSERT_EQ(1, Configuration().statsLevel());
 }
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON
