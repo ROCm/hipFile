@@ -198,7 +198,7 @@ jobs:
           shopt -s dotglob
           rm -rf ${GITHUB_WORKSPACE}/*
   build_FIO:
-    uses: ROCm/fio/.github/workflows/build-fio.yml@rildixon/ci-hook-for-hipfile
+    uses: ROCm/fio/.github/workflows/build-fio.yml@hipFile
     with:
       ais_hipfile_pkg_filename: ${{ inputs.ais_hipfile_pkg_filename }}
       ais_hipfile_pkg_dev_filename: ${{ inputs.ais_hipfile_pkg_dev_filename }}
