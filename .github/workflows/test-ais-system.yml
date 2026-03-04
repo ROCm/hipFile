@@ -206,6 +206,23 @@ jobs:
   run_FIO_tests:
     runs-on: [linux, AIS]
     needs: [build_FIO]
+    env:
+      FIO_RUNTIME_PKG_FILENAME: >-
+        ${{
+          case(
+            inputs.platform == 'rocky', needs.build_FIO.outputs.fio_pkg_fedora_filename,
+            inputs.platform == 'suse', needs.build_FIO.outputs.fio_pkg_suse_filename,
+            inputs.platform == 'ubuntu', needs.build_FIO.outputs.fio_pkg_debian_filename,
+            ''
+          )
+        }}
+      FIO_HIPFILE_ENGINE_PKG_FILENAME: >-
+        ${{
+          case(
+            inputs.platform == 'rocky', needs.build_FIO.outputs.fio_pkg_fedora_hipfile_engine_filename,
+            ''
+          )
+        }}
     steps:
       - name: Set early AIS CI environment variables
         run: echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "${GITHUB_ENV}"
@@ -218,17 +235,17 @@ jobs:
         with:
           path: hipFile
       - name: Download hipFile runtime package
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 #v7.0.0
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 #v8.0.0
         with:
           name: ${{ inputs.ais_hipfile_pkg_filename }}
       - name: Download hipFile development package
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 #v7.0.0
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 #v8.0.0
         with:
           name: ${{ inputs.ais_hipfile_pkg_dev_filename }}
       - name: Download FIO runtime package
         # Fedora-based distro's need to download multiple packages as the FIO IO engines
         # are dynamically linked instead of built into the FIO executable.
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 #v7.0.0
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 #v8.0.0
         with:
           artifact-ids: >-
             ${{
@@ -297,23 +314,6 @@ jobs:
               ldconfig
             '
       - name: Copy the FIO packages into the container
-        env:
-          FIO_RUNTIME_PKG_FILENAME: >-
-            ${{
-              case(
-                inputs.platform == 'rocky', needs.build_FIO.outputs.fio_pkg_fedora_filename,
-                inputs.platform == 'suse', needs.build_FIO.outputs.fio_pkg_suse_filename,
-                inputs.platform == 'ubuntu', needs.build_FIO.outputs.fio_pkg_debian_filename,
-                ''
-              )
-            }}
-          FIO_HIPFILE_ENGINE_PKG_FILENAME: >-
-            ${{
-              case(
-                inputs.platform == 'rocky', needs.build_FIO.outputs.fio_pkg_fedora_hipfile_engine_filename,
-                ''
-              )
-            }}
         run: |
           docker cp \
             "${GITHUB_WORKSPACE}/${FIO_RUNTIME_PKG_FILENAME}" \
@@ -329,30 +329,12 @@ jobs:
             )
           }}
       - name: Install the FIO packages
-        env:
-          FIO_RUNTIME_PKG_FILENAME: >-
-            ${{
-              case(
-                inputs.platform == 'rocky', needs.build_FIO.outputs.fio_pkg_fedora_filename,
-                inputs.platform == 'suse', needs.build_FIO.outputs.fio_pkg_suse_filename,
-                inputs.platform == 'ubuntu', needs.build_FIO.outputs.fio_pkg_debian_filename,
-                ''
-              )
-            }}
-          FIO_HIPFILE_ENGINE_PKG_FILENAME: >-
-            ${{
-              case(
-                inputs.platform == 'rocky', needs.build_FIO.outputs.fio_pkg_fedora_hipfile_engine_filename,
-                ''
-              )
-            }}
         run: |
           docker exec \
             -t \
             -w /root \
             "${AIS_CONTAINER_NAME}" \
             /bin/bash -c '
-              ls -al
               ${{
                 format(
                   '{0} {1}',
