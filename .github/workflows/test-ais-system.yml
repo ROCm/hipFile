@@ -194,7 +194,9 @@ jobs:
           docker stop "${AIS_CONTAINER_NAME}"
       - name: Cleanup self-hosted runner workspace
         if: ${{ always() }}
-        run: rm -rf ${GITHUB_WORKSPACE}/* ${GITHUB_WORKSPACE}/.[!.]* ${GITHUB_WORKSPACE}/..?*
+        run: |
+          shopt -s dotglob
+          rm -rf ${GITHUB_WORKSPACE}/*
   build_FIO:
     uses: ROCm/fio/.github/workflows/build-fio.yml@rildixon/ci-hook-for-hipfile
     with:
@@ -395,4 +397,6 @@ jobs:
           docker stop "${AIS_CONTAINER_NAME}"
       - name: Cleanup self-hosted runner workspace
         if: ${{ always() }}
-        run: rm -rf ${GITHUB_WORKSPACE}/* ${GITHUB_WORKSPACE}/.[!.]* ${GITHUB_WORKSPACE}/..?*
+        run: |
+          shopt -s dotglob
+          rm -rf ${GITHUB_WORKSPACE}/*
