@@ -7,24 +7,20 @@ include(FetchContent)
 # This line is used (or not) in FetchContent_Declare to determine
 # if we check for a system GoogleTest install first. When building
 # with the sanitizers, we HAVE to build GoogleTest from source.
-#
-# lint_cmake: -readability/wonkycase
 if(AIS_USE_SANITIZERS OR AIS_USE_INTEGER_SANITIZER OR AIS_USE_THREAD_SANITIZER)
-    FetchContent_Declare(
-      googletest
-      URL https://github.com/google/googletest/releases/download/v1.17.0/googletest-1.17.0.tar.gz
-      DOWNLOAD_EXTRACT_TIMESTAMP true
-      SYSTEM
-    )
+    set(AIS_LOCAL_GTEST_CHECK "")
 else()
-    FetchContent_Declare(
-      googletest
-      URL https://github.com/google/googletest/releases/download/v1.17.0/googletest-1.17.0.tar.gz
-      DOWNLOAD_EXTRACT_TIMESTAMP true
-      FIND_PACKAGE_ARGS NAMES GTest         # <-- Different
-      SYSTEM
-    )
+    set(AIS_LOCAL_GTEST_CHECK FIND_PACKAGE_ARGS NAMES GTest)
 endif()
+
+# lint_cmake: -readability/wonkycase
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/releases/download/v1.17.0/googletest-1.17.0.tar.gz
+  DOWNLOAD_EXTRACT_TIMESTAMP true
+  ${AIS_LOCAL_GTEST_CHECK}
+  SYSTEM
+)
 # lint_cmake: +readability/wonkycase
 
 set(INSTALL_GTEST OFF CACHE BOOL "Don't install GoogleTest")
