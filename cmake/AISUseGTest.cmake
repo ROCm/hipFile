@@ -4,25 +4,36 @@
 
 include(FetchContent)
 
+# This line is used (or not) in FetchContent_Declare to determine
+# if we check for a system GoogleTest install first. When building
+# with the sanitizers, we HAVE to build GoogleTest from source.
+if(AIS_USE_SANITIZERS OR AIS_USE_INTEGER_SANITIZER OR AIS_USE_THREAD_SANITIZER)
+    set(AIS_LOCAL_GTEST_CHECK "")
+else()
+    set(AIS_LOCAL_GTEST_CHECK FIND_PACKAGE_ARGS NAMES GTest)
+endif()
+
 # lint_cmake: -readability/wonkycase
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/releases/download/v1.17.0/googletest-1.17.0.tar.gz
   DOWNLOAD_EXTRACT_TIMESTAMP true
-  FIND_PACKAGE_ARGS NAMES GTest
+  ${AIS_LOCAL_GTEST_CHECK}
   SYSTEM
 )
+# lint_cmake: +readability/wonkycase
 
-set(INSTALL_GTEST OFF CACHE BOOL "Don't install gtest.")
-set(GTEST_HAS_ABSL OFF CACHE BOOL "Don't use abseil for GTest.")
+set(INSTALL_GTEST OFF CACHE BOOL "Don't install GoogleTest")
+set(GTEST_HAS_ABSL OFF CACHE BOOL "Don't use Abseil for GoogleTest")
 
+# lint_cmake: -readability/wonkycase
 FetchContent_MakeAvailable(googletest)
 # lint_cmake: +readability/wonkycase
 
-if(rocm-cmake_SOURCE_DIR)
-    message(STATUS "Using fetched googletest.")
+if(googletest_SOURCE_DIR)
+    message(STATUS "Using fetched GoogleTest")
 else()
-    message(STATUS "Using system googletest.")
+    message(STATUS "Using system GoogleTest")
 endif()
 
 include(GoogleTest)
