@@ -283,7 +283,12 @@ TAB_SIZE               = 4
 # with the commands \{ and \} for these it is advised to use the version @{ and
 # @} or use a double escape (\\{ and \\})
 
-ALIASES = hipFileError_t="A hipFileError_t struct that holds both hipFile and HIP error values"
+ALIASES =  hipfile_error_return="A hipFileError_t struct that holds both hipFile and HIP error values"
+ALIASES += hipfile_handle_param="Opaque file handle for GPU IO operations"
+ALIASES += buffer_base_param="Base address of the GPU buffer"
+ALIASES += batch_handle_param="Opaque handle for batch operations"
+ALIASES += hipstream_param="The stream used for async IO requests"
+ALIASES += hipstream_if_null="If NULL, this request will be synchronous"
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For

@@ -457,10 +457,10 @@ typedef void *hipFileHandle_t;
  *       `hipFileHandleRegister()` will initialize the library and increment
  *       the reference count.
  *
- * @param [out] fh    Opaque file handle for GPU IO operations
+ * @param [out] fh    \hipfile_handle_param
  * @param [in]  descr Parameters for opening the file
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileHandleRegister(hipFileHandle_t *fh, hipFileDescr_t *descr);
@@ -469,7 +469,7 @@ hipFileError_t hipFileHandleRegister(hipFileHandle_t *fh, hipFileDescr_t *descr)
  * @brief Deregisters a file from GPU IO
  * @ingroup file
  *
- * @param [in] fh Opaque file handle for GPU IO operations
+ * @param [in] fh \hipfile_handle_param
  */
 HIPFILE_API
 void hipFileHandleDeregister(hipFileHandle_t fh);
@@ -484,11 +484,11 @@ void hipFileHandleDeregister(hipFileHandle_t fh);
  *       `hipFileBufRegister()` will initialize the library and increment
  *       the reference count.
  *
- * @param [in] buffer_base Base address of the GPU buffer
+ * @param [in] buffer_base \buffer_base_param
  * @param [in] length      Size of the allocated buffer in bytes
  * @param [in] flags       Control flags for this buffer
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileBufRegister(const void *buffer_base, size_t length, int flags);
@@ -497,9 +497,9 @@ hipFileError_t hipFileBufRegister(const void *buffer_base, size_t length, int fl
  * @brief Deregisters a GPU memory region from being used with GPU IO
  * @ingroup file
  *
- * @param [in] buffer_base Base address of the GPU buffer
+ * @param [in] buffer_base \buffer_base_param
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileBufDeregister(const void *buffer_base);
@@ -511,8 +511,8 @@ hipFileError_t hipFileBufDeregister(const void *buffer_base);
  * hipFileRead() will transfer at most 0x7ffff000 (2,147,479,552) bytes,
  * returning the number of bytes actually transferred.
  *
- * @param [in] fh            Opaque file handle for GPU IO operations
- * @param [in] buffer_base   Base address of the GPU buffer
+ * @param [in] fh            \hipfile_handle_param
+ * @param [in] buffer_base   \buffer_base_param
  * @param [in] size          Number of bytes that should be read
  * @param [in] file_offset   Offset into the file that should be read from
  * @param [in] buffer_offset Offset of the GPU buffer that that the data should be written to
@@ -532,8 +532,8 @@ ssize_t hipFileRead(hipFileHandle_t fh, void *buffer_base, size_t size, hoff_t f
  * hipFileWrite() will transfer at most 0x7ffff000 (2,147,479,552) bytes,
  * returning the number of bytes actually transferred.
  *
- * @param [in] fh            Opaque file handle for GPU IO operations
- * @param [in] buffer_base   Base address of the GPU buffer
+ * @param [in] fh            \hipfile_handle_param
+ * @param [in] buffer_base   \buffer_base_param
  * @param [in] size          Number of bytes that should be written
  * @param [in] file_offset   Offset into the file that should be written to
  * @param [in] buffer_offset Offset of the GPU buffer that the data should be read from
@@ -562,7 +562,7 @@ ssize_t hipFileWrite(hipFileHandle_t fh, const void *buffer_base, size_t size, h
  * `hipFileBufRegister()` or `hipFileHandleRegister()` will trigger
  * library initialization and increment the library's reference count.
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileDriverOpen(void);
@@ -578,7 +578,7 @@ hipFileError_t hipFileDriverOpen(void);
  * Explicitly closing the library is not required; the library's state will be
  * destroyed automatically at program exit.
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileDriverClose(void);
@@ -601,7 +601,7 @@ int64_t hipFileUseCount(void);
  *
  * @param [out] props See `hipFileDriverProps_t` for what properties are reported
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileDriverGetProperties(hipFileDriverProps_t *props);
@@ -616,7 +616,7 @@ hipFileError_t hipFileDriverGetProperties(hipFileDriverProps_t *props);
  * @param [in] poll_threshold_size Maximum IO size (in KiB) for which polling is
  *                                 used when enabled
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileDriverSetPollMode(bool poll, size_t poll_threshold_size);
@@ -629,7 +629,7 @@ hipFileError_t hipFileDriverSetPollMode(bool poll, size_t poll_threshold_size);
  *
  * @param [in] max_direct_io_size Maximum IO chunk size (in KiB) for each IO request
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileDriverSetMaxDirectIOSize(size_t max_direct_io_size);
@@ -642,7 +642,7 @@ hipFileError_t hipFileDriverSetMaxDirectIOSize(size_t max_direct_io_size);
  *
  * @param [in] max_cache_size Maximum GPU memory (in KiB) that can be reserved for bounce buffers
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileDriverSetMaxCacheSize(size_t max_cache_size);
@@ -655,7 +655,7 @@ hipFileError_t hipFileDriverSetMaxCacheSize(size_t max_cache_size);
  *
  * @param [in] max_pinned_size Maximum GPU memory (in KiB) that can be pinned
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileDriverSetMaxPinnedMemSize(size_t max_pinned_size);
@@ -734,10 +734,10 @@ typedef void *hipFileBatchHandle_t;
  * @brief Prepare the system to perform a batch IO operation
  * @ingroup batch
  *
- * @param [out] batch_idp Opaque handle for batch operations
+ * @param [out] batch_idp \batch_handle_param
  * @param [in] max_nr     Maximum number of requests that can be submitted to this batch handle
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileBatchIOSetUp(hipFileBatchHandle_t *batch_idp, unsigned max_nr);
@@ -746,14 +746,14 @@ hipFileError_t hipFileBatchIOSetUp(hipFileBatchHandle_t *batch_idp, unsigned max
  * @brief Enqueue a batch of IO requests for the GPU to complete asynchronously
  * @ingroup batch
  *
- * @param [in]     batch_idp     Opaque handle for batch operations
+ * @param [in]     batch_idp     \batch_handle_param
  * @param [in]     nr            Number of batch IO requests to submit
  * @param [in]     iocbp         An array of `nr` batch IO requests to submit to the GPU.
  *                               Data will be read into or written from the buffer specified in
  *                               each request.
  * @param [in]     flags Control Flags for the batch IO. Currently unused.
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileBatchIOSubmit(hipFileBatchHandle_t batch_idp, unsigned nr, hipFileIOParams_t *iocbp,
@@ -763,7 +763,7 @@ hipFileError_t hipFileBatchIOSubmit(hipFileBatchHandle_t batch_idp, unsigned nr,
  * @brief Poll for the status of completed batch IO operations
  * @ingroup batch
  *
- * @param [in] batch_idp Opaque handle for batch operations.
+ * @param [in] batch_idp \batch_handle_param
  * @param [in] min_nr Minimum number of batch operation statuses that should be returned.
  *                    If `timeout` is exceeded, fewer statuses may be returned.
  * @param [in,out] nr Maximum number of batch operation statuses that can be returned.
@@ -772,7 +772,7 @@ hipFileError_t hipFileBatchIOSubmit(hipFileBatchHandle_t batch_idp, unsigned nr,
  * @param [out] iocbp An array containing up to `nr` statuses from the overall batch operation
  * @param [in] timeout Maximum amount of time this function should poll for status updates
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileBatchIOGetStatus(hipFileBatchHandle_t batch_idp, unsigned min_nr, unsigned *nr,
@@ -782,9 +782,9 @@ hipFileError_t hipFileBatchIOGetStatus(hipFileBatchHandle_t batch_idp, unsigned 
  * @brief Cancels all pending batch IO operations
  * @ingroup batch
  *
- * @param [in] batch_idp Opaque handle for batch operations
+ * @param [in] batch_idp \batch_handle_param
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileBatchIOCancel(hipFileBatchHandle_t batch_idp);
@@ -793,7 +793,7 @@ hipFileError_t hipFileBatchIOCancel(hipFileBatchHandle_t batch_idp);
  * @brief Destroys the batch IO handle and frees the associated resources
  * @ingroup batch
  *
- * @param [in] batch_idp Opaque handle for batch operations
+ * @param [in] batch_idp \batch_handle_param
  */
 HIPFILE_API
 void hipFileBatchIODestroy(hipFileBatchHandle_t batch_idp);
@@ -830,16 +830,15 @@ void hipFileBatchIODestroy(hipFileBatchHandle_t batch_idp);
  * @brief Perform an asynchronous read from a stream
  * @ingroup async
  *
- * @param [in]  fh              Opaque file handle for GPU IO operations
- * @param [in]  buffer_base     Base address of the GPU buffer
+ * @param [in]  fh              \hipfile_handle_param
+ * @param [in]  buffer_base     \buffer_base_param
  * @param [in]  size_p          Number of bytes that should be read
  * @param [in]  file_offset_p   Offset into the file that should be read from
  * @param [in]  buffer_offset_p Offset of the GPU buffer that that the data should be written to
  * @param [out] bytes_read_p    Number of bytes read
- * @param [in]  stream          The hipStream to enqueue this async IO request.
- *                              If NULL, this request will be synchronous.
+ * @param [in]  stream          \hipstream_param. \hipstream_if_null.
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileReadAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
@@ -849,16 +848,15 @@ hipFileError_t hipFileReadAsync(hipFileHandle_t fh, void *buffer_base, size_t *s
  * @brief Perform an asynchronous write to a stream
  * @ingroup async
  *
- * @param [in]  fh              Opaque file handle for GPU IO operations
- * @param [in]  buffer_base     Base address of the GPU buffer
+ * @param [in]  fh              \hipfile_handle_param
+ * @param [in]  buffer_base     \buffer_base_param
  * @param [in]  size_p          Number of bytes that should be written
  * @param [in]  file_offset_p   Offset into the file that should be written to
  * @param [in]  buffer_offset_p Offset of the GPU buffer that that the data should be read from
  * @param [out] bytes_written_p Number of bytes written
- * @param [in]  stream          The hipStream to enqueue this async IO request.
- *                              If NULL, this request will be synchronous.
+ * @param [in]  stream          \hipstream_param. \hipstream_if_null.
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileWriteAsync(hipFileHandle_t fh, void *buffer_base, size_t *size_p, hoff_t *file_offset_p,
@@ -868,11 +866,11 @@ hipFileError_t hipFileWriteAsync(hipFileHandle_t fh, void *buffer_base, size_t *
  * @brief Register a stream to be used by for asynchronous GPU IO
  * @ingroup async
  *
- * @param [in] stream The stream used for for async IO requests
+ * @param [in] stream \hipstream_param
  * @param [in] flags Flags that can optimize stream processing if parameters
  *                   are known/are aligned at time of request submission
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileStreamRegister(hipStream_t stream, unsigned flags);
@@ -881,9 +879,9 @@ hipFileError_t hipFileStreamRegister(hipStream_t stream, unsigned flags);
  * @brief Deregister a stream and free the associated resources
  * @ingroup async
  *
- * @param [in] stream The stream used for async IO requests
+ * @param [in] stream \hipstream_param
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileStreamDeregister(hipStream_t stream);
@@ -902,7 +900,7 @@ hipFileError_t hipFileStreamDeregister(hipStream_t stream);
  *
  * @note Parameters can be set to NULL to ignore that part of the version
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  */
 HIPFILE_API
 hipFileError_t hipFileGetVersion(unsigned *major, unsigned *minor, unsigned *patch);
@@ -966,7 +964,7 @@ typedef enum hipFileStringConfigParameter_t {
  * @param param The configuration parameter
  * @param value The location to store the value of the configuration parameter
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  *
  * @note If the driver is open, the value returned is the value currently in use by the driver.
  * @note If the driver is closed, the value returned is the value that was last set by hipFileSetParameter*.
@@ -981,7 +979,7 @@ hipFileError_t hipFileGetParameterSizeT(hipFileSizeTConfigParameter_t param, siz
  * @param param The configuration parameter
  * @param value The location to store the value of the configuration parameter
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  *
  * @note If the driver is open, the value returned is the value currently in use by the driver.
  * @note If the driver is closed, the value returned is the value that was last set by hipFileSetParameter*.
@@ -997,7 +995,7 @@ hipFileError_t hipFileGetParameterBool(hipFileBoolConfigParameter_t param, bool 
  * @param desc_str The location to store the value of the configuration parameter
  * @param len      The length of the desc_str parameter
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  *
  * @note If the driver is open, the value returned is the value currently in use by the driver.
  * @note If the driver is closed, the value returned is the value that was last set by hipFileSetParameter*.
@@ -1012,7 +1010,7 @@ hipFileError_t hipFileGetParameterString(hipFileStringConfigParameter_t param, c
  * @param param The configuration parameter
  * @param value The value of the configuration parameter
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  *
  * @note Configuration parameter values may only be set when the driver is closed. Values are applied when the
  * driver is opened.
@@ -1027,7 +1025,7 @@ hipFileError_t hipFileSetParameterSizeT(hipFileSizeTConfigParameter_t param, siz
  * @param param The configuration parameter
  * @param value The value of the configuration parameter
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  *
  * @note Configuration parameter values may only be set when the driver is closed. Values are applied when the
  * driver is opened.
@@ -1042,7 +1040,7 @@ hipFileError_t hipFileSetParameterBool(hipFileBoolConfigParameter_t param, bool 
  * @param param    The configuration parameter
  * @param desc_str The value of the configuration parameter
  *
- * @return \hipFileError_t
+ * @return \hipfile_error_return
  *
  * @note Configuration parameter values may only be set when the driver is closed. Values are applied when the
  * driver is opened.
