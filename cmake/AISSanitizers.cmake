@@ -25,6 +25,7 @@ function(ais_add_sanitizers target)
         target_link_options(${target} PRIVATE -fsanitize=undefined)
 
         target_compile_options(${target} PRIVATE -fno-omit-frame-pointer)
+        target_link_options(${target} PRIVATE -fuse-ld=lld)
     endif()
 
     if(AIS_USE_THREAD_SANITIZER)
@@ -39,13 +40,17 @@ function(ais_add_sanitizers target)
     # wrapping a signed integer).
     if(AIS_USE_INTEGER_SANITIZER)
         if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-            set(integer_sanitize_flags
-                -fsanitize=integer
-                -fsanitize-minimal-runtime
-                -fno-sanitize-recover=integer
+            target_compile_options(${target} PRIVATE
+                $<$<COMPILE_LANGUAGE:CXX>:-fsanitize=integer,undefined>
+                $<$<COMPILE_LANGUAGE:CXX>:-fno-sanitize-recover=integer>
             )
-            target_compile_options(${target} PRIVATE ${integer_sanitize_flags})
-            target_link_options(${target} PRIVATE ${integer_sanitize_flags})
+            target_link_options(${target} PRIVATE
+                -Xarch_host -fsanitize=integer,undefined
+                -Xarch_host -fno-sanitize-recover=integer
+                -fuse-ld=lld
+                --rtlib=compiler-rt
+                --unwindlib=libgcc
+            )
         else()
             message(FATAL_ERROR "The integer sanitizer is only available on clang")
         endif()

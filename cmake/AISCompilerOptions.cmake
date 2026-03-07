@@ -6,6 +6,7 @@
 
 include(AISClangCompilerOptions)
 include(AISGNUCompilerOptions)
+include(AISSanitizers)
 
 function(ais_set_compiler_flags target)
     get_target_property(sources ${target} SOURCES)

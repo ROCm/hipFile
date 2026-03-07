@@ -22,14 +22,25 @@ namespace hipFile {
 static bool
 isValidBufferRegion(void *ptr, size_t length)
 {
-    uintptr_t uptr = reinterpret_cast<uintptr_t>(ptr);
-
     try {
-        HipMemAddressRange buffer_range = Context<Hip>::get()->hipMemGetAddressRange(ptr);
-        if (uptr + length < uptr ||
-            uptr + length > reinterpret_cast<uintptr_t>(buffer_range.base) + buffer_range.size) {
+        uintptr_t start        = reinterpret_cast<uintptr_t>(ptr);
+        auto      buffer_range = Context<Hip>::get()->hipMemGetAddressRange(ptr);
+        uintptr_t base         = reinterpret_cast<uintptr_t>(buffer_range.base);
+
+        // Sanity check on start and base 
+        if (start < base)
             return false;
-        }
+
+        // Check ptr + length
+        uintptr_t end;
+        if (__builtin_add_overflow(start, length, &end))
+            return false;
+
+        uintptr_t buffer_end;
+        if (__builtin_add_overflow(base, buffer_range.size, &buffer_end))
+            return false;
+
+        return end <= buffer_end;
     }
     catch (Hip::RuntimeError &e) {
         if (e.error == hipErrorNotFound) {
@@ -37,8 +48,6 @@ isValidBufferRegion(void *ptr, size_t length)
         }
         throw;
     }
-
-    return true;
 }
 
 Buffer::Buffer(const void *_buffer, size_t _length, int _flags, const PassKey<BufferMap> &)

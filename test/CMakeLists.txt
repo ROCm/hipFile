@@ -4,6 +4,7 @@
 
 include(AISAddExecutable)
 include(AISUseGTest)
+include(AISSanitizers)
 find_package(Boost COMPONENTS program_options REQUIRED)
 
 set(SHARED_SOURCE_FILES
@@ -73,6 +74,14 @@ ais_gtest_discover_tests(
     PROPERTIES "LABELS;system;LABELS;hipfile"
     TEST_LIST hipfile_system_tests
 )
+
+if((AIS_USE_SANITIZERS OR AIS_USE_THREAD_SANITIZER OR AIS_USE_INTEGER_SANITIZER) AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set_tests_properties(${hipfile_tests} PROPERTIES
+        ENVIRONMENT "USBSAN_OPTIONS=print_stacktrace=1:symbolize=1")
+    set_tests_properties(${hipfile_system_tests} PROPERTIES
+        ENVIRONMENT "USBSAN_OPTIONS=print_stacktrace=1:symbolize=1")
+endif()
+
 
 # Temporary Test Files
 # Can be deleted once proper testing added
