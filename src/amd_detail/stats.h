@@ -14,6 +14,13 @@
 
 namespace hipFile {
 
+enum class StatsLevel : uint64_t {
+    Disabled,
+    Basic,
+    Detailed,
+    Max,
+};
+
 /// When adding new fields, remember to increment Stats::version
 enum class StatsCounters {
     TotalFastPathReadBytes,
@@ -29,6 +36,7 @@ static_assert(StatsCounters::Max <= StatsCounters::Capacity, "Increase StatsCoun
 
 struct Stats {
     using Array = std::array<std::atomic_uint64_t, static_cast<std::size_t>(StatsCounters::Capacity)>;
+    StatsLevel     level{};
     const uint64_t version{1};
     Array          counters;
 
