@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+include(AISSanitizers)
 include(FetchContent)
 
 # This line is used (or not) in FetchContent_Declare to determine

@@ -76,15 +76,6 @@ ais_gtest_discover_tests(
     TEST_LIST hipfile_system_tests
 )
 
-if(AIS_USE_SANITIZERS OR AIS_USE_THREAD_SANITIZER)
-    set(SANITIZER_ENV
-        "ASAN_OPTIONS=print_stacktrace=1:symbolize=1:fast_unwind_on_malloc=0:malloc_context_size=30"
-        "UBSAN_OPTIONS=print_stacktrace=1:symbolize=1"
-    )
-    set_tests_properties(${hipfile_tests} PROPERTIES ENVIRONMENT "${SANITIZER_ENV}")
-    set_tests_properties(${hipfile_system_tests} PROPERTIES ENVIRONMENT "${SANITIZER_ENV}")
-endif()
-
 # Temporary Test Files
 # Can be deleted once proper testing added
 # ----------------------------------------
