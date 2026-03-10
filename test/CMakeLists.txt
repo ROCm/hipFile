@@ -4,7 +4,6 @@
 
 include(AISAddExecutable)
 include(AISUseGTest)
-include(AISSanitizers)
 
 find_package(Boost COMPONENTS program_options REQUIRED)
 
