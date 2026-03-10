@@ -30,7 +30,7 @@ CTest:
 
 `ASAN_OPTIONS=print_stacktrace=1:symbolize=1:fast_unwind_on_malloc=0:malloc_context_size=30`
 
-`USBSAN_OPTIONS=print_stacktrace=1:symbolize=1`
+`UBSAN_OPTIONS=print_stacktrace=1:symbolize=1`
 
 This should give you stack traces on failures, though you will need
 sanitizer-built ROCm libraries to track anything that was allocated
