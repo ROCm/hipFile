@@ -117,7 +117,7 @@ Options
 Sanitizer options
 |Option|Default|Purpose|
 |------|-------|-------|
-|AIS\_USE\_SANITIZERS|OFF|Build with -fsanitize=address, leak, and undefined|
+|AIS\_USE\_SANITIZERS|OFF|Build with -fsanitize=address,float-divide-by-zero,integer,leak,local-bounds,undefined,vptr|
 |AIS\_USE\_THREAD\_SANITIZER|OFF|Build with -fsanitize=thread (not compatible with AIS\_USE\_SANITIZERS)|
 
 ### Build
