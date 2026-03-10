@@ -6,6 +6,7 @@
 
 include(AISClangCompilerOptions)
 include(AISGNUCompilerOptions)
+include(AISSanitizers)
 
 function(ais_set_compiler_flags target)
     get_target_property(sources ${target} SOURCES)
@@ -38,7 +39,9 @@ function(ais_set_compiler_flags target)
         endif()
     endforeach()
 
-    ais_add_sanitizers(${target})
+    if(AIS_USE_SANITIZERS OR AIS_USE_THREAD_SANITIZER)
+        ais_add_sanitizers(${target})
+    endif()
 
     if(NOT BUILD_TESTING)
         target_compile_options(${target} PRIVATE -fvisibility=hidden)

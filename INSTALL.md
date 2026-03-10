@@ -118,7 +118,6 @@ Sanitizer options
 |Option|Default|Purpose|
 |------|-------|-------|
 |AIS\_USE\_SANITIZERS|OFF|Build with -fsanitize=address, leak, and undefined|
-|AIS\_USE\_INTEGER\_SANITIZER|OFF|Build with -fsanitize=integer (clang only)|
 |AIS\_USE\_THREAD\_SANITIZER|OFF|Build with -fsanitize=thread (not compatible with AIS\_USE\_SANITIZERS)|
 
 ### Build
