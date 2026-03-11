@@ -14,7 +14,6 @@ import ctypes
 import ctypes.util
 import gzip
 import os
-import subprocess
 import sys
 
 
@@ -23,7 +22,7 @@ def kernel_supports_p2pdma():
     Check for P2P DMA support in the kernel
     """
 
-    kr = subprocess.check_output(["uname", "-r"]).decode().strip()
+    kr = os.uname().release
 
     for path, opener in [
         (f"/boot/config-{kr}", open),
