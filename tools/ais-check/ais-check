@@ -12,7 +12,31 @@ If components are missing the program exits with a non-zero exit code.
 import argparse
 import ctypes
 import ctypes.util
+import gzip
+import os
+import subprocess
 import sys
+
+
+def kernel_supports_p2pdma():
+    """
+    Check for P2P DMA support in the kernel
+    """
+
+    kr = subprocess.check_output(["uname", "-r"]).decode().strip()
+
+    for path, opener in [
+        (f"/boot/config-{kr}", open),
+        ("/proc/config.gz", gzip.open),
+    ]:
+        if os.path.exists(path):
+            with opener(path, "rt") as f:
+                for line in f:
+                    if line.startswith("CONFIG_PCI_P2PDMA=y") or line.startswith(
+                        "CONFIG_PCI_P2PDMA=m"
+                    ):
+                        return True
+    return False
 
 
 def hip_runtime_supports_ais():
@@ -114,6 +138,7 @@ def main():
     args = parser.parse_args()
 
     component_support = [
+        ("Kernel P2PDMA support", kernel_supports_p2pdma()),
         ("HIP Runtime", hip_runtime_supports_ais()),
         ("amdgpu", amdgpu_supports_ais()),
     ]
