@@ -27,6 +27,7 @@ def kernel_supports_p2pdma():
 
         for path, opener in [
             (f"/boot/config-{kr}", open),
+            (f"/lib/modules/{kr}/build/.config", open),
             ("/proc/config.gz", gzip.open),
         ]:
             if os.path.exists(path):
