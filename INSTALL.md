@@ -28,8 +28,9 @@ Successful output from ais-check will show true for both:
 
 ```
 AIS support in:
-   HIP Runtime: true
-        amdgpu: true
+        Kernel P2PDMA support   : True
+        HIP runtime             : True
+        amdgpu                  : True
 ```
 
 hipFile currently works on local NVMe disks. To set up a new NVMe device we can partition it, create a filesystem on the partition, and mount it. Below we use the device `/dev/nvme1n1`. Make sure you use the correct device in your system.
