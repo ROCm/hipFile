@@ -23,6 +23,7 @@ def kernel_supports_p2pdma():
     """
 
     kr = os.uname().release
+    configs_found = False
 
     for path, opener in [
         (f"/boot/config-{kr}", open),
@@ -30,6 +31,7 @@ def kernel_supports_p2pdma():
         ("/proc/config.gz", gzip.open),
     ]:
         if os.path.exists(path):
+            configs_found = True
             try:
                 with opener(path, "rt") as f:
                     for line in f:
@@ -41,6 +43,8 @@ def kernel_supports_p2pdma():
                 print(f"kernel_supports_p2pdma() check failed: {e}", file=sys.stderr)
                 continue
 
+    if not configs_found:
+        print("No kernel config files found!")
     return False
 
 
