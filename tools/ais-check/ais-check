@@ -39,7 +39,7 @@ def kernel_supports_p2pdma():
                             return True
         return False
 
-    except (OSError, PermissionError) as e:
+    except (OSError) as e:
         print(f"kernel_supports_p2pdma() check failed: {e}", file=sys.stderr)
         return False
 
