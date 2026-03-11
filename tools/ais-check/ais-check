@@ -143,14 +143,14 @@ def main():
 
     component_support = [
         ("Kernel P2PDMA support", kernel_supports_p2pdma()),
-        ("HIP Runtime", hip_runtime_supports_ais()),
+        ("HIP runtime", hip_runtime_supports_ais()),
         ("amdgpu", amdgpu_supports_ais()),
     ]
 
     if not args.quiet:
         print("AIS support in:")
         for name, supported in component_support:
-            print(f"  {name:>12}: {'true' if supported else 'false'}")
+            print(f"\t{name:<24}: {supported}")
 
     return int(not all(supported for (_, supported) in component_support))
 
