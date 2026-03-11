@@ -4,9 +4,9 @@ sanitizers
 hipFile has CMake support for running various sanitizers. There are
 two CMake options that control this:
 
-`AIS_USE_SANITIZERS`
+``AIS_USE_SANITIZERS``
 
-This adds `-fsanitize=<sanitizers>` where <sanitizers> includes:
+This adds ``-fsanitize=<sanitizers>`` where <sanitizers> includes:
 
 * address
 * float-divide-by-zero
@@ -17,10 +17,10 @@ This adds `-fsanitize=<sanitizers>` where <sanitizers> includes:
 * undefined
 * vptr
 
-`AIS_USE_THREAD_SANITIZER`
+``AIS_USE_THREAD_SANITIZER``
 
-This adds `-fsanitize=thread`, which is not compatible with
-`AIS_USE_SANITIZERS`.
+This adds ``-fsanitize=thread``, which is not compatible with
+``AIS_USE_SANITIZERS``.
 
 NOTE: We currently only support clang's sanitizers. We'll add GNU in
       the future.
