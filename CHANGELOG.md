@@ -11,7 +11,7 @@
 * `hipFileRead()`/`hipFileWrite()` will transfer at most 0x7ffff000 (2,147,479,552) bytes returning the number of bytes actually transferred
 * The CMake namespace was changed from `roc::` to `hip::`
 * `AIS_BUILD_EXAMPLES` has been renamed to `AIS_INSTALL_EXAMPLES`
-* `AIS_USE_SANITIZERS` now includes the following sanitizers: integer, float-divide-by-zero, local-bounds, vptr, nullability. Sanitizers should also now emit usable stack trace info.
+* `AIS_USE_SANITIZERS` now also enables the following sanitizers: integer, float-divide-by-zero, local-bounds, vptr, nullability (in addition to address, leak, and undefined). Sanitizers should also now emit usable stack trace info.
 
 ### Removed
 * The rocFile library has been completely removed and the code is now a part of hipFile.
