@@ -58,4 +58,54 @@ struct Backend {
                        hoff_t file_offset, hoff_t buffer_offset) = 0;
 };
 
+// This kind of Backend allows for an IO to be retried automatically in the
+// event of an error. The RetryableBackend implements the logic to determine
+// which errors are retryable, and which are not, in Backend::io().
+struct RetryableBackend : public Backend {
+    ssize_t io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
+               hoff_t file_offset, hoff_t buffer_offset) override final;
+
+    /// @brief Check if a failed IO operation is retryable.
+    ///
+    /// @param e_ptr  Pointer to the thrown Exception by the failed IO
+    /// @param nbytes Number of bytes/error code returned by `retryable_io()`
+    ///
+    /// @note By default, RetryableBackend just checks if a Backend has been
+    ///       registered for retrying an IO.
+    ///
+    /// @return True if this RetryableBackend can retry the IO, else False.
+    virtual bool is_retryable(std::exception_ptr e_ptr, ssize_t nbytes) const;
+
+    /// @brief Register a Backend to call into to retry a failed IO operation.
+    ///
+    /// @param backend Backend to retry a failed IO operation.
+    void register_retry_backend(std::shared_ptr<Backend> backend) noexcept;
+
+    /// @brief Process an IO Request that can be resubmitted to another Backend if the IO fails.
+    ///
+    /// @param type          IO type (read/write)
+    /// @param file          File to read from or write to
+    /// @param buffer        Buffer to write to or read from
+    /// @param size          Number of bytes to transfer
+    /// @param file_offset   Offset from the start of the file
+    /// @param buffer_offset Offset from the start of the buffer
+    ///
+    /// @return Number of bytes transferred, negative on error
+    ///
+    /// @throws Hip::RuntimeError Sys::RuntimeError
+    virtual ssize_t retryable_io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer,
+                                 size_t size, hoff_t file_offset, hoff_t buffer_offset) = 0;
+
+    // This maybe should be moved to Backend
+    /// @brief Update the read stats for this RetryableBackend
+    virtual void update_read_stats(ssize_t nbytes) = 0;
+
+    // This maybe should be moved to Backend
+    /// @brief Update the write stats for this RetryableBackend
+    virtual void update_write_stats(ssize_t nbytes) = 0;
+
+protected:
+    std::shared_ptr<Backend> retry_backend;
+};
+
 }

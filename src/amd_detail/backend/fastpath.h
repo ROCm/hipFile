@@ -9,6 +9,7 @@
 #include "hipfile.h"
 
 #include <memory>
+#include <stdexcept>
 #include <sys/types.h>
 
 namespace hipFile {
@@ -23,14 +24,16 @@ enum class IoType;
 
 namespace hipFile {
 
-struct Fastpath : public Backend {
+struct Fastpath : public RetryableBackend {
     virtual ~Fastpath() override = default;
 
     int score(std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size, hoff_t file_offset,
               hoff_t buffer_offset) const override;
 
-    ssize_t io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
-               hoff_t file_offset, hoff_t buffer_offset) override;
+    ssize_t retryable_io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer,
+                         size_t size, hoff_t file_offset, hoff_t buffer_offset) override;
+    void    update_read_stats(ssize_t nbytes) override;
+    void    update_write_stats(ssize_t nbytes) override;
 };
 
 }
