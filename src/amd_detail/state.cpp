@@ -275,11 +275,18 @@ std::vector<std::shared_ptr<Backend>>
 DriverState::getBackends() const
 {
     static bool once = [&]() {
-        if (Context<Configuration>::get()->fastpath()) {
-            backends.emplace_back(new Fastpath{});
-        }
+        std::shared_ptr<Backend> fallback_backend;
         if (Context<Configuration>::get()->fallback()) {
-            backends.emplace_back(new Fallback{});
+            fallback_backend = std::make_shared<Fallback>();
+            backends.push_back(fallback_backend);
+        }
+
+        if (Context<Configuration>::get()->fastpath()) {
+            auto new_backend = std::make_shared<Fastpath>();
+            if (fallback_backend) {
+                new_backend->register_retry_backend(fallback_backend);
+            }
+            backends.push_back(new_backend);
         }
         return true;
     }();
