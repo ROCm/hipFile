@@ -22,26 +22,26 @@ def kernel_supports_p2pdma():
     Check for P2P DMA support in the kernel
     """
 
-    try:
-        kr = os.uname().release
+    kr = os.uname().release
 
-        for path, opener in [
-            (f"/boot/config-{kr}", open),
-            (f"/lib/modules/{kr}/build/.config", open),
-            ("/proc/config.gz", gzip.open),
-        ]:
-            if os.path.exists(path):
+    for path, opener in [
+        (f"/boot/config-{kr}", open),
+        (f"/lib/modules/{kr}/build/.config", open),
+        ("/proc/config.gz", gzip.open),
+    ]:
+        if os.path.exists(path):
+            try:
                 with opener(path, "rt") as f:
                     for line in f:
                         if line.startswith("CONFIG_PCI_P2PDMA=y") or line.startswith(
                             "CONFIG_PCI_P2PDMA=m"
                         ):
                             return True
-        return False
+            except OSError as e:
+                print(f"kernel_supports_p2pdma() check failed: {e}", file=sys.stderr)
+                continue
 
-    except (OSError) as e:
-        print(f"kernel_supports_p2pdma() check failed: {e}", file=sys.stderr)
-        return False
+    return False
 
 
 def hip_runtime_supports_ais():
