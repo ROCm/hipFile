@@ -24,7 +24,7 @@ We can verify that the HIP runtime and the amdgpu kernel module support AIS by r
 /opt/rocm/bin/ais-check
 ```
 
-Successful output from ais-check will show true for both:
+Successful output from ais-check will show True for several checks:
 
 ```
 AIS support in:
