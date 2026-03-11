@@ -114,10 +114,10 @@ Options
 |AIS\_USE\_IWYU|OFF|Run the `include-what-you-use` tool (clang only)|
 |AIS\_WARN\_UNSAFE\_BUFFER\_OPS|ON|Scan code for unsafe buffer operations (clang only, OFF for others)|
 
-Sanitizer options
+Sanitizer options (clang only)
 |Option|Default|Purpose|
 |------|-------|-------|
-|AIS\_USE\_SANITIZERS|OFF|Build with -fsanitize=address,float-divide-by-zero,integer,leak,local-bounds,undefined,vptr|
+|AIS\_USE\_SANITIZERS|OFF|Build with -fsanitize=address,float-divide-by-zero,integer,leak,local-bounds,nullability,undefined,vptr|
 |AIS\_USE\_THREAD\_SANITIZER|OFF|Build with -fsanitize=thread (not compatible with AIS\_USE\_SANITIZERS)|
 
 ### Build
