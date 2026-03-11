@@ -44,7 +44,7 @@ def kernel_supports_p2pdma():
                 continue
 
     if not configs_found:
-        print("No kernel config files found!")
+        print("No kernel config files found!", file=sys.stderr)
     return False
 
 
