@@ -17,8 +17,6 @@ Configuration::Configuration() : m_fastpath(true), m_fallback(true), m_statsLeve
     if (maybe_env_force_compat && maybe_env_force_compat.value()) {
         m_fastpath = false;
     }
-    m_fastpath = !!getHipAmdFileReadPtr() && m_fastpath;
-    m_fastpath = !!getHipAmdFileWritePtr() && m_fastpath;
 
     auto maybe_env_allow_compat{Environment::allow_compat_mode()};
     if (maybe_env_allow_compat && !maybe_env_allow_compat.value()) {
@@ -34,7 +32,15 @@ Configuration::Configuration() : m_fastpath(true), m_fallback(true), m_statsLeve
 bool
 Configuration::fastpath() const noexcept
 {
-    return m_fastpath;
+#ifndef AIS_TESTING
+    static
+#endif
+        bool readExists{!!getHipAmdFileReadPtr()};
+#ifndef AIS_TESTING
+    static
+#endif
+        bool writeExists{!!getHipAmdFileWritePtr()};
+    return readExists && writeExists && m_fastpath;
 }
 
 bool

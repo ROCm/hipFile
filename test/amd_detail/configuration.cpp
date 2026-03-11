@@ -30,6 +30,7 @@ struct ConfigurationExpectationBuilder {
     std::optional<const char *> m_env_stats_level;
     void                       *m_hip_amd_file_read{reinterpret_cast<void *>(0xDEADBEEF)};
     void                       *m_hip_amd_file_write{reinterpret_cast<void *>(0x0BADF00D)};
+    bool                        m_fastpath{false};
 
     ConfigurationExpectationBuilder(StrictMock<MSys> &msys, StrictMock<MHip> &mhip)
         : m_msys(msys), m_mhip(mhip)
@@ -66,6 +67,12 @@ struct ConfigurationExpectationBuilder {
         return *this;
     }
 
+    ConfigurationExpectationBuilder &fastpath()
+    {
+        m_fastpath = true;
+        return *this;
+    }
+
     ConfigurationExpectation build();
 };
 
@@ -95,12 +102,13 @@ struct ConfigurationExpectation {
         else {
             EXPECT_CALL(builder.m_msys, getenv(StrEq(hipFile::Environment::STATS_LEVEL)));
         }
-
-        EXPECT_CALL(builder.m_mhip, hipRuntimeGetVersion).Times(2);
-        EXPECT_CALL(builder.m_mhip, hipGetProcAddress(StrEq("hipAmdFileRead"), _, _, _))
-            .WillOnce(Return(builder.m_hip_amd_file_read));
-        EXPECT_CALL(builder.m_mhip, hipGetProcAddress(StrEq("hipAmdFileWrite"), _, _, _))
-            .WillOnce(Return(builder.m_hip_amd_file_write));
+        if (builder.m_fastpath) {
+            EXPECT_CALL(builder.m_mhip, hipRuntimeGetVersion).Times(2);
+            EXPECT_CALL(builder.m_mhip, hipGetProcAddress(StrEq("hipAmdFileRead"), _, _, _))
+                .WillOnce(Return(builder.m_hip_amd_file_read));
+            EXPECT_CALL(builder.m_mhip, hipGetProcAddress(StrEq("hipAmdFileWrite"), _, _, _))
+                .WillOnce(Return(builder.m_hip_amd_file_write));
+        }
     }
 };
 
@@ -117,31 +125,31 @@ struct HipFileConfiguration : public Test {
 
 TEST_F(HipFileConfiguration, FastpathEnabledIfForceCompatModeEnvironmentVariableIsNotSetOrInvalid)
 {
-    ConfigurationExpectationBuilder{msys, mhip}.build();
+    ConfigurationExpectationBuilder{msys, mhip}.fastpath().build();
     ASSERT_TRUE(Configuration().fastpath());
 }
 
 TEST_F(HipFileConfiguration, FastpathEnabledIfForceCompatModeEnvironmentVariableIsFalse)
 {
-    ConfigurationExpectationBuilder{msys, mhip}.env_force_compat_mode("false").build();
+    ConfigurationExpectationBuilder{msys, mhip}.fastpath().env_force_compat_mode("false").build();
     ASSERT_TRUE(Configuration().fastpath());
 }
 
 TEST_F(HipFileConfiguration, FastpathDisabledIfForceCompatModeEnvironmentVariableIsTrue)
 {
-    ConfigurationExpectationBuilder{msys, mhip}.env_force_compat_mode("true").build();
+    ConfigurationExpectationBuilder{msys, mhip}.fastpath().env_force_compat_mode("true").build();
     ASSERT_FALSE(Configuration().fastpath());
 }
 
 TEST_F(HipFileConfiguration, FastpathDisabledIfHipAmdFileReadIsNotFound)
 {
-    ConfigurationExpectationBuilder{msys, mhip}.hip_amd_file_read(nullptr).build();
+    ConfigurationExpectationBuilder{msys, mhip}.fastpath().hip_amd_file_read(nullptr).build();
     ASSERT_FALSE(Configuration().fastpath());
 }
 
 TEST_F(HipFileConfiguration, FastpathDisabledIfHipAmdFileWriteIsNotFound)
 {
-    ConfigurationExpectationBuilder{msys, mhip}.hip_amd_file_write(nullptr).build();
+    ConfigurationExpectationBuilder{msys, mhip}.fastpath().hip_amd_file_write(nullptr).build();
     ASSERT_FALSE(Configuration().fastpath());
 }
 
