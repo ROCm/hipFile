@@ -133,8 +133,8 @@ def amdgpu_supports_ais():
 
 def main():
     """
-    Parse command-line arguments, check AIS support in HIP Runtime and
-    amdgpu, optionally print the results, and return an exit code indicating
+    Parse command-line arguments, check AIS support in kernel/libraries,
+    optionally print the results, and return an exit code indicating
     whether all required components support AIS.
     """
 
