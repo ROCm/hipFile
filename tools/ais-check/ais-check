@@ -39,7 +39,6 @@ def kernel_supports_p2pdma():
                     ):
                         return True
         except OSError as e:
-            print(f"kernel_supports_p2pdma() check failed: {e}", file=sys.stderr)
             continue
 
     if not configs_found:
