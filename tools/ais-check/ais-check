@@ -38,7 +38,7 @@ def kernel_supports_p2pdma():
                         "CONFIG_PCI_P2PDMA=m"
                     ):
                         return True
-        except OSError as e:
+        except OSError:
             continue
 
     if not configs_found:
