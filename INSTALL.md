@@ -18,7 +18,7 @@ wget https://github.com/ROCm/hipFile/releases/download/nightly/hipfile-dev_0.2.0
 sudo dpkg -i hipfile-dev_0.2.0.70200-nightly.9999.24.04_amd64.deb hipfile_0.2.0.70200-nightly.9999.24.04_amd64.deb
 ```
 
-We can verify that the HIP runtime and the amdgpu kernel module support AIS by running ais-check.
+We can verify that the HIP libraries and kernel support AIS by running ais-check.
 
 ```
 /opt/rocm/bin/ais-check
