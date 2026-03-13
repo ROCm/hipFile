@@ -67,14 +67,23 @@ struct RetryableBackend : public Backend {
 
     /// @brief Check if a failed IO operation is retryable.
     ///
-    /// @param e_ptr  Pointer to the thrown Exception by the failed IO
-    /// @param nbytes Number of bytes/error code returned by `retryable_io()`
+    /// @param e_ptr         Pointer to the thrown Exception by the failed IO
+    /// @param nbytes        Return value from `retryable_io`, or 0 if an exception was thrown.
+    /// @param file          File to read from or write to
+    /// @param buffer        Buffer to write to or read from
+    /// @param size          Number of bytes to transfer
+    /// @param file_offset   Offset from the start of the file
+    /// @param buffer_offset Offset from the start of the buffer
     ///
     /// @note By default, RetryableBackend just checks if a Backend has been
-    ///       registered for retrying an IO.
+    ///       registered for retrying an IO, and that backend supports the
+    ///       the request.
+    /// @note The parameters from the original IO request are passed to this function.
     ///
     /// @return True if this RetryableBackend can retry the IO, else False.
-    virtual bool is_retryable(std::exception_ptr e_ptr, ssize_t nbytes) const;
+    virtual bool is_retryable(std::exception_ptr e_ptr, ssize_t nbytes, std::shared_ptr<IFile> file,
+                              std::shared_ptr<IBuffer> buffer, size_t size, hoff_t file_offset,
+                              hoff_t buffer_offset) const;
 
     /// @brief Register a Backend to call into to retry a failed IO operation.
     ///

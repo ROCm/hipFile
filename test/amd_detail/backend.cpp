@@ -46,17 +46,13 @@ struct HipFileRetryableBackend : public HipFileUnopened, ::testing::WithParamInt
         mock_file   = std::make_shared<StrictMock<MFile>>();
 
         default_backend = std::make_shared<StrictMock<DummyRetryableBackend>>();
-        // By default, use the default is_retryable() implementation unless overriden.
-        EXPECT_CALL(*default_backend, is_retryable)
-            .WillRepeatedly(Invoke([&](std::exception_ptr e_ptr, ssize_t nbytes) {
-                return default_backend->RetryableBackend::is_retryable(e_ptr, nbytes);
-            }));
         EXPECT_CALL(*default_backend, retryable_io).Times(AnyNumber());
         EXPECT_CALL(*default_backend, update_read_stats).Times(AnyNumber());
         EXPECT_CALL(*default_backend, update_write_stats).Times(AnyNumber());
 
         fallback_backend = std::make_shared<StrictMock<DummyFallbackBackend>>();
         EXPECT_CALL(*fallback_backend, io).Times(AnyNumber());
+        EXPECT_CALL(*fallback_backend, score).WillRepeatedly(Return(0));
 
         io_type = GetParam();
     }
@@ -87,8 +83,8 @@ TEST_P(HipFileRetryableBackend, IOFailureWithIneligibleRetry)
     // The Backend has registered a fallback, but has determined that the
     // IO error should not be retried.
     default_backend->register_retry_backend(fallback_backend);
-    EXPECT_CALL(*default_backend, is_retryable).WillOnce(Return(false));
     EXPECT_CALL(*default_backend, retryable_io).WillOnce(Throw(std::runtime_error("IO failure")));
+    EXPECT_CALL(*fallback_backend, score).WillOnce(Return(-1));
 
     EXPECT_THROW(default_backend->io(io_type, mock_file, mock_buffer, 0, 0, 0), std::runtime_error);
 }

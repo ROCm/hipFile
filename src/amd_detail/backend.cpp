@@ -26,7 +26,7 @@ RetryableBackend::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<I
     }
     catch (...) {
         std::exception_ptr e_ptr = std::current_exception();
-        if (is_retryable(e_ptr, nbytes)) {
+        if (is_retryable(e_ptr, nbytes, file, buffer, size, file_offset, buffer_offset)) {
             nbytes = retry_backend->io(type, file, buffer, size, file_offset, buffer_offset);
         }
         else {
@@ -49,11 +49,14 @@ RetryableBackend::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<I
 }
 
 bool
-RetryableBackend::is_retryable(std::exception_ptr e_ptr, ssize_t nbytes) const
+RetryableBackend::is_retryable(std::exception_ptr e_ptr, ssize_t nbytes, std::shared_ptr<IFile> file,
+                               std::shared_ptr<IBuffer> buffer, size_t size, hoff_t file_offset,
+                               hoff_t buffer_offset) const
 {
     (void)e_ptr;
     (void)nbytes;
-    return static_cast<bool>(retry_backend);
+    return static_cast<bool>(retry_backend) &&
+           retry_backend->score(file, buffer, size, file_offset, buffer_offset) >= 0;
 }
 
 void
