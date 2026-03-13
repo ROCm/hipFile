@@ -151,6 +151,11 @@ def main():
     ]
 
     if not args.quiet:
+        u = os.uname()
+        print()
+        print(u.sysname, u.nodename, u.release, u.version, u.machine)
+        print()
+
         print("AIS support in:")
         for name, supported in component_support:
             print(f"\t{name:<24}: {supported}")
