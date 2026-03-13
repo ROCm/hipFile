@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "configuration.h"
 #include "context.h"
 #include "stats.h"
 #include "sys.h"
@@ -98,7 +99,9 @@ StatsServer::StatsServer()
     Context<Sys>::get()->ftruncate(fd, sizeof(Stats));
     void *shm = Context<Sys>::get()->mmap(nullptr, sizeof(Stats), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     Context<Sys>::get()->fcntl(fd, F_ADD_SEALS, F_SEAL_SHRINK | F_SEAL_FUTURE_WRITE);
-    m_stats  = UniqueStats{new (shm) Stats{}, &statsDeleter};
+    m_stats = UniqueStats{new (shm) Stats{}, &statsDeleter};
+    m_stats->level =
+        std::min(static_cast<StatsLevel>(Context<Configuration>::get()->statsLevel()), StatsLevel::Max);
     m_thread = std::thread(&StatsServer::threadFn, this);
 }
 
@@ -209,6 +212,8 @@ StatsClient::generateReport(std::ostream &stream)
     if (stats == nullptr) {
         return false;
     }
+    stream << "AIS-STATS Version: " << stats->version
+           << "\nHipFile Stats Level: " << static_cast<uint64_t>(stats->level) << '\n';
     switch (stats->version) {
         case 1:
             generateReportV1(stream, stats);
@@ -239,7 +244,7 @@ void
 statsAddFastPathRead(uint64_t bytes)
 {
     Stats *stats{Context<StatsServer>::get()->getStats()};
-    if (stats) {
+    if (stats && stats->level >= StatsLevel::Basic) {
         stats->getCounter(StatsCounters::TotalFastPathReadBytes) += bytes;
     }
 }
@@ -248,7 +253,7 @@ void
 statsAddFastPathWrite(uint64_t bytes)
 {
     Stats *stats{Context<StatsServer>::get()->getStats()};
-    if (stats) {
+    if (stats && stats->level >= StatsLevel::Basic) {
         stats->getCounter(StatsCounters::TotalFastPathWriteBytes) += bytes;
     }
 }
@@ -257,7 +262,7 @@ void
 statsAddFallbackPathRead(uint64_t bytes)
 {
     Stats *stats{Context<StatsServer>::get()->getStats()};
-    if (stats) {
+    if (stats && stats->level >= StatsLevel::Basic) {
         stats->getCounter(StatsCounters::TotalFallbackPathReadBytes) += bytes;
     }
 }
@@ -266,7 +271,7 @@ void
 statsAddFallbackPathWrite(uint64_t bytes)
 {
     Stats *stats{Context<StatsServer>::get()->getStats()};
-    if (stats) {
+    if (stats && stats->level >= StatsLevel::Basic) {
         stats->getCounter(StatsCounters::TotalFallbackPathWriteBytes) += bytes;
     }
 }

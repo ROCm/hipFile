@@ -28,8 +28,12 @@ struct HipFileStats : public HipFileUnopened {};
         Stats                    stats{};                                                                    \
         StrictMock<MStatsServer> mstats{};                                                                   \
         EXPECT_CALL(mstats, getStats).WillRepeatedly(testing::Return(&stats));                               \
+        stats.level = StatsLevel::Basic;                                                                     \
         statsAdd##name(0x10);                                                                                \
         ASSERT_EQ(0x10, stats.getCounter(StatsCounters::Total##name##Bytes).load());                         \
+        statsAdd##name(0x10);                                                                                \
+        ASSERT_EQ(0x20, stats.getCounter(StatsCounters::Total##name##Bytes).load());                         \
+        stats.level = StatsLevel::Disabled;                                                                  \
         statsAdd##name(0x10);                                                                                \
         ASSERT_EQ(0x20, stats.getCounter(StatsCounters::Total##name##Bytes).load());                         \
     }

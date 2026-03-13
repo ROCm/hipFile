@@ -4,6 +4,7 @@
 
 include(AISAddExecutable)
 include(AISUseGTest)
+
 find_package(Boost COMPONENTS program_options REQUIRED)
 
 set(SHARED_SOURCE_FILES

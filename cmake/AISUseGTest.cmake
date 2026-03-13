@@ -2,12 +2,13 @@
 #
 # SPDX-License-Identifier: MIT
 
+include(AISSanitizers)
 include(FetchContent)
 
 # This line is used (or not) in FetchContent_Declare to determine
 # if we check for a system GoogleTest install first. When building
 # with the sanitizers, we HAVE to build GoogleTest from source.
-if(AIS_USE_SANITIZERS OR AIS_USE_INTEGER_SANITIZER OR AIS_USE_THREAD_SANITIZER)
+if(AIS_USE_SANITIZERS OR AIS_USE_THREAD_SANITIZER)
     set(AIS_LOCAL_GTEST_CHECK "")
 else()
     set(AIS_LOCAL_GTEST_CHECK FIND_PACKAGE_ARGS NAMES GTest)

@@ -24,16 +24,22 @@ catch (...) {
 hipAmdFileRead_t
 getHipAmdFileReadPtr()
 {
-    static hipAmdFileRead_t hipAmdFileReadPtr{
-        reinterpret_cast<hipAmdFileRead_t>(hipGetProcAddressHelper("hipAmdFileRead"))};
+#ifndef AIS_TESTING
+    static
+#endif
+        hipAmdFileRead_t hipAmdFileReadPtr{
+            reinterpret_cast<hipAmdFileRead_t>(hipGetProcAddressHelper("hipAmdFileRead"))};
     return hipAmdFileReadPtr;
 }
 
 hipAmdFileWrite_t
 getHipAmdFileWritePtr()
 {
-    static hipAmdFileWrite_t hipAmdFileWritePtr{
-        reinterpret_cast<hipAmdFileRead_t>(hipGetProcAddressHelper("hipAmdFileWrite"))};
+#ifndef AIS_TESTING
+    static
+#endif
+        hipAmdFileWrite_t hipAmdFileWritePtr{
+            reinterpret_cast<hipAmdFileWrite_t>(hipGetProcAddressHelper("hipAmdFileWrite"))};
     return hipAmdFileWritePtr;
 }
 

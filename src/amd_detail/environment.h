@@ -39,6 +39,14 @@ public:
     static constexpr const char *const FORCE_COMPAT_MODE{"HIPFILE_FORCE_COMPAT_MODE"};
 
     static std::optional<bool> force_compat_mode();
+
+    /// @brief Control how much information is collected to be reported to ais-stats
+    ///
+    /// 0 indicates no stats should be recorded.
+    /// >= 1 indicates basic stats will be collected.
+    static constexpr const char *const STATS_LEVEL{"HIPFILE_STATS_LEVEL"};
+
+    static std::optional<unsigned int> stats_level();
 };
 
 }
