@@ -11,6 +11,7 @@
 #include "io.h"
 #include "sys.h"
 
+#include <climits>
 #include <cstddef>
 #include <exception>
 #include <memory>
@@ -19,9 +20,19 @@
 
 namespace hipFile {
 
+static const size_t PAGE_SIZE{[] {
+    long v = sysconf(_SC_PAGE_SIZE);
+    if (v == -1) {
+        throw std::runtime_error("sysconf(_SC_PAGE_SIZE) failed");
+    }
+    return static_cast<size_t>(v);
+}()};
+
+static const size_t PAGE_MASK{~(PAGE_SIZE - 1)};
+
 // The maximum number of bytes that can be transferred in a single read() or
 // write() system call. Mirrors kernel's MAX_RW_COUNT
-static const size_t MAX_RW_COUNT = 0x7ffff000;
+static const size_t MAX_RW_COUNT = (INT_MAX & PAGE_MASK);
 
 /// @brief Backend is not enabled
 struct BackendDisabled : public std::runtime_error {
