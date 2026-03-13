@@ -15,7 +15,7 @@
 
 ### Removed
 * The rocFile library has been completely removed and the code is now a part of hipFile.
-* The hipify patch was removed. You can get hipify with hipFile support at https://github.com/derobins/HIPIFY/tree/hipFile.
+* The hipify patch was removed. You can get hipify with hipFile support from the main HIPIFY repo at https://github.com/ROCm/HIPIFY. The `amd-develop` branch has hipFile support, but this has not been publicly released yet.
 * Dropped the `AIS_USE_INTEGER_SANITIZER` CMake option. This has been rolled into the broader `AIS_USE_SANITIZERS` option.
 * Dropped support for GNU sanitizers (probably temporary)
 
