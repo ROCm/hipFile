@@ -20,4 +20,15 @@ struct MBackend : Backend {
                 (override));
 };
 
+struct MRetryableBackend : RetryableBackend {
+    MOCK_METHOD(int, score, (std::shared_ptr<IFile>, std::shared_ptr<IBuffer>, size_t, hoff_t, hoff_t),
+                (const, override));
+    MOCK_METHOD(bool, is_retryable, (std::exception_ptr e_ptr, ssize_t nbytes), (const, noexcept, override));
+    MOCK_METHOD(ssize_t, retryable_io,
+                (IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
+                 hoff_t file_offset, hoff_t buffer_offset),
+                (override));
+    MOCK_METHOD(void, update_read_stats, (ssize_t nbytes), (override));
+    MOCK_METHOD(void, update_write_stats, (ssize_t nbytes), (override));
+};
 }
