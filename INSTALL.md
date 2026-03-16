@@ -81,9 +81,11 @@ If CMake can't find hipcc/nvcc, you can set `-DCMAKE_HIP_COMPILER=<path>`
 
 Supported platforms: Linux (Windows may be supported in a future release)
 
-Supported filesystems: Only ext4 and xfs are supported at this time
+Supported filesystems: Only ext4 and xfs are supported at this time. ext4 only supports `data=ordered` mode.
 
 Targeting NVIDIA requires cuFile to be installed
+
+The kernel must have `CONFIG_PCI_P2PDMA` enabled
 
 Multipath NVMe devices are not supported at this time. If you are using a multipath-supporting device, you may need to disable multipath in the nvme\_core kernel driver. On Ubuntu 24.04, this can be done by running the following:
 
