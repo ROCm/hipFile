@@ -55,10 +55,17 @@ struct Backend {
     ///
     /// @throws Hip::RuntimeError Sys::RuntimeError
     virtual ssize_t io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
-                       hoff_t file_offset, hoff_t buffer_offset)
-    {
-        return _io_impl(type, file, buffer, size, file_offset, buffer_offset);
-    }
+                       hoff_t file_offset, hoff_t buffer_offset);
+
+    /// @brief Update the read stats for this Backend
+    ///
+    /// @param nbytes Number of bytes read
+    virtual void update_read_stats(ssize_t nbytes) = 0;
+
+    /// @brief Update the write stats for this Backend
+    ///
+    /// @param nbytes Number of bytes written
+    virtual void update_write_stats(ssize_t nbytes) = 0;
 
 protected:
     /// @brief Perform a read or write operation
@@ -109,14 +116,6 @@ struct BackendWithFallback : public Backend {
     ///
     /// @param backend Backend to retry a failed IO operation.
     void register_fallback_backend(std::shared_ptr<Backend> backend) noexcept;
-
-    // This maybe should be moved to Backend
-    /// @brief Update the read stats for this BackendWithFallback
-    virtual void update_read_stats(ssize_t nbytes) = 0;
-
-    // This maybe should be moved to Backend
-    /// @brief Update the write stats for this BackendWithFallback
-    virtual void update_write_stats(ssize_t nbytes) = 0;
 
 protected:
     std::shared_ptr<Backend> fallback_backend;
