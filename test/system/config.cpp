@@ -7,8 +7,8 @@
 #include "hipfile.h"
 #include "test-common.h"
 
+#include <cstddef>
 #include <gtest/gtest.h>
-#include <stddef.h>
 #include <string>
 #include <vector>
 

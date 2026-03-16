@@ -21,16 +21,16 @@
 #include "test-options.h"
 
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <cstdint>
 #include <cstddef>
+#include <cstring>
 #include <fcntl.h>
 #include <gtest/gtest.h>
 #include <hip/hip_runtime_api.h>
 #include <memory>
 #include <sstream>
 #include <string>
-#include <string.h>
 #include <sys/types.h>
 #include <tuple>
 #include <variant>
