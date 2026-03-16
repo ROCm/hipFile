@@ -18,6 +18,8 @@ struct MBackend : Backend {
                 (hipFile::IoType type, std::shared_ptr<IFile>, std::shared_ptr<IBuffer>, size_t, hoff_t,
                  hoff_t),
                 (override));
+    MOCK_METHOD(void, update_read_stats, (ssize_t nbytes), (override));
+    MOCK_METHOD(void, update_write_stats, (ssize_t nbytes), (override));
     MOCK_METHOD(ssize_t, _io_impl,
                 (hipFile::IoType type, std::shared_ptr<IFile>, std::shared_ptr<IBuffer>, size_t, hoff_t,
                  hoff_t),
