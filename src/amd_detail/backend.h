@@ -79,48 +79,47 @@ protected:
                              size_t size, hoff_t file_offset, hoff_t buffer_offset) = 0;
 };
 
-// This kind of Backend allows for an IO to be retried automatically in the
-// event of an error. The RetryableBackend implements the logic to determine
-// which errors are retryable, and which are not, in Backend::io().
-struct RetryableBackend : public Backend {
+// BackendWithFallback allows for an IO to be retried automatically with a
+// different Backend in the event of an error.
+struct BackendWithFallback : public Backend {
     ssize_t io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
                hoff_t file_offset, hoff_t buffer_offset) override final;
 
-    /// @brief Check if a failed IO operation is retryable.
+    /// @brief Check if a failed IO operation can be re-issued to the fallback Backend.
     ///
     /// @param e_ptr         Pointer to the thrown Exception by the failed IO
-    /// @param nbytes        Return value from `retryable_io`, or 0 if an exception was thrown.
+    /// @param nbytes        Return value from `_io_impl`, or 0 if an exception was thrown.
     /// @param file          File to read from or write to
     /// @param buffer        Buffer to write to or read from
     /// @param size          Number of bytes to transfer
     /// @param file_offset   Offset from the start of the file
     /// @param buffer_offset Offset from the start of the buffer
     ///
-    /// @note By default, RetryableBackend just checks if a Backend has been
-    ///       registered for retrying an IO, and that backend supports the
+    /// @note By default, BackendWithFallback checks if a Backend has been
+    ///       registered for retrying an IO, and that fallback backend supports
     ///       the request.
     /// @note The parameters from the original IO request are passed to this function.
     ///
-    /// @return True if this RetryableBackend can retry the IO, else False.
-    virtual bool is_retryable(std::exception_ptr e_ptr, ssize_t nbytes, std::shared_ptr<IFile> file,
-                              std::shared_ptr<IBuffer> buffer, size_t size, hoff_t file_offset,
-                              hoff_t buffer_offset) const;
+    /// @return True if this BackendWithFallback can retry the IO, else False.
+    virtual bool is_fallback_eligible(std::exception_ptr e_ptr, ssize_t nbytes, std::shared_ptr<IFile> file,
+                                      std::shared_ptr<IBuffer> buffer, size_t size, hoff_t file_offset,
+                                      hoff_t buffer_offset) const;
 
-    /// @brief Register a Backend to call into to retry a failed IO operation.
+    /// @brief Register a Backend to retry a failed IO operation.
     ///
     /// @param backend Backend to retry a failed IO operation.
-    void register_retry_backend(std::shared_ptr<Backend> backend) noexcept;
+    void register_fallback_backend(std::shared_ptr<Backend> backend) noexcept;
 
     // This maybe should be moved to Backend
-    /// @brief Update the read stats for this RetryableBackend
+    /// @brief Update the read stats for this BackendWithFallback
     virtual void update_read_stats(ssize_t nbytes) = 0;
 
     // This maybe should be moved to Backend
-    /// @brief Update the write stats for this RetryableBackend
+    /// @brief Update the write stats for this BackendWithFallback
     virtual void update_write_stats(ssize_t nbytes) = 0;
 
 protected:
-    std::shared_ptr<Backend> retry_backend;
+    std::shared_ptr<Backend> fallback_backend;
 };
 
 }

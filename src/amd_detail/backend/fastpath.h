@@ -24,7 +24,7 @@ enum class IoType;
 
 namespace hipFile {
 
-struct Fastpath : public RetryableBackend {
+struct Fastpath : public BackendWithFallback {
     virtual ~Fastpath() override = default;
 
     int  score(std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size, hoff_t file_offset,

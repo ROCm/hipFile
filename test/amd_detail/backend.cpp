@@ -26,16 +26,16 @@ using ::testing::Throw;
 // warnings
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 
-struct DummyRetryableBackend : public MRetryableBackend {};
+struct DummyBackendWithFallback : public MBackendWithFallback {};
 
 struct DummyFallbackBackend : MBackend {};
 
-struct HipFileRetryableBackend : public HipFileUnopened, ::testing::WithParamInterface<IoType> {
+struct HipFileBackendWithFallback : public HipFileUnopened, ::testing::WithParamInterface<IoType> {
     std::shared_ptr<StrictMock<MBuffer>> mock_buffer;
     std::shared_ptr<StrictMock<MFile>>   mock_file;
 
-    std::shared_ptr<StrictMock<DummyRetryableBackend>> default_backend;
-    std::shared_ptr<StrictMock<DummyFallbackBackend>>  fallback_backend;
+    std::shared_ptr<StrictMock<DummyBackendWithFallback>> default_backend;
+    std::shared_ptr<StrictMock<DummyFallbackBackend>>     fallback_backend;
 
     IoType  io_type;
     ssize_t successful_io_size = 0x1234;
@@ -45,7 +45,7 @@ struct HipFileRetryableBackend : public HipFileUnopened, ::testing::WithParamInt
         mock_buffer = std::make_shared<StrictMock<MBuffer>>();
         mock_file   = std::make_shared<StrictMock<MFile>>();
 
-        default_backend = std::make_shared<StrictMock<DummyRetryableBackend>>();
+        default_backend = std::make_shared<StrictMock<DummyBackendWithFallback>>();
         EXPECT_CALL(*default_backend, _io_impl).Times(AnyNumber());
         EXPECT_CALL(*default_backend, update_read_stats).Times(AnyNumber());
         EXPECT_CALL(*default_backend, update_write_stats).Times(AnyNumber());
@@ -57,12 +57,12 @@ struct HipFileRetryableBackend : public HipFileUnopened, ::testing::WithParamInt
         io_type = GetParam();
     }
 
-    HipFileRetryableBackend()
+    HipFileBackendWithFallback()
     {
     }
 };
 
-TEST_P(HipFileRetryableBackend, IOSuccess)
+TEST_P(HipFileBackendWithFallback, IOSuccess)
 {
     EXPECT_CALL(*default_backend, _io_impl).WillOnce(Return(successful_io_size));
 
@@ -71,27 +71,27 @@ TEST_P(HipFileRetryableBackend, IOSuccess)
     ASSERT_EQ(nbytes, successful_io_size);
 }
 
-TEST_P(HipFileRetryableBackend, IOFailureNoFallback)
+TEST_P(HipFileBackendWithFallback, IOFailureNoFallback)
 {
     EXPECT_CALL(*default_backend, _io_impl).WillOnce(Throw(std::runtime_error("IO failure")));
 
     EXPECT_THROW(default_backend->io(io_type, mock_file, mock_buffer, 0, 0, 0), std::runtime_error);
 }
 
-TEST_P(HipFileRetryableBackend, IOFailureWithIneligibleRetry)
+TEST_P(HipFileBackendWithFallback, IOFailureWithIneligibleRetry)
 {
     // The Backend has registered a fallback, but has determined that the
     // IO error should not be retried.
-    default_backend->register_retry_backend(fallback_backend);
+    default_backend->register_fallback_backend(fallback_backend);
     EXPECT_CALL(*default_backend, _io_impl).WillOnce(Throw(std::runtime_error("IO failure")));
     EXPECT_CALL(*fallback_backend, score).WillOnce(Return(-1));
 
     EXPECT_THROW(default_backend->io(io_type, mock_file, mock_buffer, 0, 0, 0), std::runtime_error);
 }
 
-TEST_P(HipFileRetryableBackend, IOFailureWithGoodFallback)
+TEST_P(HipFileBackendWithFallback, IOFailureWithGoodFallback)
 {
-    default_backend->register_retry_backend(fallback_backend);
+    default_backend->register_fallback_backend(fallback_backend);
     EXPECT_CALL(*default_backend, _io_impl).WillOnce(Throw(std::runtime_error("IO failure")));
     EXPECT_CALL(*fallback_backend, io).WillOnce(Return(successful_io_size));
 
@@ -99,6 +99,6 @@ TEST_P(HipFileRetryableBackend, IOFailureWithGoodFallback)
     ASSERT_EQ(nbytes, successful_io_size);
 }
 
-INSTANTIATE_TEST_SUITE_P(, HipFileRetryableBackend, ::testing::Values(IoType::Read, IoType::Write));
+INSTANTIATE_TEST_SUITE_P(, HipFileBackendWithFallback, ::testing::Values(IoType::Read, IoType::Write));
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

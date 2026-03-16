@@ -17,8 +17,8 @@
 using namespace hipFile;
 
 ssize_t
-RetryableBackend::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
-                     hoff_t file_offset, hoff_t buffer_offset)
+BackendWithFallback::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer,
+                        size_t size, hoff_t file_offset, hoff_t buffer_offset)
 {
     ssize_t nbytes{0};
     try {
@@ -26,8 +26,8 @@ RetryableBackend::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<I
     }
     catch (...) {
         std::exception_ptr e_ptr = std::current_exception();
-        if (is_retryable(e_ptr, nbytes, file, buffer, size, file_offset, buffer_offset)) {
-            nbytes = retry_backend->io(type, file, buffer, size, file_offset, buffer_offset);
+        if (is_fallback_eligible(e_ptr, nbytes, file, buffer, size, file_offset, buffer_offset)) {
+            nbytes = fallback_backend->io(type, file, buffer, size, file_offset, buffer_offset);
         }
         else {
             throw;
@@ -49,18 +49,19 @@ RetryableBackend::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<I
 }
 
 bool
-RetryableBackend::is_retryable(std::exception_ptr e_ptr, ssize_t nbytes, std::shared_ptr<IFile> file,
-                               std::shared_ptr<IBuffer> buffer, size_t size, hoff_t file_offset,
-                               hoff_t buffer_offset) const
+BackendWithFallback::is_fallback_eligible(std::exception_ptr e_ptr, ssize_t nbytes,
+                                          std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer,
+                                          size_t size, hoff_t file_offset,
+                                          hoff_t buffer_offset) const
 {
     (void)e_ptr;
     (void)nbytes;
-    return static_cast<bool>(retry_backend) &&
-           retry_backend->score(file, buffer, size, file_offset, buffer_offset) >= 0;
+    return static_cast<bool>(fallback_backend) &&
+           fallback_backend->score(file, buffer, size, file_offset, buffer_offset) >= 0;
 }
 
 void
-RetryableBackend::register_retry_backend(std::shared_ptr<Backend> backend) noexcept
+BackendWithFallback::register_fallback_backend(std::shared_ptr<Backend> backend) noexcept
 {
-    retry_backend = backend;
+    fallback_backend = backend;
 }
