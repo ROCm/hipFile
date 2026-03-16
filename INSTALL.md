@@ -104,14 +104,17 @@ sudo systemctl reboot
 
 #### AMD Components
 * ROCm >= 7.2
-    * `rocm-developer-tools`
-    * `rocm-hip-runtime-dev(el)`
-    * `rocm-hip-sdk`
+    * `hip-dev` (Debian/Ubuntu)
+    * `hip-devel` (RHEL/Fedora/openSUSE)
 * amdgpu-dkms >= 30.20.1
 
-#### Other Developer Packages
-* Boost.Program\_options (libboost-program-options-dev or similar)
-* libmount (usually libmount-dev or libmount-devel)
+#### Other Packages
+* Boost.Program\_options
+    * `libboost-program-options-dev` (Debian/Ubuntu)
+    * `libboost-program-options-devel` (RHEL/Fedora/openSUSE)
+* libmount
+    * `libmount-dev` (Debian/Ubuntu)
+    * `libmount-devel` (RHEL/Fedora/openSUSE)
 
 ### Configure
 
