@@ -24,7 +24,7 @@ struct MBackend : Backend {
                 (override));
 };
 
-struct MRetryableBackend : RetryableBackend {
+struct MBackendWithFallback : BackendWithFallback {
     MOCK_METHOD(int, score, (std::shared_ptr<IFile>, std::shared_ptr<IBuffer>, size_t, hoff_t, hoff_t),
                 (const, override));
     MOCK_METHOD(void, update_read_stats, (ssize_t nbytes), (override));

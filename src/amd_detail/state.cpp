@@ -284,7 +284,7 @@ DriverState::getBackends() const
         if (Context<Configuration>::get()->fastpath()) {
             auto new_backend = std::make_shared<Fastpath>();
             if (fallback_backend) {
-                new_backend->register_retry_backend(fallback_backend);
+                new_backend->register_fallback_backend(fallback_backend);
             }
             backends.push_back(new_backend);
         }
