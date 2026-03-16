@@ -27,13 +27,14 @@ namespace hipFile {
 struct Fastpath : public RetryableBackend {
     virtual ~Fastpath() override = default;
 
-    int score(std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size, hoff_t file_offset,
-              hoff_t buffer_offset) const override;
+    int  score(std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size, hoff_t file_offset,
+               hoff_t buffer_offset) const override;
+    void update_read_stats(ssize_t nbytes) override;
+    void update_write_stats(ssize_t nbytes) override;
 
-    ssize_t retryable_io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer,
-                         size_t size, hoff_t file_offset, hoff_t buffer_offset) override;
-    void    update_read_stats(ssize_t nbytes) override;
-    void    update_write_stats(ssize_t nbytes) override;
+protected:
+    ssize_t _io_impl(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
+                     hoff_t file_offset, hoff_t buffer_offset) override;
 };
 
 }

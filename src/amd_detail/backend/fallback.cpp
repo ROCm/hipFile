@@ -54,12 +54,26 @@ ssize_t
 Fallback::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
              hoff_t file_offset, hoff_t buffer_offset)
 {
-    return io(type, file, buffer, size, file_offset, buffer_offset, DefaultChunkSize);
+    return _io_impl(type, file, buffer, size, file_offset, buffer_offset, DefaultChunkSize);
 }
 
 ssize_t
-Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
+Fallback::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
              hoff_t file_offset, hoff_t buffer_offset, size_t chunk_size)
+{
+    return _io_impl(type, file, buffer, size, file_offset, buffer_offset, chunk_size);
+}
+
+ssize_t
+Fallback::_io_impl(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
+                   hoff_t file_offset, hoff_t buffer_offset)
+{
+    return _io_impl(type, file, buffer, size, file_offset, buffer_offset, DefaultChunkSize);
+}
+
+ssize_t
+Fallback::_io_impl(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
+                   hoff_t file_offset, hoff_t buffer_offset, size_t chunk_size)
 {
     size = min(size, hipFile::MAX_RW_COUNT);
 

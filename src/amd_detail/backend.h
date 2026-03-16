@@ -55,7 +55,28 @@ struct Backend {
     ///
     /// @throws Hip::RuntimeError Sys::RuntimeError
     virtual ssize_t io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
-                       hoff_t file_offset, hoff_t buffer_offset) = 0;
+                       hoff_t file_offset, hoff_t buffer_offset)
+    {
+        return _io_impl(type, file, buffer, size, file_offset, buffer_offset);
+    }
+
+protected:
+    /// @brief Perform a read or write operation
+    ///
+    /// @note Provides a common target across all Backends that provides the
+    ///       implementation for running IO.
+    /// @param type          IO type (read/write)
+    /// @param file          File to read from or write to
+    /// @param buffer        Buffer to write to or read from
+    /// @param size          Number of bytes to transfer
+    /// @param file_offset   Offset from the start of the file
+    /// @param buffer_offset Offset from the start of the buffer
+    ///
+    /// @return Number of bytes transferred, negative on error
+    ///
+    /// @throws Hip::RuntimeError Sys::RuntimeError
+    virtual ssize_t _io_impl(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer,
+                             size_t size, hoff_t file_offset, hoff_t buffer_offset) = 0;
 };
 
 // This kind of Backend allows for an IO to be retried automatically in the
@@ -89,21 +110,6 @@ struct RetryableBackend : public Backend {
     ///
     /// @param backend Backend to retry a failed IO operation.
     void register_retry_backend(std::shared_ptr<Backend> backend) noexcept;
-
-    /// @brief Process an IO Request that can be resubmitted to another Backend if the IO fails.
-    ///
-    /// @param type          IO type (read/write)
-    /// @param file          File to read from or write to
-    /// @param buffer        Buffer to write to or read from
-    /// @param size          Number of bytes to transfer
-    /// @param file_offset   Offset from the start of the file
-    /// @param buffer_offset Offset from the start of the buffer
-    ///
-    /// @return Number of bytes transferred, negative on error
-    ///
-    /// @throws Hip::RuntimeError Sys::RuntimeError
-    virtual ssize_t retryable_io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer,
-                                 size_t size, hoff_t file_offset, hoff_t buffer_offset) = 0;
 
     // This maybe should be moved to Backend
     /// @brief Update the read stats for this RetryableBackend
