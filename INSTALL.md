@@ -81,7 +81,7 @@ If CMake can't find hipcc/nvcc, you can set `-DCMAKE_HIP_COMPILER=<path>`
 
 Supported platforms: Linux (Windows may be supported in a future release)
 
-Supported filesystems: Only ext4 and xfs are supported at this time. ext4 only supports `data=ordered` mode.
+Supported filesystems: Only ext4 and xfs are supported at this time. ext4 must be mounted with the default data=ordered mount option.
 
 Targeting NVIDIA requires cuFile to be installed
 
