@@ -22,7 +22,7 @@ RetryableBackend::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<I
 {
     ssize_t nbytes{0};
     try {
-        nbytes = retryable_io(type, file, buffer, size, file_offset, buffer_offset);
+        nbytes = _io_impl(type, file, buffer, size, file_offset, buffer_offset);
     }
     catch (...) {
         std::exception_ptr e_ptr = std::current_exception();
