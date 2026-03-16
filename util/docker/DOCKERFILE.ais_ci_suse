@@ -53,7 +53,6 @@ RUN zypper --gpg-auto-import-keys refresh
 
 # Development Dependencies
 # clang18 missing.
-# libssl-dev == libopenssl-devel
 # llvm-dev == llvm-devel
 # graphviz - Dozygen dependency
 # Defaults to gcc7. Use gcc13 to match Ubuntu24.
@@ -68,7 +67,6 @@ RUN zypper install -y \
         graphviz \
         hip-devel \
         libmount-devel \
-        libopenssl-devel \
         llvm19-devel \
         rocm-device-libs \
         rpm-build
