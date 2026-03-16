@@ -98,7 +98,7 @@ assertMemoryRegionsMatch(void *mem1, hoff_t mem1_offset, void *mem2, hoff_t mem2
         mem2_v = copyGpuMemory(mem2, mem2_offset, region_size);
         mem2   = mem2_v.data();
     }
-    assert(memcmp(mem1, mem2, region_size) == 0);
+    assert(std::memcmp(mem1, mem2, region_size) == 0);
 }
 
 static void

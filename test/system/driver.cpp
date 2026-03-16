@@ -12,10 +12,10 @@
 #include <cerrno>
 #include <climits>
 #include <cstdint>
-#include <ctime>
 #include <gtest/gtest.h>
 #include <hip/hip_runtime_api.h>
 #include <thread>
+#include <time.h> // Do NOT convert to <ctime> as that is not guaranteed to have `struct timespec`
 #include <vector>
 
 #ifdef __HIP_PLATFORM_NVIDIA__
