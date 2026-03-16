@@ -95,12 +95,21 @@ sudo systemctl reboot
 
 ### Prerequisites
 
+#### Build Tools
 * CMake >= 3.21
 * C++ >= 17 (tested w/ clang++ & g++, we don't use GNU extensions)
+* The `ais-check` script requires Python 3.x
+
+#### AMD Components
 * ROCm >= 7.2
-* amdgpu >= 30.10.1
-* Boost
-* libmount
+    * `rocm-developer-tools`
+    * `rocm-hip-runtime-dev(el)`
+    * `rocm-hip-sdk`
+* amdgpu-dkms >= 30.20.1
+
+#### Other Developer Packages
+* Boost.Program\_options (libboost-program-options-dev or similar)
+* libmount (usually libmount-dev or libmount-devel)
 
 ### Configure
 
