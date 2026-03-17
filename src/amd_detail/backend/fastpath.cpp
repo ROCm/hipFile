@@ -158,6 +158,15 @@ ssize_t
 Fastpath::io(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size, hoff_t file_offset,
              hoff_t buffer_offset)
 {
+    // Ensure HIP Runtime is initialized. This is a temporary fix to a SEGFAULT
+    // in the HIP Runtime when hipFileRead/hipFileWrite is the first HIP API
+    // call of a new thread.
+    thread_local bool hip_inited{false};
+    if (!hip_inited) {
+        Context<Hip>::get()->hipInit();
+        hip_inited = true;
+    }
+
     void *devptr{reinterpret_cast<void *>(reinterpret_cast<intptr_t>(buffer->getBuffer()) + buffer_offset)};
     hipAmdFileHandle_t handle{};
     size_t             nbytes{};
