@@ -31,6 +31,8 @@ struct Fastpath : public Backend {
 
     ssize_t io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
                hoff_t file_offset, hoff_t buffer_offset) override;
+
+    static thread_local bool hip_inited;
 };
 
 }

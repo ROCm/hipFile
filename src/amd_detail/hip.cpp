@@ -198,4 +198,10 @@ Hip::hipStreamGetDevice(hipStream_t stream) const
     return device_id;
 }
 
+void
+Hip::hipInit() const
+{
+    (void)throwOnHipError<Hip::RuntimeError>(::hipInit(0));
+}
+
 }

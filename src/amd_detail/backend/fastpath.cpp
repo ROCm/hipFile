@@ -21,6 +21,8 @@
 using namespace hipFile;
 using namespace std;
 
+thread_local bool Fastpath::hip_inited = false;
+
 /* The fastpath backend is used when:
  *  - The file has been opened with the O_DIRECT flag
  *  - if statx contains direct io information
@@ -158,6 +160,10 @@ ssize_t
 Fastpath::io(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size, hoff_t file_offset,
              hoff_t buffer_offset)
 {
+    if (!hip_inited) {
+        Context<Hip>::get()->hipInit();
+        hip_inited = true;
+    }
     void *devptr{reinterpret_cast<void *>(reinterpret_cast<intptr_t>(buffer->getBuffer()) + buffer_offset)};
     hipAmdFileHandle_t handle{};
     size_t             nbytes{};
