@@ -329,38 +329,54 @@ struct FastpathIoParam : public FastpathTestBase, public TestWithParam<IoType> {
 
     StrictMock<MHip> mhip;
 
-    void expect_io()
+    // Setup expectations on the mocks called to validate IO arguments
+    void expect_validate()
     {
-        EXPECT_CALL(mhip, hipInit);
         EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
         EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(DEFAULT_BUFFER_LENGTH));
         EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     }
 
-    void expect_io(optional<int> fd, void *bufptr, size_t buflen)
+    // Setup expectations on the mocks called to validate IO arguments and
+    // the mocks called up to, but not including, hipAmdFileRead/hipAmdFileWrite
+    void expect_io()
     {
+        expect_validate();
         EXPECT_CALL(mhip, hipInit);
+    }
+
+    // Setup expectations on the mocks called to validate IO arguments
+    void expect_validate(optional<int> fd, void *bufptr, size_t buflen)
+    {
         EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(bufptr));
         EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(buflen));
         EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(fd));
+    }
+
+    // Setup expectations on the mocks called to validate IO arguments and
+    // the mocks called up to, but not including, hipAmdFileRead/hipAmdFileWrite
+    void expect_io(optional<int> fd, void *bufptr, size_t buflen)
+    {
+        expect_validate(fd, bufptr, buflen);
+        EXPECT_CALL(mhip, hipInit);
     }
 };
 
 TEST_P(FastpathIoParam, IoRejectsNegativeFileOffset)
 {
-    expect_io();
+    expect_validate();
     ASSERT_THROW(Fastpath().io(GetParam(), mfile, mbuffer, 0, -1, 0), std::invalid_argument);
 }
 
 TEST_P(FastpathIoParam, IoRejectsNegativeBufferOffset)
 {
-    expect_io();
+    expect_validate();
     ASSERT_THROW(Fastpath().io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, 0, -1), std::invalid_argument);
 }
 
 TEST_P(FastpathIoParam, IoRejectsBufferOffsetLargerThanBufferLength)
 {
-    expect_io();
+    expect_validate();
     ASSERT_THROW(Fastpath().io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, 0,
                                static_cast<hoff_t>(DEFAULT_BUFFER_LENGTH) + 1),
                  std::invalid_argument);
@@ -368,14 +384,14 @@ TEST_P(FastpathIoParam, IoRejectsBufferOffsetLargerThanBufferLength)
 
 TEST_P(FastpathIoParam, IoRejectsIoSizeLargerThanBufferLength)
 {
-    expect_io();
+    expect_validate();
     ASSERT_THROW(Fastpath().io(GetParam(), mfile, mbuffer, DEFAULT_BUFFER_LENGTH + 1, 0, 0),
                  std::invalid_argument);
 }
 
 TEST_P(FastpathIoParam, IoRejectsIoThatCouldOverflowBuffer)
 {
-    expect_io();
+    expect_validate();
     ASSERT_THROW(Fastpath().io(GetParam(), mfile, mbuffer, DEFAULT_BUFFER_LENGTH, DEFAULT_FILE_OFFSET, 1),
                  std::invalid_argument);
 }
