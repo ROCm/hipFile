@@ -23,6 +23,7 @@ The hipFile public repository is located at `<https://github.com/ROCm/hipFile>`_
       * :doc:`hipify <./hipify>`
       * :doc:`NVIDIA compatibility <./nvidia_compat>`
       * :doc:`fio <./fio>`
+      * :doc:`Collecting statistics <./stats_collection>`
 
   .. grid-item-card:: API reference
 

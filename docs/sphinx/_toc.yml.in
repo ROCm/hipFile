@@ -22,6 +22,8 @@ subtrees:
     title: cuFile compatibility
   - file: fio.rst
     title: fio support
+  - file: stats_collection.rst
+    title: Collecting statistics
 
 - caption: API reference
   entries:
