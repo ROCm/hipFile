@@ -34,7 +34,7 @@ subtrees:
   - file: api/file.rst
     title: File operations
   - file: api/async.rst
-    title: Asynchronous operatoins
+    title: Asynchronous operations
   - file: api/batch.rst
     title: Batch operations
   - file: api/rdma.rst
