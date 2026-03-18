@@ -68,6 +68,17 @@ TEST_F(HipFileConfiguration, FastpathEnabledIfForceCompatModeEnvironmentVariable
     ASSERT_TRUE(Configuration().fastpath());
 }
 
+TEST_F(HipFileConfiguration, OverrideEnabledFastpathBackend)
+{
+    Configuration config{};
+    expect_configuration_fastpath("false");
+    ASSERT_TRUE(config.fastpath());
+
+    config.fastpath(false);
+    expect_configuration_fastpath("false");
+    ASSERT_FALSE(config.fastpath());
+}
+
 TEST_F(HipFileConfiguration, FastpathDisabledIfForceCompatModeEnvironmentVariableIsTrue)
 {
     expect_configuration_fastpath("true");
@@ -84,6 +95,39 @@ TEST_F(HipFileConfiguration, FastpathDisabledIfHipAmdFileWriteIsNotFound)
 {
     expect_configuration_fastpath(nullptr, reinterpret_cast<void *>(0x1), nullptr);
     ASSERT_FALSE(Configuration().fastpath());
+}
+
+TEST_F(HipFileConfiguration, OverrideDisabledFastpathBackend)
+{
+    Configuration config{};
+    expect_configuration_fastpath("true");
+    ASSERT_FALSE(config.fastpath());
+
+    config.fastpath(true);
+    expect_configuration_fastpath("true");
+    ASSERT_TRUE(config.fastpath());
+}
+
+TEST_F(HipFileConfiguration, CantOverrideDisabledFastpathBackendIfHipAmdFileReadIsNotAvailable)
+{
+    Configuration config{};
+    expect_configuration_fastpath(nullptr, nullptr);
+    ASSERT_FALSE(config.fastpath());
+
+    config.fastpath(true);
+    expect_configuration_fastpath(nullptr, nullptr);
+    ASSERT_FALSE(config.fastpath());
+}
+
+TEST_F(HipFileConfiguration, CantOverrideDisabledFastpathBackendIfHipAmdFileWriteIsNotAvailable)
+{
+    Configuration config{};
+    expect_configuration_fastpath(nullptr, reinterpret_cast<void *>(0x1), nullptr);
+    ASSERT_FALSE(config.fastpath());
+
+    config.fastpath(true);
+    expect_configuration_fastpath(nullptr, reinterpret_cast<void *>(0x1), nullptr);
+    ASSERT_FALSE(config.fastpath());
 }
 
 TEST_F(HipFileConfiguration, FallbackEnabledIfAllowCompatModeEnvironmentVariableIsNotSet)

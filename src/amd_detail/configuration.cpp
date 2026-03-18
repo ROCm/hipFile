@@ -18,7 +18,13 @@ Configuration::fastpath() const noexcept
     STATIC bool fastpath_env{!Environment::force_compat_mode().value_or(false)};
     STATIC bool readExists{!!getHipAmdFileReadPtr()};
     STATIC bool writeExists{!!getHipAmdFileWritePtr()};
-    return readExists && writeExists && fastpath_env;
+    return readExists && writeExists && m_fastpath_override.value_or(fastpath_env);
+}
+
+void
+Configuration::fastpath(bool enabled) noexcept
+{
+    m_fastpath_override = enabled;
 }
 
 bool

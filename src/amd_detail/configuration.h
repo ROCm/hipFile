@@ -5,9 +5,13 @@
 
 #pragma once
 
+#include <optional>
+
 namespace hipFile {
 
 class Configuration {
+
+    std::optional<bool> m_fastpath_override;
 
 public:
     virtual ~Configuration() = default;
@@ -15,6 +19,12 @@ public:
     /// @brief Checks if the fastpath backend is enabled
     /// @return true if the fastpath backend is enabled, false otherwise
     virtual bool fastpath() const noexcept;
+
+    /// @brief Override fastpath backend enablement.
+    ///
+    /// If hipAmdFileRead/hipAmdFileWrite are not available fastpath() will
+    /// return false even if fastpath(true) is called.
+    virtual void fastpath(bool enabled) noexcept;
 
     /// @brief Checks if the fallback backend is enabled
     /// @return true if the fallback backend is enabled, false otherwise
