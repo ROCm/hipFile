@@ -55,24 +55,13 @@ if(AIS_BUILD_DOCS)
                 "DOXYGEN_XML_DIR=${AIS_DOXYGEN_XML_DIR}"
             "${Python3_EXECUTABLE}" -m sphinx
                 -b html
-                -C
-                -c "${CMAKE_CURRENT_SOURCE_DIR}/docs/sphinx"
-                "${CMAKE_CURRENT_SOURCE_DIR}/docs"
+                -c "${HIPFILE_ROOT_PATH}/docs/sphinx"
+                "${HIPFILE_ROOT_PATH}/docs"
                 "${AIS_SPHINX_BUILD_DIR}"
+                -v
         WORKING_DIRECTORY "${AIS_DOC_PATH}"
         COMMENT "Generating hipFile API documentation with Doxygen + Sphinx (rocm_docs)"
         VERBATIM
     )
-
-    # Set the output directory
-    #set(DOXYGEN_OUT ${AIS_DOC_PATH})
-
-    # Configure the documentation build
-    #add_custom_target("doc"
-    #    COMMAND ${DOXYGEN_EXECUTABLE} ${AIS_DOXYFILE}
-    #    WORKING_DIRECTORY ${AIS_DOC_PATH}
-    #    COMMENT "Generating hipFile API documentation with Doxygen"
-    #    VERBATIM
-    #)
 
 endif()

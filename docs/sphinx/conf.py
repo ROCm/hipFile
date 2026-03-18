@@ -45,3 +45,4 @@ docs_core.setup()
 # Transfer all Sphinx config variables into this module's global scope
 for sphinx_var in ROCmDocs.SPHINX_VARS:
     globals()[sphinx_var] = getattr(docs_core, sphinx_var)
+extensions.append('sphinx_design')
