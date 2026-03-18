@@ -14,6 +14,7 @@
 #include "hipfile-warnings.h"
 #include "io.h"
 #include "mbuffer.h"
+#include "mconfiguration.h"
 #include "mfile.h"
 #include "mhip.h"
 #include "mmountinfo.h"
@@ -147,10 +148,13 @@ struct FallbackScoring : public testing::Test {
     const hoff_t                    buffer_offset{1024};
     shared_ptr<StrictMock<MFile>>   mfile{make_shared<StrictMock<MFile>>()};
     shared_ptr<StrictMock<MBuffer>> mbuffer{make_shared<StrictMock<MBuffer>>()};
+
+    StrictMock<MConfiguration> mcfg;
 };
 
 TEST_F(FallbackScoring, ScoreAcceptsIoTargetingDeviceMemory)
 {
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(true));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(hipMemoryTypeDevice));
 
     ASSERT_EQ(Fallback().score(mfile, mbuffer, io_size, file_offset, buffer_offset), 0);
@@ -158,10 +162,17 @@ TEST_F(FallbackScoring, ScoreAcceptsIoTargetingDeviceMemory)
 
 TEST_F(FallbackScoring, ScoreRejectsIoTargetingUnsupportedMemoryType)
 {
+    EXPECT_CALL(mcfg, fallback()).WillRepeatedly(Return(true));
     for (const auto memoryType : UnsupportedHipMemoryTypes) {
         EXPECT_CALL(*mbuffer, getType).WillOnce(Return(memoryType));
         ASSERT_EQ(Fallback().score(mfile, mbuffer, io_size, file_offset, buffer_offset), -1);
     }
+}
+
+TEST_F(FallbackScoring, ScoreRejectsIoIfFallbackDisabled)
+{
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(false));
+    ASSERT_EQ(Fallback().score(mfile, mbuffer, io_size, file_offset, buffer_offset), -1);
 }
 
 struct FallbackParam : ::testing::TestWithParam<IoType> {
