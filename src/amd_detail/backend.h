@@ -22,6 +22,13 @@ namespace hipFile {
 // write() system call. Mirrors kernel's MAX_RW_COUNT
 static const size_t MAX_RW_COUNT = 0x7ffff000;
 
+/// @brief Backend is not enabled
+struct BackendDisabled : public std::runtime_error {
+    BackendDisabled() : std::runtime_error("Backend is disabled")
+    {
+    }
+};
+
 struct Backend {
     virtual ~Backend() = default;
 

@@ -161,6 +161,10 @@ ssize_t
 Fastpath::io(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size, hoff_t file_offset,
              hoff_t buffer_offset)
 {
+    if (!Context<Configuration>::get()->fastpath()) {
+        throw BackendDisabled();
+    }
+
     void *devptr{reinterpret_cast<void *>(reinterpret_cast<intptr_t>(buffer->getBuffer()) + buffer_offset)};
     hipAmdFileHandle_t handle{};
     size_t             nbytes{};

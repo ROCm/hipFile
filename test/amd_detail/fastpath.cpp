@@ -364,6 +364,7 @@ struct FastpathIoParam : public FastpathTestBase, public TestWithParam<IoType> {
     // Setup expectations on the mocks called to validate IO arguments
     void expect_validate()
     {
+        EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(DEFAULT_ENABLE));
         EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
         EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(DEFAULT_BUFFER_LENGTH));
         EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
@@ -380,6 +381,7 @@ struct FastpathIoParam : public FastpathTestBase, public TestWithParam<IoType> {
     // Setup expectations on the mocks called to validate IO arguments
     void expect_validate(optional<int> fd, void *bufptr, size_t buflen)
     {
+        EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(DEFAULT_ENABLE));
         EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(bufptr));
         EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(buflen));
         EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(fd));
@@ -393,6 +395,12 @@ struct FastpathIoParam : public FastpathTestBase, public TestWithParam<IoType> {
         EXPECT_CALL(mhip, hipInit);
     }
 };
+
+TEST_P(FastpathIoParam, IoRejectedIfFastpathDisabled)
+{
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(false));
+    ASSERT_THROW(Fastpath().io(GetParam(), mfile, mbuffer, 0, -1, 0), BackendDisabled);
+}
 
 TEST_P(FastpathIoParam, IoRejectsNegativeFileOffset)
 {
