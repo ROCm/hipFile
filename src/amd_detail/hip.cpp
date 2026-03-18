@@ -5,6 +5,7 @@
 
 #include "context.h"
 #include "hip.h"
+#include "static.h"
 
 #include <cstdlib>
 #include <system_error>
@@ -24,22 +25,16 @@ catch (...) {
 hipAmdFileRead_t
 getHipAmdFileReadPtr()
 {
-#ifndef AIS_TESTING
-    static
-#endif
-        hipAmdFileRead_t hipAmdFileReadPtr{
-            reinterpret_cast<hipAmdFileRead_t>(hipGetProcAddressHelper("hipAmdFileRead"))};
+    STATIC hipAmdFileRead_t hipAmdFileReadPtr{
+        reinterpret_cast<hipAmdFileRead_t>(hipGetProcAddressHelper("hipAmdFileRead"))};
     return hipAmdFileReadPtr;
 }
 
 hipAmdFileWrite_t
 getHipAmdFileWritePtr()
 {
-#ifndef AIS_TESTING
-    static
-#endif
-        hipAmdFileWrite_t hipAmdFileWritePtr{
-            reinterpret_cast<hipAmdFileWrite_t>(hipGetProcAddressHelper("hipAmdFileWrite"))};
+    STATIC hipAmdFileWrite_t hipAmdFileWritePtr{
+        reinterpret_cast<hipAmdFileWrite_t>(hipGetProcAddressHelper("hipAmdFileWrite"))};
     return hipAmdFileWritePtr;
 }
 

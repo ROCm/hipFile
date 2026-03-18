@@ -6,6 +6,7 @@
 #include "configuration.h"
 #include "environment.h"
 #include "hip.h"
+#include "static.h"
 
 #include <optional>
 
@@ -32,14 +33,8 @@ Configuration::Configuration() : m_fastpath(true), m_fallback(true), m_statsLeve
 bool
 Configuration::fastpath() const noexcept
 {
-#ifndef AIS_TESTING
-    static
-#endif
-        bool readExists{!!getHipAmdFileReadPtr()};
-#ifndef AIS_TESTING
-    static
-#endif
-        bool writeExists{!!getHipAmdFileWritePtr()};
+    STATIC bool readExists{!!getHipAmdFileReadPtr()};
+    STATIC bool writeExists{!!getHipAmdFileWritePtr()};
     return readExists && writeExists && m_fastpath;
 }
 
