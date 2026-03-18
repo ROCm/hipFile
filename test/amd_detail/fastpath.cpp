@@ -618,6 +618,54 @@ TEST_P(FastpathIoParamWithFallback, IntegrationRunWithFallback)
     ASSERT_EQ(num_bytes, DEFAULT_IO_SIZE);
 }
 
+// If the fallback backend rejects the IO, the original exception from
+// Fastpath should be raised.
+TEST_P(FastpathIoParamWithFallback, IntegrationFallbackRejectsIO)
+{
+    StrictMock<MHip> mhip;
+    StrictMock<MSys> msys;
+
+    auto fallback_backend = std::make_shared<StrictMock<Fallback>>();
+    auto fastpath_backend = std::make_shared<StrictMock<Fastpath>>();
+    fastpath_backend->register_fallback_backend(fallback_backend);
+
+    // Called only by Fastpath
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(DEFAULT_BUFFER_LENGTH));
+    EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
+    // Called only by Fallback - should fail the score() check.
+    EXPECT_CALL(*mbuffer, getType).WillOnce(Return(hipMemoryTypeHost));
+    switch (_get_param_io_type()) {
+        case IoType::Read:
+            // Called by Fastpath
+            EXPECT_CALL(mhip, hipAmdFileRead).WillOnce(Rethrow(_get_param_exc_ptr()));
+            break;
+        case IoType::Write:
+            // Called by Fastpath
+            EXPECT_CALL(mhip, hipAmdFileWrite).WillOnce(Rethrow(_get_param_exc_ptr()));
+            break;
+        default:
+            FAIL() << "Invalid IoType";
+    }
+
+    // Have to rethrow the exception_ptr to be able to access the exception
+    try {
+        std::rethrow_exception(_get_param_exc_ptr());
+    }
+    catch (const std::exception &expected_exc) {
+        // Can't use EXPECT_THROW due to the thrown exception type only being known at runtime
+        try {
+            fastpath_backend->io(_get_param_io_type(), mfile, mbuffer, DEFAULT_IO_SIZE, 0, 0);
+        }
+        catch (const std::exception &actual_exc) {
+            ASSERT_EQ(&expected_exc, &actual_exc);
+        }
+        catch (...) {
+            FAIL() << "io() threw something other than a std::exception";
+        }
+    }
+}
+
 // Using std::exception_ptr is more straightforward here than storing a pointer
 // to a derived std::exception type, which would require careful handling when
 // setting expectations. Note that Throw() does not accept std::exception_ptr,
