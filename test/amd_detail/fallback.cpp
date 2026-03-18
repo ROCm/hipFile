@@ -116,6 +116,7 @@ struct FallbackIo : public HipFileOpened {
     StrictMock<MHip>            mhip;
     StrictMock<MSys>            msys;
     StrictMock<MLibMountHelper> mlibmounthelper;
+    StrictMock<MConfiguration>  mcfg{};
 
     FallbackIo() : buffer_data(1024 * 1024)
     {
@@ -183,6 +184,7 @@ struct FallbackParam : ::testing::TestWithParam<IoType> {
     StrictMock<MHip>            mhip{};
     StrictMock<MSys>            msys{};
     StrictMock<MLibMountHelper> mlibmounthelper{};
+    StrictMock<MConfiguration>  mcfg{};
 
     FallbackParam()
     {
@@ -218,8 +220,15 @@ protected:
     IoType io_type;
 };
 
+TEST_P(FallbackParam, FallbackIoRejectedIfBackendIsDiabled)
+{
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(false));
+    ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, 0, -1, 4096), BackendDisabled);
+}
+
 TEST_P(FallbackParam, FallbackIoThrowsOnNegativeBufferOffset)
 {
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(true));
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, 0, -1, 4096), std::invalid_argument);
 }
 
@@ -227,6 +236,7 @@ TEST_P(FallbackParam, FallbackIoThrowsIfBufferOffsetIsOutOfBounds)
 {
     hoff_t buffer_offset{static_cast<hoff_t>(buffer->getLength())};
 
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(true));
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, 0, buffer_offset, 4096), std::invalid_argument);
 }
 
@@ -235,11 +245,13 @@ TEST_P(FallbackParam, FallbackIoThrowsIfOpCouldOverrunBuffer)
     size_t size{10};
     hoff_t buffer_offset{static_cast<hoff_t>(buffer->getLength()) - 9};
 
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(true));
     ASSERT_THROW(Fallback().io(io_type, file, buffer, size, 0, buffer_offset, 4096), std::invalid_argument);
 }
 
 TEST_P(FallbackParam, FallbackIoThrowsOnNegativeFileOffset)
 {
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(true));
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, -1, 0, 4096), std::invalid_argument);
 }
 
@@ -250,6 +262,7 @@ TEST_P(FallbackParam, FallbackIoTruncatesSizeToMAX_RW_COUNT)
     Context<DriverState>::get()->registerBuffer(buf, MAX_RW_COUNT + 1, 0);
     auto big_buffer{Context<DriverState>::get()->getRegisteredBuffer(buf)};
 
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Return(reinterpret_cast<void *>(0xFEFEFEFE)));
     switch (io_type) {
         case IoType::Read:
@@ -278,6 +291,7 @@ TEST_P(FallbackParam, FallbackIoTruncatesSizeToMAX_RW_COUNT)
 
 TEST_P(FallbackParam, FallbackIoThrowsOnBounceBufferAllocationFailure)
 {
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Throw(std::system_error(ENOMEM, std::generic_category())));
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 4096, 0, 0, 4096), std::system_error);
 }
@@ -287,6 +301,7 @@ TEST_P(FallbackParam, FallbackIoAllocatesChunkSizedHostBounceBuffer)
     size_t chunk_size{1024 * 1024};
     auto   ptr{reinterpret_cast<void *>(0xFEFEFEFE)};
 
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(true));
     EXPECT_CALL(msys, mmap(testing::_, chunk_size, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(ptr));
     switch (io_type) {
@@ -334,6 +349,7 @@ struct FallbackWrite : public FallbackIo {
 
     void expect_fallback_write()
     {
+        EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
         EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
         EXPECT_CALL(mhip, hipMemcpy).WillRepeatedly(testing::Invoke(this, &FallbackWrite::fake_hipMemcpy));
         EXPECT_CALL(mhip, hipStreamSynchronize).WillRepeatedly(testing::Return());
@@ -362,6 +378,7 @@ TEST_F(FallbackWrite, FallbackWriteHandlesZeroSizedWrite)
 
 TEST_F(FallbackWrite, FallbackWriteThrowsOnPwriteException)
 {
+    EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(mhip, hipMemcpy);
     EXPECT_CALL(mhip, hipStreamSynchronize);
@@ -373,6 +390,7 @@ TEST_F(FallbackWrite, FallbackWriteThrowsOnPwriteException)
 
 TEST_F(FallbackWrite, FallbackWriteThrowsOnHipmemcpyFailure)
 {
+    EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(mhip, hipMemcpy).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
     EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
@@ -382,6 +400,7 @@ TEST_F(FallbackWrite, FallbackWriteThrowsOnHipmemcpyFailure)
 
 TEST_F(FallbackWrite, FallbackWriteThrowsOnHipStreamSynchronizeError)
 {
+    EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(mhip, hipMemcpy);
     EXPECT_CALL(mhip, hipStreamSynchronize).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
@@ -526,6 +545,7 @@ struct FallbackRead : public FallbackIo {
 
     void expect_fallback_read()
     {
+        EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
         EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
         EXPECT_CALL(msys, pread).WillRepeatedly(testing::Invoke(this, &FallbackRead::fake_pread));
         EXPECT_CALL(mhip, hipMemcpy).WillRepeatedly(testing::Invoke(this, &FallbackRead::fake_hipMemcpy));
@@ -558,6 +578,7 @@ TEST_F(FallbackRead, ReadFromRegionWithinFile)
 
 TEST_F(FallbackRead, FallbackReadThrowsOnPreadException)
 {
+    EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(msys, pread).WillOnce(testing::Throw(std::system_error(EIO, std::generic_category())));
     EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
@@ -569,6 +590,7 @@ TEST_F(FallbackRead, FallbackReadThrowsOnHipmemcpyFailure)
     size_t file_length{buffer->getLength()};
     init_file(file_length);
 
+    EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(msys, pread).WillRepeatedly(testing::Invoke(this, &FallbackRead::fake_pread));
     EXPECT_CALL(mhip, hipMemcpy).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
@@ -581,6 +603,7 @@ TEST_F(FallbackRead, FallbackReadHandlesEmptyFile)
     const size_t file_length{0};
     init_file(file_length);
 
+    EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(msys, pread).WillRepeatedly(testing::Invoke(this, &FallbackRead::fake_pread));
     EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
@@ -593,6 +616,7 @@ TEST_F(FallbackRead, FallbackReadHandlesShortPreads)
     size_t file_length{buffer->getLength()};
     init_file(file_length);
 
+    EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(msys, pread)
         .WillOnce(testing::Invoke([this](int fd, void *buf, size_t count, hoff_t offset) -> ssize_t {
@@ -612,6 +636,7 @@ TEST_F(FallbackRead, FallbackReadHandlesInterruptedPread)
     size_t file_length{buffer->getLength()};
     init_file(file_length);
 
+    EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(msys, pread)
         .WillOnce(testing::Throw(std::system_error(EINTR, std::generic_category())))

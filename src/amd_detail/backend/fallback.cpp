@@ -63,6 +63,10 @@ ssize_t
 Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
              hoff_t file_offset, hoff_t buffer_offset, size_t chunk_size)
 {
+    if (!Context<Configuration>::get()->fallback()) {
+        throw BackendDisabled();
+    }
+
     size = min(size, hipFile::MAX_RW_COUNT);
 
     if (!paramsValid(buffer, size, file_offset, buffer_offset)) {
