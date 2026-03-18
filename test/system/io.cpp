@@ -9,10 +9,12 @@
 #include "test-common.h"
 #include "test-options.h"
 
+#include <array>
 #include <cstdlib>
-#include <unistd.h>
 #include <gtest/gtest.h>
 #include <hip/hip_runtime_api.h>
+#include <string>
+#include <unistd.h>
 
 extern SystemTestOptions test_env;
 
@@ -23,7 +25,17 @@ enum class IoTestBackend {
     Fallback,
 };
 
-struct HipFileIo : public testing::TestWithParam<IoTestBackend> {
+struct IoTestParam {
+    IoTestBackend backend;
+    std::string   name;
+};
+
+HIPFILE_WARN_NO_EXIT_DTOR_OFF
+static std::array<IoTestParam, 2> io_test_params{
+    {{IoTestBackend::Fastpath, "Fastpath"}, {IoTestBackend::Fallback, "Fallback"}}};
+HIPFILE_WARN_NO_EXIT_DTOR_ON
+
+struct HipFileIo : public testing::TestWithParam<IoTestParam> {
 
     Tmpfile         tmpfile;
     size_t          tmpfile_size;
@@ -63,7 +75,7 @@ struct HipFileIo : public testing::TestWithParam<IoTestBackend> {
 
     void SetUp() override
     {
-        switch (GetParam()) {
+        switch (GetParam().backend) {
             case IoTestBackend::Fastpath:
                 enable_fastpath_only();
                 break;
@@ -112,6 +124,9 @@ TEST_P(HipFileIo, ReadToUnregisteredBufferAtOffsetReturnsErrorIfOverflow)
               hipFileRead(tmpfile_handle, unregistered_device_buffer, io_size, 0, io_buffer_offset));
 }
 
-INSTANTIATE_TEST_SUITE_P(, HipFileIo, testing::Values(IoTestBackend::Fastpath, IoTestBackend::Fallback));
+INSTANTIATE_TEST_SUITE_P(, HipFileIo, testing::ValuesIn(io_test_params),
+                         [](const testing::TestParamInfo<HipFileIo::ParamType> &param_info) {
+                             return param_info.param.name;
+                         });
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON
