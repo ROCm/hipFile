@@ -12,6 +12,7 @@
 #include "sys.h"
 
 #include <cstddef>
+#include <exception>
 #include <memory>
 #include <sys/types.h>
 #include <unistd.h>
@@ -94,7 +95,7 @@ struct BackendWithFallback : public Backend {
 
     /// @brief Check if a failed IO operation can be re-issued to the fallback Backend.
     ///
-    /// @param e_ptr         Pointer to the thrown Exception by the failed IO
+    /// @param e_ptr         exception_ptr to the thrown exception from the failed IO
     /// @param nbytes        Return value from `_io_impl`, or 0 if an exception was thrown.
     /// @param file          File to read from or write to
     /// @param buffer        Buffer to write to or read from

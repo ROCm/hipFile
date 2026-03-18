@@ -74,8 +74,7 @@ BackendWithFallback::io(IoType type, std::shared_ptr<IFile> file, std::shared_pt
 bool
 BackendWithFallback::is_fallback_eligible(std::exception_ptr e_ptr, ssize_t nbytes,
                                           std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer,
-                                          size_t size, hoff_t file_offset,
-                                          hoff_t buffer_offset) const
+                                          size_t size, hoff_t file_offset, hoff_t buffer_offset) const
 {
     (void)e_ptr;
     (void)nbytes;

@@ -649,6 +649,8 @@ TEST_P(FastpathIoParamWithFallback, IntegrationFallbackRejectsIO)
     }
 
     // Have to rethrow the exception_ptr to be able to access the exception
+    // This looks ugly, but is better than the alternative of trying to preserve the
+    // exception type when setting Throw(*std::shared_ptr<std::exception>>).
     try {
         std::rethrow_exception(_get_param_exc_ptr());
     }
@@ -656,9 +658,14 @@ TEST_P(FastpathIoParamWithFallback, IntegrationFallbackRejectsIO)
         // Can't use EXPECT_THROW due to the thrown exception type only being known at runtime
         try {
             fastpath_backend->io(_get_param_io_type(), mfile, mbuffer, DEFAULT_IO_SIZE, 0, 0);
+            FAIL() << "io() was expected to throw, but it returned normally";
         }
         catch (const std::exception &actual_exc) {
-            ASSERT_EQ(&expected_exc, &actual_exc);
+            // Verify that the propagated exception has the same dynamic type and message
+            // as the one stored in the original std::exception_ptr, without relying on
+            // pointer identity of the underlying exception object.
+            ASSERT_EQ(typeid(expected_exc), typeid(actual_exc));
+            ASSERT_STREQ(expected_exc.what(), actual_exc.what());
         }
         catch (...) {
             FAIL() << "io() threw something other than a std::exception";

@@ -17,7 +17,6 @@
 using namespace hipFile;
 
 using ::testing::AnyNumber;
-using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::Throw;
