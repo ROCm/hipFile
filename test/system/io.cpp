@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "context.h"
+#include "configuration.h"
 #include "hipfile-warnings.h"
 #include "hipfile.h"
 
@@ -17,6 +19,8 @@
 #include <unistd.h>
 
 extern SystemTestOptions test_env;
+
+using namespace hipFile;
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 
@@ -49,39 +53,20 @@ struct HipFileIo : public testing::TestWithParam<IoTestParam> {
     {
     }
 
-    // Must be called before hipfile is initialized. Relies on each test being
-    // run in a separate process
-    void enable_fastpath_only()
-    {
-        if (unsetenv("HIPFILE_FORCE_COMPAT_MODE")) {
-            FAIL() << "Could not clear HIPFILE_FORCE_COMPAT_MODE";
-        }
-        if (setenv("HIPFILE_ALLOW_COMPAT_MODE", "false", 1)) {
-            FAIL() << "Could not set HIPFILE_ALLOW_COMPAT_MODE=false";
-        }
-    }
-
-    // Must be called before hipfile is initialized. Relies on each test being
-    // run in a separate process
-    void enable_fallback_only()
-    {
-        if (unsetenv("HIPFILE_ALLOW_COMPAT_MODE")) {
-            FAIL() << "Could not clear HIPFILE_ALLOW_COMPAT_MODE";
-        }
-        if (setenv("HIPFILE_FORCE_COMPAT_MODE", "true", 1)) {
-            FAIL() << "Could not set HIPFILE_FORCE_COMPAT_MODE=true";
-        }
-    }
-
     void SetUp() override
     {
+        // Disable all backends
+        Context<Configuration>::get()->fastpath(false);
+        Context<Configuration>::get()->fallback(false);
+
+        // Enable the desired backend
         switch (GetParam().backend) {
             case IoTestBackend::Fastpath:
-                enable_fastpath_only();
+                Context<Configuration>::get()->fastpath(true);
                 break;
 
             case IoTestBackend::Fallback:
-                enable_fallback_only();
+                Context<Configuration>::get()->fallback(true);
                 break;
 
             default:
