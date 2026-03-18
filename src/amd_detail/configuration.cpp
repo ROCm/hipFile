@@ -31,7 +31,13 @@ bool
 Configuration::fallback() const noexcept
 {
     STATIC bool fallback_env{Environment::allow_compat_mode().value_or(true)};
-    return fallback_env;
+    return m_fallback_override.value_or(fallback_env);
+}
+
+void
+Configuration::fallback(bool enabled) noexcept
+{
+    m_fallback_override = enabled;
 }
 
 unsigned int

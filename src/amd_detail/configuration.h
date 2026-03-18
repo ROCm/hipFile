@@ -12,6 +12,7 @@ namespace hipFile {
 class Configuration {
 
     std::optional<bool> m_fastpath_override;
+    std::optional<bool> m_fallback_override;
 
 public:
     virtual ~Configuration() = default;
@@ -29,6 +30,9 @@ public:
     /// @brief Checks if the fallback backend is enabled
     /// @return true if the fallback backend is enabled, false otherwise
     virtual bool fallback() const noexcept;
+
+    /// @brief Override fallback backend enablement
+    virtual void fallback(bool enabled) noexcept;
 
     /// @brief Shows the level of detail for stats collection
     /// @return 0 if stats collection disabled, higher levels of detail as value increases

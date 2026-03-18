@@ -148,10 +148,32 @@ TEST_F(HipFileConfiguration, FallbackEnabledIfAllowCompatModeEnvironmentVariable
     ASSERT_TRUE(Configuration().fallback());
 }
 
+TEST_F(HipFileConfiguration, OverrideEnabledFallbackBackend)
+{
+    Configuration config{};
+    expect_configuration_fallback(nullptr);
+    ASSERT_TRUE(config.fallback());
+
+    config.fallback(false);
+    expect_configuration_fallback(nullptr);
+    ASSERT_FALSE(config.fallback());
+}
+
 TEST_F(HipFileConfiguration, FallbackDisabledIfAllowCompatModeEnvironmentVariableIsFalse)
 {
     expect_configuration_fallback("false");
     ASSERT_FALSE(Configuration().fallback());
+}
+
+TEST_F(HipFileConfiguration, OverrideDisabledFallbackBackend)
+{
+    Configuration config{};
+    expect_configuration_fallback("false");
+    ASSERT_FALSE(config.fallback());
+
+    config.fallback(true);
+    expect_configuration_fallback("false");
+    ASSERT_TRUE(config.fallback());
 }
 
 TEST_F(HipFileConfiguration, StatsLevelEnvironmentVariableIsNotSet)
