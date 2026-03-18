@@ -2,9 +2,9 @@
   :description: hipFile does hipFile stuff
   :keywords: hipFile, ROCm, storage, library, API, DMA
 
-****************************
-rocSHMEM documentation
-****************************
+*********************
+hipFile documentation
+*********************
 
 hipFile introduction goes here. For more information, see :doc:`introduction`.
 
