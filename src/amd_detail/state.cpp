@@ -275,12 +275,8 @@ std::vector<std::shared_ptr<Backend>>
 DriverState::getBackends() const
 {
     static bool once = [&]() {
-        if (Context<Configuration>::get()->fastpath()) {
-            backends.emplace_back(new Fastpath{});
-        }
-        if (Context<Configuration>::get()->fallback()) {
-            backends.emplace_back(new Fallback{});
-        }
+        backends.emplace_back(new Fastpath{});
+        backends.emplace_back(new Fallback{});
         return true;
     }();
     (void)once;
