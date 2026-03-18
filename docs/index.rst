@@ -28,7 +28,7 @@ The hipFile public repository is located at `<https://github.com/ROCm/hipFile>`_
   .. grid-item-card:: API reference
 
       * :doc:`Errors <./api/errors>`
-      * :doc:`Core API<./api/core>`
+      * :doc:`Core API <./api/core>`
       * :doc:`Drivers <./api/driver>`
       * :doc:`File operations <./api/file>`
       * :doc:`Asynchronous operations <./api/async>`
