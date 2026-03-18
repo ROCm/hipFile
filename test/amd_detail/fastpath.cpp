@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "backend/fallback.h"
 #include "backend/fastpath.h"
 #include "hip.h"
 #include "hipfile.h"
@@ -12,10 +13,12 @@
 #include "mbuffer.h"
 #include "mfile.h"
 #include "mhip.h"
+#include "msys.h"
 
 #include <array>
 #include <cerrno>
 #include <cstdint>
+#include <exception>
 #include <fcntl.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -25,6 +28,7 @@
 #include <stdexcept>
 #include <sys/types.h>
 #include <system_error>
+#include <tuple>
 
 using namespace hipFile;
 using namespace testing;
@@ -554,5 +558,74 @@ TEST_P(FastpathIoParam, IoSizeIsTruncatedToMaxRWCount)
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathIoParam, Values(IoType::Read, IoType::Write));
+
+struct FastpathIoParamWithFallback : public FastpathTestBase,
+                                     public TestWithParam<std::tuple<IoType, std::exception_ptr>> {
+    inline IoType _get_param_io_type() const
+    {
+        return std::get<0>(GetParam());
+    }
+
+    inline const std::exception_ptr _get_param_exc_ptr() const
+    {
+        return std::get<1>(GetParam());
+    }
+};
+
+// The Fastpath can throw a few different kinds of derived std::runtime_errors.
+TEST_P(FastpathIoParamWithFallback, IntegrationRunWithFallback)
+{
+    StrictMock<MHip> mhip;
+    StrictMock<MSys> msys;
+
+    auto fallback_backend = std::make_shared<StrictMock<Fallback>>();
+    auto fastpath_backend = std::make_shared<StrictMock<Fastpath>>();
+    fastpath_backend->register_fallback_backend(fallback_backend);
+
+    const int DEFAULT_BUFFERED_FD = DEFAULT_UNBUFFERED_FD.value() + 1;
+
+    // Called by both Fastpath and Fallback
+    EXPECT_CALL(*mbuffer, getBuffer).WillRepeatedly(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mbuffer, getLength).Times(2).WillRepeatedly(Return(DEFAULT_BUFFER_LENGTH));
+    // Called only by Fastpath
+    EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
+    // Called only by Fallback
+    EXPECT_CALL(*mbuffer, getType).WillOnce(Return(hipMemoryTypeDevice));
+    EXPECT_CALL(*mfile, getBufferedFd).WillRepeatedly(Return(DEFAULT_BUFFERED_FD));
+    EXPECT_CALL(mhip, hipMemcpy).WillRepeatedly(Return());
+    EXPECT_CALL(msys, mmap).WillOnce(Return(reinterpret_cast<void *>(0x12345678)));
+    EXPECT_CALL(msys, munmap).WillOnce(Return());
+    switch (_get_param_io_type()) {
+        case IoType::Read:
+            // Called by Fastpath
+            EXPECT_CALL(mhip, hipAmdFileRead).WillOnce(Rethrow(_get_param_exc_ptr()));
+            // Called by Fallback
+            EXPECT_CALL(msys, pread).WillRepeatedly(ReturnArg<2>());
+            break;
+        case IoType::Write:
+            // Called by Fastpath
+            EXPECT_CALL(mhip, hipAmdFileWrite).WillOnce(Rethrow(_get_param_exc_ptr()));
+            // Called by Fallback
+            EXPECT_CALL(mhip, hipStreamSynchronize).WillRepeatedly(Return());
+            EXPECT_CALL(msys, fdatasync).WillRepeatedly(Return());
+            EXPECT_CALL(msys, pwrite).WillRepeatedly(ReturnArg<2>());
+            break;
+        default:
+            FAIL() << "Invalid IoType";
+    }
+
+    ssize_t num_bytes = fastpath_backend->io(_get_param_io_type(), mfile, mbuffer, DEFAULT_IO_SIZE, 0, 0);
+    ASSERT_EQ(num_bytes, DEFAULT_IO_SIZE);
+}
+
+// Using std::exception_ptr is more straightforward here than storing a pointer
+// to a derived std::exception type, which would require careful handling when
+// setting expectations. Note that Throw() does not accept std::exception_ptr,
+// but the public (though undocumented) Rethrow() action does support it.
+INSTANTIATE_TEST_SUITE_P(
+    FastpathTest, FastpathIoParamWithFallback,
+    Combine(Values(IoType::Read, IoType::Write),
+            Values(std::make_exception_ptr(Hip::RuntimeError(hipErrorNoDevice)),
+                   std::make_exception_ptr(std::system_error(make_error_code(errc::no_such_device))))));
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON
