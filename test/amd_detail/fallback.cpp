@@ -139,28 +139,24 @@ struct FallbackIo : public HipFileOpened {
     }
 };
 
-TEST(HipFileFallbackBackend, FallbackBackendIsBarelyWillingToHandleDeviceMemory)
-{
-    auto   mfile{std::make_shared<StrictMock<MFile>>()};
-    auto   mbuffer{std::make_shared<StrictMock<MBuffer>>()};
-    size_t io_size{2048};
-    hoff_t file_offset{4096};
-    hoff_t buffer_offset{1024};
+struct FallbackScoring : public testing::Test {
+    const size_t                    io_size{2048};
+    const hoff_t                    file_offset{4096};
+    const hoff_t                    buffer_offset{1024};
+    shared_ptr<StrictMock<MFile>>   mfile{make_shared<StrictMock<MFile>>()};
+    shared_ptr<StrictMock<MBuffer>> mbuffer{make_shared<StrictMock<MBuffer>>()};
+};
 
+TEST_F(FallbackScoring, ScoreAcceptsIoTargetingDeviceMemory)
+{
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(hipMemoryTypeDevice));
 
     ASSERT_EQ(Fallback().score(mfile, mbuffer, io_size, file_offset, buffer_offset), 0);
 }
 
-TEST(HipFileFallbackBackend, FallbackBackendRejectsUnsupportedHipMemoryTypes)
+TEST_F(FallbackScoring, ScoreRejectsIoTargetingUnsupportedMemoryType)
 {
-    auto   mfile{std::make_shared<StrictMock<MFile>>()};
-    size_t io_size{2048};
-    hoff_t file_offset{4096};
-    hoff_t buffer_offset{1024};
-
     for (const auto memoryType : UnsupportedHipMemoryTypes) {
-        auto mbuffer = std::make_shared<StrictMock<MBuffer>>();
         EXPECT_CALL(*mbuffer, getType).WillOnce(Return(memoryType));
         ASSERT_EQ(Fallback().score(mfile, mbuffer, io_size, file_offset, buffer_offset), -1);
     }
