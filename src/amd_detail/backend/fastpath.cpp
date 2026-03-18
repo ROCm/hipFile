@@ -4,6 +4,7 @@
  */
 
 #include "buffer.h"
+#include "configuration.h"
 #include "context.h"
 #include "fastpath.h"
 #include "file.h"
@@ -127,6 +128,8 @@ Fastpath::score(shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
                 hoff_t buffer_offset) const
 {
     bool accept_io{true};
+
+    accept_io &= Context<Configuration>::get()->fastpath();
 
     accept_io &= file->getUnbufferedFd().has_value();
 
