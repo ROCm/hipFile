@@ -23,7 +23,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pylint
           python -m pip install black
-          python -m pip install rocm_docs
+          python -m pip install rocm-docs-core
 
       - name: Lint all Python files
         run: |
