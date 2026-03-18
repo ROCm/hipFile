@@ -1,7 +1,3 @@
-# This file is a template for the Sphinx table of contents.
-# A build step is expected to generate `_toc.yml` from this `_toc.yml.in`
-# file before running the Sphinx build (see docs/conf.py configuration).
-
 defaults:
   numbered: False
 root: index

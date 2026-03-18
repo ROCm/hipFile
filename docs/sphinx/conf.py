@@ -9,6 +9,7 @@
 
 """This file is for configuring hipFile documentation"""
 
+import os
 from rocm_docs import ROCmDocs
 
 version_number = "0.2.0"
@@ -22,13 +23,25 @@ copyright = "Copyright (c) Advanced Micro Devices, Inc. All rights reserved."
 # pylint: enable=redefined-builtin
 version = version_number
 release = version_number
+external_projects_current_project = "rocshmem"
 
 external_toc_path = "./sphinx/_toc.yml"
 
 docs_core = ROCmDocs(left_nav_title)
-docs_core.run_doxygen(doxygen_root="doxygen", doxygen_path="doxygen/xml")
+
+doxygen_root = os.environ.get("DOXYGEN_ROOT")
+doxygen_xml_dir = os.environ.get("DOXYGEN_XML_DIR")
+
+if not doxygen_root or not doxygen_xml_dir:
+    raise RuntimeError(
+        "DOXYGEN_ROOT and DOXYGEN_XML_DIR must be set. "
+        "Build this documentation via CMake, not directly with sphinx-build."
+    )
+
+docs_core.run_doxygen(doxygen_root=doxygen_root, doxygen_path=doxygen_xml_dir)
+
 docs_core.setup()
 
-external_projects_current_project = "rocshmem"
+# Transfer all Sphinx config variables into this module's global scope
 for sphinx_var in ROCmDocs.SPHINX_VARS:
     globals()[sphinx_var] = getattr(docs_core, sphinx_var)
