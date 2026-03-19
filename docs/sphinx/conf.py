@@ -24,7 +24,7 @@ copyright = "Copyright (c) Advanced Micro Devices, Inc. All rights reserved."
 version = version_number
 release = version_number
 external_projects_current_project = "rocshmem"
-
+extensions = ['sphinx_design']
 external_toc_path = "./sphinx/_toc.yml"
 
 docs_core = ROCmDocs(left_nav_title)
@@ -45,4 +45,3 @@ docs_core.setup()
 # Transfer all Sphinx config variables into this module's global scope
 for sphinx_var in ROCmDocs.SPHINX_VARS:
     globals()[sphinx_var] = getattr(docs_core, sphinx_var)
-extensions.append('sphinx_design')
