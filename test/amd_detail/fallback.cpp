@@ -205,14 +205,14 @@ protected:
     IoType io_type;
 };
 
-TEST_P(FallbackParam, fallback_io_throws_on_negative_buffer_offset)
+TEST_P(FallbackParam, FallbackIoThrowsOnNegativeBufferOffset)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, 0, -1, 4096), std::invalid_argument);
 }
 
-TEST_P(FallbackParam, fallback_io_throws_if_buffer_offset_is_out_of_bounds)
+TEST_P(FallbackParam, FallbackIoThrowsIfBufferOffsetIsOutOfBounds)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -220,7 +220,7 @@ TEST_P(FallbackParam, fallback_io_throws_if_buffer_offset_is_out_of_bounds)
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, 0, buffer_offset, 4096), std::invalid_argument);
 }
 
-TEST_P(FallbackParam, fallback_io_throws_if_op_could_overrun_buffer)
+TEST_P(FallbackParam, FallbackIoThrowsIfOpCouldOverrunBuffer)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -229,14 +229,14 @@ TEST_P(FallbackParam, fallback_io_throws_if_op_could_overrun_buffer)
     ASSERT_THROW(Fallback().io(io_type, file, buffer, size, 0, buffer_offset, 4096), std::invalid_argument);
 }
 
-TEST_P(FallbackParam, fallback_io_throws_on_negative_file_offset)
+TEST_P(FallbackParam, FallbackIoThrowsOnNegativeFileOffset)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, -1, 0, 4096), std::invalid_argument);
 }
 
-TEST_P(FallbackParam, fallback_io_truncates_size_to_MAX_RW_COUNT)
+TEST_P(FallbackParam, FallbackIoTruncatesSizeToMAX_RW_COUNT)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -272,7 +272,7 @@ TEST_P(FallbackParam, fallback_io_truncates_size_to_MAX_RW_COUNT)
     ASSERT_EQ(MAX_RW_COUNT, Fallback().io(io_type, file, big_buffer, SIZE_MAX, 0, 0, 16 * 1024 * 1024));
 }
 
-TEST_P(FallbackParam, fallback_io_throws_on_bounce_buffer_allocation_failure)
+TEST_P(FallbackParam, FallbackIoThrowsOnBounceBufferAllocationFailure)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -280,7 +280,7 @@ TEST_P(FallbackParam, fallback_io_throws_on_bounce_buffer_allocation_failure)
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 4096, 0, 0, 4096), std::system_error);
 }
 
-TEST_P(FallbackParam, fallback_io_allocates_chunk_sized_host_bounce_buffer)
+TEST_P(FallbackParam, FallbackIoAllocatesChunkSizedHostBounceBuffer)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
