@@ -27,10 +27,10 @@ if(AIS_BUILD_DOCS)
 
     # Set Doxygen input (pasted into Doxyfile.in)
     set(AIS_DOXYFILE_INPUT "${HIPFILE_ROOT_PATH}/include")
-    
+
     # Set the path to the documentation
     set(AIS_DOC_PATH "${CMAKE_CURRENT_BINARY_DIR}/docs")
-    
+
     # Set the Doxyfile install location
     set(AIS_DOXYFILE "${AIS_DOC_PATH}/doxygen/Doxyfile")
 
