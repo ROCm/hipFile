@@ -54,7 +54,7 @@ operator!=(const hipFileError_t &lhs, const hipFileError_t &rhs)
 // << overload for hipFileError_t values
 //
 // Unused in the test code, but kept here for iostream debugging
-#include <iostream>
+#include <ostream>
 inline std::ostream &
 operator<<(std::ostream &os, const hipFileError_t &rfe)
 {
