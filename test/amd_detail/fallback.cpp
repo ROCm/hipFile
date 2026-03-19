@@ -53,13 +53,13 @@ rand_fill(std::vector<uint8_t> &v)
 {
     // *Quickly* fill the vector with data. Reading from /dev/urandom is
     // faster than C++'s prngs and C's rand.
-    auto fd = open("/dev/urandom", O_RDONLY);
+    auto fd{open("/dev/urandom", O_RDONLY)};
     if (fd == -1) {
         throw std::runtime_error("Can't open /dev/urandom");
     }
-    size_t total_bytes_read = 0;
+    size_t total_bytes_read{0};
     while (total_bytes_read < v.size()) {
-        auto bytes_read = read(fd, v.data() + total_bytes_read, v.size() - total_bytes_read);
+        auto bytes_read{read(fd, v.data() + total_bytes_read, v.size() - total_bytes_read)};
         if (bytes_read == -1) {
             throw std::runtime_error("Can't read from /dev/urandom");
         }
@@ -85,7 +85,7 @@ contains_expected_data(std::vector<uint8_t> &buffer, hoff_t buffer_offset, std::
         throw std::invalid_argument("out of bounds: expected");
     }
 
-    for (hoff_t i = 0; i < buffer_offset; i++) {
+    for (hoff_t i{0}; i < buffer_offset; i++) {
         if (buffer.data()[i] != 0) {
             return false;
         }
@@ -95,7 +95,7 @@ contains_expected_data(std::vector<uint8_t> &buffer, hoff_t buffer_offset, std::
         return false;
     }
 
-    for (size_t i = static_cast<size_t>(buffer_offset) + count; i < buffer.size(); i++) {
+    for (size_t i{static_cast<size_t>(buffer_offset) + count}; i < buffer.size(); i++) {
         if (buffer.data()[i] != 0) {
             return false;
         }
@@ -106,10 +106,10 @@ contains_expected_data(std::vector<uint8_t> &buffer, hoff_t buffer_offset, std::
 
 struct FallbackIo : public HipFileOpened {
 
-    shared_ptr<IBuffer>  buffer;
-    std::vector<uint8_t> buffer_data;
-    shared_ptr<IFile>    file;
-    std::vector<uint8_t> file_data;
+    shared_ptr<IBuffer>  buffer{};
+    std::vector<uint8_t> buffer_data{};
+    shared_ptr<IFile>    file{};
+    std::vector<uint8_t> file_data{};
     void                *nonnull_ptr{reinterpret_cast<void *>(0x1)};
 
     StrictMock<MHip>            mhip;
@@ -166,20 +166,19 @@ TEST_F(FallbackScoring, ScoreRejectsIoTargetingUnsupportedMemoryType)
 
 struct FallbackParam : ::testing::TestWithParam<IoType> {
 
-    shared_ptr<IBuffer> buffer;
-    shared_ptr<IFile>   file;
+    shared_ptr<IBuffer> buffer{};
+    shared_ptr<IFile>   file{};
 
-    StrictMock<MHip>            mhip;
-    StrictMock<MSys>            msys;
-    StrictMock<MLibMountHelper> mlibmounthelper;
+    StrictMock<MHip>            mhip{};
+    StrictMock<MSys>            msys{};
+    StrictMock<MLibMountHelper> mlibmounthelper{};
 
     FallbackParam()
     {
-
         assert(hipFileDriverOpen() == HIPFILE_SUCCESS);
 
         expect_buffer_registration(mhip, hipMemoryTypeDevice);
-        void *buf = reinterpret_cast<void *>(0xFEFEFEFE);
+        void *buf{reinterpret_cast<void *>(0xFEFEFEFE)};
         Context<DriverState>::get()->registerBuffer(buf, 4096, 0);
         buffer = Context<DriverState>::get()->getRegisteredBuffer(buf);
 
@@ -215,15 +214,15 @@ TEST_P(FallbackParam, FallbackIoThrowsOnNegativeBufferOffset)
 
 TEST_P(FallbackParam, FallbackIoThrowsIfBufferOffsetIsOutOfBounds)
 {
-    hoff_t buffer_offset = static_cast<hoff_t>(buffer->getLength());
+    hoff_t buffer_offset{static_cast<hoff_t>(buffer->getLength())};
 
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, 0, buffer_offset, 4096), std::invalid_argument);
 }
 
 TEST_P(FallbackParam, FallbackIoThrowsIfOpCouldOverrunBuffer)
 {
-    size_t size          = 10;
-    hoff_t buffer_offset = static_cast<hoff_t>(buffer->getLength()) - 9;
+    size_t size{10};
+    hoff_t buffer_offset{static_cast<hoff_t>(buffer->getLength()) - 9};
 
     ASSERT_THROW(Fallback().io(io_type, file, buffer, size, 0, buffer_offset, 4096), std::invalid_argument);
 }
@@ -236,9 +235,9 @@ TEST_P(FallbackParam, FallbackIoThrowsOnNegativeFileOffset)
 TEST_P(FallbackParam, FallbackIoTruncatesSizeToMAX_RW_COUNT)
 {
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
-    auto buf = reinterpret_cast<void *>(0xABABABAB);
+    auto buf{reinterpret_cast<void *>(0xABABABAB)};
     Context<DriverState>::get()->registerBuffer(buf, MAX_RW_COUNT + 1, 0);
-    auto big_buffer = Context<DriverState>::get()->getRegisteredBuffer(buf);
+    auto big_buffer{Context<DriverState>::get()->getRegisteredBuffer(buf)};
 
     EXPECT_CALL(msys, mmap).WillOnce(testing::Return(reinterpret_cast<void *>(0xFEFEFEFE)));
     switch (io_type) {
@@ -274,8 +273,8 @@ TEST_P(FallbackParam, FallbackIoThrowsOnBounceBufferAllocationFailure)
 
 TEST_P(FallbackParam, FallbackIoAllocatesChunkSizedHostBounceBuffer)
 {
-    size_t chunk_size = 1024 * 1024;
-    auto   ptr        = reinterpret_cast<void *>(0xFEFEFEFE);
+    size_t chunk_size{1024 * 1024};
+    auto   ptr{reinterpret_cast<void *>(0xFEFEFEFE)};
 
     EXPECT_CALL(msys, mmap(testing::_, chunk_size, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(ptr));
@@ -312,7 +311,7 @@ struct FallbackWrite : public FallbackIo {
             return -1;
         }
 
-        auto uoffset = static_cast<size_t>(offset);
+        auto uoffset{static_cast<size_t>(offset)};
         if (file_data.size() < uoffset + count) {
             file_data.resize(uoffset + count);
         }
@@ -382,8 +381,8 @@ TEST_F(FallbackWrite, FallbackWriteThrowsOnHipStreamSynchronizeError)
 
 TEST_F(FallbackWrite, FallbackWriteToEmptyFile)
 {
-    size_t size       = 64 * 1024;
-    size_t chunk_size = 4096;
+    size_t size{64 * 1024};
+    size_t chunk_size{4096};
 
     randomize_device_buffer();
     expect_fallback_write();
@@ -394,9 +393,9 @@ TEST_F(FallbackWrite, FallbackWriteToEmptyFile)
 
 TEST_F(FallbackWrite, FallbackWriteToEmptyFileAtFileOffset)
 {
-    size_t size        = 64 * 1024;
-    size_t chunk_size  = 4096;
-    hoff_t file_offset = 1024;
+    size_t size{64 * 1024};
+    size_t chunk_size{4096};
+    hoff_t file_offset{1024};
 
     randomize_device_buffer();
     expect_fallback_write();
@@ -407,9 +406,9 @@ TEST_F(FallbackWrite, FallbackWriteToEmptyFileAtFileOffset)
 
 TEST_F(FallbackWrite, FallbackWriteToEmptyFileAtBufferOffset)
 {
-    size_t size          = 64 * 1024;
-    size_t chunk_size    = 4096;
-    hoff_t buffer_offset = 1024;
+    size_t size{64 * 1024};
+    size_t chunk_size{4096};
+    hoff_t buffer_offset{1024};
 
     randomize_device_buffer();
     expect_fallback_write();
@@ -420,10 +419,10 @@ TEST_F(FallbackWrite, FallbackWriteToEmptyFileAtBufferOffset)
 
 TEST_F(FallbackWrite, FallbackWriteToEmptyFileAtBufferOffsetFileOffset)
 {
-    size_t size          = 64 * 1024;
-    size_t chunk_size    = 4096;
-    hoff_t buffer_offset = 1024;
-    hoff_t file_offset   = 512;
+    size_t size{64 * 1024};
+    size_t chunk_size{4096};
+    hoff_t buffer_offset{1024};
+    hoff_t file_offset{512};
 
     randomize_device_buffer();
     expect_fallback_write();
@@ -444,8 +443,8 @@ TEST_F(FallbackWrite, FallbackWriteOverwiteEntireFile)
 
 TEST_F(FallbackWrite, FallbackWriteToFileSubregion)
 {
-    size_t file_length = buffer->getLength() * 2;
-    hoff_t file_offset = buffer->getLength() / 2;
+    size_t file_length{buffer->getLength() * 2};
+    hoff_t file_offset{static_cast<hoff_t>(buffer->getLength() / 2)};
     file_data.resize(file_length);
     randomize_device_buffer();
     expect_fallback_write();
@@ -458,8 +457,8 @@ TEST_F(FallbackWrite, FallbackWriteToFileSubregion)
 TEST_F(FallbackWrite, FallbackWriteAppendNonEmptySmallFile)
 {
     file_data.resize(64);
-    size_t size        = 64 * 1024;
-    hoff_t file_offset = 64;
+    size_t size{64 * 1024};
+    hoff_t file_offset{64};
 
     randomize_device_buffer();
     expect_fallback_write();
@@ -490,7 +489,7 @@ struct FallbackRead : public FallbackIo {
             return -1;
         }
 
-        auto uoffset = static_cast<size_t>(offset);
+        auto uoffset{static_cast<size_t>(offset)};
 
         if (count >= static_cast<size_t>(SSIZE_MAX) + 1) {
             return -1;
@@ -534,12 +533,12 @@ TEST_F(FallbackRead, FallbackReadHandlesZeroSizedRead)
 /// [SOF.....[....REGION....]....EOF]
 TEST_F(FallbackRead, ReadFromRegionWithinFile)
 {
-    size_t file_length = buffer->getLength() * 3;
+    size_t file_length{buffer->getLength() * 3};
     init_file(file_length);
 
-    size_t size          = buffer->getLength() / 2;
-    hoff_t buffer_offset = buffer->getLength() / 4;
-    hoff_t file_offset   = static_cast<hoff_t>(buffer->getLength());
+    size_t size{buffer->getLength() / 2};
+    hoff_t buffer_offset{static_cast<hoff_t>(buffer->getLength() / 4)};
+    hoff_t file_offset{static_cast<hoff_t>(buffer->getLength())};
 
     expect_fallback_read();
     ASSERT_EQ(Fallback().io(IoType::Read, file, buffer, size, file_offset, buffer_offset), size);
@@ -556,7 +555,7 @@ TEST_F(FallbackRead, FallbackReadThrowsOnPreadException)
 
 TEST_F(FallbackRead, FallbackReadThrowsOnHipmemcpyFailure)
 {
-    size_t file_length = buffer->getLength();
+    size_t file_length{buffer->getLength()};
     init_file(file_length);
 
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
@@ -568,7 +567,7 @@ TEST_F(FallbackRead, FallbackReadThrowsOnHipmemcpyFailure)
 
 TEST_F(FallbackRead, FallbackReadHandlesEmptyFile)
 {
-    const size_t file_length = 0;
+    const size_t file_length{0};
     init_file(file_length);
 
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
@@ -580,7 +579,7 @@ TEST_F(FallbackRead, FallbackReadHandlesEmptyFile)
 
 TEST_F(FallbackRead, FallbackReadHandlesShortPreads)
 {
-    size_t file_length = buffer->getLength();
+    size_t file_length{buffer->getLength()};
     init_file(file_length);
 
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
@@ -599,7 +598,7 @@ TEST_F(FallbackRead, FallbackReadHandlesShortPreads)
 
 TEST_F(FallbackRead, FallbackReadHandlesInterruptedPread)
 {
-    size_t file_length = buffer->getLength();
+    size_t file_length{buffer->getLength()};
     init_file(file_length);
 
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
@@ -616,7 +615,7 @@ TEST_F(FallbackRead, FallbackReadHandlesInterruptedPread)
 
 TEST_F(FallbackRead, FallbackReadHandlesFileSmallerThanBuffer)
 {
-    size_t file_length = buffer->getLength() / 2;
+    size_t file_length{buffer->getLength() / 2};
     init_file(file_length);
 
     expect_fallback_read();
@@ -626,7 +625,7 @@ TEST_F(FallbackRead, FallbackReadHandlesFileSmallerThanBuffer)
 
 TEST_F(FallbackRead, FallbackReadHandlesFileSameSizeAsBuffer)
 {
-    size_t file_length = buffer->getLength();
+    size_t file_length{buffer->getLength()};
     init_file(file_length);
 
     expect_fallback_read();
@@ -636,7 +635,7 @@ TEST_F(FallbackRead, FallbackReadHandlesFileSameSizeAsBuffer)
 
 TEST_F(FallbackRead, FallbackReadHandlesFileLargerThanBuffer)
 {
-    size_t file_length = buffer->getLength() * 2;
+    size_t file_length{buffer->getLength() * 2};
     init_file(file_length);
 
     expect_fallback_read();
@@ -646,8 +645,8 @@ TEST_F(FallbackRead, FallbackReadHandlesFileLargerThanBuffer)
 
 TEST_F(FallbackRead, FallbackReadHandlesFileWithSizeMultipleOfChunkSize)
 {
-    size_t chunk_size  = 4096;
-    size_t file_length = chunk_size;
+    size_t chunk_size{4096};
+    size_t file_length{chunk_size};
     init_file(file_length);
 
     expect_fallback_read();
@@ -657,8 +656,8 @@ TEST_F(FallbackRead, FallbackReadHandlesFileWithSizeMultipleOfChunkSize)
 
 TEST_F(FallbackRead, FallbackReadHandlesFilesWithSizeNotMultipleOfChunkSize)
 {
-    size_t chunk_size  = 4096;
-    size_t file_length = chunk_size + 1;
+    size_t chunk_size{4096};
+    size_t file_length{chunk_size + 1};
     init_file(file_length);
 
     expect_fallback_read();
@@ -668,9 +667,9 @@ TEST_F(FallbackRead, FallbackReadHandlesFilesWithSizeNotMultipleOfChunkSize)
 
 TEST_F(FallbackRead, FallbackReadWithNonZeroFileOffset)
 {
-    size_t file_length = buffer->getLength() * 3;
+    size_t file_length{buffer->getLength() * 3};
     init_file(file_length);
-    hoff_t file_offset = static_cast<hoff_t>(buffer->getLength());
+    hoff_t file_offset{static_cast<hoff_t>(buffer->getLength())};
 
     expect_fallback_read();
     ASSERT_EQ(buffer->getLength(),
@@ -680,9 +679,9 @@ TEST_F(FallbackRead, FallbackReadWithNonZeroFileOffset)
 
 TEST_F(FallbackRead, FallbackReadToEofWithNonZeroFileOffset)
 {
-    size_t file_length = buffer->getLength() * 2;
+    size_t file_length{buffer->getLength() * 2};
     init_file(file_length);
-    hoff_t file_offset = static_cast<hoff_t>(buffer->getLength());
+    hoff_t file_offset{static_cast<hoff_t>(buffer->getLength())};
 
     expect_fallback_read();
     ASSERT_EQ(buffer->getLength(),
@@ -692,9 +691,9 @@ TEST_F(FallbackRead, FallbackReadToEofWithNonZeroFileOffset)
 
 TEST_F(FallbackRead, FallbackReadPastEofWithNonZeroFileOffset)
 {
-    size_t file_length = buffer->getLength() * 2;
+    size_t file_length{buffer->getLength() * 2};
     init_file(file_length);
-    hoff_t file_offset = static_cast<hoff_t>(buffer->getLength()) + 1;
+    hoff_t file_offset{static_cast<hoff_t>(buffer->getLength()) + 1};
 
     expect_fallback_read();
     ASSERT_EQ(buffer->getLength() - 1,
@@ -704,9 +703,9 @@ TEST_F(FallbackRead, FallbackReadPastEofWithNonZeroFileOffset)
 
 TEST_F(FallbackRead, FallbackReadCanReadSingleByteAtEndOfFile)
 {
-    size_t file_length = buffer->getLength();
+    size_t file_length{buffer->getLength()};
     init_file(file_length);
-    hoff_t file_offset = static_cast<hoff_t>(file_length) - 1;
+    hoff_t file_offset{static_cast<hoff_t>(file_length) - 1};
 
     expect_fallback_read();
     ASSERT_EQ(1, Fallback().io(IoType::Read, file, buffer, buffer->getLength(), file_offset, 0));
@@ -715,9 +714,9 @@ TEST_F(FallbackRead, FallbackReadCanReadSingleByteAtEndOfFile)
 
 TEST_F(FallbackRead, FallbackReadEmtpyFileWithNonZeroFileOffset)
 {
-    size_t file_length = 0;
+    size_t file_length{0};
     init_file(file_length);
-    hoff_t file_offset = static_cast<hoff_t>(buffer->getLength());
+    hoff_t file_offset{static_cast<hoff_t>(buffer->getLength())};
 
     expect_fallback_read();
     ASSERT_EQ(0, Fallback().io(IoType::Read, file, buffer, buffer->getLength(), file_offset, 0));
@@ -726,9 +725,9 @@ TEST_F(FallbackRead, FallbackReadEmtpyFileWithNonZeroFileOffset)
 
 TEST_F(FallbackRead, FallbackReadWithNonZeroBufferOffset)
 {
-    size_t file_length = buffer->getLength() * 2;
+    size_t file_length{buffer->getLength() * 2};
     init_file(file_length);
-    hoff_t buffer_offset = static_cast<hoff_t>(1);
+    hoff_t buffer_offset{static_cast<hoff_t>(1)};
 
     expect_fallback_read();
     ASSERT_EQ(buffer->getLength() - 1,
@@ -738,9 +737,9 @@ TEST_F(FallbackRead, FallbackReadWithNonZeroBufferOffset)
 
 TEST_F(FallbackRead, FallbackReadCanReadIntoLastByteOfBuffer)
 {
-    size_t file_length = buffer->getLength();
+    size_t file_length{buffer->getLength()};
     init_file(file_length);
-    hoff_t buffer_offset = static_cast<hoff_t>(buffer->getLength() - 1);
+    hoff_t buffer_offset{static_cast<hoff_t>(buffer->getLength() - 1)};
 
     expect_fallback_read();
     ASSERT_EQ(1, Fallback().io(IoType::Read, file, buffer, 1, 0, buffer_offset));
@@ -749,11 +748,11 @@ TEST_F(FallbackRead, FallbackReadCanReadIntoLastByteOfBuffer)
 
 TEST_F(FallbackRead, FallbackReadWithNonZeroBufferOffsetAndFileOffset)
 {
-    size_t file_length = buffer->getLength();
+    size_t file_length{buffer->getLength()};
     init_file(file_length);
-    hoff_t file_offset   = 74;
-    hoff_t buffer_offset = 97;
-    size_t read_size     = buffer->getLength() / 2;
+    hoff_t file_offset{74};
+    hoff_t buffer_offset{97};
+    size_t read_size{buffer->getLength() / 2};
 
     expect_fallback_read();
     ASSERT_EQ(read_size, Fallback().io(IoType::Read, file, buffer, read_size, file_offset, buffer_offset));
