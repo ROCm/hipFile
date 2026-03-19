@@ -48,7 +48,7 @@ ais_add_executable(
     SYSINCLS ${TEST_SYSINCLS}
 )
 target_compile_options(hipfile_tests
-    PRIVATE -Wno-unused-function
+    PRIVATE -UNDEBUG -Wno-unused-function
 )
 target_link_libraries(hipfile_tests PRIVATE GTest::gtest)
 target_link_libraries(hipfile_tests PRIVATE GTest::gtest_main)
@@ -65,6 +65,7 @@ ais_add_executable(
     SRCS ${SYSTEM_TEST_SOURCE_FILES} ${SHARED_SOURCE_FILES}
     SYSINCLS ${TEST_SYSINCLS}
 )
+target_compile_options(hipfile_system_tests PRIVATE -UNDEBUG)
 target_link_libraries(hipfile_system_tests PRIVATE GTest::gtest)
 target_link_libraries(hipfile_system_tests PRIVATE Boost::program_options)
 

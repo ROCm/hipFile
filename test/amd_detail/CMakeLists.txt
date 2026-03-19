@@ -43,7 +43,7 @@ ais_add_executable(
     SRCS ${TEST_SOURCE_FILES} ${SHARED_SOURCE_FILES}
     SYSINCLS ${TEST_SYSINCLS}
 )
-target_compile_options(internal_tests PRIVATE "-UNDEBUG")
+target_compile_options(internal_tests PRIVATE -UNDEBUG)
 
 # Add gtest
 target_link_libraries(internal_tests PRIVATE GTest::gmock)
@@ -72,6 +72,7 @@ add_test(
     NAME state_mt_test
     COMMAND gdb --batch --quiet -ex run -ex "thread apply all bt full" --return-child-result --args $<TARGET_FILE:state_mt>
 )
+target_compile_options(state_mt PRIVATE -UNDEBUG)
 set_tests_properties(state_mt_test PROPERTIES LABELS "stress;internal")
 
 ais_add_executable(
@@ -84,4 +85,5 @@ add_test(
     NAME batch_mt_test
     COMMAND gdb --batch --quiet -ex run -ex "thread apply all bt full" --return-child-result --args $<TARGET_FILE:batch_mt>
 )
+target_compile_options(batch_mt PRIVATE -UNDEBUG)
 set_tests_properties(batch_mt_test PROPERTIES LABELS "stress;internal")
