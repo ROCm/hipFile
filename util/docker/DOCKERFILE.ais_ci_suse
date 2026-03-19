@@ -106,12 +106,11 @@ ENV PATH=/usr/local/cuda/bin:/opt/rocm/bin:${PATH}
 ENV ROCM_VERSION="${ROCM_VERSION}"
 ENV SLES_BUILD_ID_PREFIX="opensuse${SUSE_MAJOR_VERSION}${SUSE_MINOR_VERSION}."
 
-# Configure SUSE to use the GCC-13 by default.
-# Uncomment to use newer version of GCC.
-# RUN update-alternatives \
-#         --install /usr/bin/gcc gcc /usr/bin/gcc-13 100 \
-#         --slave /usr/bin/cc cc /usr/bin/gcc-13 \
-#         --slave /usr/bin/g++ g++ /usr/bin/g++-13
+# Configure SUSE to use GCC-13 by default
+RUN update-alternatives \
+        --install /usr/bin/gcc gcc /usr/bin/gcc-13 100 \
+        --slave /usr/bin/cc cc /usr/bin/gcc-13 \
+        --slave /usr/bin/g++ g++ /usr/bin/g++-13
 
 # AIS Code Repository Mount Point
 VOLUME /mnt/ais
