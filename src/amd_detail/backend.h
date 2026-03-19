@@ -51,7 +51,7 @@ struct Backend {
     /// @param file_offset   Offset from the start of the file
     /// @param buffer_offset Offset from the start of the buffer
     ///
-    /// @return Number of bytes transferred, negative on error
+    /// @return Number of bytes transferred
     ///
     /// @throws Hip::RuntimeError Sys::RuntimeError
     virtual ssize_t io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
@@ -79,7 +79,7 @@ protected:
     /// @param file_offset   Offset from the start of the file
     /// @param buffer_offset Offset from the start of the buffer
     ///
-    /// @return Number of bytes transferred, negative on error
+    /// @return Number of bytes transferred
     ///
     /// @throws Hip::RuntimeError Sys::RuntimeError
     virtual ssize_t _io_impl(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer,

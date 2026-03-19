@@ -12,6 +12,7 @@
 #include <exception>
 #include <memory>
 #include <sys/types.h>
+#include <system_error>
 #include <unistd.h>
 
 using namespace hipFile;
@@ -41,6 +42,11 @@ BackendWithFallback::io(IoType type, std::shared_ptr<IFile> file, std::shared_pt
     ssize_t nbytes{0};
     try {
         nbytes = _io_impl(type, file, buffer, size, file_offset, buffer_offset);
+        if (nbytes < 0) {
+            // Typically we should not reach this point. But in case we do, throw
+            // an exception to use the fallback backend.
+            throw std::system_error(-static_cast<int>(nbytes), std::generic_category());
+        }
     }
     catch (...) {
         std::exception_ptr e_ptr = std::current_exception();
