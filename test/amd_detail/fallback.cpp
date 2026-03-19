@@ -167,11 +167,12 @@ struct FallbackParam : ::testing::TestWithParam<IoType> {
     shared_ptr<IBuffer> buffer;
     shared_ptr<IFile>   file;
 
+    StrictMock<MHip>            mhip;
+    StrictMock<MSys>            msys;
+    StrictMock<MLibMountHelper> mlibmounthelper;
+
     FallbackParam()
     {
-        StrictMock<MHip>            mhip;
-        StrictMock<MSys>            msys;
-        StrictMock<MLibMountHelper> mlibmounthelper;
 
         assert(hipFileDriverOpen() == HIPFILE_SUCCESS);
 
@@ -207,40 +208,31 @@ protected:
 
 TEST_P(FallbackParam, FallbackIoThrowsOnNegativeBufferOffset)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, 0, -1, 4096), std::invalid_argument);
 }
 
 TEST_P(FallbackParam, FallbackIoThrowsIfBufferOffsetIsOutOfBounds)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-    hoff_t           buffer_offset = static_cast<hoff_t>(buffer->getLength());
+    hoff_t buffer_offset = static_cast<hoff_t>(buffer->getLength());
+
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, 0, buffer_offset, 4096), std::invalid_argument);
 }
 
 TEST_P(FallbackParam, FallbackIoThrowsIfOpCouldOverrunBuffer)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-    size_t           size          = 10;
-    hoff_t           buffer_offset = static_cast<hoff_t>(buffer->getLength()) - 9;
+    size_t size          = 10;
+    hoff_t buffer_offset = static_cast<hoff_t>(buffer->getLength()) - 9;
+
     ASSERT_THROW(Fallback().io(io_type, file, buffer, size, 0, buffer_offset, 4096), std::invalid_argument);
 }
 
 TEST_P(FallbackParam, FallbackIoThrowsOnNegativeFileOffset)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, -1, 0, 4096), std::invalid_argument);
 }
 
 TEST_P(FallbackParam, FallbackIoTruncatesSizeToMAX_RW_COUNT)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
     auto buf = reinterpret_cast<void *>(0xABABABAB);
     Context<DriverState>::get()->registerBuffer(buf, MAX_RW_COUNT + 1, 0);
@@ -274,18 +266,15 @@ TEST_P(FallbackParam, FallbackIoTruncatesSizeToMAX_RW_COUNT)
 
 TEST_P(FallbackParam, FallbackIoThrowsOnBounceBufferAllocationFailure)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
     EXPECT_CALL(msys, mmap).WillOnce(testing::Throw(std::system_error(ENOMEM, std::generic_category())));
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 4096, 0, 0, 4096), std::system_error);
 }
 
 TEST_P(FallbackParam, FallbackIoAllocatesChunkSizedHostBounceBuffer)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-    size_t           chunk_size = 1024 * 1024;
-    auto             ptr        = reinterpret_cast<void *>(0xFEFEFEFE);
+    size_t chunk_size = 1024 * 1024;
+    auto   ptr        = reinterpret_cast<void *>(0xFEFEFEFE);
+
     EXPECT_CALL(msys, mmap(testing::_, chunk_size, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(ptr));
     switch (io_type) {
