@@ -110,6 +110,7 @@ struct FallbackIo : public HipFileOpened {
     std::vector<uint8_t> buffer_data;
     shared_ptr<IFile>    file;
     std::vector<uint8_t> file_data;
+    void                *nonnull_ptr{reinterpret_cast<void *>(0x1)};
 
     FallbackIo() : buffer_data(1024 * 1024)
     {
@@ -340,8 +341,6 @@ struct FallbackWrite : public FallbackIo {
     {
         rand_fill(buffer_data);
     }
-
-    void *nonnull_ptr = reinterpret_cast<void *>(0x1);
 };
 
 TEST_F(FallbackWrite, FallbackWriteHandlesZeroSizedWrite)
@@ -554,8 +553,6 @@ struct FallbackRead : public FallbackIo {
         EXPECT_CALL(mhip, hipMemcpy).WillRepeatedly(testing::Invoke(this, &FallbackRead::fake_hipMemcpy));
         EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
     }
-
-    void *nonnull_ptr = reinterpret_cast<void *>(0x1);
 };
 
 TEST_F(FallbackRead, FallbackReadHandlesZeroSizedRead)
