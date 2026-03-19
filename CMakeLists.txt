@@ -7,7 +7,7 @@
 # CMake version according to latest ROCm platform requirements
 cmake_minimum_required(VERSION 3.21)
 
-# Set the default build type to Debug
+# Set the default CMake build type
 #
 # NOTE: This has to be done BEFORE the project is declared!
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
