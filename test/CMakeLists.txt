@@ -24,7 +24,6 @@ set(SYSTEM_TEST_SOURCE_FILES
     system/buffer.cpp
     system/config.cpp
     system/driver.cpp
-    system/io.cpp
     system/main.cpp
     system/version.cpp
 )
@@ -38,6 +37,7 @@ if(AIS_BUILD_NVIDIA_DETAIL)
     list(APPEND UNIT_TEST_SOURCE_FILES nvidia_detail/cufile-api-compat.cpp)
     list(APPEND TEST_SYSINCLS ${HIPFILE_NVIDIA_SOURCE_PATH})
 else()
+    list(APPEND SYSTEM_TEST_SOURCE_FILES system/amd/io.cpp)
     list(APPEND TEST_SYSINCLS ${HIPFILE_AMD_SOURCE_PATH})
 endif()
 
