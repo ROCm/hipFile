@@ -60,8 +60,8 @@ HIPFILE_WARN_NO_EXIT_DTOR_ON
 static bool
 isGpuMemory(void *mem)
 {
-    hipPointerAttribute_t attrs;
-    hipError_t            err = hipPointerGetAttributes(&attrs, mem);
+    hipPointerAttribute_t       attrs;
+    [[maybe_unused]] hipError_t err = hipPointerGetAttributes(&attrs, mem);
 
 #ifdef __HIP_PLATFORM_NVIDIA__
     // NVIDIA doesn't support pointers allocated outside of runtime
@@ -74,7 +74,7 @@ isGpuMemory(void *mem)
 }
 
 static std::vector<uint8_t>
-copyGpuMemory(void *gpu_mem, hoff_t gpu_mem_offset, size_t region_size)
+copyGpuMemory([[maybe_unused]] void *gpu_mem, [[maybe_unused]] hoff_t gpu_mem_offset, size_t region_size)
 {
     std::vector<uint8_t> mem_region(region_size);
     assert(hipMemcpy(mem_region.data(),
@@ -107,7 +107,7 @@ assertFileAndMemoryRegionsMatch(void *mem, hoff_t mem_offset, int fd, hoff_t fd_
     assert(fd_offset >= 0);
     auto file_region = std::vector<uint8_t>(region_size);
 
-    ssize_t rv = pread(fd, file_region.data(), region_size, fd_offset);
+    [[maybe_unused]] ssize_t rv = pread(fd, file_region.data(), region_size, fd_offset);
     assert(rv > 0 && static_cast<size_t>(rv) == region_size);
 
     assertMemoryRegionsMatch(file_region.data(), 0, mem, mem_offset, region_size);
@@ -130,8 +130,8 @@ static void
 assertZeroedFileRegion(int fd, hoff_t fd_offset, size_t region_size)
 {
     assert(fd_offset >= 0);
-    auto    file_region = std::vector<uint8_t>(region_size);
-    ssize_t rv          = pread(fd, file_region.data(), region_size, fd_offset);
+    auto                     file_region = std::vector<uint8_t>(region_size);
+    [[maybe_unused]] ssize_t rv          = pread(fd, file_region.data(), region_size, fd_offset);
     assert(rv > 0 && static_cast<size_t>(rv) == region_size);
     for (size_t i = 0; i < region_size; ++i) {
         assert(file_region.data()[i] == 0);
@@ -141,8 +141,8 @@ assertZeroedFileRegion(int fd, hoff_t fd_offset, size_t region_size)
 static void
 randomizeMemoryRegion(void *mem, hoff_t offset, size_t region_size)
 {
-    ssize_t rv;
-    int     rand_fd = open("/dev/urandom", O_RDONLY);
+    [[maybe_unused]] ssize_t rv;
+    int                      rand_fd = open("/dev/urandom", O_RDONLY);
     assert(rand_fd != -1);
     if (isGpuMemory(mem)) {
         std::vector<uint8_t> mem_v(region_size);
@@ -180,8 +180,8 @@ zeroMemoryRegion(void *mem, hoff_t offset, size_t region_size)
 static void
 zeroFileRegion(int fd, size_t size, hoff_t offset = 0)
 {
-    auto    vec = std::vector<uint8_t>(size, 0);
-    ssize_t rv  = pwrite(fd, vec.data(), size, offset);
+    auto                     vec = std::vector<uint8_t>(size, 0);
+    [[maybe_unused]] ssize_t rv  = pwrite(fd, vec.data(), size, offset);
     assert(rv > 0 && static_cast<size_t>(rv) == size);
 }
 
@@ -190,7 +190,7 @@ randomizeFileRegion(int fd, size_t size, hoff_t offset = 0)
 {
     auto vec = std::vector<uint8_t>(size, 0);
     randomizeMemoryRegion(vec.data(), 0, size);
-    ssize_t rv = pwrite(fd, vec.data(), size, offset);
+    [[maybe_unused]] ssize_t rv = pwrite(fd, vec.data(), size, offset);
     assert(rv > 0 && static_cast<size_t>(rv) == size);
 }
 
