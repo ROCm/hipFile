@@ -108,8 +108,10 @@ StatsServer::StatsServer()
 StatsServer::~StatsServer()
 {
     if (m_thread.joinable()) {
-        uint64_t i{1};
-        write(m_efd.get(), &i, sizeof(i));
+        uint64_t                 i{1};
+        [[maybe_unused]] ssize_t nbytes;
+
+        nbytes = write(m_efd.get(), &i, sizeof(i));
         m_thread.join();
     }
 }
