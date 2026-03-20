@@ -10,6 +10,8 @@
 
 #include <gmock/gmock.h>
 
+using ::testing::Invoke;
+
 /* mhipxx (mock hip++)
  *
  * Mock implementations for Hip. Enables unit tests to mock HIP APIs.
@@ -48,6 +50,26 @@ struct MHip : Hip {
                 (const, override));
     MOCK_METHOD(int, hipDeviceGetAttribute, (hipDeviceAttribute_t attr, int device_id), (const, override));
     MOCK_METHOD(hipDevice_t, hipStreamGetDevice, (hipStream_t stream), (const, override));
+
+    // This function is not compatible with StrictMocks.
+    void enable_passthrough()
+    {
+        ON_CALL(*this, hipPointerGetAttributes).WillByDefault(Invoke(this, &Hip::hipPointerGetAttributes));
+        ON_CALL(*this, hipMemcpy).WillByDefault(Invoke(this, &Hip::hipMemcpy));
+        ON_CALL(*this, hipStreamSynchronize).WillByDefault(Invoke(this, &Hip::hipStreamSynchronize));
+        ON_CALL(*this, hipHostMalloc).WillByDefault(Invoke(this, &Hip::hipHostMalloc));
+        ON_CALL(*this, hipHostFree).WillByDefault(Invoke(this, &Hip::hipHostFree));
+        ON_CALL(*this, hipHostGetDevicePointer).WillByDefault(Invoke(this, &Hip::hipHostGetDevicePointer));
+        ON_CALL(*this, hipRuntimeGetVersion).WillByDefault(Invoke(this, &Hip::hipRuntimeGetVersion));
+        ON_CALL(*this, hipGetProcAddress).WillByDefault(Invoke(this, &Hip::hipGetProcAddress));
+        ON_CALL(*this, hipAmdFileRead).WillByDefault(Invoke(this, &Hip::hipAmdFileRead));
+        ON_CALL(*this, hipAmdFileWrite).WillByDefault(Invoke(this, &Hip::hipAmdFileWrite));
+        ON_CALL(*this, hipMemGetAddressRange).WillByDefault(Invoke(this, &Hip::hipMemGetAddressRange));
+        ON_CALL(*this, hipLaunchHostFunc).WillByDefault(Invoke(this, &Hip::hipLaunchHostFunc));
+        ON_CALL(*this, hipLaunchKernel).WillByDefault(Invoke(this, &Hip::hipLaunchKernel));
+        ON_CALL(*this, hipDeviceGetAttribute).WillByDefault(Invoke(this, &Hip::hipDeviceGetAttribute));
+        ON_CALL(*this, hipStreamGetDevice).WillByDefault(Invoke(this, &Hip::hipStreamGetDevice));
+    }
 };
 
 }
