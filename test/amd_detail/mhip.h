@@ -12,6 +12,14 @@
 
 using ::testing::Invoke;
 
+// ON_CALL is not compatible with StrictMock's
+#define MOCK_PASSTHROUGH(base_class, func) \
+    ON_CALL(*this, func).WillByDefault( \
+        [this](auto&&... args) { \
+            return this->base_class::func(std::forward<decltype(args)>(args)...); \
+        } \
+    )
+
 /* mhipxx (mock hip++)
  *
  * Mock implementations for Hip. Enables unit tests to mock HIP APIs.
@@ -51,24 +59,23 @@ struct MHip : Hip {
     MOCK_METHOD(int, hipDeviceGetAttribute, (hipDeviceAttribute_t attr, int device_id), (const, override));
     MOCK_METHOD(hipDevice_t, hipStreamGetDevice, (hipStream_t stream), (const, override));
 
-    // This function is not compatible with StrictMocks.
     void enable_passthrough()
     {
-        ON_CALL(*this, hipPointerGetAttributes).WillByDefault(Invoke(this, &Hip::hipPointerGetAttributes));
-        ON_CALL(*this, hipMemcpy).WillByDefault(Invoke(this, &Hip::hipMemcpy));
-        ON_CALL(*this, hipStreamSynchronize).WillByDefault(Invoke(this, &Hip::hipStreamSynchronize));
-        ON_CALL(*this, hipHostMalloc).WillByDefault(Invoke(this, &Hip::hipHostMalloc));
-        ON_CALL(*this, hipHostFree).WillByDefault(Invoke(this, &Hip::hipHostFree));
-        ON_CALL(*this, hipHostGetDevicePointer).WillByDefault(Invoke(this, &Hip::hipHostGetDevicePointer));
-        ON_CALL(*this, hipRuntimeGetVersion).WillByDefault(Invoke(this, &Hip::hipRuntimeGetVersion));
-        ON_CALL(*this, hipGetProcAddress).WillByDefault(Invoke(this, &Hip::hipGetProcAddress));
-        ON_CALL(*this, hipAmdFileRead).WillByDefault(Invoke(this, &Hip::hipAmdFileRead));
-        ON_CALL(*this, hipAmdFileWrite).WillByDefault(Invoke(this, &Hip::hipAmdFileWrite));
-        ON_CALL(*this, hipMemGetAddressRange).WillByDefault(Invoke(this, &Hip::hipMemGetAddressRange));
-        ON_CALL(*this, hipLaunchHostFunc).WillByDefault(Invoke(this, &Hip::hipLaunchHostFunc));
-        ON_CALL(*this, hipLaunchKernel).WillByDefault(Invoke(this, &Hip::hipLaunchKernel));
-        ON_CALL(*this, hipDeviceGetAttribute).WillByDefault(Invoke(this, &Hip::hipDeviceGetAttribute));
-        ON_CALL(*this, hipStreamGetDevice).WillByDefault(Invoke(this, &Hip::hipStreamGetDevice));
+        MOCK_PASSTHROUGH(Hip, hipPointerGetAttributes);
+        MOCK_PASSTHROUGH(Hip, hipMemcpy);
+        MOCK_PASSTHROUGH(Hip, hipStreamSynchronize);
+        MOCK_PASSTHROUGH(Hip, hipHostMalloc);
+        MOCK_PASSTHROUGH(Hip, hipHostFree);
+        MOCK_PASSTHROUGH(Hip, hipHostGetDevicePointer);
+        MOCK_PASSTHROUGH(Hip, hipRuntimeGetVersion);
+        MOCK_PASSTHROUGH(Hip, hipGetProcAddress);
+        MOCK_PASSTHROUGH(Hip, hipAmdFileRead);
+        MOCK_PASSTHROUGH(Hip, hipAmdFileWrite);
+        MOCK_PASSTHROUGH(Hip, hipMemGetAddressRange);
+        MOCK_PASSTHROUGH(Hip, hipLaunchHostFunc);
+        MOCK_PASSTHROUGH(Hip, hipLaunchKernel);
+        MOCK_PASSTHROUGH(Hip, hipDeviceGetAttribute);
+        MOCK_PASSTHROUGH(Hip, hipStreamGetDevice);
     }
 };
 

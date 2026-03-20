@@ -5,6 +5,7 @@
 
 #include "hip.h"
 #include "hipfile.h"
+#include "io.h"
 #include "mhip.h"
 
 #include "test-common.h"
@@ -24,12 +25,7 @@ extern SystemTestOptions test_env;
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 
-enum IoType {
-    Read = 0,
-    Write = 1
-}
-
-struct FastpathWithFallbackIO : public TestWithParam<std::tuple<IoType, std::exception_ptr>> {
+struct FastpathWithFallbackIO : public TestWithParam<std::tuple<hipFile::IoType, std::exception_ptr>> {
     
     Tmpfile         tmpfile;
     size_t          tmpfile_size;
@@ -53,15 +49,16 @@ struct FastpathWithFallbackIO : public TestWithParam<std::tuple<IoType, std::exc
         if (setenv("HIPFILE_ALLOW_COMPAT_MODE", "true", 1)) {
             FAIL() << "Could not set HIPFILE_ALLOW_COMPAT_MODE=true";
         }
+        std::cout << "HIPFILE_ALLOW_COMPAT_MODE=" << getenv("HIPFILE_ALLOW_COMPAT_MODE") << std::endl;
         // Must be called prior to any expectations on Hip set.
         mhip.enable_passthrough();
 
         switch (_get_param_io_type()) {
-            case IoType::Read:
-                EXPECT_CALL(mhip, hipAmdFileRead);
+            case hipFile::IoType::Read:
+                EXPECT_CALL(mhip, hipAmdFileRead).WillOnce(Rethrow(_get_param_exc_ptr()));
                 break;
-            case IoType::Write:
-                EXPECT_CALL(mhip, hipAmdFileWrite);
+            case hipFile::IoType::Write:
+                EXPECT_CALL(mhip, hipAmdFileWrite).WillOnce(Rethrow(_get_param_exc_ptr()));
                 break;
             default:
                 FAIL() << "Unsupported IoTestBackend";
@@ -80,12 +77,12 @@ struct FastpathWithFallbackIO : public TestWithParam<std::tuple<IoType, std::exc
 
     void TearDown() override
     {
-        ASSERT_EQ(HIP_SUCCESS, hipFileBufDeregister(device_buffer););
+        ASSERT_EQ(HIPFILE_SUCCESS, hipFileBufDeregister(device_buffer));
         ASSERT_EQ(hipSuccess, hipFree(device_buffer));
         hipFileHandleDeregister(tmpfile_handle);
     }
 
-    inline IoType _get_param_io_type() const
+    inline hipFile::IoType _get_param_io_type() const
     {
         return std::get<0>(GetParam());
     }
@@ -96,9 +93,24 @@ struct FastpathWithFallbackIO : public TestWithParam<std::tuple<IoType, std::exc
     }
 };
 
+TEST_P(FastpathWithFallbackIO, DummyTest)
+{
+    // Simply checks to see if the set & teardown portions have been configured correctly.
+    switch (_get_param_io_type()) {
+        case hipFile::IoType::Read:
+            ASSERT_EQ(tmpfile_size, hipFileRead(tmpfile_handle, device_buffer, tmpfile_size, 0, 0));
+            break;
+        case hipFile::IoType::Write:
+            ASSERT_EQ(tmpfile_size, hipFileWrite(tmpfile_handle, device_buffer, tmpfile_size, 0, 0));
+            break;
+        default:
+            FAIL() << "Unsupported IoTestBackend";
+    }
+}
+
 INSTANTIATE_TEST_SUITE_P(
     , FastpathWithFallbackIO,
-    Combine(Values(IoType::Read, IoType::Write),
+    Combine(Values(hipFile::IoType::Read, hipFile::IoType::Write),
             Values(std::make_exception_ptr(hipFile::Hip::RuntimeError(hipErrorNoDevice)),
                    std::make_exception_ptr(std::system_error(make_error_code(errc::no_such_device))))));
 

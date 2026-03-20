@@ -24,6 +24,7 @@ set(SYSTEM_TEST_SOURCE_FILES
     system/buffer.cpp
     system/config.cpp
     system/driver.cpp
+    system/fastpath.cpp
     system/io.cpp
     system/main.cpp
     system/version.cpp
@@ -32,6 +33,7 @@ set(SYSTEM_TEST_SOURCE_FILES
 set(TEST_SYSINCLS
     ${HIPFILE_INCLUDE_PATH}
     ${HIPFILE_TEST_COMMON_PATH}
+    ${HIPFILE_AMD_TEST_PATH} # For mhip
 )
 
 if(AIS_BUILD_NVIDIA_DETAIL)
@@ -66,6 +68,7 @@ ais_add_executable(
     SYSINCLS ${TEST_SYSINCLS}
 )
 target_link_libraries(hipfile_system_tests PRIVATE GTest::gtest)
+target_link_libraries(hipfile_system_tests PRIVATE GTest::gmock)
 target_link_libraries(hipfile_system_tests PRIVATE Boost::program_options)
 
 ais_gtest_discover_tests(
