@@ -15,9 +15,9 @@ using namespace hipFile;
 bool
 Configuration::fastpath() const noexcept
 {
-    STATIC bool fastpath_env{!Environment::force_compat_mode().value_or(false)};
-    STATIC bool readExists{!!getHipAmdFileReadPtr()};
-    STATIC bool writeExists{!!getHipAmdFileWritePtr()};
+    HIPFILE_STATIC bool fastpath_env{!Environment::force_compat_mode().value_or(false)};
+    HIPFILE_STATIC bool readExists{!!getHipAmdFileReadPtr()};
+    HIPFILE_STATIC bool writeExists{!!getHipAmdFileWritePtr()};
     return readExists && writeExists && m_fastpath_override.value_or(fastpath_env);
 }
 
@@ -30,7 +30,7 @@ Configuration::fastpath(bool enabled) noexcept
 bool
 Configuration::fallback() const noexcept
 {
-    STATIC bool fallback_env{Environment::allow_compat_mode().value_or(true)};
+    HIPFILE_STATIC bool fallback_env{Environment::allow_compat_mode().value_or(true)};
     return m_fallback_override.value_or(fallback_env);
 }
 
@@ -43,6 +43,6 @@ Configuration::fallback(bool enabled) noexcept
 unsigned int
 Configuration::statsLevel() const noexcept
 {
-    STATIC unsigned int stats_level_env{Environment::stats_level().value_or(0)};
+    HIPFILE_STATIC unsigned int stats_level_env{Environment::stats_level().value_or(0)};
     return stats_level_env;
 }

@@ -25,7 +25,7 @@ catch (...) {
 hipAmdFileRead_t
 getHipAmdFileReadPtr()
 {
-    STATIC hipAmdFileRead_t hipAmdFileReadPtr{
+    HIPFILE_STATIC hipAmdFileRead_t hipAmdFileReadPtr{
         reinterpret_cast<hipAmdFileRead_t>(hipGetProcAddressHelper("hipAmdFileRead"))};
     return hipAmdFileReadPtr;
 }
@@ -33,7 +33,7 @@ getHipAmdFileReadPtr()
 hipAmdFileWrite_t
 getHipAmdFileWritePtr()
 {
-    STATIC hipAmdFileWrite_t hipAmdFileWritePtr{
+    HIPFILE_STATIC hipAmdFileWrite_t hipAmdFileWritePtr{
         reinterpret_cast<hipAmdFileWrite_t>(hipGetProcAddressHelper("hipAmdFileWrite"))};
     return hipAmdFileWritePtr;
 }

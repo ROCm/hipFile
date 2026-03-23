@@ -9,7 +9,7 @@
 // Declaring a variable as STATIC will result in the variable being static only
 // when tests are not being built.
 #ifdef AIS_TESTING
-#define STATIC
+#define HIPFILE_STATIC
 #else
-#define STATIC static
+#define HIPFILE_STATIC static
 #endif
