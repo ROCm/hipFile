@@ -9,6 +9,7 @@
 #include "mhip.h"
 #include "mmountinfo.h"
 #include "msys.h"
+#include "test-common.h"
 
 #include <cerrno>
 #include <cstdint>

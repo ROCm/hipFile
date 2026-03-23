@@ -19,6 +19,7 @@
 #include "mmountinfo.h"
 #include "msys.h"
 #include "state.h"
+#include "test-common.h"
 
 #include <array>
 #include <cassert>

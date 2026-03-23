@@ -29,6 +29,7 @@
 #include "mstate.h"
 #include "msys.h"
 #include "state.h"
+#include "test-common.h"
 
 #include <array>
 #include <cerrno>

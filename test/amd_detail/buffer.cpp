@@ -11,6 +11,7 @@
 #include "hipfile-warnings.h"
 #include "mhip.h"
 #include "state.h"
+#include "test-common.h"
 
 #include <array>
 #include <cstddef>
@@ -97,7 +98,7 @@ TEST_F(HipFileBuffer, register_hip_pointer_get_attributes_error)
 {
     StrictMock<MHip> mhip;
     EXPECT_CALL(mhip, hipPointerGetAttributes).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
-    ASSERT_EQ(hipFileBufRegister(nonnull_ptr, 0, 0), HipFileHipError(hipErrorUnknown));
+    ASSERT_EQ(hipFileBufRegister(nonnull_ptr, 0, 0), HipFileDriverError(hipErrorUnknown));
 
     // hipErrorInvalidValue is handled differently to match the behaviour of cufile
     EXPECT_CALL(mhip, hipPointerGetAttributes)

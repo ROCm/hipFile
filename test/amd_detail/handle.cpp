@@ -12,6 +12,7 @@
 #include "mmountinfo.h"
 #include "mountinfo.h"
 #include "state.h"
+#include "test-common.h"
 
 #include <cerrno>
 #include <cstring>

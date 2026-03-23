@@ -9,6 +9,7 @@
 #include "mhip.h"
 #include "msys.h"
 #include "stream.h"
+#include "test-common.h"
 
 #include <cstdint>
 #include <gmock/gmock.h>

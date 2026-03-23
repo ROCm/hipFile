@@ -14,32 +14,49 @@
 #include <stdexcept>
 #include <unistd.h>
 
+// Set a particular hipfile error
 constexpr hipFileError_t
 HipFileOpError(hipFileOpError_t err)
 {
     return {err, hipSuccess};
 }
 
+// Set a particular HIP error
 constexpr hipFileError_t
 HipFileDriverError(hipError_t err)
 {
     return {hipFileHipDriverError, err};
 }
 
+// == overload for hipFileError_t values
 inline bool
 operator==(const hipFileError_t &lhs, const hipFileError_t &rhs)
 {
     return lhs.err == rhs.err && lhs.hip_drv_err == rhs.hip_drv_err;
 }
 
-static std::ostream &
+// != overload for hipFileError_t values
+inline bool
+operator!=(const hipFileError_t &lhs, const hipFileError_t &rhs)
+{
+    return lhs.err != rhs.err || lhs.hip_drv_err != rhs.hip_drv_err;
+}
+
+// Unused in the test code, but kept here for iostream debugging
+#ifndef NDEBUG
+#include <iostream>
+inline std::ostream &
 operator<<(std::ostream &os, const hipFileError_t &hfe)
 {
     return os << "hipFileError_t{ err: " << hfe.err << ", hip_drv_err: " << hfe.hip_drv_err << " }";
 }
+#endif
 
 // Convenience "success" value
 inline constexpr hipFileError_t HIPFILE_SUCCESS{hipFileSuccess, hipSuccess};
+
+// Convenience "invalid argument" value
+inline constexpr hipFileError_t HIPFILE_INVALID_VALUE{hipFileInvalidValue, hipSuccess};
 
 inline void
 rfill(void *buffer, uint64_t len, uint32_t seed = 97)

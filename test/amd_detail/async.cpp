@@ -23,6 +23,7 @@
 #include "mstream.h"
 #include "msys.h"
 #include "state.h"
+#include "test-common.h"
 
 #include <array>
 #include <cerrno>
@@ -386,7 +387,7 @@ TEST_P(HipFileReadWriteAsync, badAllocReturnsHipErrorOutOfMemory)
     EXPECT_CALL(driver, getRefCount).WillOnce(Throw(std::bad_alloc()));
     ASSERT_EQ(io_op(nonnull_void, nonnull_void, nonnull_size, nonnull_offset, nonnull_offset, nullptr,
                     nonnull_stream),
-              HipFileHipError(hipErrorOutOfMemory));
+              HipFileDriverError(hipErrorOutOfMemory));
 }
 
 INSTANTIATE_TEST_SUITE_P(HipFileAsyncSuite, HipFileReadWriteAsync, ::testing::ValuesIn(asyncIOFns),
