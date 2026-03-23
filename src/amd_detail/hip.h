@@ -74,6 +74,7 @@ struct Hip {
                                  size_t sharedMemBytes, hipStream_t stream) const;
     virtual int  hipDeviceGetAttribute(hipDeviceAttribute_t attr, int device_id) const;
     virtual hipDevice_t hipStreamGetDevice(hipStream_t stream) const;
+    virtual void        hipInit() const;
 
     struct RuntimeError : public std::runtime_error {
         hipError_t error;

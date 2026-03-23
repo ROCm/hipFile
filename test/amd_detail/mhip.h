@@ -48,6 +48,6 @@ struct MHip : Hip {
                 (const, override));
     MOCK_METHOD(int, hipDeviceGetAttribute, (hipDeviceAttribute_t attr, int device_id), (const, override));
     MOCK_METHOD(hipDevice_t, hipStreamGetDevice, (hipStream_t stream), (const, override));
+    MOCK_METHOD(void, hipInit, (), (const, override));
 };
-
 }

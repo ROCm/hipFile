@@ -174,6 +174,15 @@ Fastpath::io(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, si
     // this can be removed.
     size = std::min(size, MAX_RW_COUNT);
 
+    // Ensure HIP Runtime is initialized. This is a temporary fix to a SEGFAULT
+    // in the HIP Runtime when hipFileRead/hipFileWrite is the first HIP API
+    // call of a new thread.
+    thread_local bool hip_inited{false};
+    if (!hip_inited) {
+        Context<Hip>::get()->hipInit();
+        hip_inited = true;
+    }
+
     switch (type) {
         case IoType::Read:
             nbytes = Context<Hip>::get()->hipAmdFileRead(handle, devptr, size, file_offset);

@@ -327,36 +327,56 @@ INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathUnalignedBufferOffsetsParam,
 
 struct FastpathIoParam : public FastpathTestBase, public TestWithParam<IoType> {
 
-    void expect_io()
+    StrictMock<MHip> mhip;
+
+    // Setup expectations on the mocks called to validate IO arguments
+    void expect_validate()
     {
         EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
         EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(DEFAULT_BUFFER_LENGTH));
         EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     }
 
-    void expect_io(optional<int> fd, void *bufptr, size_t buflen)
+    // Setup expectations on the mocks called to validate IO arguments and
+    // the mocks called up to, but not including, hipAmdFileRead/hipAmdFileWrite
+    void expect_io()
+    {
+        expect_validate();
+        EXPECT_CALL(mhip, hipInit);
+    }
+
+    // Setup expectations on the mocks called to validate IO arguments
+    void expect_validate(optional<int> fd, void *bufptr, size_t buflen)
     {
         EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(bufptr));
         EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(buflen));
         EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(fd));
     }
+
+    // Setup expectations on the mocks called to validate IO arguments and
+    // the mocks called up to, but not including, hipAmdFileRead/hipAmdFileWrite
+    void expect_io(optional<int> fd, void *bufptr, size_t buflen)
+    {
+        expect_validate(fd, bufptr, buflen);
+        EXPECT_CALL(mhip, hipInit);
+    }
 };
 
 TEST_P(FastpathIoParam, IoRejectsNegativeFileOffset)
 {
-    expect_io();
+    expect_validate();
     ASSERT_THROW(Fastpath().io(GetParam(), mfile, mbuffer, 0, -1, 0), std::invalid_argument);
 }
 
 TEST_P(FastpathIoParam, IoRejectsNegativeBufferOffset)
 {
-    expect_io();
+    expect_validate();
     ASSERT_THROW(Fastpath().io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, 0, -1), std::invalid_argument);
 }
 
 TEST_P(FastpathIoParam, IoRejectsBufferOffsetLargerThanBufferLength)
 {
-    expect_io();
+    expect_validate();
     ASSERT_THROW(Fastpath().io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, 0,
                                static_cast<hoff_t>(DEFAULT_BUFFER_LENGTH) + 1),
                  std::invalid_argument);
@@ -364,22 +384,20 @@ TEST_P(FastpathIoParam, IoRejectsBufferOffsetLargerThanBufferLength)
 
 TEST_P(FastpathIoParam, IoRejectsIoSizeLargerThanBufferLength)
 {
-    expect_io();
+    expect_validate();
     ASSERT_THROW(Fastpath().io(GetParam(), mfile, mbuffer, DEFAULT_BUFFER_LENGTH + 1, 0, 0),
                  std::invalid_argument);
 }
 
 TEST_P(FastpathIoParam, IoRejectsIoThatCouldOverflowBuffer)
 {
-    expect_io();
+    expect_validate();
     ASSERT_THROW(Fastpath().io(GetParam(), mfile, mbuffer, DEFAULT_BUFFER_LENGTH, DEFAULT_FILE_OFFSET, 1),
                  std::invalid_argument);
 }
 
 TEST_P(FastpathIoParam, IoConfiguresHandle)
 {
-    StrictMock<MHip> mhip;
-
     hipAmdFileHandle_t handle{};
     handle.fd = DEFAULT_UNBUFFERED_FD.value();
 
@@ -400,8 +418,6 @@ TEST_P(FastpathIoParam, IoConfiguresHandle)
 
 TEST_P(FastpathIoParam, IoCalculatesCorrectDevicePointer)
 {
-    StrictMock<MHip> mhip;
-
     off_t buffer_offset{0x1000};
     void *buffer_addr{reinterpret_cast<void *>(0x20000)};
     void *expected_device_ptr{reinterpret_cast<void *>(0x21000)};
@@ -423,8 +439,6 @@ TEST_P(FastpathIoParam, IoCalculatesCorrectDevicePointer)
 
 TEST_P(FastpathIoParam, IoPassesThroughSizeAndFileOffset)
 {
-    StrictMock<MHip> mhip;
-
     expect_io();
     switch (GetParam()) {
         case IoType::Read:
@@ -442,8 +456,6 @@ TEST_P(FastpathIoParam, IoPassesThroughSizeAndFileOffset)
 
 TEST_P(FastpathIoParam, IoReturnsBytesTransferred)
 {
-    StrictMock<MHip> mhip;
-
     expect_io();
     switch (GetParam()) {
         case IoType::Read:
@@ -463,8 +475,6 @@ TEST_P(FastpathIoParam, IoReturnsBytesTransferred)
 
 TEST_P(FastpathIoParam, IoReturnsBytesTransferredShort)
 {
-    StrictMock<MHip> mhip;
-
     size_t nbytes{4096};
 
     ASSERT_LT(nbytes, DEFAULT_IO_SIZE);
@@ -489,8 +499,6 @@ TEST_P(FastpathIoParam, IoReturnsBytesTransferredShort)
 // Ensure hip errors thrown by Hip::hipAmdFileRead/Hip::hipAmdFileWrite are not masked
 TEST_P(FastpathIoParam, IoDoesNotMaskHipRuntimeError)
 {
-    StrictMock<MHip> mhip;
-
     expect_io();
     switch (GetParam()) {
         case IoType::Read:
@@ -511,8 +519,6 @@ TEST_P(FastpathIoParam, IoDoesNotMaskHipRuntimeError)
 // Ensure hip errors thrown by Hip::hipAmdFileRead/Hip::hipAmdFileWrite are not masked
 TEST_P(FastpathIoParam, IoDoesNotMaskSystemError)
 {
-    StrictMock<MHip> mhip;
-
     expect_io();
     switch (GetParam()) {
         case IoType::Read:
@@ -533,8 +539,6 @@ TEST_P(FastpathIoParam, IoDoesNotMaskSystemError)
 // Ensure IO size is truncated to MAX_RW_COUNT
 TEST_P(FastpathIoParam, IoSizeIsTruncatedToMaxRWCount)
 {
-    StrictMock<MHip> mhip;
-
     const size_t buffer_size{SIZE_MAX};
     const size_t io_size{SIZE_MAX};
 
