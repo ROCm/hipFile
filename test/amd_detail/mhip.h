@@ -7,18 +7,11 @@
 
 #include "context.h"
 #include "hip.h"
+#include "test-common.h"
 
 #include <gmock/gmock.h>
 
-using ::testing::Invoke;
-
-// ON_CALL is not compatible with StrictMock's
-#define MOCK_PASSTHROUGH(base_class, func) \
-    ON_CALL(*this, func).WillByDefault( \
-        [this](auto&&... args) { \
-            return this->base_class::func(std::forward<decltype(args)>(args)...); \
-        } \
-    )
+#define MHIP_PASSTHROUGH(func) MOCK_PASSTHROUGH(hipFile::Hip, func)
 
 /* mhipxx (mock hip++)
  *
@@ -61,21 +54,21 @@ struct MHip : Hip {
 
     void enable_passthrough()
     {
-        MOCK_PASSTHROUGH(Hip, hipPointerGetAttributes);
-        MOCK_PASSTHROUGH(Hip, hipMemcpy);
-        MOCK_PASSTHROUGH(Hip, hipStreamSynchronize);
-        MOCK_PASSTHROUGH(Hip, hipHostMalloc);
-        MOCK_PASSTHROUGH(Hip, hipHostFree);
-        MOCK_PASSTHROUGH(Hip, hipHostGetDevicePointer);
-        MOCK_PASSTHROUGH(Hip, hipRuntimeGetVersion);
-        MOCK_PASSTHROUGH(Hip, hipGetProcAddress);
-        MOCK_PASSTHROUGH(Hip, hipAmdFileRead);
-        MOCK_PASSTHROUGH(Hip, hipAmdFileWrite);
-        MOCK_PASSTHROUGH(Hip, hipMemGetAddressRange);
-        MOCK_PASSTHROUGH(Hip, hipLaunchHostFunc);
-        MOCK_PASSTHROUGH(Hip, hipLaunchKernel);
-        MOCK_PASSTHROUGH(Hip, hipDeviceGetAttribute);
-        MOCK_PASSTHROUGH(Hip, hipStreamGetDevice);
+        MHIP_PASSTHROUGH(hipPointerGetAttributes);
+        MHIP_PASSTHROUGH(hipMemcpy);
+        MHIP_PASSTHROUGH(hipStreamSynchronize);
+        MHIP_PASSTHROUGH(hipHostMalloc);
+        MHIP_PASSTHROUGH(hipHostFree);
+        MHIP_PASSTHROUGH(hipHostGetDevicePointer);
+        MHIP_PASSTHROUGH(hipRuntimeGetVersion);
+        MHIP_PASSTHROUGH(hipGetProcAddress);
+        MHIP_PASSTHROUGH(hipAmdFileRead);
+        MHIP_PASSTHROUGH(hipAmdFileWrite);
+        MHIP_PASSTHROUGH(hipMemGetAddressRange);
+        MHIP_PASSTHROUGH(hipLaunchHostFunc);
+        MHIP_PASSTHROUGH(hipLaunchKernel);
+        MHIP_PASSTHROUGH(hipDeviceGetAttribute);
+        MHIP_PASSTHROUGH(hipStreamGetDevice);
     }
 };
 

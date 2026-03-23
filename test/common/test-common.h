@@ -14,6 +14,14 @@
 #include <stdexcept>
 #include <unistd.h>
 
+// ON_CALL is not compatible with StrictMock's
+#define MOCK_PASSTHROUGH(base_class, func) \
+    ON_CALL(*this, func).WillByDefault( \
+        [this](auto&&... args) { \
+            return this->base_class::func(std::forward<decltype(args)>(args)...); \
+        } \
+    )
+
 // Set a particular hipfile error
 constexpr hipFileError_t
 HipFileOpError(hipFileOpError_t err)
