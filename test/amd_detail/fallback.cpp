@@ -220,7 +220,7 @@ protected:
     IoType io_type;
 };
 
-TEST_P(FallbackParam, FallbackIoRejectedIfBackendIsDiabled)
+TEST_P(FallbackParam, FallbackIoRejectedIfBackendIsDisabled)
 {
     EXPECT_CALL(mcfg, fallback()).WillOnce(Return(false));
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, 0, -1, 4096), BackendDisabled);
@@ -461,7 +461,7 @@ TEST_F(FallbackWrite, FallbackWriteToEmptyFileAtBufferOffsetFileOffset)
     ASSERT_TRUE(file_contains_expected_data(file_offset, buffer_offset, size));
 }
 
-TEST_F(FallbackWrite, FallbackWriteOverwiteEntireFile)
+TEST_F(FallbackWrite, FallbackWriteOverwriteEntireFile)
 {
     file_data.resize(buffer->getLength());
     randomize_device_buffer();
@@ -748,7 +748,7 @@ TEST_F(FallbackRead, FallbackReadCanReadSingleByteAtEndOfFile)
     ASSERT_TRUE(device_buffer_contains_expected_data(file_offset, 0, 1));
 }
 
-TEST_F(FallbackRead, FallbackReadEmtpyFileWithNonZeroFileOffset)
+TEST_F(FallbackRead, FallbackReadEmptyFileWithNonZeroFileOffset)
 {
     size_t file_length{0};
     init_file(file_length);
