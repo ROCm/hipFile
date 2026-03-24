@@ -140,6 +140,7 @@ jobs:
               export CPACK_DEBIAN_PACKAGE_RELEASE="${JOB_DESIGNATOR}${SLES_BUILD_ID_PREFIX}${BUILD_ID}~$(source /etc/os-release && echo ${VERSION_ID})"
               export CPACK_RPM_PACKAGE_RELEASE="${JOB_DESIGNATOR}${SLES_BUILD_ID_PREFIX}${BUILD_ID}"
               cmake \
+                -DCMAKE_BUILD_TYPE=Debug \
                 -DCMAKE_CXX_COMPILER="${_AIS_INPUT_CXX_COMPILER}" \
                 -DCMAKE_CXX_FLAGS="-Werror" \
                 -DCMAKE_HIP_ARCHITECTURES="${{ env.AIS_HIP_ARCHITECTURES }}" \
