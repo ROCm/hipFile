@@ -78,9 +78,9 @@ private:
 class StatsClient {
 public:
     explicit StatsClient(pid_t p);
-    bool pollProcess(int timeout);
+    bool pollProcess(int timeout) const;
     bool connectServer();
-    bool generateReport(std::ostream &stream);
+    bool generateReport(std::ostream &stream) const;
 
     static void generateReportV1(std::ostream &stream, const Stats *stats);
 
