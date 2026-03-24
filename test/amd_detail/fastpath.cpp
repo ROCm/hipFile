@@ -11,6 +11,7 @@
 #include "hipfile-warnings.h"
 #include "io.h"
 #include "mbuffer.h"
+#include "mconfiguration.h"
 #include "mfile.h"
 #include "mhip.h"
 #include "msys.h"
@@ -57,6 +58,7 @@ operator==(const hipAmdFileHandle_t &lhs, const hipAmdFileHandle_t &rhs)
 
 // Provide default values for variables used in fastpath tests
 struct FastpathTestBase {
+    const bool          DEFAULT_ENABLE{true};
     const size_t        DEFAULT_IO_SIZE{1024 * 1024};
     void *const         DEFAULT_BUFFER_ADDR{reinterpret_cast<void *>(0xABAD'CAFE'0000'0000)};
     const off_t         DEFAULT_BUFFER_OFFSET{DEFAULT_MEM_ALIGN};
@@ -79,12 +81,15 @@ struct FastpathTestBase {
     // Buffer and file mocks used to setup expectations
     shared_ptr<StrictMock<MFile>>   mfile{make_shared<StrictMock<MFile>>()};
     shared_ptr<StrictMock<MBuffer>> mbuffer{make_shared<StrictMock<MBuffer>>()};
+
+    StrictMock<MConfiguration> mcfg{};
 };
 
 struct FastpathTest : public FastpathTestBase, public Test {};
 
 TEST_F(FastpathTest, TestDefaults)
 {
+    ASSERT_TRUE(DEFAULT_ENABLE);
     ASSERT_FALSE((DEFAULT_MEM_ALIGN & (DEFAULT_MEM_ALIGN - 1)));
     ASSERT_TRUE(DEFAULT_MEM_ALIGN > 1);
     ASSERT_FALSE((DEFAULT_OFFSET_ALIGN & (DEFAULT_OFFSET_ALIGN - 1)));
@@ -95,8 +100,9 @@ TEST_F(FastpathTest, TestDefaults)
     ASSERT_FALSE((DEFAULT_FILE_OFFSET & (DEFAULT_OFFSET_ALIGN - 1)));
 }
 
-TEST_F(FastpathTest, UnbufferedFdAvailable)
+TEST_F(FastpathTest, ScoreAcceptsIoWithDefaults)
 {
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(DEFAULT_ENABLE));
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
 #if defined(STATX_DIOALIGN)
@@ -108,8 +114,23 @@ TEST_F(FastpathTest, UnbufferedFdAvailable)
               SCORE_ACCEPT);
 }
 
-TEST_F(FastpathTest, UnbufferedFdNotAvailable)
+TEST_F(FastpathTest, ScoreRejectsIoIfFastpathIsDisabled)
 {
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(false));
+    EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
+    EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
+#if defined(STATX_DIOALIGN)
+    EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
+#endif
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+
+    ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
+              SCORE_REJECT);
+}
+
+TEST_F(FastpathTest, ScoreRejectsIoIfUnbufferedFdNotAvailable)
+{
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(DEFAULT_ENABLE));
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(nullopt));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
 #if defined(STATX_DIOALIGN)
@@ -121,8 +142,9 @@ TEST_F(FastpathTest, UnbufferedFdNotAvailable)
               SCORE_REJECT);
 }
 
-TEST_F(FastpathTest, ScoreRejectsNegativeAlignedFileOffset)
+TEST_F(FastpathTest, ScoreRejectsIoWithNegativeAlignedFileOffset)
 {
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(DEFAULT_ENABLE));
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
 #if defined(STATX_DIOALIGN)
@@ -135,8 +157,9 @@ TEST_F(FastpathTest, ScoreRejectsNegativeAlignedFileOffset)
               SCORE_REJECT);
 }
 
-TEST_F(FastpathTest, ScoreRejectsNegativeAlignedBufferOffset)
+TEST_F(FastpathTest, ScoreRejectsIoWithNegativeAlignedBufferOffset)
 {
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(DEFAULT_ENABLE));
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
 #if defined(STATX_DIOALIGN)
@@ -149,8 +172,9 @@ TEST_F(FastpathTest, ScoreRejectsNegativeAlignedBufferOffset)
               SCORE_REJECT);
 }
 
-TEST_F(FastpathTest, ScoreRejectsBufferAddressPlusBufferOffsetIsUnaligned)
+TEST_F(FastpathTest, ScoreRejectsIoIfBufferAddressPlusBufferOffsetIsUnaligned)
 {
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(DEFAULT_ENABLE));
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
 #if defined(STATX_DIOALIGN)
@@ -171,6 +195,7 @@ struct FastpathSupportedHipMemoryParam : public FastpathTestBase, public TestWit
 
 TEST_P(FastpathSupportedHipMemoryParam, Score)
 {
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(DEFAULT_ENABLE));
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(GetParam()));
 #if defined(STATX_DIOALIGN)
@@ -188,6 +213,7 @@ struct FastpathUnsupportedHipMemoryParam : public FastpathTestBase, public TestW
 
 TEST_P(FastpathUnsupportedHipMemoryParam, Score)
 {
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(DEFAULT_ENABLE));
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(GetParam()));
 #if defined(STATX_DIOALIGN)
@@ -206,6 +232,7 @@ struct FastpathAlignedIoSizesParam : public FastpathTestBase, public TestWithPar
 
 TEST_P(FastpathAlignedIoSizesParam, Score)
 {
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(DEFAULT_ENABLE));
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
 #if defined(STATX_DIOALIGN)
@@ -225,6 +252,7 @@ struct FastpathUnalignedIoSizesParam : public FastpathTestBase, public TestWithP
 
 TEST_P(FastpathUnalignedIoSizesParam, Score)
 {
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(DEFAULT_ENABLE));
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
 #if defined(STATX_DIOALIGN)
@@ -244,6 +272,7 @@ struct FastpathAlignedFileOffsetsParam : public FastpathTestBase, public TestWit
 
 TEST_P(FastpathAlignedFileOffsetsParam, Score)
 {
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(DEFAULT_ENABLE));
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
 #if defined(STATX_DIOALIGN)
@@ -265,6 +294,7 @@ struct FastpathUnalignedFileOffsetsParam : public FastpathTestBase, public TestW
 
 TEST_P(FastpathUnalignedFileOffsetsParam, Score)
 {
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(DEFAULT_ENABLE));
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
 #if defined(STATX_DIOALIGN)
@@ -288,6 +318,7 @@ struct FastpathAlignedBufferOffsetsParam : public FastpathTestBase, public TestW
 
 TEST_P(FastpathAlignedBufferOffsetsParam, Score)
 {
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(DEFAULT_ENABLE));
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
 #if defined(STATX_DIOALIGN)
@@ -310,6 +341,7 @@ struct FastpathUnalignedBufferOffsetsParam : public FastpathTestBase, public Tes
 
 TEST_P(FastpathUnalignedBufferOffsetsParam, Score)
 {
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(DEFAULT_ENABLE));
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(DEFAULT_BUFFER_TYPE));
 #if defined(STATX_DIOALIGN)
@@ -331,36 +363,64 @@ INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathUnalignedBufferOffsetsParam,
 
 struct FastpathIoParam : public FastpathTestBase, public TestWithParam<IoType> {
 
-    void expect_io()
+    StrictMock<MHip> mhip;
+
+    // Setup expectations on the mocks called to validate IO arguments
+    void expect_validate()
     {
+        EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(DEFAULT_ENABLE));
         EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
         EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(DEFAULT_BUFFER_LENGTH));
         EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
     }
 
-    void expect_io(optional<int> fd, void *bufptr, size_t buflen)
+    // Setup expectations on the mocks called to validate IO arguments and
+    // the mocks called up to, but not including, hipAmdFileRead/hipAmdFileWrite
+    void expect_io()
     {
+        expect_validate();
+        EXPECT_CALL(mhip, hipInit);
+    }
+
+    // Setup expectations on the mocks called to validate IO arguments
+    void expect_validate(optional<int> fd, void *bufptr, size_t buflen)
+    {
+        EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(DEFAULT_ENABLE));
         EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(bufptr));
         EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(buflen));
         EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(fd));
     }
+
+    // Setup expectations on the mocks called to validate IO arguments and
+    // the mocks called up to, but not including, hipAmdFileRead/hipAmdFileWrite
+    void expect_io(optional<int> fd, void *bufptr, size_t buflen)
+    {
+        expect_validate(fd, bufptr, buflen);
+        EXPECT_CALL(mhip, hipInit);
+    }
 };
+
+TEST_P(FastpathIoParam, IoRejectedIfFastpathDisabled)
+{
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(false));
+    ASSERT_THROW(Fastpath().io(GetParam(), mfile, mbuffer, 0, -1, 0), BackendDisabled);
+}
 
 TEST_P(FastpathIoParam, IoRejectsNegativeFileOffset)
 {
-    expect_io();
+    expect_validate();
     ASSERT_THROW(Fastpath().io(GetParam(), mfile, mbuffer, 0, -1, 0), std::invalid_argument);
 }
 
 TEST_P(FastpathIoParam, IoRejectsNegativeBufferOffset)
 {
-    expect_io();
+    expect_validate();
     ASSERT_THROW(Fastpath().io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, 0, -1), std::invalid_argument);
 }
 
 TEST_P(FastpathIoParam, IoRejectsBufferOffsetLargerThanBufferLength)
 {
-    expect_io();
+    expect_validate();
     ASSERT_THROW(Fastpath().io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, 0,
                                static_cast<hoff_t>(DEFAULT_BUFFER_LENGTH) + 1),
                  std::invalid_argument);
@@ -368,22 +428,20 @@ TEST_P(FastpathIoParam, IoRejectsBufferOffsetLargerThanBufferLength)
 
 TEST_P(FastpathIoParam, IoRejectsIoSizeLargerThanBufferLength)
 {
-    expect_io();
+    expect_validate();
     ASSERT_THROW(Fastpath().io(GetParam(), mfile, mbuffer, DEFAULT_BUFFER_LENGTH + 1, 0, 0),
                  std::invalid_argument);
 }
 
 TEST_P(FastpathIoParam, IoRejectsIoThatCouldOverflowBuffer)
 {
-    expect_io();
+    expect_validate();
     ASSERT_THROW(Fastpath().io(GetParam(), mfile, mbuffer, DEFAULT_BUFFER_LENGTH, DEFAULT_FILE_OFFSET, 1),
                  std::invalid_argument);
 }
 
 TEST_P(FastpathIoParam, IoConfiguresHandle)
 {
-    StrictMock<MHip> mhip;
-
     hipAmdFileHandle_t handle{};
     handle.fd = DEFAULT_UNBUFFERED_FD.value();
 
@@ -404,8 +462,6 @@ TEST_P(FastpathIoParam, IoConfiguresHandle)
 
 TEST_P(FastpathIoParam, IoCalculatesCorrectDevicePointer)
 {
-    StrictMock<MHip> mhip;
-
     off_t buffer_offset{0x1000};
     void *buffer_addr{reinterpret_cast<void *>(0x20000)};
     void *expected_device_ptr{reinterpret_cast<void *>(0x21000)};
@@ -427,8 +483,6 @@ TEST_P(FastpathIoParam, IoCalculatesCorrectDevicePointer)
 
 TEST_P(FastpathIoParam, IoPassesThroughSizeAndFileOffset)
 {
-    StrictMock<MHip> mhip;
-
     expect_io();
     switch (GetParam()) {
         case IoType::Read:
@@ -446,8 +500,6 @@ TEST_P(FastpathIoParam, IoPassesThroughSizeAndFileOffset)
 
 TEST_P(FastpathIoParam, IoReturnsBytesTransferred)
 {
-    StrictMock<MHip> mhip;
-
     expect_io();
     switch (GetParam()) {
         case IoType::Read:
@@ -467,8 +519,6 @@ TEST_P(FastpathIoParam, IoReturnsBytesTransferred)
 
 TEST_P(FastpathIoParam, IoReturnsBytesTransferredShort)
 {
-    StrictMock<MHip> mhip;
-
     size_t nbytes{4096};
 
     ASSERT_LT(nbytes, DEFAULT_IO_SIZE);
@@ -493,8 +543,6 @@ TEST_P(FastpathIoParam, IoReturnsBytesTransferredShort)
 // Ensure hip errors thrown by Hip::hipAmdFileRead/Hip::hipAmdFileWrite are not masked
 TEST_P(FastpathIoParam, IoDoesNotMaskHipRuntimeError)
 {
-    StrictMock<MHip> mhip;
-
     expect_io();
     switch (GetParam()) {
         case IoType::Read:
@@ -515,8 +563,6 @@ TEST_P(FastpathIoParam, IoDoesNotMaskHipRuntimeError)
 // Ensure hip errors thrown by Hip::hipAmdFileRead/Hip::hipAmdFileWrite are not masked
 TEST_P(FastpathIoParam, IoDoesNotMaskSystemError)
 {
-    StrictMock<MHip> mhip;
-
     expect_io();
     switch (GetParam()) {
         case IoType::Read:
@@ -537,8 +583,6 @@ TEST_P(FastpathIoParam, IoDoesNotMaskSystemError)
 // Ensure IO size is truncated to MAX_RW_COUNT
 TEST_P(FastpathIoParam, IoSizeIsTruncatedToMaxRWCount)
 {
-    StrictMock<MHip> mhip;
-
     const size_t buffer_size{SIZE_MAX};
     const size_t io_size{SIZE_MAX};
 

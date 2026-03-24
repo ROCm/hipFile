@@ -4,6 +4,7 @@
  */
 
 #include "buffer.h"
+#include "configuration.h"
 #include "context.h"
 #include "fastpath.h"
 #include "file.h"
@@ -128,6 +129,8 @@ Fastpath::score(shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
 {
     bool accept_io{true};
 
+    accept_io &= Context<Configuration>::get()->fastpath();
+
     accept_io &= file->getUnbufferedFd().has_value();
 
     accept_io &= buffer->getType() == hipMemoryTypeDevice;
@@ -170,6 +173,10 @@ ssize_t
 Fastpath::_io_impl(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
                    hoff_t file_offset, hoff_t buffer_offset)
 {
+    if (!Context<Configuration>::get()->fastpath()) {
+        throw BackendDisabled();
+    }
+
     void *devptr{reinterpret_cast<void *>(reinterpret_cast<intptr_t>(buffer->getBuffer()) + buffer_offset)};
     hipAmdFileHandle_t handle{};
     size_t             nbytes{};
@@ -185,6 +192,15 @@ Fastpath::_io_impl(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buff
     // MAX_RW_COUNT. When amdgpu/kfd properly handles IO sizes > MAX_RW_COUNT
     // this can be removed.
     size = std::min(size, MAX_RW_COUNT);
+
+    // Ensure HIP Runtime is initialized. This is a temporary fix to a SEGFAULT
+    // in the HIP Runtime when hipFileRead/hipFileWrite is the first HIP API
+    // call of a new thread.
+    thread_local bool hip_inited{false};
+    if (!hip_inited) {
+        Context<Hip>::get()->hipInit();
+        hip_inited = true;
+    }
 
     switch (type) {
         case IoType::Read:

@@ -54,14 +54,12 @@ operator!=(const hipFileError_t &lhs, const hipFileError_t &rhs)
 // << overload for hipFileError_t values
 //
 // Unused in the test code, but kept here for iostream debugging
-#ifndef NDEBUG
-#include <iostream>
+#include <ostream>
 inline std::ostream &
 operator<<(std::ostream &os, const hipFileError_t &rfe)
 {
     return os << "hipFileError_t{ err: " << rfe.err << ", hip_drv_err: " << rfe.hip_drv_err << " }";
 }
-#endif
 
 // Convenience "success" value
 inline constexpr hipFileError_t HIPFILE_SUCCESS{hipFileSuccess, hipSuccess};

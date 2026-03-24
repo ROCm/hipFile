@@ -24,7 +24,6 @@ set(SYSTEM_TEST_SOURCE_FILES
     system/buffer.cpp
     system/config.cpp
     system/driver.cpp
-    system/io.cpp
     system/main.cpp
     system/version.cpp
 )
@@ -38,6 +37,7 @@ if(AIS_BUILD_NVIDIA_DETAIL)
     list(APPEND UNIT_TEST_SOURCE_FILES nvidia_detail/cufile-api-compat.cpp)
     list(APPEND TEST_SYSINCLS ${HIPFILE_NVIDIA_SOURCE_PATH})
 else()
+    list(APPEND SYSTEM_TEST_SOURCE_FILES system/amd/io.cpp)
     list(APPEND TEST_SYSINCLS ${HIPFILE_AMD_SOURCE_PATH})
 endif()
 
@@ -48,7 +48,7 @@ ais_add_executable(
     SYSINCLS ${TEST_SYSINCLS}
 )
 target_compile_options(hipfile_tests
-    PRIVATE -Wno-unused-function
+    PRIVATE -UNDEBUG -Wno-unused-function
 )
 target_link_libraries(hipfile_tests PRIVATE GTest::gtest)
 target_link_libraries(hipfile_tests PRIVATE GTest::gtest_main)
@@ -65,6 +65,7 @@ ais_add_executable(
     SRCS ${SYSTEM_TEST_SOURCE_FILES} ${SHARED_SOURCE_FILES}
     SYSINCLS ${TEST_SYSINCLS}
 )
+target_compile_options(hipfile_system_tests PRIVATE -UNDEBUG)
 target_link_libraries(hipfile_system_tests PRIVATE GTest::gtest)
 target_link_libraries(hipfile_system_tests PRIVATE Boost::program_options)
 

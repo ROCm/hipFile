@@ -6,51 +6,43 @@
 #include "configuration.h"
 #include "environment.h"
 #include "hip.h"
+#include "static.h"
 
 #include <optional>
 
 using namespace hipFile;
 
-Configuration::Configuration() : m_fastpath(true), m_fallback(true), m_statsLevel(0)
-{
-    auto maybe_env_force_compat{Environment::force_compat_mode()};
-    if (maybe_env_force_compat && maybe_env_force_compat.value()) {
-        m_fastpath = false;
-    }
-
-    auto maybe_env_allow_compat{Environment::allow_compat_mode()};
-    if (maybe_env_allow_compat && !maybe_env_allow_compat.value()) {
-        m_fallback = false;
-    }
-
-    auto maybe_stats_level{Environment::stats_level()};
-    if (maybe_stats_level) {
-        m_statsLevel = maybe_stats_level.value();
-    }
-}
-
 bool
 Configuration::fastpath() const noexcept
 {
-#ifndef AIS_TESTING
-    static
-#endif
-        bool readExists{!!getHipAmdFileReadPtr()};
-#ifndef AIS_TESTING
-    static
-#endif
-        bool writeExists{!!getHipAmdFileWritePtr()};
-    return readExists && writeExists && m_fastpath;
+    HIPFILE_STATIC bool fastpath_env{!Environment::force_compat_mode().value_or(false)};
+    HIPFILE_STATIC bool readExists{!!getHipAmdFileReadPtr()};
+    HIPFILE_STATIC bool writeExists{!!getHipAmdFileWritePtr()};
+    return readExists && writeExists && m_fastpath_override.value_or(fastpath_env);
+}
+
+void
+Configuration::fastpath(bool enabled) noexcept
+{
+    m_fastpath_override = enabled;
 }
 
 bool
 Configuration::fallback() const noexcept
 {
-    return m_fallback;
+    HIPFILE_STATIC bool fallback_env{Environment::allow_compat_mode().value_or(true)};
+    return m_fallback_override.value_or(fallback_env);
+}
+
+void
+Configuration::fallback(bool enabled) noexcept
+{
+    m_fallback_override = enabled;
 }
 
 unsigned int
 Configuration::statsLevel() const noexcept
 {
-    return m_statsLevel;
+    HIPFILE_STATIC unsigned int stats_level_env{Environment::stats_level().value_or(0)};
+    return stats_level_env;
 }

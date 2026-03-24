@@ -3,18 +3,24 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "context.h"
+#include "configuration.h"
 #include "hipfile-warnings.h"
 #include "hipfile.h"
 
 #include "test-common.h"
 #include "test-options.h"
 
+#include <array>
 #include <cstdlib>
-#include <unistd.h>
 #include <gtest/gtest.h>
 #include <hip/hip_runtime_api.h>
+#include <string>
+#include <unistd.h>
 
 extern SystemTestOptions test_env;
+
+using namespace hipFile;
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 
@@ -23,7 +29,17 @@ enum class IoTestBackend {
     Fallback,
 };
 
-struct HipFileIo : public testing::TestWithParam<IoTestBackend> {
+struct IoTestParam {
+    IoTestBackend backend;
+    std::string   name;
+};
+
+HIPFILE_WARN_NO_EXIT_DTOR_OFF
+static std::array<IoTestParam, 2> io_test_params{
+    {{IoTestBackend::Fastpath, "Fastpath"}, {IoTestBackend::Fallback, "Fallback"}}};
+HIPFILE_WARN_NO_EXIT_DTOR_ON
+
+struct HipFileIo : public testing::TestWithParam<IoTestParam> {
 
     Tmpfile         tmpfile;
     size_t          tmpfile_size;
@@ -37,39 +53,20 @@ struct HipFileIo : public testing::TestWithParam<IoTestBackend> {
     {
     }
 
-    // Must be called before hipfile is initialized. Relies on each test being
-    // run in a separate process
-    void enable_fastpath_only()
-    {
-        if (unsetenv("HIPFILE_FORCE_COMPAT_MODE")) {
-            FAIL() << "Could not clear HIPFILE_FORCE_COMPAT_MODE";
-        }
-        if (setenv("HIPFILE_ALLOW_COMPAT_MODE", "false", 1)) {
-            FAIL() << "Could not set HIPFILE_ALLOW_COMPAT_MODE=false";
-        }
-    }
-
-    // Must be called before hipfile is initialized. Relies on each test being
-    // run in a separate process
-    void enable_fallback_only()
-    {
-        if (unsetenv("HIPFILE_ALLOW_COMPAT_MODE")) {
-            FAIL() << "Could not clear HIPFILE_ALLOW_COMPAT_MODE";
-        }
-        if (setenv("HIPFILE_FORCE_COMPAT_MODE", "true", 1)) {
-            FAIL() << "Could not set HIPFILE_FORCE_COMPAT_MODE=true";
-        }
-    }
-
     void SetUp() override
     {
-        switch (GetParam()) {
+        // Disable all backends
+        Context<Configuration>::get()->fastpath(false);
+        Context<Configuration>::get()->fallback(false);
+
+        // Enable the desired backend
+        switch (GetParam().backend) {
             case IoTestBackend::Fastpath:
-                enable_fastpath_only();
+                Context<Configuration>::get()->fastpath(true);
                 break;
 
             case IoTestBackend::Fallback:
-                enable_fallback_only();
+                Context<Configuration>::get()->fallback(true);
                 break;
 
             default:
@@ -112,6 +109,9 @@ TEST_P(HipFileIo, ReadToUnregisteredBufferAtOffsetReturnsErrorIfOverflow)
               hipFileRead(tmpfile_handle, unregistered_device_buffer, io_size, 0, io_buffer_offset));
 }
 
-INSTANTIATE_TEST_SUITE_P(, HipFileIo, testing::Values(IoTestBackend::Fastpath, IoTestBackend::Fallback));
+INSTANTIATE_TEST_SUITE_P(, HipFileIo, testing::ValuesIn(io_test_params),
+                         [](const testing::TestParamInfo<HipFileIo::ParamType> &param_info) {
+                             return param_info.param.name;
+                         });
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

@@ -14,6 +14,7 @@
 #include "hipfile-warnings.h"
 #include "io.h"
 #include "mbuffer.h"
+#include "mconfiguration.h"
 #include "mfile.h"
 #include "mhip.h"
 #include "mmountinfo.h"
@@ -53,13 +54,13 @@ rand_fill(std::vector<uint8_t> &v)
 {
     // *Quickly* fill the vector with data. Reading from /dev/urandom is
     // faster than C++'s prngs and C's rand.
-    auto fd = open("/dev/urandom", O_RDONLY);
+    auto fd{open("/dev/urandom", O_RDONLY)};
     if (fd == -1) {
         throw std::runtime_error("Can't open /dev/urandom");
     }
-    size_t total_bytes_read = 0;
+    size_t total_bytes_read{0};
     while (total_bytes_read < v.size()) {
-        auto bytes_read = read(fd, v.data() + total_bytes_read, v.size() - total_bytes_read);
+        auto bytes_read{read(fd, v.data() + total_bytes_read, v.size() - total_bytes_read)};
         if (bytes_read == -1) {
             throw std::runtime_error("Can't read from /dev/urandom");
         }
@@ -85,7 +86,7 @@ contains_expected_data(std::vector<uint8_t> &buffer, hoff_t buffer_offset, std::
         throw std::invalid_argument("out of bounds: expected");
     }
 
-    for (hoff_t i = 0; i < buffer_offset; i++) {
+    for (hoff_t i{0}; i < buffer_offset; i++) {
         if (buffer.data()[i] != 0) {
             return false;
         }
@@ -95,7 +96,7 @@ contains_expected_data(std::vector<uint8_t> &buffer, hoff_t buffer_offset, std::
         return false;
     }
 
-    for (size_t i = static_cast<size_t>(buffer_offset) + count; i < buffer.size(); i++) {
+    for (size_t i{static_cast<size_t>(buffer_offset) + count}; i < buffer.size(); i++) {
         if (buffer.data()[i] != 0) {
             return false;
         }
@@ -106,16 +107,19 @@ contains_expected_data(std::vector<uint8_t> &buffer, hoff_t buffer_offset, std::
 
 struct FallbackIo : public HipFileOpened {
 
-    shared_ptr<IBuffer>  buffer;
-    std::vector<uint8_t> buffer_data;
-    shared_ptr<IFile>    file;
-    std::vector<uint8_t> file_data;
+    shared_ptr<IBuffer>  buffer{};
+    std::vector<uint8_t> buffer_data{};
+    shared_ptr<IFile>    file{};
+    std::vector<uint8_t> file_data{};
+    void                *nonnull_ptr{reinterpret_cast<void *>(0x1)};
+
+    StrictMock<MHip>            mhip;
+    StrictMock<MSys>            msys;
+    StrictMock<MLibMountHelper> mlibmounthelper;
+    StrictMock<MConfiguration>  mcfg{};
 
     FallbackIo() : buffer_data(1024 * 1024)
     {
-        StrictMock<MHip>            mhip;
-        StrictMock<MSys>            msys;
-        StrictMock<MLibMountHelper> mlibmounthelper;
 
         expect_buffer_registration(mhip, hipMemoryTypeDevice);
         Context<DriverState>::get()->registerBuffer(buffer_data.data(), buffer_data.size(), 0);
@@ -139,48 +143,55 @@ struct FallbackIo : public HipFileOpened {
     }
 };
 
-TEST(HipFileFallbackBackend, FallbackBackendIsBarelyWillingToHandleDeviceMemory)
-{
-    auto   mfile{std::make_shared<StrictMock<MFile>>()};
-    auto   mbuffer{std::make_shared<StrictMock<MBuffer>>()};
-    size_t io_size{2048};
-    hoff_t file_offset{4096};
-    hoff_t buffer_offset{1024};
+struct FallbackScoring : public testing::Test {
+    const size_t                    io_size{2048};
+    const hoff_t                    file_offset{4096};
+    const hoff_t                    buffer_offset{1024};
+    shared_ptr<StrictMock<MFile>>   mfile{make_shared<StrictMock<MFile>>()};
+    shared_ptr<StrictMock<MBuffer>> mbuffer{make_shared<StrictMock<MBuffer>>()};
 
+    StrictMock<MConfiguration> mcfg;
+};
+
+TEST_F(FallbackScoring, ScoreAcceptsIoTargetingDeviceMemory)
+{
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(true));
     EXPECT_CALL(*mbuffer, getType).WillOnce(Return(hipMemoryTypeDevice));
 
     ASSERT_EQ(Fallback().score(mfile, mbuffer, io_size, file_offset, buffer_offset), 0);
 }
 
-TEST(HipFileFallbackBackend, FallbackBackendRejectsUnsupportedHipMemoryTypes)
+TEST_F(FallbackScoring, ScoreRejectsIoTargetingUnsupportedMemoryType)
 {
-    auto   mfile{std::make_shared<StrictMock<MFile>>()};
-    size_t io_size{2048};
-    hoff_t file_offset{4096};
-    hoff_t buffer_offset{1024};
-
+    EXPECT_CALL(mcfg, fallback()).WillRepeatedly(Return(true));
     for (const auto memoryType : UnsupportedHipMemoryTypes) {
-        auto mbuffer = std::make_shared<StrictMock<MBuffer>>();
         EXPECT_CALL(*mbuffer, getType).WillOnce(Return(memoryType));
         ASSERT_EQ(Fallback().score(mfile, mbuffer, io_size, file_offset, buffer_offset), -1);
     }
 }
 
+TEST_F(FallbackScoring, ScoreRejectsIoIfFallbackDisabled)
+{
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(false));
+    ASSERT_EQ(Fallback().score(mfile, mbuffer, io_size, file_offset, buffer_offset), -1);
+}
+
 struct FallbackParam : ::testing::TestWithParam<IoType> {
 
-    shared_ptr<IBuffer> buffer;
-    shared_ptr<IFile>   file;
+    shared_ptr<IBuffer> buffer{};
+    shared_ptr<IFile>   file{};
+
+    StrictMock<MHip>            mhip{};
+    StrictMock<MSys>            msys{};
+    StrictMock<MLibMountHelper> mlibmounthelper{};
+    StrictMock<MConfiguration>  mcfg{};
 
     FallbackParam()
     {
-        StrictMock<MHip>            mhip;
-        StrictMock<MSys>            msys;
-        StrictMock<MLibMountHelper> mlibmounthelper;
-
         assert(hipFileDriverOpen() == HIPFILE_SUCCESS);
 
         expect_buffer_registration(mhip, hipMemoryTypeDevice);
-        void *buf = reinterpret_cast<void *>(0xFEFEFEFE);
+        void *buf{reinterpret_cast<void *>(0xFEFEFEFE)};
         Context<DriverState>::get()->registerBuffer(buf, 4096, 0);
         buffer = Context<DriverState>::get()->getRegisteredBuffer(buf);
 
@@ -209,47 +220,49 @@ protected:
     IoType io_type;
 };
 
-TEST_P(FallbackParam, fallback_io_throws_on_negative_buffer_offset)
+TEST_P(FallbackParam, FallbackIoRejectedIfBackendIsDisabled)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(false));
+    ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, 0, -1, 4096), BackendDisabled);
+}
+
+TEST_P(FallbackParam, FallbackIoThrowsOnNegativeBufferOffset)
+{
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(true));
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, 0, -1, 4096), std::invalid_argument);
 }
 
-TEST_P(FallbackParam, fallback_io_throws_if_buffer_offset_is_out_of_bounds)
+TEST_P(FallbackParam, FallbackIoThrowsIfBufferOffsetIsOutOfBounds)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-    hoff_t           buffer_offset = static_cast<hoff_t>(buffer->getLength());
+    hoff_t buffer_offset{static_cast<hoff_t>(buffer->getLength())};
+
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(true));
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, 0, buffer_offset, 4096), std::invalid_argument);
 }
 
-TEST_P(FallbackParam, fallback_io_throws_if_op_could_overrun_buffer)
+TEST_P(FallbackParam, FallbackIoThrowsIfOpCouldOverrunBuffer)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-    size_t           size          = 10;
-    hoff_t           buffer_offset = static_cast<hoff_t>(buffer->getLength()) - 9;
+    size_t size{10};
+    hoff_t buffer_offset{static_cast<hoff_t>(buffer->getLength()) - 9};
+
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(true));
     ASSERT_THROW(Fallback().io(io_type, file, buffer, size, 0, buffer_offset, 4096), std::invalid_argument);
 }
 
-TEST_P(FallbackParam, fallback_io_throws_on_negative_file_offset)
+TEST_P(FallbackParam, FallbackIoThrowsOnNegativeFileOffset)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(true));
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 0, -1, 0, 4096), std::invalid_argument);
 }
 
-TEST_P(FallbackParam, fallback_io_truncates_size_to_MAX_RW_COUNT)
+TEST_P(FallbackParam, FallbackIoTruncatesSizeToMAX_RW_COUNT)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
-    auto buf = reinterpret_cast<void *>(0xABABABAB);
+    auto buf{reinterpret_cast<void *>(0xABABABAB)};
     Context<DriverState>::get()->registerBuffer(buf, MAX_RW_COUNT + 1, 0);
-    auto big_buffer = Context<DriverState>::get()->getRegisteredBuffer(buf);
+    auto big_buffer{Context<DriverState>::get()->getRegisteredBuffer(buf)};
 
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Return(reinterpret_cast<void *>(0xFEFEFEFE)));
     switch (io_type) {
         case IoType::Read:
@@ -276,20 +289,19 @@ TEST_P(FallbackParam, fallback_io_truncates_size_to_MAX_RW_COUNT)
     ASSERT_EQ(MAX_RW_COUNT, Fallback().io(io_type, file, big_buffer, SIZE_MAX, 0, 0, 16 * 1024 * 1024));
 }
 
-TEST_P(FallbackParam, fallback_io_throws_on_bounce_buffer_allocation_failure)
+TEST_P(FallbackParam, FallbackIoThrowsOnBounceBufferAllocationFailure)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Throw(std::system_error(ENOMEM, std::generic_category())));
     ASSERT_THROW(Fallback().io(io_type, file, buffer, 4096, 0, 0, 4096), std::system_error);
 }
 
-TEST_P(FallbackParam, fallback_io_allocates_chunk_sized_host_bounce_buffer)
+TEST_P(FallbackParam, FallbackIoAllocatesChunkSizedHostBounceBuffer)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-    size_t           chunk_size = 1024 * 1024;
-    auto             ptr        = reinterpret_cast<void *>(0xFEFEFEFE);
+    size_t chunk_size{1024 * 1024};
+    auto   ptr{reinterpret_cast<void *>(0xFEFEFEFE)};
+
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(true));
     EXPECT_CALL(msys, mmap(testing::_, chunk_size, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(ptr));
     switch (io_type) {
@@ -325,7 +337,7 @@ struct FallbackWrite : public FallbackIo {
             return -1;
         }
 
-        auto uoffset = static_cast<size_t>(offset);
+        auto uoffset{static_cast<size_t>(offset)};
         if (file_data.size() < uoffset + count) {
             file_data.resize(uoffset + count);
         }
@@ -335,8 +347,9 @@ struct FallbackWrite : public FallbackIo {
         return static_cast<ssize_t>(count);
     }
 
-    void expect_fallback_write(MHip &mhip, MSys &msys)
+    void expect_fallback_write()
     {
+        EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
         EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
         EXPECT_CALL(mhip, hipMemcpy).WillRepeatedly(testing::Invoke(this, &FallbackWrite::fake_hipMemcpy));
         EXPECT_CALL(mhip, hipStreamSynchronize).WillRepeatedly(testing::Return());
@@ -355,24 +368,17 @@ struct FallbackWrite : public FallbackIo {
     {
         rand_fill(buffer_data);
     }
-
-    void *nonnull_ptr = reinterpret_cast<void *>(0x1);
 };
 
-TEST_F(FallbackWrite, fallback_write_handles_zero_sized_write)
+TEST_F(FallbackWrite, FallbackWriteHandlesZeroSizedWrite)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    expect_fallback_write(mhip, msys);
+    expect_fallback_write();
     ASSERT_EQ(0, Fallback().io(IoType::Write, file, buffer, 0, 0, 0));
 }
 
-TEST_F(FallbackWrite, fallback_write_throws_on_pwrite_exception)
+TEST_F(FallbackWrite, FallbackWriteThrowsOnPwriteException)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
+    EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(mhip, hipMemcpy);
     EXPECT_CALL(mhip, hipStreamSynchronize);
@@ -382,11 +388,9 @@ TEST_F(FallbackWrite, fallback_write_throws_on_pwrite_exception)
     ASSERT_THROW(Fallback().io(IoType::Write, file, buffer, buffer->getLength(), 0, 0), std::system_error);
 }
 
-TEST_F(FallbackWrite, fallback_write_throws_on_hipmemcpy_failure)
+TEST_F(FallbackWrite, FallbackWriteThrowsOnHipmemcpyFailure)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
+    EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(mhip, hipMemcpy).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
     EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
@@ -394,11 +398,9 @@ TEST_F(FallbackWrite, fallback_write_throws_on_hipmemcpy_failure)
     ASSERT_THROW(Fallback().io(IoType::Write, file, buffer, buffer->getLength(), 0, 0), Hip::RuntimeError);
 }
 
-TEST_F(FallbackWrite, fallback_write_throws_on_hipstreamsynchronize_error)
+TEST_F(FallbackWrite, FallbackWriteThrowsOnHipStreamSynchronizeError)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
+    EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(mhip, hipMemcpy);
     EXPECT_CALL(mhip, hipStreamSynchronize).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
@@ -407,110 +409,89 @@ TEST_F(FallbackWrite, fallback_write_throws_on_hipstreamsynchronize_error)
     ASSERT_THROW(Fallback().io(IoType::Write, file, buffer, buffer->getLength(), 0, 0), Hip::RuntimeError);
 }
 
-TEST_F(FallbackWrite, fallback_write_to_empty_file)
+TEST_F(FallbackWrite, FallbackWriteToEmptyFile)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t size       = 64 * 1024;
-    size_t chunk_size = 4096;
+    size_t size{64 * 1024};
+    size_t chunk_size{4096};
 
     randomize_device_buffer();
-    expect_fallback_write(mhip, msys);
+    expect_fallback_write();
 
     ASSERT_EQ(size, Fallback().io(IoType::Write, file, buffer, size, 0, 0, chunk_size));
     ASSERT_TRUE(file_contains_expected_data(0, 0, size));
 }
 
-TEST_F(FallbackWrite, fallback_write_to_empty_file_at_file_offset)
+TEST_F(FallbackWrite, FallbackWriteToEmptyFileAtFileOffset)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t size        = 64 * 1024;
-    size_t chunk_size  = 4096;
-    hoff_t file_offset = 1024;
+    size_t size{64 * 1024};
+    size_t chunk_size{4096};
+    hoff_t file_offset{1024};
 
     randomize_device_buffer();
-    expect_fallback_write(mhip, msys);
+    expect_fallback_write();
 
     ASSERT_EQ(size, Fallback().io(IoType::Write, file, buffer, size, file_offset, 0, chunk_size));
     ASSERT_TRUE(file_contains_expected_data(file_offset, 0, size));
 }
 
-TEST_F(FallbackWrite, fallback_write_to_empty_file_at_buffer_offset)
+TEST_F(FallbackWrite, FallbackWriteToEmptyFileAtBufferOffset)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t size          = 64 * 1024;
-    size_t chunk_size    = 4096;
-    hoff_t buffer_offset = 1024;
+    size_t size{64 * 1024};
+    size_t chunk_size{4096};
+    hoff_t buffer_offset{1024};
 
     randomize_device_buffer();
-    expect_fallback_write(mhip, msys);
+    expect_fallback_write();
 
     ASSERT_EQ(size, Fallback().io(IoType::Write, file, buffer, size, 0, buffer_offset, chunk_size));
     ASSERT_TRUE(file_contains_expected_data(0, buffer_offset, size));
 }
 
-TEST_F(FallbackWrite, fallback_write_to_empty_file_at_buffer_offset_file_offset)
+TEST_F(FallbackWrite, FallbackWriteToEmptyFileAtBufferOffsetFileOffset)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t size          = 64 * 1024;
-    size_t chunk_size    = 4096;
-    hoff_t buffer_offset = 1024;
-    hoff_t file_offset   = 512;
+    size_t size{64 * 1024};
+    size_t chunk_size{4096};
+    hoff_t buffer_offset{1024};
+    hoff_t file_offset{512};
 
     randomize_device_buffer();
-    expect_fallback_write(mhip, msys);
+    expect_fallback_write();
 
     ASSERT_EQ(size, Fallback().io(IoType::Write, file, buffer, size, file_offset, buffer_offset, chunk_size));
     ASSERT_TRUE(file_contains_expected_data(file_offset, buffer_offset, size));
 }
 
-TEST_F(FallbackWrite, fallback_write_overwite_entire_file)
+TEST_F(FallbackWrite, FallbackWriteOverwriteEntireFile)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
     file_data.resize(buffer->getLength());
     randomize_device_buffer();
-    expect_fallback_write(mhip, msys);
+    expect_fallback_write();
 
     ASSERT_EQ(buffer->getLength(), Fallback().io(IoType::Write, file, buffer, buffer->getLength(), 0, 0));
     ASSERT_TRUE(file_contains_expected_data(0, 0, file_data.size()));
 }
 
-TEST_F(FallbackWrite, fallback_write_to_file_subregion)
+TEST_F(FallbackWrite, FallbackWriteToFileSubregion)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t file_length = buffer->getLength() * 2;
-    hoff_t file_offset = buffer->getLength() / 2;
+    size_t file_length{buffer->getLength() * 2};
+    hoff_t file_offset{static_cast<hoff_t>(buffer->getLength() / 2)};
     file_data.resize(file_length);
     randomize_device_buffer();
-    expect_fallback_write(mhip, msys);
+    expect_fallback_write();
 
     ASSERT_EQ(buffer->getLength(),
               Fallback().io(IoType::Write, file, buffer, buffer->getLength(), file_offset, 0));
     ASSERT_TRUE(file_contains_expected_data(file_offset, 0, buffer->getLength()));
 }
 
-TEST_F(FallbackWrite, fallback_write_append_non_empty_small_file)
+TEST_F(FallbackWrite, FallbackWriteAppendNonEmptySmallFile)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
     file_data.resize(64);
-    size_t size        = 64 * 1024;
-    hoff_t file_offset = 64;
+    size_t size{64 * 1024};
+    hoff_t file_offset{64};
 
     randomize_device_buffer();
-    expect_fallback_write(mhip, msys);
+    expect_fallback_write();
 
     ASSERT_EQ(size, Fallback().io(IoType::Write, file, buffer, size, file_offset, 0));
     ASSERT_TRUE(file_contains_expected_data(file_offset, 0, size));
@@ -538,7 +519,7 @@ struct FallbackRead : public FallbackIo {
             return -1;
         }
 
-        auto uoffset = static_cast<size_t>(offset);
+        auto uoffset{static_cast<size_t>(offset)};
 
         if (count >= static_cast<size_t>(SSIZE_MAX) + 1) {
             return -1;
@@ -562,22 +543,19 @@ struct FallbackRead : public FallbackIo {
         return contains_expected_data(buffer_data, buffer_offset, file_data, file_offset, count);
     }
 
-    void expect_fallback_read(MHip &mhip, MSys &msys)
+    void expect_fallback_read()
     {
+        EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
         EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
         EXPECT_CALL(msys, pread).WillRepeatedly(testing::Invoke(this, &FallbackRead::fake_pread));
         EXPECT_CALL(mhip, hipMemcpy).WillRepeatedly(testing::Invoke(this, &FallbackRead::fake_hipMemcpy));
         EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
     }
-
-    void *nonnull_ptr = reinterpret_cast<void *>(0x1);
 };
 
-TEST_F(FallbackRead, fallback_read_handles_zero_sized_read)
+TEST_F(FallbackRead, FallbackReadHandlesZeroSizedRead)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-    expect_fallback_read(mhip, msys);
+    expect_fallback_read();
     ASSERT_EQ(0, Fallback().io(IoType::Read, file, buffer, 0, 0, 0));
 }
 
@@ -586,39 +564,33 @@ TEST_F(FallbackRead, fallback_read_handles_zero_sized_read)
 /// [SOF.....[....REGION....]....EOF]
 TEST_F(FallbackRead, ReadFromRegionWithinFile)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t file_length = buffer->getLength() * 3;
+    size_t file_length{buffer->getLength() * 3};
     init_file(file_length);
 
-    size_t size          = buffer->getLength() / 2;
-    hoff_t buffer_offset = buffer->getLength() / 4;
-    hoff_t file_offset   = static_cast<hoff_t>(buffer->getLength());
+    size_t size{buffer->getLength() / 2};
+    hoff_t buffer_offset{static_cast<hoff_t>(buffer->getLength() / 4)};
+    hoff_t file_offset{static_cast<hoff_t>(buffer->getLength())};
 
-    expect_fallback_read(mhip, msys);
+    expect_fallback_read();
     ASSERT_EQ(Fallback().io(IoType::Read, file, buffer, size, file_offset, buffer_offset), size);
     ASSERT_TRUE(device_buffer_contains_expected_data(file_offset, buffer_offset, size));
 }
 
-TEST_F(FallbackRead, fallback_read_throws_on_pread_exception)
+TEST_F(FallbackRead, FallbackReadThrowsOnPreadException)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
+    EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(msys, pread).WillOnce(testing::Throw(std::system_error(EIO, std::generic_category())));
     EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
     ASSERT_THROW(Fallback().io(IoType::Read, file, buffer, 4096, 0, 0), std::system_error);
 }
 
-TEST_F(FallbackRead, fallback_read_throws_on_hipmemcpy_failure)
+TEST_F(FallbackRead, FallbackReadThrowsOnHipmemcpyFailure)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t file_length = buffer->getLength();
+    size_t file_length{buffer->getLength()};
     init_file(file_length);
 
+    EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(msys, pread).WillRepeatedly(testing::Invoke(this, &FallbackRead::fake_pread));
     EXPECT_CALL(mhip, hipMemcpy).WillOnce(testing::Throw(Hip::RuntimeError(hipErrorUnknown)));
@@ -626,14 +598,12 @@ TEST_F(FallbackRead, fallback_read_throws_on_hipmemcpy_failure)
     ASSERT_THROW(Fallback().io(IoType::Read, file, buffer, file_length, 0, 0), Hip::RuntimeError);
 }
 
-TEST_F(FallbackRead, fallback_read_handles_empty_file)
+TEST_F(FallbackRead, FallbackReadHandlesEmptyFile)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    const size_t file_length = 0;
+    const size_t file_length{0};
     init_file(file_length);
 
+    EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(msys, pread).WillRepeatedly(testing::Invoke(this, &FallbackRead::fake_pread));
     EXPECT_CALL(msys, munmap).WillOnce(testing::Invoke(::munmap));
@@ -641,14 +611,12 @@ TEST_F(FallbackRead, fallback_read_handles_empty_file)
     ASSERT_TRUE(device_buffer_contains_expected_data(0, 0, file_length));
 }
 
-TEST_F(FallbackRead, fallback_read_handles_short_preads)
+TEST_F(FallbackRead, FallbackReadHandlesShortPreads)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t file_length = buffer->getLength();
+    size_t file_length{buffer->getLength()};
     init_file(file_length);
 
+    EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(msys, pread)
         .WillOnce(testing::Invoke([this](int fd, void *buf, size_t count, hoff_t offset) -> ssize_t {
@@ -663,14 +631,12 @@ TEST_F(FallbackRead, fallback_read_handles_short_preads)
     ASSERT_TRUE(device_buffer_contains_expected_data(0, 0, file_length));
 }
 
-TEST_F(FallbackRead, fallback_read_handles_interrupted_pread)
+TEST_F(FallbackRead, FallbackReadHandlesInterruptedPread)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t file_length = buffer->getLength();
+    size_t file_length{buffer->getLength()};
     init_file(file_length);
 
+    EXPECT_CALL(mcfg, fallback()).WillOnce(testing::Return(true));
     EXPECT_CALL(msys, mmap).WillOnce(testing::Invoke(::mmap));
     EXPECT_CALL(msys, pread)
         .WillOnce(testing::Throw(std::system_error(EINTR, std::generic_category())))
@@ -683,187 +649,148 @@ TEST_F(FallbackRead, fallback_read_handles_interrupted_pread)
     ASSERT_TRUE(device_buffer_contains_expected_data(0, 0, file_length));
 }
 
-TEST_F(FallbackRead, fallback_read_handles_file_smaller_than_buffer)
+TEST_F(FallbackRead, FallbackReadHandlesFileSmallerThanBuffer)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t file_length = buffer->getLength() / 2;
+    size_t file_length{buffer->getLength() / 2};
     init_file(file_length);
 
-    expect_fallback_read(mhip, msys);
+    expect_fallback_read();
     ASSERT_EQ(file_length, Fallback().io(IoType::Read, file, buffer, buffer->getLength(), 0, 0));
     ASSERT_TRUE(device_buffer_contains_expected_data(0, 0, file_length));
 }
 
-TEST_F(FallbackRead, fallback_read_handles_file_same_size_as_buffer)
+TEST_F(FallbackRead, FallbackReadHandlesFileSameSizeAsBuffer)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t file_length = buffer->getLength();
+    size_t file_length{buffer->getLength()};
     init_file(file_length);
 
-    expect_fallback_read(mhip, msys);
+    expect_fallback_read();
     ASSERT_EQ(file_length, Fallback().io(IoType::Read, file, buffer, buffer->getLength(), 0, 0));
     ASSERT_TRUE(device_buffer_contains_expected_data(0, 0, file_length));
 }
 
-TEST_F(FallbackRead, fallback_read_handles_file_larger_than_buffer)
+TEST_F(FallbackRead, FallbackReadHandlesFileLargerThanBuffer)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t file_length = buffer->getLength() * 2;
+    size_t file_length{buffer->getLength() * 2};
     init_file(file_length);
 
-    expect_fallback_read(mhip, msys);
+    expect_fallback_read();
     ASSERT_EQ(buffer->getLength(), Fallback().io(IoType::Read, file, buffer, buffer->getLength(), 0, 0));
     ASSERT_TRUE(device_buffer_contains_expected_data(0, 0, buffer->getLength()));
 }
 
-TEST_F(FallbackRead, fallback_read_handles_file_with_size_multiple_of_chunk_size)
+TEST_F(FallbackRead, FallbackReadHandlesFileWithSizeMultipleOfChunkSize)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t chunk_size  = 4096;
-    size_t file_length = chunk_size;
+    size_t chunk_size{4096};
+    size_t file_length{chunk_size};
     init_file(file_length);
 
-    expect_fallback_read(mhip, msys);
+    expect_fallback_read();
     ASSERT_EQ(file_length, Fallback().io(IoType::Read, file, buffer, file_length, 0, 0, chunk_size));
     ASSERT_TRUE(device_buffer_contains_expected_data(0, 0, file_length));
 }
 
-TEST_F(FallbackRead, fallback_read_handles_files_with_size_not_multiple_of_chunk_size)
+TEST_F(FallbackRead, FallbackReadHandlesFilesWithSizeNotMultipleOfChunkSize)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t chunk_size  = 4096;
-    size_t file_length = chunk_size + 1;
+    size_t chunk_size{4096};
+    size_t file_length{chunk_size + 1};
     init_file(file_length);
 
-    expect_fallback_read(mhip, msys);
+    expect_fallback_read();
     ASSERT_EQ(file_length, Fallback().io(IoType::Read, file, buffer, file_length, 0, 0, chunk_size));
     ASSERT_TRUE(device_buffer_contains_expected_data(0, 0, file_length));
 }
 
-TEST_F(FallbackRead, fallback_read_with_non_zero_file_offset)
+TEST_F(FallbackRead, FallbackReadWithNonZeroFileOffset)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t file_length = buffer->getLength() * 3;
+    size_t file_length{buffer->getLength() * 3};
     init_file(file_length);
-    hoff_t file_offset = static_cast<hoff_t>(buffer->getLength());
+    hoff_t file_offset{static_cast<hoff_t>(buffer->getLength())};
 
-    expect_fallback_read(mhip, msys);
+    expect_fallback_read();
     ASSERT_EQ(buffer->getLength(),
               Fallback().io(IoType::Read, file, buffer, buffer->getLength(), file_offset, 0));
     ASSERT_TRUE(device_buffer_contains_expected_data(file_offset, 0, buffer->getLength()));
 }
 
-TEST_F(FallbackRead, fallback_read_to_eof_with_non_zero_file_offset)
+TEST_F(FallbackRead, FallbackReadToEofWithNonZeroFileOffset)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t file_length = buffer->getLength() * 2;
+    size_t file_length{buffer->getLength() * 2};
     init_file(file_length);
-    hoff_t file_offset = static_cast<hoff_t>(buffer->getLength());
+    hoff_t file_offset{static_cast<hoff_t>(buffer->getLength())};
 
-    expect_fallback_read(mhip, msys);
+    expect_fallback_read();
     ASSERT_EQ(buffer->getLength(),
               Fallback().io(IoType::Read, file, buffer, buffer->getLength(), file_offset, 0));
     ASSERT_TRUE(device_buffer_contains_expected_data(file_offset, 0, buffer->getLength()));
 }
 
-TEST_F(FallbackRead, fallback_read_past_eof_with_non_zero_file_offset)
+TEST_F(FallbackRead, FallbackReadPastEofWithNonZeroFileOffset)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t file_length = buffer->getLength() * 2;
+    size_t file_length{buffer->getLength() * 2};
     init_file(file_length);
-    hoff_t file_offset = static_cast<hoff_t>(buffer->getLength()) + 1;
+    hoff_t file_offset{static_cast<hoff_t>(buffer->getLength()) + 1};
 
-    expect_fallback_read(mhip, msys);
+    expect_fallback_read();
     ASSERT_EQ(buffer->getLength() - 1,
               Fallback().io(IoType::Read, file, buffer, buffer->getLength(), file_offset, 0));
     ASSERT_TRUE(device_buffer_contains_expected_data(file_offset, 0, buffer->getLength() - 1));
 }
 
-TEST_F(FallbackRead, fallback_read_can_read_single_byte_at_end_of_file)
+TEST_F(FallbackRead, FallbackReadCanReadSingleByteAtEndOfFile)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t file_length = buffer->getLength();
+    size_t file_length{buffer->getLength()};
     init_file(file_length);
-    hoff_t file_offset = static_cast<hoff_t>(file_length) - 1;
+    hoff_t file_offset{static_cast<hoff_t>(file_length) - 1};
 
-    expect_fallback_read(mhip, msys);
+    expect_fallback_read();
     ASSERT_EQ(1, Fallback().io(IoType::Read, file, buffer, buffer->getLength(), file_offset, 0));
     ASSERT_TRUE(device_buffer_contains_expected_data(file_offset, 0, 1));
 }
 
-TEST_F(FallbackRead, fallback_read_emtpy_file_with_non_zero_file_offset)
+TEST_F(FallbackRead, FallbackReadEmptyFileWithNonZeroFileOffset)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t file_length = 0;
+    size_t file_length{0};
     init_file(file_length);
-    hoff_t file_offset = static_cast<hoff_t>(buffer->getLength());
+    hoff_t file_offset{static_cast<hoff_t>(buffer->getLength())};
 
-    expect_fallback_read(mhip, msys);
+    expect_fallback_read();
     ASSERT_EQ(0, Fallback().io(IoType::Read, file, buffer, buffer->getLength(), file_offset, 0));
     ASSERT_TRUE(device_buffer_contains_expected_data(0, 0, 0));
 }
 
-TEST_F(FallbackRead, fallback_read_with_non_zero_buffer_offset)
+TEST_F(FallbackRead, FallbackReadWithNonZeroBufferOffset)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t file_length = buffer->getLength() * 2;
+    size_t file_length{buffer->getLength() * 2};
     init_file(file_length);
-    hoff_t buffer_offset = static_cast<hoff_t>(1);
+    hoff_t buffer_offset{static_cast<hoff_t>(1)};
 
-    expect_fallback_read(mhip, msys);
+    expect_fallback_read();
     ASSERT_EQ(buffer->getLength() - 1,
               Fallback().io(IoType::Read, file, buffer, buffer->getLength() - 1, 0, buffer_offset));
     ASSERT_TRUE(device_buffer_contains_expected_data(0, buffer_offset, buffer->getLength() - 1));
 }
 
-TEST_F(FallbackRead, fallback_read_can_read_into_last_byte_of_buffer)
+TEST_F(FallbackRead, FallbackReadCanReadIntoLastByteOfBuffer)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t file_length = buffer->getLength();
+    size_t file_length{buffer->getLength()};
     init_file(file_length);
-    hoff_t buffer_offset = static_cast<hoff_t>(buffer->getLength() - 1);
+    hoff_t buffer_offset{static_cast<hoff_t>(buffer->getLength() - 1)};
 
-    expect_fallback_read(mhip, msys);
+    expect_fallback_read();
     ASSERT_EQ(1, Fallback().io(IoType::Read, file, buffer, 1, 0, buffer_offset));
     ASSERT_TRUE(device_buffer_contains_expected_data(0, buffer_offset, 1));
 }
 
-TEST_F(FallbackRead, fallback_read_with_non_zero_buffer_offset_and_file_offset)
+TEST_F(FallbackRead, FallbackReadWithNonZeroBufferOffsetAndFileOffset)
 {
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    size_t file_length = buffer->getLength();
+    size_t file_length{buffer->getLength()};
     init_file(file_length);
-    hoff_t file_offset   = 74;
-    hoff_t buffer_offset = 97;
-    size_t read_size     = buffer->getLength() / 2;
+    hoff_t file_offset{74};
+    hoff_t buffer_offset{97};
+    size_t read_size{buffer->getLength() / 2};
 
-    expect_fallback_read(mhip, msys);
+    expect_fallback_read();
     ASSERT_EQ(read_size, Fallback().io(IoType::Read, file, buffer, read_size, file_offset, buffer_offset));
     ASSERT_TRUE(device_buffer_contains_expected_data(file_offset, buffer_offset, read_size));
 }

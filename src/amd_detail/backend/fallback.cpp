@@ -8,6 +8,7 @@
 #include "buffer.h"
 #include "backend/asyncop-fallback.h"
 #include "backend/memcpy-kernel.h"
+#include "configuration.h"
 #include "context.h"
 #include "fallback.h"
 #include "file.h"
@@ -47,7 +48,8 @@ Fallback::score(std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, si
     (void)file;
     (void)file_offset;
     (void)size;
-    return buffer->getType() == hipMemoryTypeDevice ? 0 : -1;
+
+    return Context<Configuration>::get()->fallback() && buffer->getType() == hipMemoryTypeDevice ? 0 : -1;
 }
 
 ssize_t
@@ -86,6 +88,10 @@ ssize_t
 Fallback::_io_impl(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
                    hoff_t file_offset, hoff_t buffer_offset, size_t chunk_size)
 {
+    if (!Context<Configuration>::get()->fallback()) {
+        throw BackendDisabled();
+    }
+
     size = min(size, hipFile::MAX_RW_COUNT);
 
     if (!paramsValid(buffer, size, file_offset, buffer_offset)) {

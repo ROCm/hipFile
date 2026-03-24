@@ -203,6 +203,13 @@ TEST_P(HipFileIoParam, HipFileIoHandlesInvalidArgumentError)
     ASSERT_EQ(hipFileIo(GetParam(), file_handle, bufptr, buflen, 0, 0, mbackends), -hipFileInvalidValue);
 }
 
+TEST_P(HipFileIoParam, HipFileIoHandlesBackendDisabled)
+{
+    EXPECT_CALL(*mbackend, score).WillOnce(Return(1));
+    EXPECT_CALL(*mbackend, io).WillOnce(Throw(BackendDisabled()));
+    ASSERT_EQ(hipFileIo(GetParam(), file_handle, bufptr, buflen, 0, 0, mbackends), -hipFileInternalError);
+}
+
 INSTANTIATE_TEST_SUITE_P(HipFileIo, HipFileIoParam, Values(IoType::Read, IoType::Write));
 
 struct HipFileIoBackendSelectionParam : public ::testing::TestWithParam<IoType> {
