@@ -18,6 +18,7 @@
 #include "mfile.h"
 #include "mhip.h"
 #include "mmountinfo.h"
+#include "mstats.h"
 #include "msys.h"
 #include "state.h"
 
@@ -183,6 +184,7 @@ struct FallbackParam : ::testing::TestWithParam<IoType> {
 
     StrictMock<MHip>            mhip{};
     StrictMock<MSys>            msys{};
+    StrictMock<MStatsServer>    mserver{};
     StrictMock<MLibMountHelper> mlibmounthelper{};
     StrictMock<MConfiguration>  mcfg{};
 
@@ -266,6 +268,7 @@ TEST_P(FallbackParam, FallbackIoTruncatesSizeToMAX_RW_COUNT)
     EXPECT_CALL(msys, mmap).WillOnce(testing::Return(reinterpret_cast<void *>(0xFEFEFEFE)));
     switch (io_type) {
         case IoType::Read:
+            EXPECT_CALL(mserver, getStats);
             EXPECT_CALL(msys, pread)
                 .WillRepeatedly(testing::Invoke([](int, void *, size_t count, hoff_t) -> ssize_t {
                     return static_cast<ssize_t>(count);
@@ -273,6 +276,7 @@ TEST_P(FallbackParam, FallbackIoTruncatesSizeToMAX_RW_COUNT)
             EXPECT_CALL(mhip, hipMemcpy).WillRepeatedly(testing::Return());
             break;
         case IoType::Write:
+            EXPECT_CALL(mserver, getStats);
             EXPECT_CALL(mhip, hipMemcpy).WillRepeatedly(testing::Return());
             EXPECT_CALL(mhip, hipStreamSynchronize).WillRepeatedly(testing::Return());
             EXPECT_CALL(msys, pwrite)
@@ -305,6 +309,7 @@ TEST_P(FallbackParam, FallbackIoAllocatesChunkSizedHostBounceBuffer)
     EXPECT_CALL(mcfg, fallback()).WillOnce(Return(true));
     EXPECT_CALL(msys, mmap(testing::_, chunk_size, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(ptr));
+    EXPECT_CALL(mserver, getStats);
     switch (io_type) {
         case IoType::Read:
             EXPECT_CALL(msys, pread).WillOnce(testing::Return(0));

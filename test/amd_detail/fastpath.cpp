@@ -537,6 +537,7 @@ TEST_P(FastpathIoParam, IoConfiguresHandle)
     handle.fd = DEFAULT_UNBUFFERED_FD.value();
 
     expect_io();
+    EXPECT_CALL(mcfg, statsLevel);
     switch (GetParam()) {
         case IoType::Read:
             EXPECT_CALL(mhip, hipAmdFileRead(Eq(handle), _, _, _));
@@ -558,6 +559,7 @@ TEST_P(FastpathIoParam, IoCalculatesCorrectDevicePointer)
     void *expected_device_ptr{reinterpret_cast<void *>(0x21000)};
 
     expect_io(DEFAULT_UNBUFFERED_FD, buffer_addr, static_cast<size_t>(buffer_offset) + DEFAULT_IO_SIZE);
+    EXPECT_CALL(mcfg, statsLevel);
     switch (GetParam()) {
         case IoType::Read:
             EXPECT_CALL(mhip, hipAmdFileRead(_, expected_device_ptr, _, _));
@@ -575,6 +577,7 @@ TEST_P(FastpathIoParam, IoCalculatesCorrectDevicePointer)
 TEST_P(FastpathIoParam, IoPassesThroughSizeAndFileOffset)
 {
     expect_io();
+    EXPECT_CALL(mcfg, statsLevel);
     switch (GetParam()) {
         case IoType::Read:
             EXPECT_CALL(mhip, hipAmdFileRead(_, _, Eq(DEFAULT_IO_SIZE), Eq(DEFAULT_FILE_OFFSET)));
@@ -592,6 +595,7 @@ TEST_P(FastpathIoParam, IoPassesThroughSizeAndFileOffset)
 TEST_P(FastpathIoParam, IoReturnsBytesTransferred)
 {
     expect_io();
+    EXPECT_CALL(mcfg, statsLevel);
     switch (GetParam()) {
         case IoType::Read:
             EXPECT_CALL(mhip, hipAmdFileRead(_, _, _, _)).WillOnce(Return(DEFAULT_IO_SIZE));
@@ -615,6 +619,7 @@ TEST_P(FastpathIoParam, IoReturnsBytesTransferredShort)
     ASSERT_LT(nbytes, DEFAULT_IO_SIZE);
 
     expect_io();
+    EXPECT_CALL(mcfg, statsLevel);
     switch (GetParam()) {
         case IoType::Read:
             EXPECT_CALL(mhip, hipAmdFileRead(_, _, _, _)).WillOnce(Return(nbytes));
@@ -678,6 +683,7 @@ TEST_P(FastpathIoParam, IoSizeIsTruncatedToMaxRWCount)
     const size_t io_size{SIZE_MAX};
 
     expect_io(DEFAULT_UNBUFFERED_FD, reinterpret_cast<void *>(DEFAULT_BUFFER_ADDR), buffer_size);
+    EXPECT_CALL(mcfg, statsLevel);
     switch (GetParam()) {
         case IoType::Read:
             EXPECT_CALL(mhip, hipAmdFileRead(_, _, getMaxRwCount(), _)).WillOnce(Return(getMaxRwCount()));
