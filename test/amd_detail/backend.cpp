@@ -46,8 +46,6 @@ struct HipFileBackendWithFallback : public HipFileUnopened, ::testing::WithParam
 
         default_backend = std::make_shared<StrictMock<DummyBackendWithFallback>>();
         EXPECT_CALL(*default_backend, _io_impl).Times(AnyNumber());
-        EXPECT_CALL(*default_backend, update_read_stats).Times(AnyNumber());
-        EXPECT_CALL(*default_backend, update_write_stats).Times(AnyNumber());
 
         fallback_backend = std::make_shared<StrictMock<DummyFallbackBackend>>();
         EXPECT_CALL(*fallback_backend, io).Times(AnyNumber());

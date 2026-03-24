@@ -63,18 +63,7 @@ ssize_t
 Fallback::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
              hoff_t file_offset, hoff_t buffer_offset, size_t chunk_size)
 {
-    ssize_t nbytes = _io_impl(type, file, buffer, size, file_offset, buffer_offset, chunk_size);
-    switch (type) {
-        case (IoType::Read):
-            update_read_stats(nbytes);
-            break;
-        case (IoType::Write):
-            update_write_stats(nbytes);
-            break;
-        default:
-            break;
-    }
-    return nbytes;
+    return _io_impl(type, file, buffer, size, file_offset, buffer_offset, chunk_size);
 }
 
 ssize_t
@@ -146,19 +135,18 @@ Fallback::_io_impl(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> b
         }
     } while (static_cast<size_t>(total_io_bytes) < size);
 
+    switch (io_type) {
+        case (IoType::Read):
+            statsAddFallbackPathRead(static_cast<size_t>(total_io_bytes));
+            break;
+        case (IoType::Write):
+            statsAddFallbackPathWrite(static_cast<size_t>(total_io_bytes));
+            break;
+        default:
+            break;
+    }
+
     return total_io_bytes;
-}
-
-void
-Fallback::update_read_stats(ssize_t nbytes)
-{
-    statsAddFallbackPathRead(static_cast<size_t>(nbytes));
-}
-
-void
-Fallback::update_write_stats(ssize_t nbytes)
-{
-    statsAddFallbackPathWrite(static_cast<size_t>(nbytes));
 }
 
 void

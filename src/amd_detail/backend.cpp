@@ -21,18 +21,7 @@ ssize_t
 Backend::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
             hoff_t file_offset, hoff_t buffer_offset)
 {
-    ssize_t nbytes = _io_impl(type, file, buffer, size, file_offset, buffer_offset);
-    switch (type) {
-        case (IoType::Read):
-            update_read_stats(nbytes);
-            break;
-        case (IoType::Write):
-            update_write_stats(nbytes);
-            break;
-        default:
-            break;
-    }
-    return nbytes;
+    return _io_impl(type, file, buffer, size, file_offset, buffer_offset);
 }
 
 ssize_t
@@ -57,16 +46,6 @@ BackendWithFallback::io(IoType type, std::shared_ptr<IFile> file, std::shared_pt
             throw;
         }
         return nbytes;
-    }
-    switch (type) {
-        case (IoType::Read):
-            update_read_stats(nbytes);
-            break;
-        case (IoType::Write):
-            update_write_stats(nbytes);
-            break;
-        default:
-            break;
     }
     return nbytes;
 }

@@ -157,18 +157,6 @@ Fastpath::score(shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
     return accept_io ? 100 : -1;
 }
 
-void
-Fastpath::update_read_stats(ssize_t nbytes)
-{
-    statsAddFastPathRead(static_cast<uint64_t>(nbytes));
-}
-
-void
-Fastpath::update_write_stats(ssize_t nbytes)
-{
-    statsAddFastPathWrite(static_cast<uint64_t>(nbytes));
-}
-
 ssize_t
 Fastpath::_io_impl(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
                    hoff_t file_offset, hoff_t buffer_offset)
@@ -205,9 +193,11 @@ Fastpath::_io_impl(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buff
     switch (type) {
         case IoType::Read:
             nbytes = Context<Hip>::get()->hipAmdFileRead(handle, devptr, size, file_offset);
+            statsAddFastPathRead(static_cast<uint64_t>(nbytes));
             break;
         case IoType::Write:
             nbytes = Context<Hip>::get()->hipAmdFileWrite(handle, devptr, size, file_offset);
+            statsAddFastPathWrite(static_cast<uint64_t>(nbytes));
             break;
         default:
             throw std::runtime_error("Invalid IoType");
