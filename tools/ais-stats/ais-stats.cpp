@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include "stats.h"
+#include "include_internal/hipfile-stats.h"
 #include <iostream>
 #include <unistd.h>
 #include <cstring>
@@ -47,17 +47,37 @@ main(int argc, char *argv[])
             return 1;
         }
     }
-    hipFile::StatsClient client{pid};
-    if (!client.connectServer()) {
-        std::cerr << "Failed to collect info from target process.\n";
+
+    hipFileStatsContext_t *context;
+    if (hipFileStatsCreateContext(&context, pid) != hipFileStatsSuccess) {
+        std::cerr << "Failed to create context for target process.\n";
+        return 1;
+    }
+    if (hipFileStatsConnectToTargetProcess(context) != hipFileStatsSuccess) {
+        std::cerr << "Failed to connect to target process.\n";
+        hipFileStatsCloseContext(context);
         return 1;
     }
     if (!imm) {
-        client.pollProcess(-1);
+        if (hipFileStatsPollTargetProcess(context, true) != hipFileStatsSuccess) {
+            std::cerr << "Failed to poll target process.\n";
+            hipFileStatsCloseContext(context);
+            return 1;
+        }
     }
-    if (!client.generateReport(std::cout)) {
-        std::cerr << "No stats could be collected from target process.\n";
+    int fd{dup(STDOUT_FILENO)};
+    if (fd < 0) {
+        std::cerr << "Failed to duplicate stdout file descriptor.\n";
+        hipFileStatsCloseContext(context);
         return 1;
     }
+    if (hipFileStatsGenerateReport(context, fd) != hipFileStatsSuccess) {
+        std::cerr << "Failed to generate report from target process.\n";
+        close(fd);
+        hipFileStatsCloseContext(context);
+        return 1;
+    }
+    close(fd);
+    hipFileStatsCloseContext(context);
     return 0;
 }
