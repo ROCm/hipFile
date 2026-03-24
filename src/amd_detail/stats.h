@@ -55,11 +55,17 @@ void statsAddFastPathWrite(uint64_t bytes);
 void statsAddFallbackPathRead(uint64_t bytes);
 void statsAddFallbackPathWrite(uint64_t bytes);
 
-class StatsServer {
+class IStatsServer {
+public:
+    virtual ~IStatsServer()   = default;
+    virtual Stats *getStats() = 0;
+};
+
+class StatsServer : public IStatsServer {
 public:
     StatsServer();
-    virtual ~StatsServer();
-    virtual Stats *getStats()
+    virtual ~StatsServer() override;
+    virtual Stats *getStats() override
     {
         return m_stats.get();
     }

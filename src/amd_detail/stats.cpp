@@ -262,7 +262,7 @@ StatsClient::generateReportV1(std::ostream &stream, const Stats *stats)
 void
 statsAddFastPathRead(uint64_t bytes)
 {
-    Stats *stats{Context<StatsServer>::get()->getStats()};
+    Stats *stats{Context<IStatsServer>::get()->getStats()};
     if (stats && stats->level >= StatsLevel::Basic) {
         stats->getCounter(StatsCounters::TotalFastPathReadBytes) += bytes;
     }
@@ -271,7 +271,7 @@ statsAddFastPathRead(uint64_t bytes)
 void
 statsAddFastPathWrite(uint64_t bytes)
 {
-    Stats *stats{Context<StatsServer>::get()->getStats()};
+    Stats *stats{Context<IStatsServer>::get()->getStats()};
     if (stats && stats->level >= StatsLevel::Basic) {
         stats->getCounter(StatsCounters::TotalFastPathWriteBytes) += bytes;
     }
@@ -280,7 +280,7 @@ statsAddFastPathWrite(uint64_t bytes)
 void
 statsAddFallbackPathRead(uint64_t bytes)
 {
-    Stats *stats{Context<StatsServer>::get()->getStats()};
+    Stats *stats{Context<IStatsServer>::get()->getStats()};
     if (stats && stats->level >= StatsLevel::Basic) {
         stats->getCounter(StatsCounters::TotalFallbackPathReadBytes) += bytes;
     }
@@ -289,7 +289,7 @@ statsAddFallbackPathRead(uint64_t bytes)
 void
 statsAddFallbackPathWrite(uint64_t bytes)
 {
-    Stats *stats{Context<StatsServer>::get()->getStats()};
+    Stats *stats{Context<IStatsServer>::get()->getStats()};
     if (stats && stats->level >= StatsLevel::Basic) {
         stats->getCounter(StatsCounters::TotalFallbackPathWriteBytes) += bytes;
     }
