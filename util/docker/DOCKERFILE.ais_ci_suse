@@ -71,6 +71,10 @@ RUN zypper install -y \
         rocm-device-libs \
         rpm-build
 
+# Install Python packages
+pip3 install --upgrade pip
+pip3 install rocm-docs-core
+
 # Configure system linker for ROCm
 RUN cat <<EOF > /etc/ld.so.conf.d/rocm.conf
 /opt/rocm/lib

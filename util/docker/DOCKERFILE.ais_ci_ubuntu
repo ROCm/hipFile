@@ -20,6 +20,10 @@ RUN apt update && \
         curl \
         gpg
 
+# Install Python packages
+pip3 install --upgrade pip
+pip3 install rocm-docs-core
+
 # Retrieve ROCm GPG key
 RUN curl https://repo.radeon.com/rocm/rocm.gpg.key | \
     gpg --dearmor >> /etc/apt/keyrings/rocm.gpg
