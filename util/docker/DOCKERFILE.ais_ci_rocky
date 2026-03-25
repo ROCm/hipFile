@@ -71,6 +71,7 @@ RUN dnf makecache && \
         hip-devel \
         libmount-devel \
         llvm-devel \
+        python3 \
         python3-pip \
         rpm-build
 
