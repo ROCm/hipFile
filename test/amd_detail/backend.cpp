@@ -46,6 +46,7 @@ struct HipFileBackendWithFallback : public HipFileUnopened, ::testing::WithParam
 
         default_backend = std::make_shared<StrictMock<DummyBackendWithFallback>>();
         EXPECT_CALL(*default_backend, _io_impl).Times(AnyNumber());
+        EXPECT_CALL(*default_backend, is_fallback_eligible).WillRepeatedly(Return(true));
 
         fallback_backend = std::make_shared<StrictMock<DummyFallbackBackend>>();
         EXPECT_CALL(*fallback_backend, io).Times(AnyNumber());
@@ -75,10 +76,21 @@ TEST_P(HipFileBackendWithFallback, IOFailureWithNoRegisteredFallback)
     EXPECT_THROW(default_backend->io(io_type, mock_file, mock_buffer, 0, 0, 0), std::runtime_error);
 }
 
-TEST_P(HipFileBackendWithFallback, IOFailureWithIneligibleRetry)
+TEST_P(HipFileBackendWithFallback, IOFailureWithRegisteredFallbackButNotFallbackEligible)
 {
-    // The Backend has registered a fallback, but has determined that the
-    // IO error should not be retried.
+    // The Backend has registered a fallback, but the BackendWithFallback has
+    // determined based on the error that this IO should not be retried.
+    default_backend->register_fallback_backend(fallback_backend);
+    EXPECT_CALL(*default_backend, _io_impl).WillOnce(Throw(std::runtime_error("IO failure")));
+    EXPECT_CALL(*default_backend, is_fallback_eligible).WillOnce(Return(false));
+
+    EXPECT_THROW(default_backend->io(io_type, mock_file, mock_buffer, 0, 0, 0), std::runtime_error);
+}
+
+TEST_P(HipFileBackendWithFallback, IOFailureWithRegisteredFallbackRefusingTheIO)
+{
+    // The Backend has registered a fallback, but the fallback backend has
+    // determined that it cannot process the IO.
     default_backend->register_fallback_backend(fallback_backend);
     EXPECT_CALL(*default_backend, _io_impl).WillOnce(Throw(std::runtime_error("IO failure")));
     EXPECT_CALL(*fallback_backend, score).WillOnce(Return(-1));

@@ -90,26 +90,6 @@ struct BackendWithFallback : public Backend {
     ssize_t io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
                hoff_t file_offset, hoff_t buffer_offset) override final;
 
-    /// @brief Check if a failed IO operation can be re-issued to the fallback Backend.
-    ///
-    /// @param e_ptr         exception_ptr to the thrown exception from the failed IO
-    /// @param nbytes        Return value from `_io_impl`, or 0 if an exception was thrown.
-    /// @param file          File to read from or write to
-    /// @param buffer        Buffer to write to or read from
-    /// @param size          Number of bytes to transfer
-    /// @param file_offset   Offset from the start of the file
-    /// @param buffer_offset Offset from the start of the buffer
-    ///
-    /// @note By default, BackendWithFallback checks if a Backend has been
-    ///       registered for retrying an IO, and that fallback backend supports
-    ///       the request.
-    /// @note The parameters from the original IO request are passed to this function.
-    ///
-    /// @return True if this BackendWithFallback can retry the IO, else False.
-    virtual bool is_fallback_eligible(std::exception_ptr e_ptr, ssize_t nbytes, std::shared_ptr<IFile> file,
-                                      std::shared_ptr<IBuffer> buffer, size_t size, hoff_t file_offset,
-                                      hoff_t buffer_offset) const;
-
     /// @brief Register a Backend to retry a failed IO operation.
     ///
     /// @param backend Backend to retry a failed IO operation.
@@ -118,6 +98,14 @@ struct BackendWithFallback : public Backend {
     void register_fallback_backend(std::shared_ptr<Backend> backend);
 
 protected:
+    /// @brief Check if a failed IO operation can be re-issued to the fallback Backend.
+    ///
+    /// @param e_ptr         exception_ptr to the thrown exception from the failed IO
+    /// @param nbytes        Return value from `_io_impl`, or 0 if an exception was thrown.
+    ///
+    /// @return True if this BackendWithFallback can retry the IO, else False.
+    virtual bool is_fallback_eligible(std::exception_ptr e_ptr, ssize_t nbytes) const = 0;
+private:
     std::shared_ptr<Backend> fallback_backend;
 };
 

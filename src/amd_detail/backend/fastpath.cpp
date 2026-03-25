@@ -13,10 +13,13 @@
 #include "io.h"
 #include "stats.h"
 
+#include <cstddef>
 #include <cstdint>
+#include <exception>
 #include <fcntl.h>
 #include <hip/hip_runtime_api.h>
 #include <linux/stat.h>
+#include <memory>
 #include <stdexcept>
 
 using namespace hipFile;
@@ -203,4 +206,12 @@ Fastpath::_io_impl(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buff
             throw std::runtime_error("Invalid IoType");
     }
     return static_cast<ssize_t>(nbytes);
+}
+
+bool
+Fastpath::is_fallback_eligible(std::exception_ptr e_ptr, ssize_t nbytes) const
+{
+    (void)e_ptr;
+    (void)nbytes;
+    return true;
 }
