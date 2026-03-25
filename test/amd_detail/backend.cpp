@@ -68,7 +68,7 @@ TEST_P(HipFileBackendWithFallback, IOSuccess)
     ASSERT_EQ(nbytes, successful_io_size);
 }
 
-TEST_P(HipFileBackendWithFallback, IOFailureNoFallback)
+TEST_P(HipFileBackendWithFallback, IOFailureWithNoRegisteredFallback)
 {
     EXPECT_CALL(*default_backend, _io_impl).WillOnce(Throw(std::runtime_error("IO failure")));
 
