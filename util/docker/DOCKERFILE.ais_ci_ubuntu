@@ -22,8 +22,8 @@ RUN apt update && \
         python3-pip
 
 # Install Python packages
-pip3 install --upgrade pip
-pip3 install rocm-docs-core
+python3 -m pip install --upgrade pip
+python3 -m pip install rocm-docs-core
 
 # Retrieve ROCm GPG key
 RUN curl https://repo.radeon.com/rocm/rocm.gpg.key | \
