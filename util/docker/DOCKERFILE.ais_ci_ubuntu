@@ -39,9 +39,6 @@ Pin: release o=repo.radeon.com
 Pin-Priority: 600
 EOF
 
-#Debug
-RUN apt-cache search rocm-docs-core
-
 # Development Dependencies
 RUN apt update && \
     apt install -y \
@@ -56,14 +53,16 @@ RUN apt update && \
         llvm-dev \
         python3 \
         python3-pip \
-        rocm-docs-core \
+        python3-venv \
         rocm-llvm-dev
 
-# Install Python packages
-RUN pip3 install \
+# Install Python packages (don't source venv/bin/activate)
+RUN python3 -m venv ~/venv
+RUN ~/venv/bin/pip3 install \
         sphinx \
         breathe \
-        sphinx-rtd-theme
+        sphinx-rtd-theme \
+        rocm-docs-core
 
 # Configure system linker for ROCm
 RUN cat <<EOF > /etc/ld.so.conf.d/rocm.conf
