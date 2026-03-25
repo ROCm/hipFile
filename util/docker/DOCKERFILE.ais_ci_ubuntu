@@ -39,6 +39,9 @@ Pin: release o=repo.radeon.com
 Pin-Priority: 600
 EOF
 
+#Debug
+RUN apt-cache search rocm-docs-core
+
 # Development Dependencies
 RUN apt update && \
     apt install -y \
