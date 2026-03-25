@@ -73,11 +73,14 @@ RUN dnf makecache && \
         llvm-devel \
         python3 \
         python3-pip \
+        rocm-docs-core \
         rpm-build
 
 # Install Python packages
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install rocm-docs-core
+RUN pip3 install \
+        sphinx \
+        breathe \
+        sphinx-rtd-theme
 
 # Configure system linker for ROCm
 RUN cat <<EOF > /etc/ld.so.conf.d/rocm.conf

@@ -70,14 +70,15 @@ RUN zypper install -y \
         llvm19-devel \
         python3 \
         python3-pip \
-        python3-setuptools \
-        python3-wheel \
         rocm-device-libs \
+        rocm-docs-core \
         rpm-build
 
 # Install Python packages
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install rocm-docs-core
+RUN pip3 install \
+        sphinx \
+        breathe \
+        sphinx-rtd-theme
 
 # Configure system linker for ROCm
 RUN cat <<EOF > /etc/ld.so.conf.d/rocm.conf
