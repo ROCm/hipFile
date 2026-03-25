@@ -74,7 +74,7 @@ Fallback::_io_impl(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBu
 }
 
 ssize_t
-Fallback::_io_impl(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
+Fallback::_io_impl(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
                    hoff_t file_offset, hoff_t buffer_offset, size_t chunk_size)
 {
     if (!Context<Configuration>::get()->fallback()) {
@@ -101,7 +101,7 @@ Fallback::_io_impl(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> b
             reinterpret_cast<uintptr_t>(buffer->getBuffer()) + static_cast<size_t>(buffer_offset) +
             static_cast<size_t>(total_io_bytes));
         try {
-            switch (io_type) {
+            switch (type) {
                 case IoType::Read:
                     io_bytes =
                         Context<Sys>::get()->pread(file->getBufferedFd(), bounce_buffer.get(), count, offset);
@@ -135,7 +135,7 @@ Fallback::_io_impl(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> b
         }
     } while (static_cast<size_t>(total_io_bytes) < size);
 
-    switch (io_type) {
+    switch (type) {
         case (IoType::Read):
             statsAddFallbackPathRead(static_cast<size_t>(total_io_bytes));
             break;
