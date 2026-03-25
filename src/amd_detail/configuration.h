@@ -37,6 +37,11 @@ public:
     /// @brief Shows the level of detail for stats collection
     /// @return 0 if stats collection disabled, higher levels of detail as value increases
     virtual unsigned int statsLevel() const noexcept;
+
+    /// @brief Checks if unsupported file systems are allowed in the fastpath backend
+    /// @return true if unsupported file systems are allowed, false if only supported file systems are
+    /// permitted (default)
+    virtual bool unsupportedFileSystems() const noexcept;
 };
 
 }

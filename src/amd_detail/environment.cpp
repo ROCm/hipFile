@@ -64,6 +64,12 @@ Environment::force_compat_mode()
     return Environment::get<bool>(Environment::FORCE_COMPAT_MODE);
 }
 
+optional<bool>
+Environment::unsupported_file_systems()
+{
+    return Environment::get<bool>(Environment::UNSUPPORTED_FILE_SYSTEMS);
+}
+
 optional<unsigned int>
 Environment::stats_level()
 {
