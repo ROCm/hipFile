@@ -13,6 +13,7 @@
 #include "io.h"
 #include "stats.h"
 
+#include <cerrno>
 #include <cstddef>
 #include <cstdint>
 #include <exception>
@@ -21,6 +22,7 @@
 #include <linux/stat.h>
 #include <memory>
 #include <stdexcept>
+#include <system_error>
 
 using namespace hipFile;
 using namespace std;
@@ -211,7 +213,23 @@ Fastpath::_io_impl(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buff
 bool
 Fastpath::is_fallback_eligible(std::exception_ptr e_ptr, ssize_t nbytes) const
 {
-    (void)e_ptr;
     (void)nbytes;
+    try {
+        std::rethrow_exception(e_ptr);
+    } catch (const std::system_error& sys_err) {
+        switch (sys_err.code().value()){
+            case ENODEV:
+                return true;
+            case EREMOTEIO:
+                return true;
+            default:
+                // System error not eligible for fallback.
+                return false;
+        }
+    } catch (...) {
+        // Thrown exception not eligible for fallback.
+        return false;
+    }
+
     return true;
 }
