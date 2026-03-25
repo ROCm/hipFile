@@ -54,13 +54,6 @@ Fallback::score(std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, si
 
 ssize_t
 Fallback::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
-             hoff_t file_offset, hoff_t buffer_offset)
-{
-    return io(type, file, buffer, size, file_offset, buffer_offset, DefaultChunkSize);
-}
-
-ssize_t
-Fallback::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
              hoff_t file_offset, hoff_t buffer_offset, size_t chunk_size)
 {
     return _io_impl(type, file, buffer, size, file_offset, buffer_offset, chunk_size);
