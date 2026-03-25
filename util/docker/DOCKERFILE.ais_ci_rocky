@@ -76,8 +76,8 @@ RUN dnf makecache && \
         rpm-build
 
 # Install Python packages
-python3 -m pip install --upgrade pip
-python3 -m pip install rocm-docs-core
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install rocm-docs-core
 
 # Configure system linker for ROCm
 RUN cat <<EOF > /etc/ld.so.conf.d/rocm.conf
