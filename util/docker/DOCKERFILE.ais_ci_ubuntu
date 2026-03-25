@@ -18,11 +18,12 @@ ARG ROCM_PKG_REPO_OVERRIDE
 RUN apt update && \
     apt install -y \
         curl \
-        gpg
+        gpg \
+        python3-pip
 
 # Install Python packages
-pip install --upgrade pip
-pip install rocm-docs-core
+pip3 install --upgrade pip
+pip3 install rocm-docs-core
 
 # Retrieve ROCm GPG key
 RUN curl https://repo.radeon.com/rocm/rocm.gpg.key | \
