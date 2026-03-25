@@ -62,7 +62,12 @@ BackendWithFallback::is_fallback_eligible(std::exception_ptr e_ptr, ssize_t nbyt
 }
 
 void
-BackendWithFallback::register_fallback_backend(std::shared_ptr<Backend> backend) noexcept
+BackendWithFallback::register_fallback_backend(std::shared_ptr<Backend> backend)
 {
+    if(!backend) {
+        throw std::invalid_argument("Cannot register a nullptr as a fallback backend.");
+    } else if (backend.get() == this) {
+        throw std::invalid_argument("Cannot register a backend as it's own fallback.");
+    }
     fallback_backend = backend;
 }

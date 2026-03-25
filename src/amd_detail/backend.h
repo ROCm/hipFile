@@ -113,7 +113,9 @@ struct BackendWithFallback : public Backend {
     /// @brief Register a Backend to retry a failed IO operation.
     ///
     /// @param backend Backend to retry a failed IO operation.
-    void register_fallback_backend(std::shared_ptr<Backend> backend) noexcept;
+    ///
+    /// @throws std::invalid_argument If a nullptr or self reference is passed.
+    void register_fallback_backend(std::shared_ptr<Backend> backend);
 
 protected:
     std::shared_ptr<Backend> fallback_backend;

@@ -98,4 +98,18 @@ TEST_P(HipFileBackendWithFallback, IOFailureWithGoodFallback)
 
 INSTANTIATE_TEST_SUITE_P(, HipFileBackendWithFallback, ::testing::Values(IoType::Read, IoType::Write));
 
+struct HipFileBackendWithFallbackRegisterFallback : public HipFileUnopened {};
+
+TEST_F(HipFileBackendWithFallbackRegisterFallback, RegisterNullptrFallback)
+{
+    auto backend = std::make_shared<DummyBackendWithFallback>();
+    ASSERT_THROW(backend->register_fallback_backend(nullptr), std::invalid_argument);
+}
+
+TEST_F(HipFileBackendWithFallbackRegisterFallback, RegisterSelfAsAFallback)
+{
+    auto backend = std::make_shared<DummyBackendWithFallback>();
+    ASSERT_THROW(backend->register_fallback_backend(backend), std::invalid_argument);
+}
+
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON
