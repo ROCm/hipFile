@@ -31,6 +31,12 @@ if(AIS_BUILD_DOCS)
     # Set the path to the documentation
     set(AIS_DOC_PATH "${CMAKE_CURRENT_BINARY_DIR}/docs")
 
+    ###########
+    # Doxygen #
+    ###########
+
+    # The Doxygen HTML, XML, etc. goes in docs/doxygen/
+
     # Set the Doxyfile install location
     set(AIS_DOXYFILE "${AIS_DOC_PATH}/doxygen/Doxyfile")
 
@@ -40,8 +46,24 @@ if(AIS_BUILD_DOCS)
     # Create the Doxyfile from the input file
     configure_file("docs/doxygen/Doxyfile.in" ${AIS_DOXYFILE})
 
+    ##########
+    # Sphinx #
+    ##########
+
+    # The Sphinx HTML, XML, etc. goes in docs/sphinx/
+
+    # Set the target for the config file and toc file
+    set(AIS_SPHINX_CONF_FILE "${AIS_DOC_PATH}/sphinx/conf.py")
+    set(AIS_SPHINX_TOC_FILE "${AIS_DOC_PATH}/sphinx/_toc.yml.in")
+
     # Sphinx HTML output dir
-    set(AIS_SPHINX_BUILD_DIR "${AIS_DOC_PATH}/html")
+    set(AIS_SPHINX_BUILD_DIR "${AIS_DOC_PATH}/sphinx/html")
+
+    # Copy conf.py and the table of contents file
+    # Need to do this so the toc file doesn't dirty the repo
+    # _toc.yml.in is transformed by rocm_docs, not CMake
+    configure_file("docs/sphinx/conf.py" ${AIS_SPHINX_CONF_FILE} COPYONLY)
+    configure_file("docs/sphinx/_toc.yml.in" ${AIS_SPHINX_TOC_FILE} COPYONLY)
 
     # Build docs: Doxygen first, then Sphinx (which pulls in rocm_docs via conf.py)
     add_custom_target(doc
@@ -55,7 +77,7 @@ if(AIS_BUILD_DOCS)
                 "DOXYGEN_XML_DIR=${AIS_DOXYGEN_XML_DIR}"
             "${Python3_EXECUTABLE}" -m sphinx
                 -b html
-                -c "${HIPFILE_ROOT_PATH}/docs/sphinx"
+                -c "${AIS_DOC_PATH}/sphinx"
                 "${HIPFILE_ROOT_PATH}/docs"
                 "${AIS_SPHINX_BUILD_DIR}"
                 -v
