@@ -628,6 +628,10 @@ TEST_P(FastpathIoParamWithFallback, IntegrationRunWithFallback)
 
     const int DEFAULT_BUFFERED_FD = DEFAULT_UNBUFFERED_FD.value() + 1;
 
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(true));
+    EXPECT_CALL(mcfg, fallback()).Times(2).WillRepeatedly(Return(true));
+    EXPECT_CALL(mhip, hipInit).WillRepeatedly(Return());
+
     // Called by both Fastpath and Fallback
     EXPECT_CALL(*mbuffer, getBuffer).WillRepeatedly(Return(DEFAULT_BUFFER_ADDR));
     EXPECT_CALL(*mbuffer, getLength).Times(2).WillRepeatedly(Return(DEFAULT_BUFFER_LENGTH));
@@ -673,12 +677,14 @@ TEST_P(FastpathIoParamWithFallback, IntegrationFallbackRejectsIO)
     auto fastpath_backend = std::make_shared<StrictMock<Fastpath>>();
     fastpath_backend->register_fallback_backend(fallback_backend);
 
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(true));
+    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(false));
+    EXPECT_CALL(mhip, hipInit).WillRepeatedly(Return());
+
     // Called only by Fastpath
     EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
     EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(DEFAULT_BUFFER_LENGTH));
     EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
-    // Called only by Fallback - should fail the score() check.
-    EXPECT_CALL(*mbuffer, getType).WillOnce(Return(hipMemoryTypeHost));
     switch (_get_param_io_type()) {
         case IoType::Read:
             // Called by Fastpath
