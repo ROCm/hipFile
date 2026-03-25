@@ -68,12 +68,15 @@ RUN zypper install -y \
         hip-devel \
         libmount-devel \
         llvm19-devel \
+        python3-pip \
+        python3-setuptools \
+        python3-wheel \
         rocm-device-libs \
         rpm-build
 
 # Install Python packages
-pip install --upgrade pip
-pip install rocm-docs-core
+pip3 install --upgrade pip
+pip3 install rocm-docs-core
 
 # Configure system linker for ROCm
 RUN cat <<EOF > /etc/ld.so.conf.d/rocm.conf
