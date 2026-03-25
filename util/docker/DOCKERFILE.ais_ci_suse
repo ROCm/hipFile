@@ -72,7 +72,6 @@ RUN zypper install -y \
         python3-pip \
         python3-venv \
         rocm-device-libs \
-        rocm-docs-core \
         rpm-build
 
 # Install Python packages (don't source venv/bin/activate)
