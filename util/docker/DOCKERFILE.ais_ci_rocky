@@ -73,12 +73,11 @@ RUN dnf makecache && \
         llvm-devel \
         python3 \
         python3-pip \
-        python3-venv \
         rpm-build
 
 # Install Python packages (don't source venv/bin/activate)
-RUN python3 -m venv ~/venv
-RUN ~/venv/bin/pip3 install \
+RUN python3 -m venv /opt/venv
+RUN /opt/venv/bin/pip3 install \
         sphinx \
         breathe \
         sphinx-rtd-theme \

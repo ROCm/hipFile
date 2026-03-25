@@ -68,15 +68,16 @@ RUN zypper install -y \
         hip-devel \
         libmount-devel \
         llvm19-devel \
-        python3 \
-        python3-pip \
-        python3-venv \
+        python312 \
+        python312-pip \
         rocm-device-libs \
         rpm-build
 
 # Install Python packages (don't source venv/bin/activate)
-RUN python3 -m venv ~/venv
-RUN ~/venv/bin/pip3 install \
+RUN python3.12 --version
+RUN python3.12 -m venv /opt/venv
+RUN /opt/venv/bin/pip3 install --upgrade pip
+RUN /opt/venv/bin/pip3 install \
         sphinx \
         breathe \
         sphinx-rtd-theme \

@@ -57,8 +57,8 @@ RUN apt update && \
         rocm-llvm-dev
 
 # Install Python packages (don't source venv/bin/activate)
-RUN python3 -m venv ~/venv
-RUN ~/venv/bin/pip3 install \
+RUN python3 -m venv /opt/venv
+RUN /opt/venv/bin/pip3 install \
         sphinx \
         breathe \
         sphinx-rtd-theme \
