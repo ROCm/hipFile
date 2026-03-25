@@ -75,12 +75,20 @@ private:
     std::thread    m_thread;
 };
 
-class StatsClient {
+class IStatsClient {
+public:
+    virtual ~IStatsClient()                                 = default;
+    virtual bool pollProcess(int timeout) const             = 0;
+    virtual bool connectServer()                            = 0;
+    virtual bool generateReport(std::ostream &stream) const = 0;
+};
+
+class StatsClient : public IStatsClient {
 public:
     explicit StatsClient(pid_t p);
-    bool pollProcess(int timeout) const;
-    bool connectServer();
-    bool generateReport(std::ostream &stream) const;
+    bool pollProcess(int timeout) const override;
+    bool connectServer() override;
+    bool generateReport(std::ostream &stream) const override;
 
     static void generateReportV1(std::ostream &stream, const Stats *stats);
 
