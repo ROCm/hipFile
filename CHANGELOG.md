@@ -15,6 +15,7 @@
 * The AIS optimized IO path will automatically fallback to the POSIX IO path if a failure occurs and the compatibility mode has not been disabled.
 * Added check in the Fastpath/AIS backend to ensure the HIP Runtime is initialized. This avoids causing a segfault in the HIP Runtime.
 * The default CMake build type was changed from `Debug` to `RelWithDebInfo`
+* Added file type and file system validation in Fastpath. Fastpath will only accept IO targeting block devices or regular files backed by xfs or ext4 with ordered journaling mode. Other file systems can be explicitly allowed via the `HIPFILE_UNSUPPORTED_FILE_SYSTEMS` environment variable.
 
 ### Removed
 * The rocFile library has been completely removed and the code is now a part of hipFile.
