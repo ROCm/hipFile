@@ -216,8 +216,9 @@ Fastpath::is_fallback_eligible(std::exception_ptr e_ptr, ssize_t nbytes) const
     (void)nbytes;
     try {
         std::rethrow_exception(e_ptr);
-    } catch (const std::system_error& sys_err) {
-        switch (sys_err.code().value()){
+    }
+    catch (const std::system_error &sys_err) {
+        switch (sys_err.code().value()) {
             case ENODEV:
                 return true;
             case EREMOTEIO:
@@ -226,7 +227,8 @@ Fastpath::is_fallback_eligible(std::exception_ptr e_ptr, ssize_t nbytes) const
                 // System error not eligible for fallback.
                 return false;
         }
-    } catch (...) {
+    }
+    catch (...) {
         // Thrown exception not eligible for fallback.
         return false;
     }

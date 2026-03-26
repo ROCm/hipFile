@@ -39,7 +39,8 @@ BackendWithFallback::io(IoType type, std::shared_ptr<IFile> file, std::shared_pt
     }
     catch (...) {
         std::exception_ptr e_ptr = std::current_exception();
-        if (fallback_backend && is_fallback_eligible(e_ptr, nbytes) && fallback_backend->score(file, buffer, size, file_offset, buffer_offset) >= 0) {
+        if (fallback_backend && is_fallback_eligible(e_ptr, nbytes) &&
+            fallback_backend->score(file, buffer, size, file_offset, buffer_offset) >= 0) {
             nbytes = fallback_backend->io(type, file, buffer, size, file_offset, buffer_offset);
         }
         else {
@@ -53,9 +54,10 @@ BackendWithFallback::io(IoType type, std::shared_ptr<IFile> file, std::shared_pt
 void
 BackendWithFallback::register_fallback_backend(std::shared_ptr<Backend> backend)
 {
-    if(!backend) {
+    if (!backend) {
         throw std::invalid_argument("Cannot register a nullptr as a fallback backend.");
-    } else if (backend.get() == this) {
+    }
+    else if (backend.get() == this) {
         throw std::invalid_argument("Cannot register a backend as it's own fallback.");
     }
     fallback_backend = backend;

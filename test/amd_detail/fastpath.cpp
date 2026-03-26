@@ -606,7 +606,7 @@ TEST_P(FastpathIoParam, IoSizeIsTruncatedToMaxRWCount)
 //       in a separate test suite.
 TEST_P(FastpathIoParam, IoWithFallbackThrowsAFallbackIneligibleException)
 {
-    auto backend = std::make_shared<Fastpath>();
+    auto backend    = std::make_shared<Fastpath>();
     auto m_fallback = std::make_shared<StrictMock<MBackend>>();
     backend->register_fallback_backend(m_fallback);
 
@@ -627,13 +627,15 @@ TEST_P(FastpathIoParam, IoWithFallbackThrowsAFallbackIneligibleException)
             FAIL() << "Invalid IoType";
     }
 
-    ASSERT_THROW(backend->io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET), std::system_error);
+    ASSERT_THROW(
+        backend->io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
+        std::system_error);
 }
 
 // To cover the branch of non-std::system_error exceptions
 TEST_P(FastpathIoParam, IoWithFallbackThrowsHipRuntimeException)
 {
-    auto backend = std::make_shared<Fastpath>();
+    auto backend    = std::make_shared<Fastpath>();
     auto m_fallback = std::make_shared<StrictMock<MBackend>>();
     backend->register_fallback_backend(m_fallback);
 
@@ -654,7 +656,9 @@ TEST_P(FastpathIoParam, IoWithFallbackThrowsHipRuntimeException)
             FAIL() << "Invalid IoType";
     }
 
-    ASSERT_THROW(backend->io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET), Hip::RuntimeError);
+    ASSERT_THROW(
+        backend->io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
+        Hip::RuntimeError);
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathIoParam, Values(IoType::Read, IoType::Write));
@@ -676,7 +680,7 @@ TEST_P(FastpathWithFallbackEligibleExceptions, IoThrowsAFallbackEligibleExceptio
 {
     StrictMock<MHip> mhip;
 
-    auto backend = std::make_shared<Fastpath>();
+    auto backend    = std::make_shared<Fastpath>();
     auto m_fallback = std::make_shared<StrictMock<MBackend>>();
     backend->register_fallback_backend(m_fallback);
 
@@ -700,7 +704,8 @@ TEST_P(FastpathWithFallbackEligibleExceptions, IoThrowsAFallbackEligibleExceptio
     EXPECT_CALL(*m_fallback, io).WillOnce(Return(DEFAULT_IO_SIZE));
     EXPECT_CALL(*m_fallback, score).WillOnce(Return(SCORE_ACCEPT));
 
-    ssize_t nbytes = backend->io(_get_param_io_type(), mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET);
+    ssize_t nbytes = backend->io(_get_param_io_type(), mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET,
+                                 DEFAULT_BUFFER_OFFSET);
     ASSERT_EQ(nbytes, DEFAULT_IO_SIZE);
 }
 
@@ -711,7 +716,7 @@ TEST_P(FastpathWithFallbackEligibleExceptions, FallbackRejectsIoRequest)
 {
     StrictMock<MHip> mhip;
 
-    auto backend = std::make_shared<Fastpath>();
+    auto backend    = std::make_shared<Fastpath>();
     auto m_fallback = std::make_shared<StrictMock<MBackend>>();
     backend->register_fallback_backend(m_fallback);
 
@@ -735,22 +740,26 @@ TEST_P(FastpathWithFallbackEligibleExceptions, FallbackRejectsIoRequest)
 
     try {
         // Can't use EXPECT_THROW due to the thrown exception type only being known at runtime
-        backend->io(_get_param_io_type(), mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET);
+        backend->io(_get_param_io_type(), mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET,
+                    DEFAULT_BUFFER_OFFSET);
         FAIL() << "io() was expected to throw, but it returned normally";
-    } catch (const std::exception& actual_exc) {
+    }
+    catch (const std::exception &actual_exc) {
         try {
             // Have to rethrow the exception_ptr to be able to access the exception.
             // This looks ugly, but is better than the alternative of trying to preserve the
             // exception type when setting Throw(*std::shared_ptr<std::exception>>).
             std::rethrow_exception(_get_param_exc_ptr());
-        } catch (const std::exception& expected_exc) {
+        }
+        catch (const std::exception &expected_exc) {
             // Verify that the propagated exception has the same dynamic type and message
             // as the one stored in the original std::exception_ptr, without relying on
             // pointer identity of the underlying exception object.
             ASSERT_EQ(typeid(expected_exc), typeid(actual_exc));
             ASSERT_STREQ(expected_exc.what(), actual_exc.what());
         }
-    } catch (...) {
+    }
+    catch (...) {
         FAIL() << "io() threw something other than a std::exception";
     }
 }
@@ -761,9 +770,8 @@ INSTANTIATE_TEST_SUITE_P(
             Values(std::make_exception_ptr(std::system_error(ENODEV, generic_category())),
                    std::make_exception_ptr(std::system_error(EREMOTEIO, generic_category())))));
 
-
 struct FastpathWithFallbackIntegrationTests : public FastpathTestBase,
-                                     public TestWithParam<std::tuple<IoType, std::exception_ptr>> {
+                                              public TestWithParam<std::tuple<IoType, std::exception_ptr>> {
     inline IoType _get_param_io_type() const
     {
         return std::get<0>(GetParam());
