@@ -57,8 +57,12 @@ directory:
         └── html
 ```
 
-To generate a pdf, navigate to doxygen/latex and run `make pdf` to
+To generate a pdf for the API docs, navigate to `doxygen/latex` and run `make pdf` to
 generate a pdf named `refman.pdf`.
+
+To generate a pdf for the Sphinx docs, navigate to `sphinx/html` and run `make` in
+the directory. This will generate a pdf named `rocshmem.pdf` (we are stealing their
+configs until `rocm-docs-core` is updated).
 
 ## Adding to the Documentation
 

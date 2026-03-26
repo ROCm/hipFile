@@ -69,7 +69,7 @@ if(AIS_BUILD_DOCS)
     add_custom_target(doc
         # Step 1: Run Doxygen to produce XML for Breathe
         COMMAND "${DOXYGEN_EXECUTABLE}" "${AIS_DOXYFILE}"
-        # Step 2: Run Sphinx, injecting the Doxygen paths via environment
+        # Step 2: Run Sphinx (html), injecting the Doxygen paths via environment
         COMMAND
             ${CMAKE_COMMAND} -E env
                 "DOXYFILE_PATH=${AIS_DOXYFILE}"
@@ -77,6 +77,18 @@ if(AIS_BUILD_DOCS)
                 "DOXYGEN_XML_DIR=${AIS_DOXYGEN_XML_DIR}"
             "${Python3_EXECUTABLE}" -m sphinx
                 -b html
+                -c "${AIS_DOC_PATH}/sphinx"
+                "${HIPFILE_ROOT_PATH}/docs"
+                "${AIS_SPHINX_BUILD_DIR}"
+                -v
+        # Step 3: Run Sphinx (LaTeX), injecting the Doxygen paths via environment
+        COMMAND
+            ${CMAKE_COMMAND} -E env
+                "DOXYFILE_PATH=${AIS_DOXYFILE}"
+                "DOXYGEN_ROOT=${AIS_DOC_PATH}/doxygen"
+                "DOXYGEN_XML_DIR=${AIS_DOXYGEN_XML_DIR}"
+            "${Python3_EXECUTABLE}" -m sphinx
+                -b latex
                 -c "${AIS_DOC_PATH}/sphinx"
                 "${HIPFILE_ROOT_PATH}/docs"
                 "${AIS_SPHINX_BUILD_DIR}"
