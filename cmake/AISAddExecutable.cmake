@@ -87,14 +87,18 @@ endfunction()
 #       always have assert() available.
 function(ais_add_test_executable)
 
-    ais_add_executable(${ARGV})
-
     # Parse arguments
     set(options) # None at this time
-    set(oneValueArgs NAME PLATFORM)
+    set(oneValueArgs NAME)
     set(multiValueArgs SRCS DEPS SYSINCLS)
     cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
+    ais_add_executable(
+        NAME     ${arg_NAME}
+        DEPS     ${arg_DEPS}
+        SRCS     ${arg_SRCS}
+        SYSINCLS ${arg_SYSINCLS}
+    )
     target_compile_options(${arg_NAME} PRIVATE -UNDEBUG)
 
 endfunction()
