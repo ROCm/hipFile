@@ -34,9 +34,10 @@ UnregisteredFile::UnregisteredFile(int fd)
       flags{Context<Sys>::get()->fcntl(fd, F_GETFL, 0)},
       mountinfo{Context<LibMountHelper>::get()->getMountInfo(makedev(stx.stx_dev_major, stx.stx_dev_minor))},
 #if defined(STATX_DIOALIGN)
-      m_dio_mem_align{stx.stx_mask & STATX_DIOALIGN ? stx.stx_dio_mem_align : 4096}
+      m_dio_mem_align{stx.stx_mask & STATX_DIOALIGN ? stx.stx_dio_mem_align : 4096},
+      m_dio_offset_align{stx.stx_mask & STATX_DIOALIGN ? stx.stx_dio_offset_align : 4096}
 #else
-      m_dio_mem_align{4096}
+      m_dio_mem_align{4096}, m_dio_offset_align{4096}
 #endif
 {
     std::string path = "/proc/self/fd/" + std::to_string(fd);
@@ -56,8 +57,9 @@ UnregisteredFile::UnregisteredFile(int fd)
             if (e.code().value() != EINVAL) {
                 throw;
             }
-            unbuffered_fd   = nullopt;
-            m_dio_mem_align = 0;
+            unbuffered_fd      = nullopt;
+            m_dio_mem_align    = 0;
+            m_dio_offset_align = 0;
         }
     }
 }
@@ -71,7 +73,7 @@ IFile::getHandle() const
 File::File(UnregisteredFile &&uf, const PassKey<FileMap> &)
     : client_fd{std::move(uf.client_fd)}, buffered_fd{std::move(uf.buffered_fd)},
       unbuffered_fd{std::move(uf.unbuffered_fd)}, stx{uf.stx}, status_flags{uf.flags},
-      mountinfo{uf.mountinfo}, m_dio_mem_align{uf.m_dio_mem_align}
+      mountinfo{uf.mountinfo}, m_dio_mem_align{uf.m_dio_mem_align}, m_dio_offset_align{uf.m_dio_offset_align}
 {
 }
 
@@ -118,6 +120,12 @@ uint32_t
 File::dioMemAlign() const noexcept
 {
     return m_dio_mem_align;
+}
+
+uint32_t
+File::dioOffsetAlign() const noexcept
+{
+    return m_dio_offset_align;
 }
 
 shared_ptr<IFile>

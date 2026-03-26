@@ -208,8 +208,10 @@ TEST_F(HipFileHandle, file_initialization)
               file->getMountInfo().value().options.ext4.journaling_mode);
 #if defined(STATX_DIOALIGN)
     EXPECT_EQ(file->dioMemAlign(), stxbuf.stx_dio_mem_align);
+    EXPECT_EQ(file->dioOffsetAlign(), stxbuf.stx_dio_offset_align);
 #else
     EXPECT_EQ(file->dioMemAlign(), 4096);
+    EXPECT_EQ(file->dioOffsetAlign(), 4096);
 #endif
 }
 
@@ -475,6 +477,25 @@ TEST_F(HipFileHandle, UnregisteredFileDioMemAlignMatchesStatxDioMemAlign)
 }
 #endif
 
+#if defined(STATX_DIOALIGN)
+TEST_F(HipFileHandle, UnregisteredFileDioOffsetAlignMatchesStatxDioOffsetAlign)
+{
+    int          open_fd{888888};
+    struct statx stxbuf {};
+    stxbuf.stx_mask             = STATX_TYPE | STATX_MODE | STATX_DIOALIGN;
+    stxbuf.stx_dio_offset_align = 1234;
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper)
+        .fd_flags(O_DIRECT)
+        .open_fd(open_fd)
+        .statx(stxbuf)
+        .build();
+    UnregisteredFile uf{777777};
+    ASSERT_EQ(uf.m_dio_offset_align, 1234);
+
+    EXPECT_CALL(msys, close(open_fd));
+}
+#endif
+
 TEST_F(HipFileHandle, UnregisteredFileDioMemAlignIsPageSizeIfStatxDoesntHaveDioAlign)
 {
     int          open_fd{888888};
@@ -491,11 +512,34 @@ TEST_F(HipFileHandle, UnregisteredFileDioMemAlignIsPageSizeIfStatxDoesntHaveDioA
     EXPECT_CALL(msys, close(open_fd));
 }
 
+TEST_F(HipFileHandle, UnregisteredFileDioOffsetAlignIsPageSizeIfStatxDoesntHaveDioAlign)
+{
+    int          open_fd{888888};
+    struct statx stxbuf {};
+    stxbuf.stx_mask = STATX_TYPE | STATX_MODE;
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper)
+        .fd_flags(O_DIRECT)
+        .open_fd(open_fd)
+        .statx(stxbuf)
+        .build();
+    UnregisteredFile uf{777777};
+    ASSERT_EQ(uf.m_dio_offset_align, 4096);
+
+    EXPECT_CALL(msys, close(open_fd));
+}
+
 TEST_F(HipFileHandle, UnregisteredFileDioMemAlignIsZeroIfUnableToOpenUnbufferedFd)
 {
     ExpectUnregisteredFileBuilder(msys, mlibmounthelper).fd_flags(~O_DIRECT).open_throws(EINVAL).build();
     UnregisteredFile uf{777777};
     ASSERT_EQ(uf.m_dio_mem_align, 0);
+}
+
+TEST_F(HipFileHandle, UnregisteredFileDioOffsetAlignIsZeroIfUnableToOpenUnbufferedFd)
+{
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper).fd_flags(~O_DIRECT).open_throws(EINVAL).build();
+    UnregisteredFile uf{777777};
+    ASSERT_EQ(uf.m_dio_offset_align, 0);
 }
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

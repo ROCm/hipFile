@@ -71,6 +71,11 @@ public:
     /// @brief Memory alignment (in bytes) requirement for direct IO. If the file does not support direct IO,
     /// this will be 0. If alignment information is not available from statx, this will be set to 4096.
     uint32_t m_dio_mem_align;
+
+    /// @brief Alignment (in bytes) required for file offsets and IO segment lengths for direct IO. If the
+    /// file does not support direct IO, this will be 0. If alignment information is not available from statx,
+    /// this will be set to 4096.
+    uint32_t m_dio_offset_align;
 };
 
 class IFile {
@@ -81,13 +86,14 @@ public:
     /// @return The handle for this file
     virtual hipFileHandle_t getHandle() const;
 
-    virtual int                      getClientFd() const          = 0;
-    virtual int                      getBufferedFd() const        = 0;
-    virtual std::optional<int>       getUnbufferedFd() const      = 0;
-    virtual const struct statx      &getStatx() const noexcept    = 0;
-    virtual int                      getStatusFlags() const       = 0;
-    virtual std::optional<MountInfo> getMountInfo() const         = 0;
-    virtual uint32_t                 dioMemAlign() const noexcept = 0;
+    virtual int                      getClientFd() const             = 0;
+    virtual int                      getBufferedFd() const           = 0;
+    virtual std::optional<int>       getUnbufferedFd() const         = 0;
+    virtual const struct statx      &getStatx() const noexcept       = 0;
+    virtual int                      getStatusFlags() const          = 0;
+    virtual std::optional<MountInfo> getMountInfo() const            = 0;
+    virtual uint32_t                 dioMemAlign() const noexcept    = 0;
+    virtual uint32_t                 dioOffsetAlign() const noexcept = 0;
 };
 
 class FileMap;
@@ -116,6 +122,12 @@ public:
     /// not support direct IO, this will return 0.
     /// @return The memory alignment (in bytes) requirement for direct IO, 0 if direct IO is not supported
     virtual uint32_t dioMemAlign() const noexcept override;
+
+    /// @brief The alignment (in bytes) required for file offsets and I/O segment lengths for direct I/O
+    /// (O_DIRECT) on this file, or 0 if direct I/O is not supported on this file
+    /// @return The alignment (in bytes) required for file offsets and I/O segment lengths for direct I/O, 0
+    /// if direct I/O is not supported
+    virtual uint32_t dioOffsetAlign() const noexcept override;
 
     /// @brief Construct a registered file
     /// @param uf An unregistered file
@@ -146,6 +158,10 @@ private:
     /// @brief Memory alignment (in bytes) requirement for direct IO. If the file does not support direct IO,
     /// this will be 0.
     uint32_t m_dio_mem_align;
+
+    /// @brief Alignment (in bytes) required for file offsets and I/O segment lengths for direct I/O
+    /// (O_DIRECT).
+    uint32_t m_dio_offset_align;
 };
 
 class FileMap {
