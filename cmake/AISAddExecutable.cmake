@@ -22,13 +22,9 @@ function(ais_add_executable)
 
     # Parse arguments
     set(options) # None at this time
-    set(oneValueArgs NAME PLATFORM)
+    set(oneValueArgs NAME)
     set(multiValueArgs SRCS DEPS SYSINCLS)
     cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-    if(NOT arg_PLATFORM)
-        set(arg_PLATFORM ${CMAKE_HIP_PLATFORM})
-    endif()
 
     add_executable(${arg_NAME} ${arg_SRCS})
     ais_set_compiler_flags(${arg_NAME})
@@ -49,9 +45,9 @@ function(ais_add_executable)
         target_compile_definitions(${arg_NAME} PRIVATE AIS_TESTING)
     endif()
 
-    if(arg_PLATFORM STREQUAL "amd")
+    if(CMAKE_HIP_PLATFORM STREQUAL "amd")
         target_compile_definitions(${arg_NAME} PRIVATE __HIP_PLATFORM_AMD__)
-    elseif(arg_PLATFORM STREQUAL "nvidia")
+    elseif(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
         target_compile_definitions(${arg_NAME} PRIVATE __HIP_PLATFORM_NVIDIA__)
         target_include_directories(${arg_NAME} SYSTEM PRIVATE ${HIP_INCLUDE_DIRS})
 
