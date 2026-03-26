@@ -5,6 +5,22 @@ files and Sphinx .rst files.
 
 ## Building the Documentation
 
+hipFile can generate two documentation products:
+
+1. API documentation
+2. Sphinx HTML documentation (includes #1)
+
+API documentation is generated from Doxygen and limited to markup
+in the header files. This will generate HTML, XML, and LaTeX output.
+The LaTeX can be used to create a pdf document.
+
+The Sphinx documentation incorporates the Doxygen API markup and
+adds reStructured text file content to generate HTML documentation
+for the web.
+
+The documentation CMake target currently builds both. There is
+no way to select "just Doxygen".
+
 ### Requirements
 
 * CMake >= 3.21
@@ -15,6 +31,8 @@ files and Sphinx .rst files.
     * rocm-docs-core
     * sphinx
     * sphinx-rtd-theme
+
+If you want to build a pdf, you will need LaTeX and pdflatex.
 
 ### Generation
 
@@ -28,7 +46,19 @@ You can then build the `doc` target.
     `cmake --build . --target doc`
 
 The documentation will be in the `docs` subdirectory of the build
-directory.
+directory:
+
+```
+    ├── doxygen
+    │   ├── html
+    │   ├── latex
+    │   └── xml
+    └── sphinx
+        └── html
+```
+
+To generate a pdf, navigate to doxygen/latex and run `make pdf` to
+generate a pdf named `refman.pdf`.
 
 ## Adding to the Documentation
 
