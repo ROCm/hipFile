@@ -74,7 +74,6 @@ jobs:
                 -DCMAKE_CXX_COMPILER=g++ \
                 -DCMAKE_CXX_FLAGS="-Werror" \
                 -DCMAKE_HIP_PLATFORM=nvidia \
-                -DAIS_BUILD_DOCS=ON \
                 -DAIS_CAPABLE_DIR=\"${ROCTMPDIR}\" \
                 ..
             "

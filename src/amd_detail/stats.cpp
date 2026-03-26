@@ -8,6 +8,7 @@
 #include "stats.h"
 #include "sys.h"
 
+#include <cerrno>
 #include <fcntl.h>
 #include <poll.h>
 #include <unistd.h>
@@ -109,7 +110,8 @@ StatsServer::~StatsServer()
 {
     if (m_thread.joinable()) {
         uint64_t i{1};
-        write(m_efd.get(), &i, sizeof(i));
+        while (write(m_efd.get(), &i, sizeof(i)) == -1 && errno == EINTR) {
+        }
         m_thread.join();
     }
 }
@@ -152,7 +154,7 @@ StatsServer::threadFn()
             sendFd(conn, m_fd.get());
             close(conn);
         }
-        if (pfd[1].revents & POLLIN) {
+        if (pfd[1].revents & (POLLIN | POLLERR | POLLNVAL)) {
             break;
         }
     }
