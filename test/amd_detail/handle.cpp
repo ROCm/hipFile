@@ -168,8 +168,14 @@ TEST_F(HipFileHandle, file_initialization)
 {
     int          fd{0x12345678};
     int          fd_flags{~O_DIRECT}; // All flags, except O_DIRECT, set
-    struct statx stxbuf;
-    memset(&stxbuf, 0xA5, sizeof(stxbuf));
+    struct statx stxbuf {};
+#if defined(STATX_DIOALIGN)
+    stxbuf.stx_mask             = STATX_TYPE | STATX_MODE | STATX_DIOALIGN;
+    stxbuf.stx_dio_mem_align    = 4;
+    stxbuf.stx_dio_offset_align = 512;
+#else
+    stxbuf.stx_mask = STATX_TYPE | STATX_MODE;
+#endif
 
     // In this test, the registered file is destroyed _after_ the mocks are
     // destroyed. Use an eventfd so that when FileDescriptor calls close, it
@@ -200,6 +206,11 @@ TEST_F(HipFileHandle, file_initialization)
     EXPECT_EQ(mountinfo.type, file->getMountInfo().value().type);
     EXPECT_EQ(mountinfo.options.ext4.journaling_mode,
               file->getMountInfo().value().options.ext4.journaling_mode);
+#if defined(STATX_DIOALIGN)
+    EXPECT_EQ(file->dioMemAlign(), stxbuf.stx_dio_mem_align);
+#else
+    EXPECT_EQ(file->dioMemAlign(), 4096);
+#endif
 }
 
 TEST_F(HipFileHandle, register_handle_internal_linux_fd_already_registered)
@@ -443,6 +454,48 @@ TEST_F(HipFileHandle, UnregisteredFileConstructorThrowsOnErrOtherThanEinval)
 {
     ExpectUnregisteredFileBuilder(msys, mlibmounthelper).fd_flags(~O_DIRECT).open_throws(EPERM).build();
     ASSERT_THROW(UnregisteredFile{777777}, std::system_error);
+}
+
+#if defined(STATX_DIOALIGN)
+TEST_F(HipFileHandle, UnregisteredFileDioMemAlignMatchesStatxDioMemAlign)
+{
+    int          open_fd{888888};
+    struct statx stxbuf {};
+    stxbuf.stx_mask          = STATX_TYPE | STATX_MODE | STATX_DIOALIGN;
+    stxbuf.stx_dio_mem_align = 1234;
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper)
+        .fd_flags(O_DIRECT)
+        .open_fd(open_fd)
+        .statx(stxbuf)
+        .build();
+    UnregisteredFile uf{777777};
+    ASSERT_EQ(uf.m_dio_mem_align, 1234);
+
+    EXPECT_CALL(msys, close(open_fd));
+}
+#endif
+
+TEST_F(HipFileHandle, UnregisteredFileDioMemAlignIsPageSizeIfStatxDoesntHaveDioAlign)
+{
+    int          open_fd{888888};
+    struct statx stxbuf {};
+    stxbuf.stx_mask = STATX_TYPE | STATX_MODE;
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper)
+        .fd_flags(O_DIRECT)
+        .open_fd(open_fd)
+        .statx(stxbuf)
+        .build();
+    UnregisteredFile uf{777777};
+    ASSERT_EQ(uf.m_dio_mem_align, 4096);
+
+    EXPECT_CALL(msys, close(open_fd));
+}
+
+TEST_F(HipFileHandle, UnregisteredFileDioMemAlignIsZeroIfUnableToOpenUnbufferedFd)
+{
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper).fd_flags(~O_DIRECT).open_throws(EINVAL).build();
+    UnregisteredFile uf{777777};
+    ASSERT_EQ(uf.m_dio_mem_align, 0);
 }
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

@@ -110,6 +110,7 @@ TEST_F(FastpathTest, ScoreAcceptsIoWithDefaults)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
 #endif
     EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mfile, dioMemAlign).WillOnce(Return(DEFAULT_MEM_ALIGN));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
               SCORE_ACCEPT);
@@ -124,6 +125,7 @@ TEST_F(FastpathTest, ScoreRejectsIoIfFastpathIsDisabled)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
 #endif
     EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mfile, dioMemAlign).WillOnce(Return(DEFAULT_MEM_ALIGN));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
               SCORE_REJECT);
@@ -138,6 +140,7 @@ TEST_F(FastpathTest, ScoreRejectsIoIfUnbufferedFdNotAvailable)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
 #endif
     EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mfile, dioMemAlign).WillOnce(Return(DEFAULT_MEM_ALIGN));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
               SCORE_REJECT);
@@ -152,6 +155,7 @@ TEST_F(FastpathTest, ScoreRejectsIoWithNegativeAlignedFileOffset)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
 #endif
     EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mfile, dioMemAlign).WillOnce(Return(DEFAULT_MEM_ALIGN));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, -static_cast<hoff_t>(DEFAULT_OFFSET_ALIGN),
                                DEFAULT_BUFFER_OFFSET),
@@ -167,6 +171,7 @@ TEST_F(FastpathTest, ScoreRejectsIoWithNegativeAlignedBufferOffset)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
 #endif
     EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mfile, dioMemAlign).WillOnce(Return(DEFAULT_MEM_ALIGN));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET,
                                -static_cast<hoff_t>(DEFAULT_MEM_ALIGN)),
@@ -186,6 +191,7 @@ TEST_F(FastpathTest, ScoreRejectsIoIfBufferAddressPlusBufferOffsetIsUnaligned)
     EXPECT_CALL(*mbuffer, getBuffer)
         .WillOnce(Return(reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(DEFAULT_BUFFER_ADDR) +
                                                   (DEFAULT_MEM_ALIGN >> 1))));
+    EXPECT_CALL(*mfile, dioMemAlign).WillOnce(Return(DEFAULT_MEM_ALIGN));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET,
                                static_cast<hoff_t>(DEFAULT_MEM_ALIGN)),
@@ -203,6 +209,7 @@ TEST_P(FastpathSupportedHipMemoryParam, Score)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
 #endif
     EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mfile, dioMemAlign).WillOnce(Return(DEFAULT_MEM_ALIGN));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
               SCORE_ACCEPT);
@@ -221,6 +228,7 @@ TEST_P(FastpathUnsupportedHipMemoryParam, Score)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
 #endif
     EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mfile, dioMemAlign).WillOnce(Return(DEFAULT_MEM_ALIGN));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
               SCORE_REJECT);
@@ -240,6 +248,7 @@ TEST_P(FastpathAlignedIoSizesParam, Score)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
 #endif
     EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mfile, dioMemAlign).WillOnce(Return(DEFAULT_MEM_ALIGN));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, GetParam(), DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
               SCORE_ACCEPT);
@@ -260,6 +269,7 @@ TEST_P(FastpathUnalignedIoSizesParam, Score)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
 #endif
     EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mfile, dioMemAlign).WillOnce(Return(DEFAULT_MEM_ALIGN));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, GetParam(), DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
               SCORE_REJECT);
@@ -280,6 +290,7 @@ TEST_P(FastpathAlignedFileOffsetsParam, Score)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
 #endif
     EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mfile, dioMemAlign).WillOnce(Return(DEFAULT_MEM_ALIGN));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, GetParam(), DEFAULT_BUFFER_OFFSET),
               GetParam() >= 0 ? SCORE_ACCEPT : SCORE_REJECT);
@@ -302,6 +313,7 @@ TEST_P(FastpathUnalignedFileOffsetsParam, Score)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
 #endif
     EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mfile, dioMemAlign).WillOnce(Return(DEFAULT_MEM_ALIGN));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, GetParam(), DEFAULT_BUFFER_OFFSET),
               SCORE_REJECT);
@@ -326,6 +338,7 @@ TEST_P(FastpathAlignedBufferOffsetsParam, Score)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
 #endif
     EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mfile, dioMemAlign).WillOnce(Return(DEFAULT_MEM_ALIGN));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, GetParam()),
               GetParam() >= 0 ? SCORE_ACCEPT : SCORE_REJECT);
@@ -349,6 +362,7 @@ TEST_P(FastpathUnalignedBufferOffsetsParam, Score)
     EXPECT_CALL(*mfile, getStatx).WillOnce(ReturnRef(DEFAULT_STATX));
 #endif
     EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mfile, dioMemAlign).WillOnce(Return(DEFAULT_MEM_ALIGN));
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, GetParam()),
               SCORE_REJECT);
