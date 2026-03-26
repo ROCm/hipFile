@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <exception>
 #include <memory>
+#include <stdexcept>
 #include <sys/types.h>
 #include <system_error>
 #include <unistd.h>

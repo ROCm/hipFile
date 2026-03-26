@@ -198,11 +198,11 @@ Fastpath::_io_impl(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buff
     switch (type) {
         case IoType::Read:
             nbytes = Context<Hip>::get()->hipAmdFileRead(handle, devptr, size, file_offset);
-            statsAddFastPathRead(static_cast<uint64_t>(nbytes));
+            statsAddFastPathRead(nbytes);
             break;
         case IoType::Write:
             nbytes = Context<Hip>::get()->hipAmdFileWrite(handle, devptr, size, file_offset);
-            statsAddFastPathWrite(static_cast<uint64_t>(nbytes));
+            statsAddFastPathWrite(nbytes);
             break;
         default:
             throw std::runtime_error("Invalid IoType");
@@ -232,6 +232,4 @@ Fastpath::is_fallback_eligible(std::exception_ptr e_ptr, ssize_t nbytes) const
         // Thrown exception not eligible for fallback.
         return false;
     }
-
-    return true;
 }

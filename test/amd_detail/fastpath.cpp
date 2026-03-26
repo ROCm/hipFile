@@ -790,8 +790,8 @@ TEST_P(FastpathWithFallbackIntegrationTests, FallbackRetriesFailedIo)
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
 
-    auto fallback_backend = std::make_shared<StrictMock<Fallback>>();
-    auto fastpath_backend = std::make_shared<StrictMock<Fastpath>>();
+    auto fallback_backend = std::make_shared<Fallback>();
+    auto fastpath_backend = std::make_shared<Fastpath>();
     fastpath_backend->register_fallback_backend(fallback_backend);
 
     const int DEFAULT_BUFFERED_FD = DEFAULT_UNBUFFERED_FD.value() + 1;
