@@ -201,8 +201,6 @@ TEST_F(HipFileHandle, file_initialization)
     EXPECT_EQ(fd, file->getClientFd());
     EXPECT_EQ(fd, file->getBufferedFd());
     EXPECT_EQ(open_fd, file->getUnbufferedFd());
-    auto file_stx{file->getStatx()};
-    EXPECT_EQ(0, memcmp(&file_stx, &stxbuf, sizeof(stxbuf)));
     EXPECT_EQ(fd_flags, file->getStatusFlags());
     EXPECT_EQ(mountinfo.type, file->getMountInfo().value().type);
     EXPECT_EQ(mountinfo.options.ext4.journaling_mode,

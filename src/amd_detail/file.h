@@ -89,7 +89,6 @@ public:
     virtual int                      getClientFd() const             = 0;
     virtual int                      getBufferedFd() const           = 0;
     virtual std::optional<int>       getUnbufferedFd() const         = 0;
-    virtual const struct statx      &getStatx() const noexcept       = 0;
     virtual int                      getStatusFlags() const          = 0;
     virtual std::optional<MountInfo> getMountInfo() const            = 0;
     virtual uint32_t                 dioMemAlign() const noexcept    = 0;
@@ -116,7 +115,6 @@ public:
     virtual int                      getClientFd() const override;
     virtual int                      getBufferedFd() const override;
     virtual std::optional<int>       getUnbufferedFd() const override;
-    virtual const struct statx      &getStatx() const noexcept override;
     virtual int                      getStatusFlags() const override;
     virtual std::optional<MountInfo> getMountInfo() const override;
 
@@ -155,9 +153,6 @@ private:
 
     /// @brief Unbuffered file descriptor (O_DIRECT)
     std::optional<FileDescriptor> unbuffered_fd;
-
-    /// @brief File status information obtained from statx (2)
-    struct statx stx;
 
     /// @brief The file's status flags. See fcntl(2)
     ///
