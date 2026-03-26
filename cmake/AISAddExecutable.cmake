@@ -74,3 +74,27 @@ function(ais_add_executable)
 
     target_include_directories(${arg_NAME} PRIVATE "${HIPFILE_ROOT_PATH}/shared")
 endfunction()
+
+# Add an executable test program using AIS build conventions
+#
+# Parameters:
+#   NAME     <name>                             The name of the executable program to create
+#   DEPS     [dependency1 [dependency2 ...]]    List of AIS target library dependencies
+#   SRCS     [src1 [src2 ...]]                  The source files
+#   SYSINCLS [path1 [path2 ...]]                Paths to include dirs
+#
+# NOTE: Simply a pass-through to add -UNDEBUG to test programs so they
+#       always have assert() available.
+function(ais_add_test_executable)
+
+    ais_add_executable(${ARGV})
+
+    # Parse arguments
+    set(options) # None at this time
+    set(oneValueArgs NAME PLATFORM)
+    set(multiValueArgs SRCS DEPS SYSINCLS)
+    cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    target_compile_options(${arg_NAME} PRIVATE -UNDEBUG)
+
+endfunction()
