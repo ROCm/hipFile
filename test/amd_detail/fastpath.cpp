@@ -762,7 +762,7 @@ INSTANTIATE_TEST_SUITE_P(
                    std::make_exception_ptr(std::system_error(EREMOTEIO, generic_category())))));
 
 
-struct FastpathIoParamWithFallback : public FastpathTestBase,
+struct FastpathWithFallbackIntegrationTests : public FastpathTestBase,
                                      public TestWithParam<std::tuple<IoType, std::exception_ptr>> {
     inline IoType _get_param_io_type() const
     {
@@ -775,8 +775,9 @@ struct FastpathIoParamWithFallback : public FastpathTestBase,
     }
 };
 
-// The Fastpath can throw a few different kinds of derived std::runtime_errors.
-TEST_P(FastpathIoParamWithFallback, IntegrationRunWithFallback)
+// Tests the real execution path from Fastpath -> Fallback.
+// Still mocks the Hip & Sys boundaries.
+TEST_P(FastpathWithFallbackIntegrationTests, FallbackRetriesFailedIo)
 {
     StrictMock<MHip> mhip;
     StrictMock<MSys> msys;
@@ -789,7 +790,7 @@ TEST_P(FastpathIoParamWithFallback, IntegrationRunWithFallback)
 
     EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(true));
     EXPECT_CALL(mcfg, fallback()).Times(2).WillRepeatedly(Return(true));
-    EXPECT_CALL(mhip, hipInit).WillRepeatedly(Return());
+    EXPECT_CALL(mhip, hipInit).WillOnce(Return());
 
     // Called by both Fastpath and Fallback
     EXPECT_CALL(*mbuffer, getBuffer).WillRepeatedly(Return(DEFAULT_BUFFER_ADDR));
@@ -830,9 +831,9 @@ TEST_P(FastpathIoParamWithFallback, IntegrationRunWithFallback)
 // setting expectations. Note that Throw() does not accept std::exception_ptr,
 // but the public (though undocumented) Rethrow() action does support it.
 INSTANTIATE_TEST_SUITE_P(
-    FastpathTest, FastpathIoParamWithFallback,
+    FastpathTest, FastpathWithFallbackIntegrationTests,
     Combine(Values(IoType::Read, IoType::Write),
-            Values(std::make_exception_ptr(Hip::RuntimeError(hipErrorNoDevice)),
-                   std::make_exception_ptr(std::system_error(make_error_code(errc::no_such_device))))));
+            Values(std::make_exception_ptr(std::system_error(ENODEV, generic_category())),
+                   std::make_exception_ptr(std::system_error(EREMOTEIO, generic_category())))));
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON
