@@ -704,6 +704,57 @@ TEST_P(FastpathWithFallbackEligibleExceptions, IoThrowsAFallbackEligibleExceptio
     ASSERT_EQ(nbytes, DEFAULT_IO_SIZE);
 }
 
+// If an IO is marked as fallback eligible, but the fallback backend
+// still rejects the IO request, the original exception should still
+// be raised.
+TEST_P(FastpathWithFallbackEligibleExceptions, FallbackRejectsIoRequest)
+{
+    StrictMock<MHip> mhip;
+
+    auto backend = std::make_shared<Fastpath>();
+    auto m_fallback = std::make_shared<StrictMock<MBackend>>();
+    backend->register_fallback_backend(m_fallback);
+
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(true));
+    EXPECT_CALL(mhip, hipInit).WillRepeatedly(Return());
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(DEFAULT_BUFFER_LENGTH));
+    EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
+    EXPECT_CALL(*m_fallback, score).WillOnce(Return(SCORE_REJECT));
+
+    switch (_get_param_io_type()) {
+        case IoType::Read:
+            EXPECT_CALL(mhip, hipAmdFileRead).WillOnce(Rethrow(_get_param_exc_ptr()));
+            break;
+        case IoType::Write:
+            EXPECT_CALL(mhip, hipAmdFileWrite).WillOnce(Rethrow(_get_param_exc_ptr()));
+            break;
+        default:
+            FAIL() << "Invalid IoType";
+    }
+
+    try {
+        // Can't use EXPECT_THROW due to the thrown exception type only being known at runtime
+        backend->io(_get_param_io_type(), mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET);
+        FAIL() << "io() was expected to throw, but it returned normally";
+    } catch (const std::exception& actual_exc) {
+        try {
+            // Have to rethrow the exception_ptr to be able to access the exception.
+            // This looks ugly, but is better than the alternative of trying to preserve the
+            // exception type when setting Throw(*std::shared_ptr<std::exception>>).
+            std::rethrow_exception(_get_param_exc_ptr());
+        } catch (const std::exception& expected_exc) {
+            // Verify that the propagated exception has the same dynamic type and message
+            // as the one stored in the original std::exception_ptr, without relying on
+            // pointer identity of the underlying exception object.
+            ASSERT_EQ(typeid(expected_exc), typeid(actual_exc));
+            ASSERT_STREQ(expected_exc.what(), actual_exc.what());
+        }
+    } catch (...) {
+        FAIL() << "io() threw something other than a std::exception";
+    }
+}
+
 INSTANTIATE_TEST_SUITE_P(
     FastpathTest, FastpathWithFallbackEligibleExceptions,
     Combine(Values(IoType::Read, IoType::Write),
@@ -772,63 +823,6 @@ TEST_P(FastpathIoParamWithFallback, IntegrationRunWithFallback)
 
     ssize_t num_bytes = fastpath_backend->io(_get_param_io_type(), mfile, mbuffer, DEFAULT_IO_SIZE, 0, 0);
     ASSERT_EQ(num_bytes, DEFAULT_IO_SIZE);
-}
-
-// If the fallback backend rejects the IO, the original exception from
-// Fastpath should be raised.
-TEST_P(FastpathIoParamWithFallback, IntegrationFallbackRejectsIO)
-{
-    StrictMock<MHip> mhip;
-    StrictMock<MSys> msys;
-
-    auto fallback_backend = std::make_shared<StrictMock<Fallback>>();
-    auto fastpath_backend = std::make_shared<StrictMock<Fastpath>>();
-    fastpath_backend->register_fallback_backend(fallback_backend);
-
-    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(true));
-    EXPECT_CALL(mcfg, fallback()).WillOnce(Return(false));
-    EXPECT_CALL(mhip, hipInit).WillRepeatedly(Return());
-
-    // Called only by Fastpath
-    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
-    EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(DEFAULT_BUFFER_LENGTH));
-    EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
-    switch (_get_param_io_type()) {
-        case IoType::Read:
-            // Called by Fastpath
-            EXPECT_CALL(mhip, hipAmdFileRead).WillOnce(Rethrow(_get_param_exc_ptr()));
-            break;
-        case IoType::Write:
-            // Called by Fastpath
-            EXPECT_CALL(mhip, hipAmdFileWrite).WillOnce(Rethrow(_get_param_exc_ptr()));
-            break;
-        default:
-            FAIL() << "Invalid IoType";
-    }
-
-    // Have to rethrow the exception_ptr to be able to access the exception
-    // This looks ugly, but is better than the alternative of trying to preserve the
-    // exception type when setting Throw(*std::shared_ptr<std::exception>>).
-    try {
-        std::rethrow_exception(_get_param_exc_ptr());
-    }
-    catch (const std::exception &expected_exc) {
-        // Can't use EXPECT_THROW due to the thrown exception type only being known at runtime
-        try {
-            fastpath_backend->io(_get_param_io_type(), mfile, mbuffer, DEFAULT_IO_SIZE, 0, 0);
-            FAIL() << "io() was expected to throw, but it returned normally";
-        }
-        catch (const std::exception &actual_exc) {
-            // Verify that the propagated exception has the same dynamic type and message
-            // as the one stored in the original std::exception_ptr, without relying on
-            // pointer identity of the underlying exception object.
-            ASSERT_EQ(typeid(expected_exc), typeid(actual_exc));
-            ASSERT_STREQ(expected_exc.what(), actual_exc.what());
-        }
-        catch (...) {
-            FAIL() << "io() threw something other than a std::exception";
-        }
-    }
 }
 
 // Using std::exception_ptr is more straightforward here than storing a pointer
