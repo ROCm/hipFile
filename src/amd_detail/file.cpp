@@ -89,7 +89,7 @@ File::getClientFd() const
 }
 
 int
-File::getBufferedFd() const noexcept
+File::bufferedFd() const noexcept
 {
     return m_buffered_fd.get();
 }

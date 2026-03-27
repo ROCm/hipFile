@@ -199,7 +199,7 @@ TEST_F(HipFileHandle, file_initialization)
 
     EXPECT_EQ(fh, file->getHandle());
     EXPECT_EQ(fd, file->getClientFd());
-    EXPECT_EQ(fd, file->getBufferedFd());
+    EXPECT_EQ(fd, file->bufferedFd());
     EXPECT_EQ(open_fd, file->unbufferedFd());
 #if defined(STATX_DIOALIGN)
     EXPECT_EQ(file->dioMemAlign(), stxbuf.stx_dio_mem_align);

@@ -87,7 +87,7 @@ public:
     virtual hipFileHandle_t getHandle() const;
 
     virtual int                getClientFd() const             = 0;
-    virtual int                getBufferedFd() const noexcept  = 0;
+    virtual int                bufferedFd() const noexcept     = 0;
     virtual std::optional<int> unbufferedFd() const noexcept   = 0;
     virtual uint32_t           dioMemAlign() const noexcept    = 0;
     virtual uint32_t           dioOffsetAlign() const noexcept = 0;
@@ -113,7 +113,10 @@ public:
     File &operator=(File &&) = delete;
 
     virtual int getClientFd() const override;
-    virtual int getBufferedFd() const noexcept override;
+
+    /// @brief Get the buffered file descriptor (!O_DIRECT)
+    /// @return The buffered file descriptor
+    virtual int bufferedFd() const noexcept override;
 
     /// @brief Get the unbuffered file descriptor for this file. Returns nullopt if the file does not support
     /// direct IO or if there was an error obtaining the unbuffered fd.
