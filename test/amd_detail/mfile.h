@@ -22,7 +22,6 @@ public:
     MOCK_METHOD(int, getClientFd, (), (const, override));
     MOCK_METHOD(int, getBufferedFd, (), (const, override));
     MOCK_METHOD(std::optional<int>, getUnbufferedFd, (), (const, override));
-    MOCK_METHOD(int, getStatusFlags, (), (const, override));
     MOCK_METHOD(uint32_t, dioMemAlign, (), (const, noexcept, override));
     MOCK_METHOD(uint32_t, dioOffsetAlign, (), (const, noexcept, override));
     MOCK_METHOD(bool, isBlockDevice, (), (const, noexcept, override));

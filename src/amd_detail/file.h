@@ -89,7 +89,6 @@ public:
     virtual int                getClientFd() const             = 0;
     virtual int                getBufferedFd() const           = 0;
     virtual std::optional<int> getUnbufferedFd() const         = 0;
-    virtual int                getStatusFlags() const          = 0;
     virtual uint32_t           dioMemAlign() const noexcept    = 0;
     virtual uint32_t           dioOffsetAlign() const noexcept = 0;
     virtual bool               isBlockDevice() const noexcept  = 0;
@@ -116,7 +115,6 @@ public:
     virtual int                getClientFd() const override;
     virtual int                getBufferedFd() const override;
     virtual std::optional<int> getUnbufferedFd() const override;
-    virtual int                getStatusFlags() const override;
 
     /// @brief Get the memory (in bytes) alignment requirement for direct IO on this file. If the file does
     /// not support direct IO, this will return 0.
@@ -163,11 +161,6 @@ private:
 
     /// @brief Unbuffered file descriptor (O_DIRECT)
     std::optional<FileDescriptor> unbuffered_fd;
-
-    /// @brief The file's status flags. See fcntl(2)
-    ///
-    /// Used to determine if the O_DIRECT flag is set
-    int status_flags;
 
     /// @brief Memory alignment (in bytes) requirement for direct IO. If the file does not support direct IO,
     /// this will be 0.

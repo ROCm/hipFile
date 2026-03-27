@@ -201,7 +201,6 @@ TEST_F(HipFileHandle, file_initialization)
     EXPECT_EQ(fd, file->getClientFd());
     EXPECT_EQ(fd, file->getBufferedFd());
     EXPECT_EQ(open_fd, file->getUnbufferedFd());
-    EXPECT_EQ(fd_flags, file->getStatusFlags());
 #if defined(STATX_DIOALIGN)
     EXPECT_EQ(file->dioMemAlign(), stxbuf.stx_dio_mem_align);
     EXPECT_EQ(file->dioOffsetAlign(), stxbuf.stx_dio_offset_align);
