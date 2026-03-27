@@ -202,9 +202,6 @@ TEST_F(HipFileHandle, file_initialization)
     EXPECT_EQ(fd, file->getBufferedFd());
     EXPECT_EQ(open_fd, file->getUnbufferedFd());
     EXPECT_EQ(fd_flags, file->getStatusFlags());
-    EXPECT_EQ(mountinfo.type, file->getMountInfo().value().type);
-    EXPECT_EQ(mountinfo.options.ext4.journaling_mode,
-              file->getMountInfo().value().options.ext4.journaling_mode);
 #if defined(STATX_DIOALIGN)
     EXPECT_EQ(file->dioMemAlign(), stxbuf.stx_dio_mem_align);
     EXPECT_EQ(file->dioOffsetAlign(), stxbuf.stx_dio_offset_align);

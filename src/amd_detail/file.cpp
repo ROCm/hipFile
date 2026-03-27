@@ -72,8 +72,8 @@ IFile::getHandle() const
 
 File::File(UnregisteredFile &&uf, const PassKey<FileMap> &)
     : client_fd{std::move(uf.client_fd)}, buffered_fd{std::move(uf.buffered_fd)},
-      unbuffered_fd{std::move(uf.unbuffered_fd)}, status_flags{uf.flags}, mountinfo{uf.mountinfo},
-      m_dio_mem_align{uf.m_dio_mem_align}, m_dio_offset_align{uf.m_dio_offset_align},
+      unbuffered_fd{std::move(uf.unbuffered_fd)}, status_flags{uf.flags}, m_dio_mem_align{uf.m_dio_mem_align},
+      m_dio_offset_align{uf.m_dio_offset_align},
       m_is_block_device{(uf.stx.stx_mask & STATX_TYPE) && S_ISBLK(uf.stx.stx_mode)},
       m_is_regular_file{(uf.stx.stx_mask & STATX_TYPE) && S_ISREG(uf.stx.stx_mode)},
       m_on_ext4_ordered{uf.mountinfo && uf.mountinfo->type == FilesystemType::ext4 &&
@@ -107,12 +107,6 @@ int
 File::getStatusFlags() const
 {
     return status_flags;
-}
-
-optional<MountInfo>
-File::getMountInfo() const
-{
-    return mountinfo;
 }
 
 uint32_t
