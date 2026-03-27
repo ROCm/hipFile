@@ -197,7 +197,7 @@ TEST_F(HipFileHandle, file_initialization)
     auto fh{Context<DriverState>::get()->registerFile(fd)};
     auto file{Context<DriverState>::get()->getFile(fh)};
 
-    EXPECT_EQ(fh, file->getHandle());
+    EXPECT_EQ(fh, file->handle());
     EXPECT_EQ(fd, file->clientFd());
     EXPECT_EQ(fd, file->bufferedFd());
     EXPECT_EQ(open_fd, file->unbufferedFd());

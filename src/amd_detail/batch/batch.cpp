@@ -56,7 +56,7 @@ BatchOperation::BatchOperation(std::unique_ptr<const hipFileIOParams_t> params,
     }
 
     // Check File parameters
-    if (io_params->fh != file->getHandle()) {
+    if (io_params->fh != file->handle()) {
         throw std::invalid_argument("File does not match handle specified in io_params.");
     }
     if (io_params->u.batch.file_offset < 0) {

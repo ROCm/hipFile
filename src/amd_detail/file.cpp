@@ -65,7 +65,7 @@ UnregisteredFile::UnregisteredFile(int fd)
 }
 
 hipFileHandle_t
-IFile::getHandle() const noexcept
+IFile::handle() const noexcept
 {
     return reinterpret_cast<hipFileHandle_t>(const_cast<IFile *>(this));
 }
@@ -157,11 +157,11 @@ FileMap::registerFile(UnregisteredFile &&uf)
         throw FileAlreadyRegistered();
     }
 
-    auto file                  = std::shared_ptr<IFile>(new File(std::move(uf), PassKey<FileMap>{}));
-    from_fd[file->clientFd()]  = file;
-    from_fh[file->getHandle()] = file;
+    auto file                 = std::shared_ptr<IFile>(new File(std::move(uf), PassKey<FileMap>{}));
+    from_fd[file->clientFd()] = file;
+    from_fh[file->handle()]   = file;
 
-    return file->getHandle();
+    return file->handle();
 }
 
 void

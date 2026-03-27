@@ -47,7 +47,7 @@ struct HipFileBatch : public HipFileUnopened {
         EXPECT_CALL(*default_mock_buffer, getLength).WillRepeatedly(Return(1));
 
         default_mock_file = std::make_shared<StrictMock<MFile>>();
-        EXPECT_CALL(*default_mock_file, getHandle).WillRepeatedly(Return(file_handle));
+        EXPECT_CALL(*default_mock_file, handle).WillRepeatedly(Return(file_handle));
 
         io_params                      = std::make_unique<hipFileIOParams_t>();
         io_params->u.batch.devPtr_base = const_cast<void *>(buffer_pointer);
@@ -86,8 +86,7 @@ TEST_F(HipFileBatch, CreateOperationBadBuffer)
 
 TEST_F(HipFileBatch, CreateOperationBadFileHandle)
 {
-    EXPECT_CALL(*default_mock_file, getHandle)
-        .WillOnce(Return(reinterpret_cast<hipFileHandle_t>(0xFACEFEED)));
+    EXPECT_CALL(*default_mock_file, handle).WillOnce(Return(reinterpret_cast<hipFileHandle_t>(0xFACEFEED)));
     EXPECT_THROW(BatchOperation(std::move(io_params), default_mock_buffer, default_mock_file),
                  std::invalid_argument);
 }
@@ -242,13 +241,13 @@ struct HipFileBatchContext : public HipFileUnopened {
         EXPECT_CALL(*default_mock_buffer, getLength).WillRepeatedly(Return(default_mock_buffer_length));
 
         default_mock_file = std::make_shared<StrictMock<MFile>>();
-        EXPECT_CALL(*default_mock_file, getHandle).WillRepeatedly(Return(default_mock_file.get()));
+        EXPECT_CALL(*default_mock_file, handle).WillRepeatedly(Return(default_mock_file.get()));
 
         file_buffer_pair default_fb_pair = {default_mock_file, default_mock_buffer};
 
         io_params.u.batch.devPtr_base = default_mock_buffer->getBuffer();
         io_params.u.batch.size        = 1;
-        io_params.fh                  = default_mock_file->getHandle();
+        io_params.fh                  = default_mock_file->handle();
         io_params.mode                = hipFileBatch;
         io_params.opcode              = hipFileBatchRead;
 
