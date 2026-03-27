@@ -136,7 +136,7 @@ Fastpath::score(shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
 
     accept_io &= Context<Configuration>::get()->fastpath();
 
-    accept_io &= file->getUnbufferedFd().has_value();
+    accept_io &= file->unbufferedFd().has_value();
 
     accept_io &= buffer->getType() == hipMemoryTypeDevice;
 
@@ -166,7 +166,7 @@ Fastpath::_io_impl(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buff
     hipAmdFileHandle_t handle{};
     size_t             nbytes{};
 
-    handle.fd = file->getUnbufferedFd().value();
+    handle.fd = file->unbufferedFd().value();
 
     if (!paramsValid(buffer, size, file_offset, buffer_offset)) {
         throw std::invalid_argument("The selected file or buffer region is invalid");
