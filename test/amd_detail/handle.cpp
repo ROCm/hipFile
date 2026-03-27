@@ -198,7 +198,7 @@ TEST_F(HipFileHandle, file_initialization)
     auto file{Context<DriverState>::get()->getFile(fh)};
 
     EXPECT_EQ(fh, file->getHandle());
-    EXPECT_EQ(fd, file->getClientFd());
+    EXPECT_EQ(fd, file->clientFd());
     EXPECT_EQ(fd, file->bufferedFd());
     EXPECT_EQ(open_fd, file->unbufferedFd());
 #if defined(STATX_DIOALIGN)

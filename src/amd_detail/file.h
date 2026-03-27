@@ -86,7 +86,7 @@ public:
     /// @return The handle for this file
     virtual hipFileHandle_t getHandle() const;
 
-    virtual int                getClientFd() const noexcept    = 0;
+    virtual int                clientFd() const noexcept       = 0;
     virtual int                bufferedFd() const noexcept     = 0;
     virtual std::optional<int> unbufferedFd() const noexcept   = 0;
     virtual uint32_t           dioMemAlign() const noexcept    = 0;
@@ -112,7 +112,7 @@ public:
     File(File &&)            = delete;
     File &operator=(File &&) = delete;
 
-    virtual int getClientFd() const noexcept override;
+    virtual int clientFd() const noexcept override;
 
     /// @brief Get the buffered file descriptor (!O_DIRECT)
     /// @return The buffered file descriptor

@@ -83,7 +83,7 @@ File::File(UnregisteredFile &&uf, const PassKey<FileMap> &)
 }
 
 int
-File::getClientFd() const noexcept
+File::clientFd() const noexcept
 {
     return m_client_fd.get();
 }
@@ -157,9 +157,9 @@ FileMap::registerFile(UnregisteredFile &&uf)
         throw FileAlreadyRegistered();
     }
 
-    auto file                    = std::shared_ptr<IFile>(new File(std::move(uf), PassKey<FileMap>{}));
-    from_fd[file->getClientFd()] = file;
-    from_fh[file->getHandle()]   = file;
+    auto file                  = std::shared_ptr<IFile>(new File(std::move(uf), PassKey<FileMap>{}));
+    from_fd[file->clientFd()]  = file;
+    from_fh[file->getHandle()] = file;
 
     return file->getHandle();
 }
@@ -177,7 +177,7 @@ FileMap::deregisterFile(hipFileHandle_t fh)
         throw FileOperationsOutstanding();
     }
 
-    from_fd.erase(itr->second->getClientFd());
+    from_fd.erase(itr->second->clientFd());
     from_fh.erase(fh);
 }
 
