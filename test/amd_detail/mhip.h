@@ -8,6 +8,7 @@
 #include "context.h"
 #include "hip.h"
 
+#include "gmock/gmock.h"
 #include <gmock/gmock.h>
 
 /* mhipxx (mock hip++)
@@ -49,5 +50,11 @@ struct MHip : Hip {
     MOCK_METHOD(int, hipDeviceGetAttribute, (hipDeviceAttribute_t attr, int device_id), (const, override));
     MOCK_METHOD(hipDevice_t, hipStreamGetDevice, (hipStream_t stream), (const, override));
     MOCK_METHOD(void, hipInit, (), (const, override));
+    MOCK_METHOD(void, hipHostRegister, (void *hostPtr, size_t sizeBytes, unsigned int flags),
+                (const, override));
+    MOCK_METHOD(void, hipHostUnregister, (void *hostPtr), (const, override));
+    MOCK_METHOD(void, hipSetDevice, (int device), (const override));
+    MOCK_METHOD(int, hipGetDevice, (), (const, override));
 };
+
 }

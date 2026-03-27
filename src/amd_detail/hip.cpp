@@ -6,8 +6,10 @@
 #include "context.h"
 #include "hip.h"
 #include "static.h"
+#include "sys.h"
 
 #include <cstdlib>
+#include <syslog.h>
 #include <system_error>
 
 namespace hipFile {
@@ -197,6 +199,50 @@ void
 Hip::hipInit() const
 {
     (void)throwOnHipError<Hip::RuntimeError>(::hipInit(0));
+}
+
+void
+Hip::hipHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags) const
+{
+    (void)throwOnHipError<Hip::RuntimeError>(::hipHostRegister(hostPtr, sizeBytes, flags));
+}
+
+void
+Hip::hipHostUnregister(void *hostPtr) const
+{
+    (void)throwOnHipError<Hip::RuntimeError>(::hipHostUnregister(hostPtr));
+}
+
+void
+Hip::hipSetDevice(int device) const
+{
+    (void)throwOnHipError<Hip::RuntimeError>(::hipSetDevice(device));
+}
+
+int
+Hip::hipGetDevice() const
+{
+    int device;
+    (void)throwOnHipError<Hip::RuntimeError>(::hipGetDevice(&device));
+    return device;
+}
+
+HipSetDevice::HipSetDevice(int device) : original_device{-1}
+{
+    original_device = Context<Hip>::get()->hipGetDevice();
+    Context<Hip>::get()->hipSetDevice(device);
+}
+
+HipSetDevice::~HipSetDevice()
+{
+    if (original_device >= 0) {
+        try {
+            Context<Hip>::get()->hipSetDevice(original_device);
+        }
+        catch (Hip::RuntimeError &e) {
+            Context<Sys>::get()->syslog(LOG_CRIT, "Error unregistering AsyncOpFallback pointer.");
+        }
+    }
 }
 
 }

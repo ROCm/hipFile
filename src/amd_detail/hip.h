@@ -75,6 +75,10 @@ struct Hip {
     virtual int  hipDeviceGetAttribute(hipDeviceAttribute_t attr, int device_id) const;
     virtual hipDevice_t hipStreamGetDevice(hipStream_t stream) const;
     virtual void        hipInit() const;
+    virtual void        hipHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags) const;
+    virtual void        hipHostUnregister(void *hostPtr) const;
+    virtual void        hipSetDevice(int device) const;
+    virtual int         hipGetDevice() const;
 
     struct RuntimeError : public std::runtime_error {
         hipError_t error;
@@ -89,6 +93,15 @@ struct Hip {
         {
         }
     };
+};
+
+class HipSetDevice {
+public:
+    HipSetDevice(int device_id);
+    ~HipSetDevice();
+
+private:
+    int original_device;
 };
 
 }

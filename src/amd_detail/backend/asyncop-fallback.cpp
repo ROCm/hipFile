@@ -9,6 +9,7 @@
 #include "buffer.h"
 #include "context.h"
 #include "hip.h"
+#include "stream.h"
 #include "sys.h"
 
 #include <memory>
@@ -27,17 +28,6 @@ enum class IoType;
 
 using namespace hipFile;
 
-static void
-hipHostDeleter(void *buffer)
-{
-    try {
-        Context<Hip>::get()->hipHostFree(buffer);
-    }
-    catch (...) {
-        Context<Sys>::get()->syslog(LOG_CRIT, "Error freeing pinned host memory.");
-    }
-}
-
 AsyncOpFallback::AsyncOpFallback(IoType _io_type, std::shared_ptr<IFile> _file,
                                  std::shared_ptr<IBuffer> _buffer, std::shared_ptr<IStream> _stream,
                                  size_t *_size, hoff_t *_file_offset, hoff_t *_buffer_offset,
@@ -45,13 +35,12 @@ AsyncOpFallback::AsyncOpFallback(IoType _io_type, std::shared_ptr<IFile> _file,
     : AsyncOp{_io_type, _file, _buffer, _stream, _size, _file_offset, _buffer_offset, _bytes_transferred},
       submitted_size{std::min(*_size, hipFile::MAX_RW_COUNT)}, bytes_transferred_internal{0},
       gpu_buffer{buffer->getBuffer()}, bounce_buffer_dev_ptr{nullptr},
-      bounce_buffer{nullptr, [](void *addr) { (void)addr; }}
+      bounce_buffer{new(std::align_val_t{64}) uint8_t[submitted_size]}
 {
-    void *host_ptr = Context<Hip>::get()->hipHostMalloc(submitted_size, 0);
-    std::unique_ptr<void, decltype(&hipHostDeleter)> _bounce_buffer{host_ptr, hipHostDeleter};
-    std::swap(bounce_buffer, _bounce_buffer);
-    void *dev_ptr         = Context<Hip>::get()->hipHostGetDevicePointer(bounce_buffer.get(), 0);
-    bounce_buffer_dev_ptr = dev_ptr;
+    HipSetDevice hsd{stream->getHipDevice()};
+    Context<Hip>::get()->hipHostRegister(bounce_buffer.get(), submitted_size, hipHostRegisterDefault);
+    Context<Hip>::get()->hipHostRegister(this, sizeof(AsyncOpFallback), hipHostRegisterDefault);
+    bounce_buffer_dev_ptr = Context<Hip>::get()->hipHostGetDevicePointer(bounce_buffer.get(), 0);
 }
 
 void *
@@ -63,31 +52,23 @@ AsyncOpFallback::bounceBufferHostPtr()
 void *
 AsyncOpFallback::devPtr()
 {
+    HipSetDevice hsd{stream->getHipDevice()};
     return Context<Hip>::get()->hipHostGetDevicePointer(this, 0);
 }
 
 AsyncOpFallback::~AsyncOpFallback()
 {
-}
-
-void *
-AsyncOpFallback::operator new(size_t size_)
-{
     try {
-        return Context<Hip>::get()->hipHostMalloc(size_, 0);
+        Context<Hip>::get()->hipHostUnregister(bounce_buffer.get());
     }
-    catch (...) {
-        throw std::bad_alloc{};
+    catch (Hip::RuntimeError &e) {
+        Context<Sys>::get()->syslog(LOG_CRIT, "Error unregistering bounce buffer.");
     }
-}
 
-void
-AsyncOpFallback::operator delete(void *ptr) noexcept
-{
     try {
-        Context<Hip>::get()->hipHostFree(ptr);
+        Context<Hip>::get()->hipHostUnregister(this);
     }
-    catch (...) {
-        Context<Sys>::get()->syslog(LOG_CRIT, "Freeing AsyncOpFallback failed.");
+    catch (Hip::RuntimeError &e) {
+        Context<Sys>::get()->syslog(LOG_CRIT, "Error unregistering AsyncOpFallback pointer.");
     }
 }

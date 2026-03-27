@@ -139,22 +139,6 @@ TEST_P(HipFileAsyncOpStreamParams, asyncOp_construction_has_correct_variants)
 }
 INSTANTIATE_TEST_SUITE_P(StreamSuite, HipFileAsyncOpStreamParams, hipfileFlagsPowerSet());
 
-TEST_F(HipFileAsyncOp, AsyncOpFallback_new_uses_pinned_host_memory)
-{
-    size_t  size              = 100;
-    hoff_t  file_offset       = 0;
-    hoff_t  buffer_offset     = 0;
-    ssize_t bytes_transferred = 0;
-    auto    op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
-    auto    bounce_buffer     = std::shared_ptr<void>(new uint8_t[size]);
-    EXPECT_CALL(mhip, hipHostMalloc).WillOnce(Return(op_data.get())).WillOnce(Return(bounce_buffer.get()));
-    EXPECT_CALL(mhip, hipHostGetDevicePointer(Eq(bounce_buffer.get()), _));
-    EXPECT_CALL(mhip, hipHostFree(Eq(bounce_buffer.get())));
-    EXPECT_CALL(mhip, hipHostFree(Eq(op_data.get())));
-    auto op = std::shared_ptr<AsyncOpFallback>(new AsyncOpFallback{
-        IoType::Read, file, buffer, stream, &size, &file_offset, &buffer_offset, &bytes_transferred});
-}
-
 TEST_F(HipFileAsyncOp, AsyncOpFallbackLimitsMaxIoSize)
 {
     size_t  size              = 4_GiB;
