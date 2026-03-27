@@ -83,7 +83,7 @@ File::File(UnregisteredFile &&uf, const PassKey<FileMap> &)
 }
 
 int
-File::getClientFd() const
+File::getClientFd() const noexcept
 {
     return m_client_fd.get();
 }

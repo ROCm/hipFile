@@ -19,7 +19,7 @@ namespace hipFile {
 class MFile : public IFile {
 public:
     MOCK_METHOD(hipFileHandle_t, getHandle, (), (const, override));
-    MOCK_METHOD(int, getClientFd, (), (const, override));
+    MOCK_METHOD(int, getClientFd, (), (const, noexcept, override));
     MOCK_METHOD(int, bufferedFd, (), (const, noexcept, override));
     MOCK_METHOD(std::optional<int>, unbufferedFd, (), (const, noexcept, override));
     MOCK_METHOD(uint32_t, dioMemAlign, (), (const, noexcept, override));
