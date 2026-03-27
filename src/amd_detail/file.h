@@ -95,6 +95,7 @@ public:
     virtual uint32_t                 dioMemAlign() const noexcept    = 0;
     virtual uint32_t                 dioOffsetAlign() const noexcept = 0;
     virtual bool                     isBlockDevice() const noexcept  = 0;
+    virtual bool                     isRegularFile() const noexcept  = 0;
 };
 
 class FileMap;
@@ -135,6 +136,11 @@ public:
     /// @return True if the file is a block device, false otherwise
     virtual bool isBlockDevice() const noexcept override;
 
+    /// @brief Whether this file is a regular file. If statx did not return type information, this will return
+    /// false.
+    /// @return True if the file is a regular file, false otherwise
+    virtual bool isRegularFile() const noexcept override;
+
     /// @brief Construct a registered file
     /// @param uf An unregistered file
     /// @param k  Key class instance (see passkey.h)
@@ -171,6 +177,9 @@ private:
 
     /// @brief Whether statx reported that the file is a block device
     bool m_is_block_device;
+
+    /// @brief Whether statx reported that the file is a regular file
+    bool m_is_regular_file;
 };
 
 class FileMap {
