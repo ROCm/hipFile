@@ -86,15 +86,15 @@ public:
     /// @return The handle for this file
     virtual hipFileHandle_t getHandle() const;
 
-    virtual int                getClientFd() const             = 0;
-    virtual int                getBufferedFd() const           = 0;
-    virtual std::optional<int> getUnbufferedFd() const         = 0;
-    virtual uint32_t           dioMemAlign() const noexcept    = 0;
-    virtual uint32_t           dioOffsetAlign() const noexcept = 0;
-    virtual bool               isBlockDevice() const noexcept  = 0;
-    virtual bool               isRegularFile() const noexcept  = 0;
-    virtual bool               onExt4Ordered() const noexcept  = 0;
-    virtual bool               onXfs() const noexcept          = 0;
+    virtual int                getClientFd() const              = 0;
+    virtual int                getBufferedFd() const            = 0;
+    virtual std::optional<int> getUnbufferedFd() const noexcept = 0;
+    virtual uint32_t           dioMemAlign() const noexcept     = 0;
+    virtual uint32_t           dioOffsetAlign() const noexcept  = 0;
+    virtual bool               isBlockDevice() const noexcept   = 0;
+    virtual bool               isRegularFile() const noexcept   = 0;
+    virtual bool               onExt4Ordered() const noexcept   = 0;
+    virtual bool               onXfs() const noexcept           = 0;
 };
 
 class FileMap;
@@ -114,7 +114,7 @@ public:
 
     virtual int                getClientFd() const override;
     virtual int                getBufferedFd() const override;
-    virtual std::optional<int> getUnbufferedFd() const override;
+    virtual std::optional<int> getUnbufferedFd() const noexcept override;
 
     /// @brief Get the memory (in bytes) alignment requirement for direct IO on this file. If the file does
     /// not support direct IO, this will return 0.
