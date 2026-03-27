@@ -27,6 +27,7 @@ public:
     MOCK_METHOD(std::optional<MountInfo>, getMountInfo, (), (const, override));
     MOCK_METHOD(uint32_t, dioMemAlign, (), (const, noexcept, override));
     MOCK_METHOD(uint32_t, dioOffsetAlign, (), (const, noexcept, override));
+    MOCK_METHOD(bool, isBlockDevice, (), (const, noexcept, override));
 };
 
 class MFileMap : public FileMap {
