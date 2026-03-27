@@ -161,7 +161,7 @@ public:
 
 private:
     /// @brief The file descriptor provided by the client
-    FileDescriptor client_fd;
+    FileDescriptor m_client_fd;
 
     /// @brief Buffered file descriptor (!O_DIRECT)
     FileDescriptor m_buffered_fd;
