@@ -161,7 +161,7 @@ private:
     FileDescriptor client_fd;
 
     /// @brief Buffered file descriptor (!O_DIRECT)
-    FileDescriptor buffered_fd;
+    FileDescriptor m_buffered_fd;
 
     /// @brief Unbuffered file descriptor (O_DIRECT)
     std::optional<FileDescriptor> m_unbuffered_fd;

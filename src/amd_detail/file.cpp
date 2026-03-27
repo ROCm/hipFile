@@ -71,7 +71,7 @@ IFile::getHandle() const
 }
 
 File::File(UnregisteredFile &&uf, const PassKey<FileMap> &)
-    : client_fd{std::move(uf.client_fd)}, buffered_fd{std::move(uf.buffered_fd)},
+    : client_fd{std::move(uf.client_fd)}, m_buffered_fd{std::move(uf.buffered_fd)},
       m_unbuffered_fd{std::move(uf.unbuffered_fd)}, m_dio_mem_align{uf.m_dio_mem_align},
       m_dio_offset_align{uf.m_dio_offset_align},
       m_is_block_device{(uf.stx.stx_mask & STATX_TYPE) && S_ISBLK(uf.stx.stx_mode)},
@@ -91,7 +91,7 @@ File::getClientFd() const
 int
 File::getBufferedFd() const
 {
-    return buffered_fd.get();
+    return m_buffered_fd.get();
 }
 
 optional<int>
