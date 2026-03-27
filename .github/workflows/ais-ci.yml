@@ -22,11 +22,11 @@ jobs:
       - name: Fetching code repository...
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
       - name: Git fetch base ref
-        run: git fetch origin ${{ github.base_ref }}
+        run: git fetch origin "${GITHUB_BASE_REF}"
       - name: Set CI Flags
         id: ci-flags
         run: |
-          echo "changed_dockerfile=$(./util/files-changed.sh origin/${{ github.base_ref }} HEAD 'util/docker/DOCKERFILE.*')" >> ${GITHUB_OUTPUT}
+          echo "changed_dockerfile=$(./util/files-changed.sh "origin/${GITHUB_BASE_REF}" HEAD 'util/docker/DOCKERFILE.*')" >> "${GITHUB_OUTPUT}"
   build_AIS_CI_image:
     needs: AIS_CI_Pre-check
     permissions:
