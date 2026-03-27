@@ -687,8 +687,8 @@ TEST_P(FastpathIoParam, IoThrowsAFallbackEligibleENODEV)
     EXPECT_CALL(*m_fallback, io).WillOnce(Return(DEFAULT_IO_SIZE));
     EXPECT_CALL(*m_fallback, score).WillOnce(Return(SCORE_ACCEPT));
 
-    ssize_t nbytes = backend->io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET,
-                                 DEFAULT_BUFFER_OFFSET);
+    ssize_t nbytes =
+        backend->io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET);
     ASSERT_EQ(nbytes, DEFAULT_IO_SIZE);
 }
 
@@ -706,10 +706,12 @@ TEST_P(FastpathIoParam, IoThrowsAFallbackEligibleEREMOTEIO)
 
     switch (GetParam()) {
         case IoType::Read:
-            EXPECT_CALL(mhip, hipAmdFileRead).WillOnce(Throw(std::system_error(EREMOTEIO, generic_category())));
+            EXPECT_CALL(mhip, hipAmdFileRead)
+                .WillOnce(Throw(std::system_error(EREMOTEIO, generic_category())));
             break;
         case IoType::Write:
-            EXPECT_CALL(mhip, hipAmdFileWrite).WillOnce(Throw(std::system_error(EREMOTEIO, generic_category())));
+            EXPECT_CALL(mhip, hipAmdFileWrite)
+                .WillOnce(Throw(std::system_error(EREMOTEIO, generic_category())));
             break;
         default:
             FAIL() << "Invalid IoType";
@@ -718,8 +720,8 @@ TEST_P(FastpathIoParam, IoThrowsAFallbackEligibleEREMOTEIO)
     EXPECT_CALL(*m_fallback, io).WillOnce(Return(DEFAULT_IO_SIZE));
     EXPECT_CALL(*m_fallback, score).WillOnce(Return(SCORE_ACCEPT));
 
-    ssize_t nbytes = backend->io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET,
-                                 DEFAULT_BUFFER_OFFSET);
+    ssize_t nbytes =
+        backend->io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET);
     ASSERT_EQ(nbytes, DEFAULT_IO_SIZE);
 }
 
