@@ -160,7 +160,7 @@ private:
     FileDescriptor buffered_fd;
 
     /// @brief Unbuffered file descriptor (O_DIRECT)
-    std::optional<FileDescriptor> unbuffered_fd;
+    std::optional<FileDescriptor> m_unbuffered_fd;
 
     /// @brief Memory alignment (in bytes) requirement for direct IO. If the file does not support direct IO,
     /// this will be 0.
