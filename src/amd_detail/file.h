@@ -84,7 +84,7 @@ public:
 
     /// @brief Get the handle for this file
     /// @return The handle for this file
-    virtual hipFileHandle_t getHandle() const;
+    virtual hipFileHandle_t getHandle() const noexcept;
 
     virtual int                clientFd() const noexcept       = 0;
     virtual int                bufferedFd() const noexcept     = 0;

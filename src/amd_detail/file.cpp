@@ -65,7 +65,7 @@ UnregisteredFile::UnregisteredFile(int fd)
 }
 
 hipFileHandle_t
-IFile::getHandle() const
+IFile::getHandle() const noexcept
 {
     return reinterpret_cast<hipFileHandle_t>(const_cast<IFile *>(this));
 }
