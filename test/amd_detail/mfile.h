@@ -29,6 +29,7 @@ public:
     MOCK_METHOD(bool, isBlockDevice, (), (const, noexcept, override));
     MOCK_METHOD(bool, isRegularFile, (), (const, noexcept, override));
     MOCK_METHOD(bool, onExt4Ordered, (), (const, noexcept, override));
+    MOCK_METHOD(bool, onXfs, (), (const, noexcept, override));
 };
 
 class MFileMap : public FileMap {

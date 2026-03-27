@@ -96,6 +96,7 @@ public:
     virtual bool                     isBlockDevice() const noexcept  = 0;
     virtual bool                     isRegularFile() const noexcept  = 0;
     virtual bool                     onExt4Ordered() const noexcept  = 0;
+    virtual bool                     onXfs() const noexcept          = 0;
 };
 
 class FileMap;
@@ -145,6 +146,11 @@ public:
     /// @return True if the file is on an ext4 filesystem with ordered journaling mode, false otherwise
     virtual bool onExt4Ordered() const noexcept override;
 
+    /// @brief Whether this file is on an xfs filesystem. If mountinfo is not available, this will return
+    /// false.
+    /// @return True if the file is on an xfs filesystem, false otherwise
+    virtual bool onXfs() const noexcept override;
+
     /// @brief Construct a registered file
     /// @param uf An unregistered file
     /// @param k  Key class instance (see passkey.h)
@@ -184,6 +190,9 @@ private:
 
     /// @brief Whether the file is on an ext4 filesystem with ordered journaling mode
     bool m_on_ext4_ordered;
+
+    /// @brief Whether the file is on an xfs filesystem
+    bool m_on_xfs;
 };
 
 class FileMap {
