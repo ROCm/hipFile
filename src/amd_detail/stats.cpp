@@ -167,7 +167,7 @@ StatsClient::StatsClient(pid_t p)
 }
 
 bool
-StatsClient::pollProcess(int timeout)
+StatsClient::pollProcess(int timeout) const
 {
     if (m_pfd.get() == -1) {
         return true;
@@ -201,7 +201,7 @@ StatsClient::connectServer()
 }
 
 bool
-StatsClient::generateReport(std::ostream &stream)
+StatsClient::generateReport(std::ostream &stream) const
 {
     if (m_sfd.get() == -1) {
         return false;

@@ -22,13 +22,9 @@ function(ais_add_executable)
 
     # Parse arguments
     set(options) # None at this time
-    set(oneValueArgs NAME PLATFORM)
+    set(oneValueArgs NAME)
     set(multiValueArgs SRCS DEPS SYSINCLS)
     cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-    if(NOT arg_PLATFORM)
-        set(arg_PLATFORM ${CMAKE_HIP_PLATFORM})
-    endif()
 
     add_executable(${arg_NAME} ${arg_SRCS})
     ais_set_compiler_flags(${arg_NAME})
@@ -49,9 +45,9 @@ function(ais_add_executable)
         target_compile_definitions(${arg_NAME} PRIVATE AIS_TESTING)
     endif()
 
-    if(arg_PLATFORM STREQUAL "amd")
+    if(CMAKE_HIP_PLATFORM STREQUAL "amd")
         target_compile_definitions(${arg_NAME} PRIVATE __HIP_PLATFORM_AMD__)
-    elseif(arg_PLATFORM STREQUAL "nvidia")
+    elseif(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
         target_compile_definitions(${arg_NAME} PRIVATE __HIP_PLATFORM_NVIDIA__)
         target_include_directories(${arg_NAME} SYSTEM PRIVATE ${HIP_INCLUDE_DIRS})
 
@@ -73,4 +69,32 @@ function(ais_add_executable)
     endforeach()
 
     target_include_directories(${arg_NAME} PRIVATE "${HIPFILE_ROOT_PATH}/shared")
+endfunction()
+
+# Add an executable test program using AIS build conventions
+#
+# Parameters:
+#   NAME     <name>                             The name of the executable program to create
+#   DEPS     [dependency1 [dependency2 ...]]    List of AIS target library dependencies
+#   SRCS     [src1 [src2 ...]]                  The source files
+#   SYSINCLS [path1 [path2 ...]]                Paths to include dirs
+#
+# NOTE: Simply a pass-through to add -UNDEBUG to test programs so they
+#       always have assert() available.
+function(ais_add_test_executable)
+
+    # Parse arguments
+    set(options) # None at this time
+    set(oneValueArgs NAME)
+    set(multiValueArgs SRCS DEPS SYSINCLS)
+    cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    ais_add_executable(
+        NAME     ${arg_NAME}
+        DEPS     ${arg_DEPS}
+        SRCS     ${arg_SRCS}
+        SYSINCLS ${arg_SYSINCLS}
+    )
+    target_compile_options(${arg_NAME} PRIVATE -UNDEBUG)
+
 endfunction()

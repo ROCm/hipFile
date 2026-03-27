@@ -23,6 +23,7 @@ set(TEST_SOURCE_FILES
     handle.cpp
     hip.cpp
     hipfile-api.cpp
+    hipfile-stats.cpp
     fallback.cpp
     fastpath.cpp
     main.cpp
@@ -38,13 +39,12 @@ set(TEST_SYSINCLS
     ${HIPFILE_AMD_TEST_PATH}
 )
 
-ais_add_executable(
+ais_add_test_executable(
     NAME internal_tests
     DEPS hipfile
     SRCS ${TEST_SOURCE_FILES} ${SHARED_SOURCE_FILES}
     SYSINCLS ${TEST_SYSINCLS}
 )
-target_compile_options(internal_tests PRIVATE -UNDEBUG)
 
 # Add gtest
 target_link_libraries(internal_tests PRIVATE GTest::gmock)
@@ -63,7 +63,7 @@ ais_gtest_discover_tests(
 # so test failures may not be due to the commit in which you
 # observe the failure.
 
-ais_add_executable(
+ais_add_test_executable(
     NAME state_mt
     DEPS hipfile
     SRCS "state_mt.cpp"
@@ -73,10 +73,9 @@ add_test(
     NAME state_mt_test
     COMMAND gdb --batch --quiet -ex run -ex "thread apply all bt full" --return-child-result --args $<TARGET_FILE:state_mt>
 )
-target_compile_options(state_mt PRIVATE -UNDEBUG)
 set_tests_properties(state_mt_test PROPERTIES LABELS "stress;internal")
 
-ais_add_executable(
+ais_add_test_executable(
     NAME batch_mt
     DEPS hipfile
     SRCS "batch/batch_mt.cpp"
@@ -86,5 +85,4 @@ add_test(
     NAME batch_mt_test
     COMMAND gdb --batch --quiet -ex run -ex "thread apply all bt full" --return-child-result --args $<TARGET_FILE:batch_mt>
 )
-target_compile_options(batch_mt PRIVATE -UNDEBUG)
 set_tests_properties(batch_mt_test PROPERTIES LABELS "stress;internal")

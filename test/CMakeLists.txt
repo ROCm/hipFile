@@ -41,14 +41,11 @@ else()
     list(APPEND TEST_SYSINCLS ${HIPFILE_AMD_SOURCE_PATH})
 endif()
 
-ais_add_executable(
+ais_add_test_executable(
     NAME hipfile_tests
     DEPS hipfile
     SRCS ${UNIT_TEST_SOURCE_FILES} ${SHARED_SOURCE_FILES}
     SYSINCLS ${TEST_SYSINCLS}
-)
-target_compile_options(hipfile_tests
-    PRIVATE -UNDEBUG -Wno-unused-function
 )
 target_link_libraries(hipfile_tests PRIVATE GTest::gtest)
 target_link_libraries(hipfile_tests PRIVATE GTest::gtest_main)
@@ -59,13 +56,12 @@ ais_gtest_discover_tests(
     TEST_LIST hipfile_unit_tests
 )
 
-ais_add_executable(
+ais_add_test_executable(
     NAME hipfile_system_tests
     DEPS hipfile
     SRCS ${SYSTEM_TEST_SOURCE_FILES} ${SHARED_SOURCE_FILES}
     SYSINCLS ${TEST_SYSINCLS}
 )
-target_compile_options(hipfile_system_tests PRIVATE -UNDEBUG)
 target_link_libraries(hipfile_system_tests PRIVATE GTest::gtest)
 target_link_libraries(hipfile_system_tests PRIVATE Boost::program_options)
 
@@ -79,12 +75,12 @@ ais_gtest_discover_tests(
 # Temporary Test Files
 # Can be deleted once proper testing added
 # ----------------------------------------
-ais_add_executable(
+ais_add_test_executable(
     NAME test_hipfile_basic
     SRCS legacy/test-hipfile.cpp
     DEPS hipfile
 )
-ais_add_executable(
+ais_add_test_executable(
     NAME test_hipfile_batch
     SRCS legacy/test-hipfile-batch.cpp
     DEPS hipfile

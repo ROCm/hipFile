@@ -77,8 +77,8 @@ jobs:
     steps:
       - name: Set CI environment variables
         run: |
-          echo "AIS_CI_IMAGE_TAG=$(echo ${{ github.ref }} | sed 's|[^a-zA-Z0-9]|-|g')-rocm${AIS_INPUT_ROCM_VERSION}" >> "${GITHUB_ENV}"
-          echo "AIS_PR_NUMBER=$(echo ${{ github.ref }} | sed 's|[^0-9]||g')" >> "${GITHUB_ENV}"
+          echo "AIS_CI_IMAGE_TAG=$(echo "${GITHUB_REF}" | sed 's|[^a-zA-Z0-9]|-|g')-rocm${AIS_INPUT_ROCM_VERSION}" >> "${GITHUB_ENV}"
+          echo "AIS_PR_NUMBER=$(echo "${GITHUB_REF}" | sed 's|[^0-9]||g')" >> "${GITHUB_ENV}"
       - name: Set target AIS CI Image
         id: ci-image
         run: |
@@ -106,7 +106,7 @@ jobs:
             -f "${GITHUB_WORKSPACE}/util/docker/DOCKERFILE.${AIS_CI_IMAGE_NAME}" \
             --label "org.opencontainers.image.description= \
               ${AIS_CI_IMAGE_NAME} Development Image for AIS CI using branch \
-              ${{ github.head_ref }} for PR #${AIS_PR_NUMBER}. \
+              ${GITHUB_HEAD_REF} for PR #${AIS_PR_NUMBER}. \
               PR URL: ${AIS_PR_BASE_URL}/${AIS_PR_NUMBER}" \
             --build-arg BUILDKIT_INLINE_CACHE=1 \
             --build-arg ROCM_VERSION=${AIS_INPUT_ROCM_VERSION} \
