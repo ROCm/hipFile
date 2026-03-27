@@ -95,6 +95,7 @@ public:
     virtual uint32_t                 dioOffsetAlign() const noexcept = 0;
     virtual bool                     isBlockDevice() const noexcept  = 0;
     virtual bool                     isRegularFile() const noexcept  = 0;
+    virtual bool                     onExt4Ordered() const noexcept  = 0;
 };
 
 class FileMap;
@@ -139,6 +140,11 @@ public:
     /// @return True if the file is a regular file, false otherwise
     virtual bool isRegularFile() const noexcept override;
 
+    /// @brief Whether this file is on an ext4 filesystem with ordered journaling mode. If mountinfo is not
+    /// available, this will return false.
+    /// @return True if the file is on an ext4 filesystem with ordered journaling mode, false otherwise
+    virtual bool onExt4Ordered() const noexcept override;
+
     /// @brief Construct a registered file
     /// @param uf An unregistered file
     /// @param k  Key class instance (see passkey.h)
@@ -175,6 +181,9 @@ private:
 
     /// @brief Whether statx reported that the file is a regular file
     bool m_is_regular_file;
+
+    /// @brief Whether the file is on an ext4 filesystem with ordered journaling mode
+    bool m_on_ext4_ordered;
 };
 
 class FileMap {

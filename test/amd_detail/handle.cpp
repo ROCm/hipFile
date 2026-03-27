@@ -214,6 +214,7 @@ TEST_F(HipFileHandle, file_initialization)
 #endif
     EXPECT_FALSE(file->isBlockDevice());
     EXPECT_TRUE(file->isRegularFile());
+    EXPECT_TRUE(file->onExt4Ordered());
 }
 
 TEST_F(HipFileHandle, register_handle_internal_linux_fd_already_registered)
@@ -681,4 +682,74 @@ TEST_F(HipFileHandle, IsRegularFileReturnsFalseWhenStatxTypeNotAvailable)
     EXPECT_FALSE(file->isRegularFile());
 }
 
+TEST_F(HipFileHandle, OnExt4OrderedReturnsTrueForExt4Ordered)
+{
+    int fd{0xBADF00D};
+
+    // Return an eventfd as the file descriptor for the bufferd fd open so that when
+    // FileDescriptor calls close, it has a valid file descriptor to close.
+    int open_fd{eventfd(0, 0)};
+    ASSERT_NE(open_fd, -1);
+
+    MountInfo mountinfo;
+    mountinfo.type                         = FilesystemType::ext4;
+    mountinfo.options.ext4.journaling_mode = ExtJournalingMode::ordered;
+
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper)
+        .fd_flags(O_DIRECT)
+        .mountinfo(mountinfo)
+        .open_fd(open_fd)
+        .build();
+    auto fh{Context<DriverState>::get()->registerFile(fd)};
+    auto file{Context<DriverState>::get()->getFile(fh)};
+
+    EXPECT_TRUE(file->onExt4Ordered());
+}
+
+TEST_F(HipFileHandle, OnExt4OrderedReturnsFalseForExt4Journal)
+{
+    int fd{0xBADF00D};
+
+    // Return an eventfd as the file descriptor for the bufferd fd open so that when
+    // FileDescriptor calls close, it has a valid file descriptor to close.
+    int open_fd{eventfd(0, 0)};
+    ASSERT_NE(open_fd, -1);
+
+    MountInfo mountinfo;
+    mountinfo.type                         = FilesystemType::ext4;
+    mountinfo.options.ext4.journaling_mode = ExtJournalingMode::journal;
+
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper)
+        .fd_flags(O_DIRECT)
+        .mountinfo(mountinfo)
+        .open_fd(open_fd)
+        .build();
+    auto fh{Context<DriverState>::get()->registerFile(fd)};
+    auto file{Context<DriverState>::get()->getFile(fh)};
+
+    EXPECT_FALSE(file->onExt4Ordered());
+}
+
+TEST_F(HipFileHandle, OnExt4OrderedReturnsFalseForOtherFileSystem)
+{
+    int fd{0xBADF00D};
+
+    // Return an eventfd as the file descriptor for the bufferd fd open so that when
+    // FileDescriptor calls close, it has a valid file descriptor to close.
+    int open_fd{eventfd(0, 0)};
+    ASSERT_NE(open_fd, -1);
+
+    MountInfo mountinfo;
+    mountinfo.type = FilesystemType::other;
+
+    ExpectUnregisteredFileBuilder(msys, mlibmounthelper)
+        .fd_flags(O_DIRECT)
+        .mountinfo(mountinfo)
+        .open_fd(open_fd)
+        .build();
+    auto fh{Context<DriverState>::get()->registerFile(fd)};
+    auto file{Context<DriverState>::get()->getFile(fh)};
+
+    EXPECT_FALSE(file->onExt4Ordered());
+}
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON
