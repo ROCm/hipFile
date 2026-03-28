@@ -22,8 +22,8 @@ sendFd(int sock, int fd) noexcept
 {
     int      data{1};
     iovec    iov{&data, sizeof(data)};
-    msghdr   msgh;
-    cmsghdr *cmsgp;
+    msghdr   msgh{};
+    cmsghdr *cmsgp = nullptr;
 
     union {
         char    buff[CMSG_SPACE(sizeof(int))];
@@ -36,6 +36,7 @@ sendFd(int sock, int fd) noexcept
     msgh.msg_iovlen     = 1;
     msgh.msg_control    = controlMsg.buff;
     msgh.msg_controllen = sizeof(controlMsg.buff);
+    msgh.msg_flags      = 0;
 
     cmsgp             = CMSG_FIRSTHDR(&msgh);
     cmsgp->cmsg_level = SOL_SOCKET;
@@ -54,8 +55,8 @@ recvFd(int sockfd) noexcept
 {
     int      data, fd;
     iovec    iov{&data, sizeof(data)};
-    msghdr   msgh;
-    cmsghdr *cmsgp;
+    msghdr   msgh{};
+    cmsghdr *cmsgp = nullptr;
 
     union {
         char    buff[CMSG_SPACE(sizeof(int))];
@@ -68,6 +69,7 @@ recvFd(int sockfd) noexcept
     msgh.msg_iovlen     = 1;
     msgh.msg_control    = controlMsg.buff;
     msgh.msg_controllen = sizeof(controlMsg.buff);
+    msgh.msg_flags      = 0;
 
     if (recvmsg(sockfd, &msgh, 0) == -1)
         return -1;
