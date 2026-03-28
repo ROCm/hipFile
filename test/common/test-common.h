@@ -12,6 +12,7 @@
 #include <iostream>
 #include <random>
 #include <stdexcept>
+#include <sys/stat.h>
 #include <unistd.h>
 
 constexpr hipFileError_t
@@ -62,10 +63,16 @@ struct Tmpfile {
 
     Tmpfile(std::string directory) : path{directory}
     {
+        // Security analyzers will be sad if you don't set umask 0077
+        // before creating temporary files
+        mode_t old_umask = umask(S_IRWXG | S_IRWXO);
+
         path += "/hipFile.XXXXXX";
         if ((fd = mkstemp(path.data())) == -1) {
             throw std::runtime_error("Could not create temporary file");
         }
+
+        umask(old_umask);
 
 #ifdef __HIP_PLATFORM_AMD__
         if (unlink(path.c_str()) == -1) {
