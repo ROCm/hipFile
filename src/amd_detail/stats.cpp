@@ -134,15 +134,15 @@ StatsServer::threadFn()
     int   sock{socket(AF_UNIX, SOCK_STREAM, 0)};
     pid_t pid{getpid()};
     if (sock == -1) {
-        return;
+        goto out;
     }
     sockaddr_un addr;
     populateSocketAddr(addr, pid);
     if (bind(sock, reinterpret_cast<const sockaddr *>(&addr), sizeof(addr)) == -1) {
-        return;
+        goto out;
     }
     if (listen(sock, 64) == -1) {
-        return;
+        goto out;
     }
     while (true) {
         pollfd pfd[2]{{sock, POLLIN, 0}, {m_efd.get(), POLLIN, 0}};
@@ -160,7 +160,11 @@ StatsServer::threadFn()
             break;
         }
     }
-    close(sock);
+
+out:
+    if (sock != -1) {
+        close(sock);
+    }
 }
 
 StatsClient::StatsClient(pid_t p)
