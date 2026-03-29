@@ -104,4 +104,15 @@ private:
     int original_device;
 };
 
+class HipRegisteredMemory {
+public:
+    HipRegisteredMemory(void *ptr, size_t size);
+    ~HipRegisteredMemory();
+    void release();
+
+private:
+    void  *ptr;
+    size_t size;
+};
+
 }

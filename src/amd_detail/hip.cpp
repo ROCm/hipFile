@@ -245,4 +245,27 @@ HipSetDevice::~HipSetDevice()
     }
 }
 
+HipRegisteredMemory::HipRegisteredMemory(void *_ptr, size_t _size) : ptr{_ptr}, size{_size}
+{
+    Context<Hip>::get()->hipHostRegister(ptr, size, hipHostRegisterDefault);
+}
+
+HipRegisteredMemory::~HipRegisteredMemory()
+{
+    if (ptr != nullptr) {
+        try {
+            Context<Hip>::get()->hipHostUnregister(ptr);
+        }
+        catch (Hip::RuntimeError &e) {
+            Context<Sys>::get()->syslog(LOG_CRIT, "Error unregistering host memory.");
+        }
+    }
+}
+
+void
+HipRegisteredMemory::release()
+{
+    ptr = nullptr;
+}
+
 }

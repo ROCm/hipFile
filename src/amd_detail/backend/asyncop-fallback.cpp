@@ -37,10 +37,12 @@ AsyncOpFallback::AsyncOpFallback(IoType _io_type, std::shared_ptr<IFile> _file,
       gpu_buffer{buffer->getBuffer()}, bounce_buffer_dev_ptr{nullptr},
       bounce_buffer{new(std::align_val_t{64}) uint8_t[submitted_size]}
 {
-    HipSetDevice hsd{stream->getHipDevice()};
-    Context<Hip>::get()->hipHostRegister(bounce_buffer.get(), submitted_size, hipHostRegisterDefault);
-    Context<Hip>::get()->hipHostRegister(this, sizeof(AsyncOpFallback), hipHostRegisterDefault);
+    HipSetDevice        hsd{stream->getHipDevice()};
+    HipRegisteredMemory bounce_reg{bounce_buffer.get(), submitted_size};
+    HipRegisteredMemory this_reg{this, sizeof(AsyncOpFallback)};
     bounce_buffer_dev_ptr = Context<Hip>::get()->hipHostGetDevicePointer(bounce_buffer.get(), 0);
+    bounce_reg.release();
+    this_reg.release();
 }
 
 void *

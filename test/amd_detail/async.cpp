@@ -199,6 +199,7 @@ TEST_F(HipFileAsyncOp, AsyncOpFallbackConstructorThrowsIfSecondHipHostRegisterTh
     EXPECT_CALL(mhip, hipHostRegister(_, _, _))
         .WillOnce(Return())
         .WillOnce(Throw(Hip::RuntimeError(hipErrorInvalidValue)));
+    EXPECT_CALL(mhip, hipHostUnregister(_));
     EXPECT_THROW(std::shared_ptr<AsyncOpFallback>(new AsyncOpFallback{IoType::Read, file, buffer, stream,
                                                                       &size, &file_offset, &buffer_offset,
                                                                       &bytes_transferred}),
@@ -215,6 +216,7 @@ TEST_F(HipFileAsyncOp, AsyncOpFallbackConstructorThrowsIfHipHostGetDevicePointer
     EXPECT_CALL(mhip, hipGetDevice).WillOnce(Return(0));
     EXPECT_CALL(mhip, hipSetDevice(0)).Times(2);
     EXPECT_CALL(mhip, hipHostRegister(_, _, _)).Times(2);
+    EXPECT_CALL(mhip, hipHostUnregister(_)).Times(2);
     EXPECT_CALL(mhip, hipHostGetDevicePointer(_, _))
         .WillOnce(Throw(Hip::RuntimeError(hipErrorInvalidValue)));
     EXPECT_THROW(std::shared_ptr<AsyncOpFallback>(new AsyncOpFallback{IoType::Read, file, buffer, stream,
