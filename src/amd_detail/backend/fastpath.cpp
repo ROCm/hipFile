@@ -143,7 +143,9 @@ Fastpath::score(shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
     accept_io &= 0 <= file_offset;
     accept_io &= 0 <= buffer_offset;
 
-    accept_io &= file->isRegularFile();
+    bool is_regular_file{file->isRegularFile()};
+    bool is_block_device{file->isBlockDevice()};
+    accept_io &= is_block_device || is_regular_file;
 
     const uint32_t dio_offset_align{file->dioOffsetAlign()};
     accept_io &= dio_offset_align && !(file_offset & (dio_offset_align - 1));
