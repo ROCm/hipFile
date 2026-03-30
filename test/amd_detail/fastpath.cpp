@@ -69,6 +69,7 @@ public:
     static constexpr hipMemoryType DEFAULT_BUFFER_TYPE{hipMemoryTypeDevice};
     static constexpr optional<int> DEFAULT_UNBUFFERED_FD{7};
     static constexpr off_t         DEFAULT_FILE_OFFSET{8192};
+    static constexpr bool          DEFAULT_IS_REGULAR_FILE{true};
 
     // Buffer and file mocks used to setup expectations
     shared_ptr<StrictMock<MFile>>   mfile{make_shared<StrictMock<MFile>>()};
@@ -89,6 +90,7 @@ public:
     optional<void *>        m_buffer_addr;
     optional<hipMemoryType> m_buffer_type;
     optional<optional<int>> m_unbuffered_fd;
+    optional<bool>          m_is_regular_file;
 
     FastpathScoreExpectationsBuilder(StrictMock<MConfiguration> &mcfg, shared_ptr<StrictMock<MFile>> mfile,
                                      shared_ptr<StrictMock<MBuffer>> mbuffer)
@@ -120,6 +122,12 @@ public:
         return *this;
     }
 
+    FastpathScoreExpectationsBuilder &isRegularFile(bool is_regular_file)
+    {
+        m_is_regular_file = is_regular_file;
+        return *this;
+    }
+
     FastpathScoreExpectations build();
 };
 
@@ -133,6 +141,8 @@ public:
             .WillOnce(Return(builder.m_unbuffered_fd.value_or(FastpathTestBase::DEFAULT_UNBUFFERED_FD)));
         EXPECT_CALL(*builder.m_mbuffer, getType)
             .WillOnce(Return(builder.m_buffer_type.value_or(FastpathTestBase::DEFAULT_BUFFER_TYPE)));
+        EXPECT_CALL(*builder.m_mfile, isRegularFile)
+            .WillOnce(Return(builder.m_is_regular_file.value_or(FastpathTestBase::DEFAULT_IS_REGULAR_FILE)));
         EXPECT_CALL(*builder.m_mfile, dioOffsetAlign).WillOnce(Return(DEFAULT_OFFSET_ALIGN));
         EXPECT_CALL(*builder.m_mbuffer, getBuffer)
             .WillOnce(Return(builder.m_buffer_addr.value_or(
@@ -160,6 +170,7 @@ TEST_F(FastpathTest, TestDefaults)
     ASSERT_FALSE((DEFAULT_BUFFER_OFFSET & (DEFAULT_MEM_ALIGN - 1)));
     ASSERT_FALSE((DEFAULT_IO_SIZE & (DEFAULT_OFFSET_ALIGN - 1)));
     ASSERT_FALSE((DEFAULT_FILE_OFFSET & (DEFAULT_OFFSET_ALIGN - 1)));
+    ASSERT_TRUE(DEFAULT_IS_REGULAR_FILE);
 }
 
 TEST_F(FastpathTest, ScoreAcceptsIoWithDefaults)
@@ -214,6 +225,22 @@ TEST_F(FastpathTest, ScoreRejectsIoIfBufferAddressPlusBufferOffsetIsUnaligned)
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET,
                                static_cast<hoff_t>(DEFAULT_MEM_ALIGN)),
+              SCORE_REJECT);
+}
+
+TEST_F(FastpathTest, ScoreAcceptsIoIfFileIsRegularFile)
+{
+    FastpathScoreExpectationsBuilder(mcfg, mfile, mbuffer).isRegularFile(true).build();
+
+    ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
+              SCORE_ACCEPT);
+}
+
+TEST_F(FastpathTest, ScoreRejectsIoIfFileIsNotRegularFile)
+{
+    FastpathScoreExpectationsBuilder(mcfg, mfile, mbuffer).isRegularFile(false).build();
+
+    ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
               SCORE_REJECT);
 }
 
