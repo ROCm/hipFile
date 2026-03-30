@@ -55,7 +55,7 @@ TEST_F(HipFileStats, StatsServerLifetime)
     EXPECT_CALL(msys, ftruncate);
     EXPECT_CALL(msys, mmap).WillOnce(testing::Return(&buff));
     EXPECT_CALL(msys, munmap);
-    EXPECT_CALL(msys, close).Times(2);
+    EXPECT_CALL(msys, close).Times(3);
     EXPECT_CALL(mcfg, statsLevel()).WillOnce(testing::Return(1));
     StatsServer srvr{};
 }

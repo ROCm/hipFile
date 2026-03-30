@@ -131,21 +131,21 @@ StatsServer::statsDeleter(Stats *s)
 void
 StatsServer::threadFn()
 {
-    int   sock{socket(AF_UNIX, SOCK_STREAM, 0)};
-    pid_t pid{getpid()};
-    if (sock == -1) {
-        goto out;
+    FileDescriptor sock{FileDescriptor::make_managed(socket(AF_UNIX, SOCK_STREAM, 0))};
+    pid_t          pid{getpid()};
+    if (sock.get() == -1) {
+        return;
     }
     sockaddr_un addr;
     populateSocketAddr(addr, pid);
-    if (bind(sock, reinterpret_cast<const sockaddr *>(&addr), sizeof(addr)) == -1) {
-        goto out;
+    if (bind(sock.get(), reinterpret_cast<const sockaddr *>(&addr), sizeof(addr)) == -1) {
+        return;
     }
-    if (listen(sock, 64) == -1) {
-        goto out;
+    if (listen(sock.get(), 64) == -1) {
+        return;
     }
     while (true) {
-        pollfd pfd[2]{{sock, POLLIN, 0}, {m_efd.get(), POLLIN, 0}};
+        pollfd pfd[2]{{sock.get(), POLLIN, 0}, {m_efd.get(), POLLIN, 0}};
 
         int ret = poll(&pfd[0], 2, -1);
 
@@ -165,7 +165,7 @@ StatsServer::threadFn()
 
         if (pfd[0].revents & POLLIN) {
             socklen_t addrlen{sizeof(addr)};
-            int       conn{accept(sock, reinterpret_cast<sockaddr *>(&addr), &addrlen)};
+            int       conn{accept(sock.get(), reinterpret_cast<sockaddr *>(&addr), &addrlen)};
             if (conn == -1) {
                 continue;
             }
@@ -175,11 +175,6 @@ StatsServer::threadFn()
         if (pfd[1].revents & (POLLIN | POLLERR | POLLNVAL)) {
             break;
         }
-    }
-
-out:
-    if (sock != -1) {
-        close(sock);
     }
 }
 
