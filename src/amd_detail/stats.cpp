@@ -146,7 +146,23 @@ StatsServer::threadFn()
     }
     while (true) {
         pollfd pfd[2]{{sock, POLLIN, 0}, {m_efd.get(), POLLIN, 0}};
-        poll(&pfd[0], 2, -1);
+
+        int ret = poll(&pfd[0], 2, -1);
+
+        if (ret == 0) {
+            continue;
+        }
+        else if (ret < 0) {
+            if (errno == EINTR) {
+                // Signal interrupt
+                continue;
+            }
+            else {
+                // Badness
+                break;
+            }
+        }
+
         if (pfd[0].revents & POLLIN) {
             socklen_t addrlen{sizeof(addr)};
             int       conn{accept(sock, reinterpret_cast<sockaddr *>(&addr), &addrlen)};
