@@ -23,12 +23,12 @@ sendFd(int sock, int fd) noexcept
     int      data{1};
     iovec    iov{&data, sizeof(data)};
     msghdr   msgh{};
-    cmsghdr *cmsgp = nullptr;
+    cmsghdr *cmsgp{};
 
     union {
         char    buff[CMSG_SPACE(sizeof(int))];
         cmsghdr align;
-    } controlMsg;
+    } controlMsg{};
 
     msgh.msg_name       = nullptr;
     msgh.msg_namelen    = 0;
@@ -56,12 +56,12 @@ recvFd(int sockfd) noexcept
     int      data, fd;
     iovec    iov{&data, sizeof(data)};
     msghdr   msgh{};
-    cmsghdr *cmsgp = nullptr;
+    cmsghdr *cmsgp{};
 
     union {
         char    buff[CMSG_SPACE(sizeof(int))];
         cmsghdr align;
-    } controlMsg;
+    } controlMsg{};
 
     msgh.msg_name       = nullptr;
     msgh.msg_namelen    = 0;
