@@ -71,6 +71,7 @@ public:
     static constexpr off_t         DEFAULT_FILE_OFFSET{8192};
     static constexpr bool          DEFAULT_IS_REGULAR_FILE{true};
     static constexpr bool          DEFAULT_IS_BLOCK_DEVICE{false};
+    static constexpr bool          DEFAULT_ON_EXT4_ORDERED{true};
 
     // Buffer and file mocks used to setup expectations
     shared_ptr<StrictMock<MFile>>   mfile{make_shared<StrictMock<MFile>>()};
@@ -93,6 +94,7 @@ public:
     optional<optional<int>> m_unbuffered_fd;
     optional<bool>          m_is_regular_file;
     optional<bool>          m_is_block_device;
+    optional<bool>          m_on_ext4_ordered;
 
     FastpathScoreExpectationsBuilder(StrictMock<MConfiguration> &mcfg, shared_ptr<StrictMock<MFile>> mfile,
                                      shared_ptr<StrictMock<MBuffer>> mbuffer)
@@ -136,6 +138,12 @@ public:
         return *this;
     }
 
+    FastpathScoreExpectationsBuilder &onExt4Ordered(bool on_ext4_ordered)
+    {
+        m_on_ext4_ordered = on_ext4_ordered;
+        return *this;
+    }
+
     FastpathScoreExpectations build();
 };
 
@@ -151,6 +159,8 @@ public:
             .WillOnce(Return(builder.m_buffer_type.value_or(FastpathTestBase::DEFAULT_BUFFER_TYPE)));
         EXPECT_CALL(*builder.m_mfile, isRegularFile)
             .WillOnce(Return(builder.m_is_regular_file.value_or(FastpathTestBase::DEFAULT_IS_REGULAR_FILE)));
+        EXPECT_CALL(*builder.m_mfile, onExt4Ordered)
+            .WillOnce(Return(builder.m_on_ext4_ordered.value_or(FastpathTestBase::DEFAULT_ON_EXT4_ORDERED)));
         EXPECT_CALL(*builder.m_mfile, isBlockDevice)
             .WillOnce(Return(builder.m_is_block_device.value_or(FastpathTestBase::DEFAULT_IS_BLOCK_DEVICE)));
         EXPECT_CALL(*builder.m_mfile, dioOffsetAlign).WillOnce(Return(DEFAULT_OFFSET_ALIGN));
@@ -182,6 +192,7 @@ TEST_F(FastpathTest, TestDefaults)
     ASSERT_FALSE((DEFAULT_FILE_OFFSET & (DEFAULT_OFFSET_ALIGN - 1)));
     ASSERT_TRUE(DEFAULT_IS_REGULAR_FILE);
     ASSERT_FALSE(DEFAULT_IS_BLOCK_DEVICE);
+    ASSERT_TRUE(DEFAULT_ON_EXT4_ORDERED);
 }
 
 TEST_F(FastpathTest, ScoreAcceptsIoWithDefaults)
@@ -239,12 +250,20 @@ TEST_F(FastpathTest, ScoreRejectsIoIfBufferAddressPlusBufferOffsetIsUnaligned)
               SCORE_REJECT);
 }
 
-TEST_F(FastpathTest, ScoreAcceptsIoIfFileIsRegularFile)
+TEST_F(FastpathTest, ScoreAcceptsIoIfFileIsRegularAndOnExt4Ordered)
 {
-    FastpathScoreExpectationsBuilder(mcfg, mfile, mbuffer).isRegularFile(true).isBlockDevice(false).build();
+    FastpathScoreExpectationsBuilder(mcfg, mfile, mbuffer).isRegularFile(true).onExt4Ordered(true).build();
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
               SCORE_ACCEPT);
+}
+
+TEST_F(FastpathTest, ScoreRejectsIoIfFileIsRegularAndNotOnExt4Ordered)
+{
+    FastpathScoreExpectationsBuilder(mcfg, mfile, mbuffer).isRegularFile(true).onExt4Ordered(false).build();
+
+    ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
+              SCORE_REJECT);
 }
 
 TEST_F(FastpathTest, ScoreAcceptsIoIfFileIsBlockDevice)
