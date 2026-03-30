@@ -147,7 +147,9 @@ Fastpath::score(shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
     bool is_block_device{file->isBlockDevice()};
     bool on_ext4_ordered{file->onExt4Ordered()};
     bool on_xfs{file->onXfs()};
-    accept_io &= is_block_device || (is_regular_file && (on_ext4_ordered || on_xfs));
+    bool unsupported_file_systems{Context<Configuration>::get()->unsupportedFileSystems()};
+    accept_io &=
+        is_block_device || (is_regular_file && (unsupported_file_systems || on_ext4_ordered || on_xfs));
 
     const uint32_t dio_offset_align{file->dioOffsetAlign()};
     accept_io &= dio_offset_align && !(file_offset & (dio_offset_align - 1));

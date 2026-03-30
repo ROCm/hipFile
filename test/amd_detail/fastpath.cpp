@@ -73,6 +73,7 @@ public:
     static constexpr bool          DEFAULT_IS_BLOCK_DEVICE{false};
     static constexpr bool          DEFAULT_ON_EXT4_ORDERED{true};
     static constexpr bool          DEFAULT_ON_XFS{false};
+    static constexpr bool          DEFAULT_UNSUPPORTED_FILE_SYSTEMS{false};
 
     // Buffer and file mocks used to setup expectations
     shared_ptr<StrictMock<MFile>>   mfile{make_shared<StrictMock<MFile>>()};
@@ -97,6 +98,7 @@ public:
     optional<bool>          m_is_block_device;
     optional<bool>          m_on_ext4_ordered;
     optional<bool>          m_on_xfs;
+    optional<bool>          m_unsupported_file_systems;
 
     FastpathScoreExpectationsBuilder(StrictMock<MConfiguration> &mcfg, shared_ptr<StrictMock<MFile>> mfile,
                                      shared_ptr<StrictMock<MBuffer>> mbuffer)
@@ -152,6 +154,12 @@ public:
         return *this;
     }
 
+    FastpathScoreExpectationsBuilder &unsupportedFileSystems(bool unsupported_file_systems)
+    {
+        m_unsupported_file_systems = unsupported_file_systems;
+        return *this;
+    }
+
     FastpathScoreExpectations build();
 };
 
@@ -171,6 +179,9 @@ public:
             .WillOnce(Return(builder.m_on_ext4_ordered.value_or(FastpathTestBase::DEFAULT_ON_EXT4_ORDERED)));
         EXPECT_CALL(*builder.m_mfile, onXfs)
             .WillOnce(Return(builder.m_on_xfs.value_or(FastpathTestBase::DEFAULT_ON_XFS)));
+        EXPECT_CALL(builder.m_mcfg, unsupportedFileSystems)
+            .WillOnce(Return(builder.m_unsupported_file_systems.value_or(
+                FastpathTestBase::DEFAULT_UNSUPPORTED_FILE_SYSTEMS)));
         EXPECT_CALL(*builder.m_mfile, isBlockDevice)
             .WillOnce(Return(builder.m_is_block_device.value_or(FastpathTestBase::DEFAULT_IS_BLOCK_DEVICE)));
         EXPECT_CALL(*builder.m_mfile, dioOffsetAlign).WillOnce(Return(DEFAULT_OFFSET_ALIGN));
@@ -287,6 +298,19 @@ TEST_F(FastpathTest, ScoreRejectsIoIfFileIsRegularAndNotOnExt4OrderedNorXfs)
 
     ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
               SCORE_REJECT);
+}
+
+TEST_F(FastpathTest, ScoreAcceptsIoIfFileIsRegularNotOnExt4OrderedNorXfsIfUnsupportedFileSystemsIsTrue)
+{
+    FastpathScoreExpectationsBuilder(mcfg, mfile, mbuffer)
+        .isRegularFile(true)
+        .onExt4Ordered(false)
+        .onXfs(false)
+        .unsupportedFileSystems(true)
+        .build();
+
+    ASSERT_EQ(Fastpath().score(mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
+              SCORE_ACCEPT);
 }
 
 TEST_F(FastpathTest, ScoreAcceptsIoIfFileIsBlockDevice)
