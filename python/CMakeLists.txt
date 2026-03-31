@@ -61,4 +61,7 @@ target_include_directories(_hipfile PRIVATE
 
 target_link_libraries(_hipfile PRIVATE "${HIPFILE_LIBRARY}")
 
+# _hipfile bindings only support AMD for now
+target_compile_definitions(_hipfile PRIVATE __HIP_PLATFORM_AMD__)
+
 install(TARGETS _hipfile DESTINATION hipfile)
