@@ -10,9 +10,6 @@ from hipfile._hipfile import (
     hipfile_errstr,
     is_hip_drv_err,
     hip_drv_err,
-    # File handles
-    handle_register,
-    handle_deregister,
     # Buffer registration
     buf_register,
     buf_deregister,
@@ -25,6 +22,9 @@ from hipfile.driver import (
 )
 from hipfile.error import (
     HipFileException
+)
+from hipfile.file import (
+    FileHandle
 )
 from hipfile.properties import (
     driver_get_properties,
