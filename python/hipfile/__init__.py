@@ -5,12 +5,11 @@ from hipfile._hipfile import (
     VERSION_MINOR,
     VERSION_PATCH,
     BASE_ERR,
-    # Error helpers
+    # Error Macros
     is_hipfile_err,
     hipfile_errstr,
     is_hip_drv_err,
     hip_drv_err,
-    get_op_error_string,
     # Version
     get_version,
     # File handles
@@ -27,6 +26,9 @@ from hipfile._hipfile import (
 )
 from hipfile.driver import (
     Driver
+)
+from hipfile.error import (
+    HipFileException
 )
 
 __version__ = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}"
