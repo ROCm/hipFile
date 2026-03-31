@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "backend/fallback.h"
 #include "backend/fastpath.h"
 #include "hip.h"
 #include "hipfile.h"
@@ -11,12 +12,15 @@
 #include "io.h"
 #include "mbuffer.h"
 #include "mconfiguration.h"
+#include "mbackend.h"
 #include "mfile.h"
 #include "mhip.h"
+#include "msys.h"
 
 #include <array>
 #include <cerrno>
 #include <cstdint>
+#include <exception>
 #include <fcntl.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -26,6 +30,7 @@
 #include <stdexcept>
 #include <sys/types.h>
 #include <system_error>
+#include <tuple>
 
 using namespace hipFile;
 using namespace testing;
@@ -595,6 +600,170 @@ TEST_P(FastpathIoParam, IoSizeIsTruncatedToMaxRWCount)
     }
 
     ASSERT_EQ(Fastpath().io(GetParam(), mfile, mbuffer, io_size, 0, 0), MAX_RW_COUNT);
+}
+
+// Note: Tests for fallback eligible exceptions are further down this file
+//       in a separate test suite.
+TEST_P(FastpathIoParam, IoWithFallbackThrowsAFallbackIneligibleException)
+{
+    auto backend    = std::make_shared<Fastpath>();
+    auto m_fallback = std::make_shared<StrictMock<MBackend>>();
+    backend->register_fallback_backend(m_fallback);
+
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(true));
+    EXPECT_CALL(mhip, hipInit).WillRepeatedly(Return());
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(DEFAULT_BUFFER_LENGTH));
+    EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
+
+    switch (GetParam()) {
+        case IoType::Read:
+            EXPECT_CALL(mhip, hipAmdFileRead).WillOnce(Throw(std::system_error(EBADFD, generic_category())));
+            break;
+        case IoType::Write:
+            EXPECT_CALL(mhip, hipAmdFileWrite).WillOnce(Throw(std::system_error(EBADFD, generic_category())));
+            break;
+        default:
+            FAIL() << "Invalid IoType";
+    }
+
+    ASSERT_THROW(
+        backend->io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
+        std::system_error);
+}
+
+// To cover the branch of non-std::system_error exceptions
+TEST_P(FastpathIoParam, IoWithFallbackThrowsHipRuntimeException)
+{
+    auto backend    = std::make_shared<Fastpath>();
+    auto m_fallback = std::make_shared<StrictMock<MBackend>>();
+    backend->register_fallback_backend(m_fallback);
+
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(true));
+    EXPECT_CALL(mhip, hipInit).WillOnce(Return());
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(DEFAULT_BUFFER_LENGTH));
+    EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
+
+    switch (GetParam()) {
+        case IoType::Read:
+            EXPECT_CALL(mhip, hipAmdFileRead).WillOnce(Throw(Hip::RuntimeError(hipErrorUnknown)));
+            break;
+        case IoType::Write:
+            EXPECT_CALL(mhip, hipAmdFileWrite).WillOnce(Throw(Hip::RuntimeError(hipErrorUnknown)));
+            break;
+        default:
+            FAIL() << "Invalid IoType";
+    }
+
+    ASSERT_THROW(
+        backend->io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET),
+        Hip::RuntimeError);
+}
+
+TEST_P(FastpathIoParam, IoThrowsAFallbackEligibleENODEV)
+{
+    auto backend    = std::make_shared<Fastpath>();
+    auto m_fallback = std::make_shared<StrictMock<MBackend>>();
+    backend->register_fallback_backend(m_fallback);
+
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(true));
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(DEFAULT_BUFFER_LENGTH));
+    EXPECT_CALL(mhip, hipInit).WillOnce(Return());
+    EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
+
+    switch (GetParam()) {
+        case IoType::Read:
+            EXPECT_CALL(mhip, hipAmdFileRead).WillOnce(Throw(std::system_error(ENODEV, generic_category())));
+            break;
+        case IoType::Write:
+            EXPECT_CALL(mhip, hipAmdFileWrite).WillOnce(Throw(std::system_error(ENODEV, generic_category())));
+            break;
+        default:
+            FAIL() << "Invalid IoType";
+    }
+
+    EXPECT_CALL(*m_fallback, io).WillOnce(Return(DEFAULT_IO_SIZE));
+    EXPECT_CALL(*m_fallback, score).WillOnce(Return(SCORE_ACCEPT));
+
+    ssize_t nbytes =
+        backend->io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET);
+    ASSERT_EQ(nbytes, DEFAULT_IO_SIZE);
+}
+
+TEST_P(FastpathIoParam, IoThrowsAFallbackEligibleEREMOTEIO)
+{
+    auto backend    = std::make_shared<Fastpath>();
+    auto m_fallback = std::make_shared<StrictMock<MBackend>>();
+    backend->register_fallback_backend(m_fallback);
+
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(true));
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(DEFAULT_BUFFER_LENGTH));
+    EXPECT_CALL(mhip, hipInit).WillOnce(Return());
+    EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
+
+    switch (GetParam()) {
+        case IoType::Read:
+            EXPECT_CALL(mhip, hipAmdFileRead)
+                .WillOnce(Throw(std::system_error(EREMOTEIO, generic_category())));
+            break;
+        case IoType::Write:
+            EXPECT_CALL(mhip, hipAmdFileWrite)
+                .WillOnce(Throw(std::system_error(EREMOTEIO, generic_category())));
+            break;
+        default:
+            FAIL() << "Invalid IoType";
+    }
+
+    EXPECT_CALL(*m_fallback, io).WillOnce(Return(DEFAULT_IO_SIZE));
+    EXPECT_CALL(*m_fallback, score).WillOnce(Return(SCORE_ACCEPT));
+
+    ssize_t nbytes =
+        backend->io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET);
+    ASSERT_EQ(nbytes, DEFAULT_IO_SIZE);
+}
+
+// If an IO is marked as fallback eligible, but the fallback backend
+// still rejects the IO request, the original exception should still
+// be raised.
+// This test in particular also checks that the errno returned is the same.
+TEST_P(FastpathIoParam, FallbackRejectsIoRequest)
+{
+    auto backend    = std::make_shared<Fastpath>();
+    auto m_fallback = std::make_shared<StrictMock<MBackend>>();
+    backend->register_fallback_backend(m_fallback);
+
+    EXPECT_CALL(mcfg, fastpath()).WillOnce(Return(true));
+    EXPECT_CALL(mhip, hipInit).WillRepeatedly(Return());
+    EXPECT_CALL(*mbuffer, getBuffer).WillOnce(Return(DEFAULT_BUFFER_ADDR));
+    EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(DEFAULT_BUFFER_LENGTH));
+    EXPECT_CALL(*mfile, getUnbufferedFd).WillOnce(Return(DEFAULT_UNBUFFERED_FD));
+    EXPECT_CALL(*m_fallback, score).WillOnce(Return(SCORE_REJECT));
+
+    switch (GetParam()) {
+        case IoType::Read:
+            EXPECT_CALL(mhip, hipAmdFileRead).WillOnce(Throw(std::system_error(ENODEV, generic_category())));
+            break;
+        case IoType::Write:
+            EXPECT_CALL(mhip, hipAmdFileWrite).WillOnce(Throw(std::system_error(ENODEV, generic_category())));
+            break;
+        default:
+            FAIL() << "Invalid IoType";
+    }
+
+    try {
+        backend->io(GetParam(), mfile, mbuffer, DEFAULT_IO_SIZE, DEFAULT_FILE_OFFSET, DEFAULT_BUFFER_OFFSET);
+        FAIL() << "io() was expected to throw, but it returned normally";
+    }
+    catch (const std::system_error &actual_exc) {
+        ASSERT_EQ(typeid(std::system_error), typeid(actual_exc));
+        ASSERT_EQ(ENODEV, actual_exc.code().value());
+    }
+    catch (...) {
+        FAIL() << "io() threw something other than a std::system_error";
+    }
 }
 
 INSTANTIATE_TEST_SUITE_P(FastpathTest, FastpathIoParam, Values(IoType::Read, IoType::Write));

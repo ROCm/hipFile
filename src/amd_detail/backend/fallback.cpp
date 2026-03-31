@@ -54,14 +54,21 @@ Fallback::score(std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, si
 
 ssize_t
 Fallback::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
-             hoff_t file_offset, hoff_t buffer_offset)
+             hoff_t file_offset, hoff_t buffer_offset, size_t chunk_size)
 {
-    return io(type, file, buffer, size, file_offset, buffer_offset, DefaultChunkSize);
+    return _io_impl(type, file, buffer, size, file_offset, buffer_offset, chunk_size);
 }
 
 ssize_t
-Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
-             hoff_t file_offset, hoff_t buffer_offset, size_t chunk_size)
+Fallback::_io_impl(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
+                   hoff_t file_offset, hoff_t buffer_offset)
+{
+    return _io_impl(type, file, buffer, size, file_offset, buffer_offset, DefaultChunkSize);
+}
+
+ssize_t
+Fallback::_io_impl(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
+                   hoff_t file_offset, hoff_t buffer_offset, size_t chunk_size)
 {
     if (!Context<Configuration>::get()->fallback()) {
         throw BackendDisabled();
@@ -87,7 +94,7 @@ Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer,
             reinterpret_cast<uintptr_t>(buffer->getBuffer()) + static_cast<size_t>(buffer_offset) +
             static_cast<size_t>(total_io_bytes));
         try {
-            switch (io_type) {
+            switch (type) {
                 case IoType::Read:
                     io_bytes =
                         Context<Sys>::get()->pread(file->getBufferedFd(), bounce_buffer.get(), count, offset);
@@ -121,16 +128,17 @@ Fallback::io(IoType io_type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer,
         }
     } while (static_cast<size_t>(total_io_bytes) < size);
 
-    switch (io_type) {
-        case IoType::Read:
+    switch (type) {
+        case (IoType::Read):
             statsAddFallbackPathRead(static_cast<size_t>(total_io_bytes));
             break;
-        case IoType::Write:
+        case (IoType::Write):
             statsAddFallbackPathWrite(static_cast<size_t>(total_io_bytes));
             break;
         default:
             break;
     }
+
     return total_io_bytes;
 }
 

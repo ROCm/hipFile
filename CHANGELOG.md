@@ -12,6 +12,7 @@
 * The CMake namespace was changed from `roc::` to `hip::`
 * `AIS_BUILD_EXAMPLES` has been renamed to `AIS_INSTALL_EXAMPLES`
 * `AIS_USE_SANITIZERS` now also enables the following sanitizers: integer, float-divide-by-zero, local-bounds, vptr, nullability (in addition to address, leak, and undefined). Sanitizers should also now emit usable stack trace info.
+* The AIS optimized IO path will automatically fallback to the POSIX IO path if a failure occurs and the compatibility mode has not been disabled.
 * Added check in the Fastpath/AIS backend to ensure the HIP Runtime is initialized. This avoids causing a segfault in the HIP Runtime.
 * The default CMake build type was changed from `Debug` to `RelWithDebInfo`
 

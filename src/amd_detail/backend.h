@@ -12,6 +12,7 @@
 #include "sys.h"
 
 #include <cstddef>
+#include <exception>
 #include <memory>
 #include <sys/types.h>
 #include <unistd.h>
@@ -58,11 +59,55 @@ struct Backend {
     /// @param file_offset   Offset from the start of the file
     /// @param buffer_offset Offset from the start of the buffer
     ///
-    /// @return Number of bytes transferred, negative on error
+    /// @return Number of bytes transferred
     ///
     /// @throws Hip::RuntimeError Sys::RuntimeError
     virtual ssize_t io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
-                       hoff_t file_offset, hoff_t buffer_offset) = 0;
+                       hoff_t file_offset, hoff_t buffer_offset);
+
+protected:
+    /// @brief Perform a read or write operation
+    ///
+    /// @note Provides a common target across all Backends that provides the
+    ///       implementation for running IO.
+    /// @param type          IO type (read/write)
+    /// @param file          File to read from or write to
+    /// @param buffer        Buffer to write to or read from
+    /// @param size          Number of bytes to transfer
+    /// @param file_offset   Offset from the start of the file
+    /// @param buffer_offset Offset from the start of the buffer
+    ///
+    /// @return Number of bytes transferred
+    ///
+    /// @throws Hip::RuntimeError Sys::RuntimeError
+    virtual ssize_t _io_impl(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer,
+                             size_t size, hoff_t file_offset, hoff_t buffer_offset) = 0;
+};
+
+// BackendWithFallback allows for an IO to be retried automatically with a
+// different Backend in the event of an error.
+struct BackendWithFallback : public Backend {
+    ssize_t io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
+               hoff_t file_offset, hoff_t buffer_offset) override final;
+
+    /// @brief Register a Backend to retry a failed IO operation.
+    ///
+    /// @param backend Backend to retry a failed IO operation.
+    ///
+    /// @throws std::invalid_argument If a nullptr or self reference is passed.
+    void register_fallback_backend(std::shared_ptr<Backend> backend);
+
+protected:
+    /// @brief Check if a failed IO operation can be re-issued to the fallback Backend.
+    ///
+    /// @param e_ptr         exception_ptr to the thrown exception from the failed IO
+    /// @param nbytes        Return value from `_io_impl`, or 0 if an exception was thrown.
+    ///
+    /// @return True if this BackendWithFallback can retry the IO, else False.
+    virtual bool is_fallback_eligible(std::exception_ptr e_ptr, ssize_t nbytes) const = 0;
+
+private:
+    std::shared_ptr<Backend> fallback_backend;
 };
 
 }

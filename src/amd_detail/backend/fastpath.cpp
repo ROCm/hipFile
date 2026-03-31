@@ -13,11 +13,16 @@
 #include "io.h"
 #include "stats.h"
 
+#include <cerrno>
+#include <cstddef>
 #include <cstdint>
+#include <exception>
 #include <fcntl.h>
 #include <hip/hip_runtime_api.h>
 #include <linux/stat.h>
+#include <memory>
 #include <stdexcept>
+#include <system_error>
 
 using namespace hipFile;
 using namespace std;
@@ -158,8 +163,8 @@ Fastpath::score(shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
 }
 
 ssize_t
-Fastpath::io(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size, hoff_t file_offset,
-             hoff_t buffer_offset)
+Fastpath::_io_impl(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, size_t size,
+                   hoff_t file_offset, hoff_t buffer_offset)
 {
     if (!Context<Configuration>::get()->fastpath()) {
         throw BackendDisabled();
@@ -193,22 +198,38 @@ Fastpath::io(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buffer, si
     switch (type) {
         case IoType::Read:
             nbytes = Context<Hip>::get()->hipAmdFileRead(handle, devptr, size, file_offset);
+            statsAddFastPathRead(nbytes);
             break;
         case IoType::Write:
             nbytes = Context<Hip>::get()->hipAmdFileWrite(handle, devptr, size, file_offset);
+            statsAddFastPathWrite(nbytes);
             break;
         default:
             throw std::runtime_error("Invalid IoType");
     }
-    switch (type) {
-        case IoType::Read:
-            statsAddFastPathRead(nbytes);
-            break;
-        case IoType::Write:
-            statsAddFastPathWrite(nbytes);
-            break;
-        default:
-            break;
-    }
     return static_cast<ssize_t>(nbytes);
+}
+
+bool
+Fastpath::is_fallback_eligible(std::exception_ptr e_ptr, ssize_t nbytes) const
+{
+    (void)nbytes;
+    try {
+        std::rethrow_exception(e_ptr);
+    }
+    catch (const std::system_error &sys_err) {
+        switch (sys_err.code().value()) {
+            case ENODEV:
+                return true;
+            case EREMOTEIO:
+                return true;
+            default:
+                // System error not eligible for fallback.
+                return false;
+        }
+    }
+    catch (...) {
+        // Thrown exception not eligible for fallback.
+        return false;
+    }
 }
