@@ -11,10 +11,6 @@ from hipfile._hipfile import (
     is_hip_drv_err,
     hip_drv_err,
     get_op_error_string,
-    # Driver lifecycle
-    driver_open,
-    driver_close,
-    use_count,
     # Version
     get_version,
     # File handles
@@ -28,6 +24,9 @@ from hipfile._hipfile import (
     write,
     # Driver properties
     driver_get_properties,
+)
+from hipfile.driver import (
+    Driver
 )
 
 __version__ = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}"
