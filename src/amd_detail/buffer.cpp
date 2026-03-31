@@ -26,8 +26,16 @@ isValidBufferRegion(void *ptr, size_t length)
 
     try {
         HipMemAddressRange buffer_range = Context<Hip>::get()->hipMemGetAddressRange(ptr);
-        if (uptr + length < uptr ||
-            uptr + length > reinterpret_cast<uintptr_t>(buffer_range.base) + buffer_range.size) {
+        uintptr_t          base         = reinterpret_cast<uintptr_t>(buffer_range.base);
+
+        // Overflow check
+        // Do this before the addition, so the sanitizers don't complain
+        // about integer overflow
+        if (length > std::numeric_limits<uintptr_t>::max() - uptr) {
+            return false;
+        }
+
+        if (uptr + length > base + buffer_range.size) {
             return false;
         }
     }
