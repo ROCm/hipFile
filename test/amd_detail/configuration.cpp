@@ -48,6 +48,12 @@ struct HipFileConfiguration : public Test {
         EXPECT_CALL(msys, getenv(StrEq(hipFile::Environment::STATS_LEVEL)))
             .WillOnce(Return(const_cast<char *>(hipfile_stats_level)));
     }
+
+    void expect_configuration_unsupported_file_systems(const char *hipfile_unsupported_file_systems)
+    {
+        EXPECT_CALL(msys, getenv(StrEq(hipFile::Environment::UNSUPPORTED_FILE_SYSTEMS)))
+            .WillOnce(Return(const_cast<char *>(hipfile_unsupported_file_systems)));
+    }
 };
 
 TEST_F(HipFileConfiguration, FastpathEnabledIfForceCompatModeEnvironmentVariableIsNotSet)
@@ -192,6 +198,30 @@ TEST_F(HipFileConfiguration, StatsLevelEnvironmentVariableIsSet)
 {
     expect_configuration_statslevel("1");
     ASSERT_EQ(1, Configuration().statsLevel());
+}
+
+TEST_F(HipFileConfiguration, UnsupportedFilesystemsDisabledIfEnvironmentVariableIsNotSet)
+{
+    expect_configuration_unsupported_file_systems(nullptr);
+    ASSERT_FALSE(Configuration().unsupportedFileSystems());
+}
+
+TEST_F(HipFileConfiguration, UnsupportedFilesystemsDisabledIfEnvironmentVariableIsInvalid)
+{
+    expect_configuration_unsupported_file_systems("not-a-bool");
+    ASSERT_FALSE(Configuration().unsupportedFileSystems());
+}
+
+TEST_F(HipFileConfiguration, UnsupportedFilesystemsEnabledIfEnvironmentVariableIsTrue)
+{
+    expect_configuration_unsupported_file_systems("true");
+    ASSERT_TRUE(Configuration().unsupportedFileSystems());
+}
+
+TEST_F(HipFileConfiguration, UnsupportedFilesystemsDisabledIfEnvironmentVariableIsFalse)
+{
+    expect_configuration_unsupported_file_systems("false");
+    ASSERT_FALSE(Configuration().unsupportedFileSystems());
 }
 
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

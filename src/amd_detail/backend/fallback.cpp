@@ -97,7 +97,7 @@ Fallback::_io_impl(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBu
             switch (type) {
                 case IoType::Read:
                     io_bytes =
-                        Context<Sys>::get()->pread(file->getBufferedFd(), bounce_buffer.get(), count, offset);
+                        Context<Sys>::get()->pread(file->bufferedFd(), bounce_buffer.get(), count, offset);
                     if (io_bytes > 0) {
                         Context<Hip>::get()->hipMemcpy(device_buffer_position, bounce_buffer.get(),
                                                        static_cast<size_t>(io_bytes), hipMemcpyHostToDevice);
@@ -107,9 +107,9 @@ Fallback::_io_impl(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBu
                     Context<Hip>::get()->hipMemcpy(bounce_buffer.get(), device_buffer_position, count,
                                                    hipMemcpyDeviceToHost);
                     Context<Hip>::get()->hipStreamSynchronize(nullptr);
-                    io_bytes = Context<Sys>::get()->pwrite(file->getBufferedFd(), bounce_buffer.get(), count,
-                                                           offset);
-                    Context<Sys>::get()->fdatasync(file->getBufferedFd());
+                    io_bytes =
+                        Context<Sys>::get()->pwrite(file->bufferedFd(), bounce_buffer.get(), count, offset);
+                    Context<Sys>::get()->fdatasync(file->bufferedFd());
                     break;
                 default:
                     throw std::runtime_error("Invalid IO type");
@@ -274,11 +274,11 @@ async_io_cpu_copy(void *userargs)
         try {
             switch (op->io_type) {
                 case IoType::Read:
-                    ret = Context<Sys>::get()->pread(op->file->getBufferedFd(), cur_buf_position,
+                    ret = Context<Sys>::get()->pread(op->file->bufferedFd(), cur_buf_position,
                                                      remaining_bytes, cur_file_offset);
                     break;
                 case IoType::Write:
-                    ret = Context<Sys>::get()->pwrite(op->file->getBufferedFd(), cur_buf_position,
+                    ret = Context<Sys>::get()->pwrite(op->file->bufferedFd(), cur_buf_position,
                                                       remaining_bytes, cur_file_offset);
                     break;
                 default:

@@ -16,6 +16,7 @@
 #include <sys/sysmacros.h>
 #include <syslog.h>
 #include <system_error>
+#include <unistd.h>
 
 using namespace std;
 
@@ -31,7 +32,13 @@ UnregisteredFile::UnregisteredFile(int fd)
 #endif
                                      )},
       flags{Context<Sys>::get()->fcntl(fd, F_GETFL, 0)},
-      mountinfo{Context<LibMountHelper>::get()->getMountInfo(makedev(stx.stx_dev_major, stx.stx_dev_minor))}
+      mountinfo{Context<LibMountHelper>::get()->getMountInfo(makedev(stx.stx_dev_major, stx.stx_dev_minor))},
+#if defined(STATX_DIOALIGN)
+      m_dio_mem_align{stx.stx_mask & STATX_DIOALIGN ? stx.stx_dio_mem_align : 4096},
+      m_dio_offset_align{stx.stx_mask & STATX_DIOALIGN ? stx.stx_dio_offset_align : 4096}
+#else
+      m_dio_mem_align{4096}, m_dio_offset_align{4096}
+#endif
 {
     std::string path = "/proc/self/fd/" + std::to_string(fd);
 
@@ -50,60 +57,86 @@ UnregisteredFile::UnregisteredFile(int fd)
             if (e.code().value() != EINVAL) {
                 throw;
             }
-            unbuffered_fd = nullopt;
+            unbuffered_fd      = nullopt;
+            m_dio_mem_align    = 0;
+            m_dio_offset_align = 0;
         }
     }
 }
 
 hipFileHandle_t
-IFile::getHandle() const
+IFile::handle() const noexcept
 {
     return reinterpret_cast<hipFileHandle_t>(const_cast<IFile *>(this));
 }
 
 File::File(UnregisteredFile &&uf, const PassKey<FileMap> &)
-    : client_fd{std::move(uf.client_fd)}, buffered_fd{std::move(uf.buffered_fd)},
-      unbuffered_fd{std::move(uf.unbuffered_fd)}, stx{uf.stx}, status_flags{uf.flags}, mountinfo{uf.mountinfo}
+    : m_client_fd{std::move(uf.client_fd)}, m_buffered_fd{std::move(uf.buffered_fd)},
+      m_unbuffered_fd{std::move(uf.unbuffered_fd)}, m_dio_mem_align{uf.m_dio_mem_align},
+      m_dio_offset_align{uf.m_dio_offset_align},
+      m_is_block_device{(uf.stx.stx_mask & STATX_TYPE) && S_ISBLK(uf.stx.stx_mode)},
+      m_is_regular_file{(uf.stx.stx_mask & STATX_TYPE) && S_ISREG(uf.stx.stx_mode)},
+      m_on_ext4_ordered{uf.mountinfo && uf.mountinfo->type == FilesystemType::ext4 &&
+                        uf.mountinfo->options.ext4.journaling_mode == ExtJournalingMode::ordered},
+      m_on_xfs{uf.mountinfo && uf.mountinfo->type == FilesystemType::xfs}
 {
 }
 
 int
-File::getClientFd() const
+File::clientFd() const noexcept
 {
-    return client_fd.get();
+    return m_client_fd.get();
 }
 
 int
-File::getBufferedFd() const
+File::bufferedFd() const noexcept
 {
-    return buffered_fd.get();
+    return m_buffered_fd.get();
 }
 
 optional<int>
-File::getUnbufferedFd() const
+File::unbufferedFd() const noexcept
 {
-    if (unbuffered_fd) {
-        return unbuffered_fd.value().get();
+    if (m_unbuffered_fd) {
+        return m_unbuffered_fd.value().get();
     }
     return nullopt;
 }
 
-const struct statx &
-File::getStatx() const noexcept
+uint32_t
+File::dioMemAlign() const noexcept
 {
-    return stx;
+    return m_dio_mem_align;
 }
 
-int
-File::getStatusFlags() const
+uint32_t
+File::dioOffsetAlign() const noexcept
 {
-    return status_flags;
+    return m_dio_offset_align;
 }
 
-optional<MountInfo>
-File::getMountInfo() const
+bool
+File::isBlockDevice() const noexcept
 {
-    return mountinfo;
+    return m_is_block_device;
+}
+
+bool
+File::isRegularFile() const noexcept
+{
+    return m_is_regular_file;
+}
+
+bool
+File::onExt4Ordered() const noexcept
+{
+    return m_on_ext4_ordered;
+}
+
+bool
+File::onXfs() const noexcept
+{
+    return m_on_xfs;
 }
 
 shared_ptr<IFile>
@@ -124,11 +157,11 @@ FileMap::registerFile(UnregisteredFile &&uf)
         throw FileAlreadyRegistered();
     }
 
-    auto file                    = std::shared_ptr<IFile>(new File(std::move(uf), PassKey<FileMap>{}));
-    from_fd[file->getClientFd()] = file;
-    from_fh[file->getHandle()]   = file;
+    auto file                 = std::shared_ptr<IFile>(new File(std::move(uf), PassKey<FileMap>{}));
+    from_fd[file->clientFd()] = file;
+    from_fh[file->handle()]   = file;
 
-    return file->getHandle();
+    return file->handle();
 }
 
 void
@@ -144,7 +177,7 @@ FileMap::deregisterFile(hipFileHandle_t fh)
         throw FileOperationsOutstanding();
     }
 
-    from_fd.erase(itr->second->getClientFd());
+    from_fd.erase(itr->second->clientFd());
     from_fh.erase(fh);
 }
 

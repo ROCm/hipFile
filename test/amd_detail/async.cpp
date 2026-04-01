@@ -665,7 +665,7 @@ TEST_P(AsyncIoOpWithParams, cpuIOReturnsFullSize)
     else {
         EXPECT_CALL(msys, pwrite).WillOnce(Return(size));
     }
-    EXPECT_CALL(*mfile, getBufferedFd);
+    EXPECT_CALL(*mfile, bufferedFd);
     async_io_cpu_copy(op.get());
     ASSERT_EQ(op->bytes_transferred_internal, size);
 }
@@ -678,7 +678,7 @@ TEST_P(AsyncIoOpWithParams, cpuCopyReadPreadPwriteErrorReturnsError)
     else {
         EXPECT_CALL(msys, pwrite).WillOnce(Throw(std::system_error(3, std::generic_category())));
     }
-    EXPECT_CALL(*mfile, getBufferedFd);
+    EXPECT_CALL(*mfile, bufferedFd);
     async_io_cpu_copy(op.get());
     ASSERT_EQ(op->bytes_transferred_internal, -1);
 }
@@ -695,7 +695,7 @@ TEST_P(AsyncIoOpWithParams, cpuCopyReadPreadPwriteRetriesOnEINTR)
             .WillOnce(Throw(std::system_error(EINTR, std::generic_category())))
             .WillOnce(Return(size));
     }
-    EXPECT_CALL(*mfile, getBufferedFd).Times(2);
+    EXPECT_CALL(*mfile, bufferedFd).Times(2);
     async_io_cpu_copy(op.get());
 
     ASSERT_EQ(op->bytes_transferred_internal, size);

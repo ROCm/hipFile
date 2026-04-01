@@ -67,6 +67,15 @@ public:
 
     /// @brief Information obtained from /proc/self/mountinfo
     std::optional<MountInfo> mountinfo;
+
+    /// @brief Memory alignment (in bytes) requirement for direct IO. If the file does not support direct IO,
+    /// this will be 0. If alignment information is not available from statx, this will be set to 4096.
+    uint32_t m_dio_mem_align;
+
+    /// @brief Alignment (in bytes) required for file offsets and IO segment lengths for direct IO. If the
+    /// file does not support direct IO, this will be 0. If alignment information is not available from statx,
+    /// this will be set to 4096.
+    uint32_t m_dio_offset_align;
 };
 
 class IFile {
@@ -75,14 +84,17 @@ public:
 
     /// @brief Get the handle for this file
     /// @return The handle for this file
-    virtual hipFileHandle_t getHandle() const;
+    virtual hipFileHandle_t handle() const noexcept;
 
-    virtual int                      getClientFd() const       = 0;
-    virtual int                      getBufferedFd() const     = 0;
-    virtual std::optional<int>       getUnbufferedFd() const   = 0;
-    virtual const struct statx      &getStatx() const noexcept = 0;
-    virtual int                      getStatusFlags() const    = 0;
-    virtual std::optional<MountInfo> getMountInfo() const      = 0;
+    virtual int                clientFd() const noexcept       = 0;
+    virtual int                bufferedFd() const noexcept     = 0;
+    virtual std::optional<int> unbufferedFd() const noexcept   = 0;
+    virtual uint32_t           dioMemAlign() const noexcept    = 0;
+    virtual uint32_t           dioOffsetAlign() const noexcept = 0;
+    virtual bool               isBlockDevice() const noexcept  = 0;
+    virtual bool               isRegularFile() const noexcept  = 0;
+    virtual bool               onExt4Ordered() const noexcept  = 0;
+    virtual bool               onXfs() const noexcept          = 0;
 };
 
 class FileMap;
@@ -100,12 +112,47 @@ public:
     File(File &&)            = delete;
     File &operator=(File &&) = delete;
 
-    virtual int                      getClientFd() const override;
-    virtual int                      getBufferedFd() const override;
-    virtual std::optional<int>       getUnbufferedFd() const override;
-    virtual const struct statx      &getStatx() const noexcept override;
-    virtual int                      getStatusFlags() const override;
-    virtual std::optional<MountInfo> getMountInfo() const override;
+    virtual int clientFd() const noexcept override;
+
+    /// @brief Get the buffered file descriptor (!O_DIRECT)
+    /// @return The buffered file descriptor
+    virtual int bufferedFd() const noexcept override;
+
+    /// @brief Get the unbuffered file descriptor for this file. Returns nullopt if the file does not support
+    /// direct IO or if there was an error obtaining the unbuffered fd.
+    /// @return The unbuffered file descriptor, or nullopt if not available
+    virtual std::optional<int> unbufferedFd() const noexcept override;
+
+    /// @brief Get the memory (in bytes) alignment requirement for direct IO on this file. If the file does
+    /// not support direct IO, this will return 0.
+    /// @return The memory alignment (in bytes) requirement for direct IO, 0 if direct IO is not supported
+    virtual uint32_t dioMemAlign() const noexcept override;
+
+    /// @brief The alignment (in bytes) required for file offsets and I/O segment lengths for direct I/O
+    /// (O_DIRECT) on this file, or 0 if direct I/O is not supported on this file
+    /// @return The alignment (in bytes) required for file offsets and I/O segment lengths for direct I/O, 0
+    /// if direct I/O is not supported
+    virtual uint32_t dioOffsetAlign() const noexcept override;
+
+    /// @brief Whether this file is a block device. If statx did not return type information, this will return
+    /// false.
+    /// @return True if the file is a block device, false otherwise
+    virtual bool isBlockDevice() const noexcept override;
+
+    /// @brief Whether this file is a regular file. If statx did not return type information, this will return
+    /// false.
+    /// @return True if the file is a regular file, false otherwise
+    virtual bool isRegularFile() const noexcept override;
+
+    /// @brief Whether this file is on an ext4 filesystem with ordered journaling mode. If mountinfo is not
+    /// available, this will return false.
+    /// @return True if the file is on an ext4 filesystem with ordered journaling mode, false otherwise
+    virtual bool onExt4Ordered() const noexcept override;
+
+    /// @brief Whether this file is on an xfs filesystem. If mountinfo is not available, this will return
+    /// false.
+    /// @return True if the file is on an xfs filesystem, false otherwise
+    virtual bool onXfs() const noexcept override;
 
     /// @brief Construct a registered file
     /// @param uf An unregistered file
@@ -114,24 +161,33 @@ public:
 
 private:
     /// @brief The file descriptor provided by the client
-    FileDescriptor client_fd;
+    FileDescriptor m_client_fd;
 
     /// @brief Buffered file descriptor (!O_DIRECT)
-    FileDescriptor buffered_fd;
+    FileDescriptor m_buffered_fd;
 
     /// @brief Unbuffered file descriptor (O_DIRECT)
-    std::optional<FileDescriptor> unbuffered_fd;
+    std::optional<FileDescriptor> m_unbuffered_fd;
 
-    /// @brief File status information obtained from statx (2)
-    struct statx stx;
+    /// @brief Memory alignment (in bytes) requirement for direct IO. If the file does not support direct IO,
+    /// this will be 0.
+    uint32_t m_dio_mem_align;
 
-    /// @brief The file's status flags. See fcntl(2)
-    ///
-    /// Used to determine if the O_DIRECT flag is set
-    int status_flags;
+    /// @brief Alignment (in bytes) required for file offsets and I/O segment lengths for direct I/O
+    /// (O_DIRECT).
+    uint32_t m_dio_offset_align;
 
-    /// @brief Mount information for the filesystem backing fd
-    std::optional<MountInfo> mountinfo;
+    /// @brief Whether statx reported that the file is a block device
+    bool m_is_block_device;
+
+    /// @brief Whether statx reported that the file is a regular file
+    bool m_is_regular_file;
+
+    /// @brief Whether the file is on an ext4 filesystem with ordered journaling mode
+    bool m_on_ext4_ordered;
+
+    /// @brief Whether the file is on an xfs filesystem
+    bool m_on_xfs;
 };
 
 class FileMap {

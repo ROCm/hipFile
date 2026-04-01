@@ -18,13 +18,16 @@ namespace hipFile {
 
 class MFile : public IFile {
 public:
-    MOCK_METHOD(hipFileHandle_t, getHandle, (), (const, override));
-    MOCK_METHOD(int, getClientFd, (), (const, override));
-    MOCK_METHOD(int, getBufferedFd, (), (const, override));
-    MOCK_METHOD(std::optional<int>, getUnbufferedFd, (), (const, override));
-    MOCK_METHOD(const struct statx &, getStatx, (), (const, noexcept, override));
-    MOCK_METHOD(int, getStatusFlags, (), (const, override));
-    MOCK_METHOD(std::optional<MountInfo>, getMountInfo, (), (const, override));
+    MOCK_METHOD(hipFileHandle_t, handle, (), (const, noexcept, override));
+    MOCK_METHOD(int, clientFd, (), (const, noexcept, override));
+    MOCK_METHOD(int, bufferedFd, (), (const, noexcept, override));
+    MOCK_METHOD(std::optional<int>, unbufferedFd, (), (const, noexcept, override));
+    MOCK_METHOD(uint32_t, dioMemAlign, (), (const, noexcept, override));
+    MOCK_METHOD(uint32_t, dioOffsetAlign, (), (const, noexcept, override));
+    MOCK_METHOD(bool, isBlockDevice, (), (const, noexcept, override));
+    MOCK_METHOD(bool, isRegularFile, (), (const, noexcept, override));
+    MOCK_METHOD(bool, onExt4Ordered, (), (const, noexcept, override));
+    MOCK_METHOD(bool, onXfs, (), (const, noexcept, override));
 };
 
 class MFileMap : public FileMap {

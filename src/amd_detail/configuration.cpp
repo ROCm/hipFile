@@ -46,3 +46,10 @@ Configuration::statsLevel() const noexcept
     HIPFILE_STATIC unsigned int stats_level_env{Environment::stats_level().value_or(0)};
     return stats_level_env;
 }
+
+bool
+Configuration::unsupportedFileSystems() const noexcept
+{
+    HIPFILE_STATIC bool unsupported_file_systems_env{Environment::unsupported_file_systems().value_or(false)};
+    return unsupported_file_systems_env;
+}

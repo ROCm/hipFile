@@ -47,6 +47,19 @@ public:
     static constexpr const char *const STATS_LEVEL{"HIPFILE_STATS_LEVEL"};
 
     static std::optional<unsigned int> stats_level();
+
+    /// @brief Allow unsupported file systems in the fastpath backend
+    ///
+    /// If enabled, the fastpath backend will allow I/O on file systems other than
+    /// ext4 (with ordered journaling) and xfs. If disabled (default), only supported
+    /// file systems are permitted.
+    static constexpr const char *const UNSUPPORTED_FILE_SYSTEMS{"HIPFILE_UNSUPPORTED_FILE_SYSTEMS"};
+
+    /// @brief Get the value of HIPFILE_UNSUPPORTED_FILE_SYSTEMS from the environment
+    /// @return An optional boolean value if HIPFILE_UNSUPPORTED_FILE_SYSTEMS was set,
+    /// nullopt if HIPFILE_UNSUPPORTED_FILE_SYSTEMS was unset or had a value other than
+    /// true or false.
+    static std::optional<bool> unsupported_file_systems();
 };
 
 }
