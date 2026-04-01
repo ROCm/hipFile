@@ -128,7 +128,7 @@ BufferMap::registerBuffer(const void *buf, size_t length, int flags)
     }
 
     auto buffer   = std::shared_ptr<IBuffer>(new Buffer(buf, length, flags, PassKey<BufferMap>{}));
-    from_ptr[buf] = buffer;
+    from_ptr[buf] = std::move(buffer);
 }
 
 void
