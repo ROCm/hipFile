@@ -24,9 +24,9 @@ namespace hipFile {
 getPageSize()
 {
     static const size_t value = [] {
-        const long v = sysconf(_SC_PAGE_SIZE);
+        const long v = sysconf(_SC_PAGESIZE);
         if (v == -1) {
-            throw std::runtime_error("sysconf(_SC_PAGE_SIZE) failed");
+            throw std::runtime_error("sysconf(_SC_PAGESIZE) failed");
         }
         return static_cast<size_t>(v);
     }();
