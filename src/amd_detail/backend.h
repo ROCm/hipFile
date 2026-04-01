@@ -45,7 +45,7 @@ getPageMask()
 [[nodiscard]] inline size_t
 getMaxRwCount()
 {
-    static const size_t value = INT_MAX & getPageMask();
+    static const size_t value = static_cast<size_t>(INT_MAX) & getPageMask();
     return value;
 }
 
