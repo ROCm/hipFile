@@ -74,7 +74,7 @@ Fallback::_io_impl(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBu
         throw BackendDisabled();
     }
 
-    size = min(size, hipFile::MAX_RW_COUNT);
+    size = min(size, hipFile::getMaxRwCount());
 
     if (!paramsValid(buffer, size, file_offset, buffer_offset)) {
         throw std::invalid_argument("The selected file or buffer region is invalid");
@@ -147,7 +147,7 @@ Fallback::async_io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBu
                    hoff_t *file_offset_p, hoff_t *buffer_offset_p, ssize_t *bytes_transferred_p,
                    std::shared_ptr<IStream> stream)
 {
-    size_t limited_size = min(*size_p, hipFile::MAX_RW_COUNT);
+    size_t limited_size = min(*size_p, hipFile::getMaxRwCount());
 
     if (!paramsValid(buffer, limited_size, *file_offset_p, *buffer_offset_p)) {
         throw std::invalid_argument("The selected file or buffer region is invalid");
@@ -226,7 +226,7 @@ async_io_bind_params(void *userargs)
     const hoff_t *file_offset = get_variant_ptr(op->file_offset);
     op->file_offset.emplace<const hoff_t>(*file_offset);
     const size_t *size = get_variant_ptr(op->size);
-    op->size           = std::min(*size, hipFile::MAX_RW_COUNT);
+    op->size           = std::min(*size, hipFile::getMaxRwCount());
 
     if (std::get<size_t>(op->size) > op->submitted_size) {
         op->bytes_transferred_internal = -hipFileInvalidValue;

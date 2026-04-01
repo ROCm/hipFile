@@ -163,14 +163,14 @@ TEST_F(HipFileAsyncOp, AsyncOpFallbackLimitsMaxIoSize)
     ssize_t bytes_transferred = 0;
     auto    op_data           = std::shared_ptr<void>(new uint8_t[sizeof(AsyncOpFallback)]);
     auto    bounce_buffer     = std::shared_ptr<void>(new uint8_t[1_KiB]);
-    EXPECT_CALL(mhip, hipHostMalloc(hipFile::MAX_RW_COUNT, _)).WillOnce(Return(bounce_buffer.get()));
+    EXPECT_CALL(mhip, hipHostMalloc(hipFile::getMaxRwCount(), _)).WillOnce(Return(bounce_buffer.get()));
     EXPECT_CALL(mhip, hipHostMalloc(sizeof(AsyncOpFallback), _)).WillOnce(Return(op_data.get()));
     EXPECT_CALL(mhip, hipHostGetDevicePointer(Eq(bounce_buffer.get()), _));
     EXPECT_CALL(mhip, hipHostFree(Eq(bounce_buffer.get())));
     EXPECT_CALL(mhip, hipHostFree(Eq(op_data.get())));
     auto op = std::shared_ptr<AsyncOpFallback>(new AsyncOpFallback{
         IoType::Read, file, buffer, stream, &size, &file_offset, &buffer_offset, &bytes_transferred});
-    ASSERT_EQ(op->submitted_size, hipFile::MAX_RW_COUNT);
+    ASSERT_EQ(op->submitted_size, hipFile::getMaxRwCount());
 }
 
 TEST_F(HipFileAsyncOp, AsyncOpFallback_new_failure_throws_bad_alloc)
@@ -619,16 +619,16 @@ TEST_F(AsyncIoOpCleanup, cleanupInvalidOpSetsError)
 struct AsyncIoOpLimitedSize : public AsyncIoOp {
     void SetUp() override
     {
-        size = hipFile::MAX_RW_COUNT + 1;
+        size = hipFile::getMaxRwCount() + 1;
         AsyncIoOp::SetUp();
     }
 };
 
 TEST_F(AsyncIoOpLimitedSize, bindLimitsSize)
 {
-    EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(hipFile::MAX_RW_COUNT));
+    EXPECT_CALL(*mbuffer, getLength).WillOnce(Return(hipFile::getMaxRwCount()));
     async_io_bind_params(op.get());
-    ASSERT_EQ(std::get<size_t>(op->size), hipFile::MAX_RW_COUNT);
+    ASSERT_EQ(std::get<size_t>(op->size), hipFile::getMaxRwCount());
 }
 
 struct AsyncIoOpBindParams {

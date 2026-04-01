@@ -184,7 +184,7 @@ Fastpath::_io_impl(IoType type, shared_ptr<IFile> file, shared_ptr<IBuffer> buff
     // Illegal Seek error is returned. To avoid this, hipFile limits IO size to
     // MAX_RW_COUNT. When amdgpu/kfd properly handles IO sizes > MAX_RW_COUNT
     // this can be removed.
-    size = std::min(size, MAX_RW_COUNT);
+    size = std::min(size, hipFile::getMaxRwCount());
 
     // Ensure HIP Runtime is initialized. This is a temporary fix to a SEGFAULT
     // in the HIP Runtime when hipFileRead/hipFileWrite is the first HIP API

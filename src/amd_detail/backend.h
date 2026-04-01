@@ -20,19 +20,34 @@
 
 namespace hipFile {
 
-static const size_t PAGE_SIZE{[] {
-    long v = sysconf(_SC_PAGE_SIZE);
-    if (v == -1) {
-        throw std::runtime_error("sysconf(_SC_PAGE_SIZE) failed");
-    }
-    return static_cast<size_t>(v);
-}()};
+[[nodiscard]] inline size_t
+getPageSize()
+{
+    static const size_t value = [] {
+        const long v = sysconf(_SC_PAGE_SIZE);
+        if (v == -1) {
+            throw std::runtime_error("sysconf(_SC_PAGE_SIZE) failed");
+        }
+        return static_cast<size_t>(v);
+    }();
+    return value;
+}
 
-static const size_t PAGE_MASK{~(PAGE_SIZE - 1)};
+[[nodiscard]] inline size_t
+getPageMask()
+{
+    static const size_t value = ~(getPageSize() - 1);
+    return value;
+}
 
 // The maximum number of bytes that can be transferred in a single read() or
-// write() system call. Mirrors kernel's MAX_RW_COUNT
-static const size_t MAX_RW_COUNT = (INT_MAX & PAGE_MASK);
+// write() system call. Calculation is same as kernel's MAX_RW_COUNT.
+[[nodiscard]] inline size_t
+getMaxRwCount()
+{
+    static const size_t value = INT_MAX & getPageMask();
+    return value;
+}
 
 /// @brief Backend is not enabled
 struct BackendDisabled : public std::runtime_error {

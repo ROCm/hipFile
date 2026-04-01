@@ -259,7 +259,7 @@ TEST_P(FallbackParam, FallbackIoTruncatesSizeToMAX_RW_COUNT)
 {
     expect_buffer_registration(mhip, hipMemoryTypeDevice);
     auto buf{reinterpret_cast<void *>(0xABABABAB)};
-    Context<DriverState>::get()->registerBuffer(buf, MAX_RW_COUNT + 1, 0);
+    Context<DriverState>::get()->registerBuffer(buf, hipFile::getMaxRwCount() + 1, 0);
     auto big_buffer{Context<DriverState>::get()->getRegisteredBuffer(buf)};
 
     EXPECT_CALL(mcfg, fallback()).WillOnce(Return(true));
@@ -286,7 +286,8 @@ TEST_P(FallbackParam, FallbackIoTruncatesSizeToMAX_RW_COUNT)
     }
 
     EXPECT_CALL(msys, munmap);
-    ASSERT_EQ(MAX_RW_COUNT, Fallback().io(io_type, file, big_buffer, SIZE_MAX, 0, 0, 16 * 1024 * 1024));
+    ASSERT_EQ(hipFile::getMaxRwCount(),
+              Fallback().io(io_type, file, big_buffer, SIZE_MAX, 0, 0, 16 * 1024 * 1024));
 }
 
 TEST_P(FallbackParam, FallbackIoThrowsOnBounceBufferAllocationFailure)

@@ -679,16 +679,16 @@ TEST_P(FastpathIoParam, IoSizeIsTruncatedToMaxRWCount)
     expect_io(DEFAULT_UNBUFFERED_FD, reinterpret_cast<void *>(DEFAULT_BUFFER_ADDR), buffer_size);
     switch (GetParam()) {
         case IoType::Read:
-            EXPECT_CALL(mhip, hipAmdFileRead(_, _, MAX_RW_COUNT, _)).WillOnce(Return(MAX_RW_COUNT));
+            EXPECT_CALL(mhip, hipAmdFileRead(_, _, getMaxRwCount(), _)).WillOnce(Return(getMaxRwCount()));
             break;
         case IoType::Write:
-            EXPECT_CALL(mhip, hipAmdFileWrite(_, _, MAX_RW_COUNT, _)).WillOnce(Return(MAX_RW_COUNT));
+            EXPECT_CALL(mhip, hipAmdFileWrite(_, _, getMaxRwCount(), _)).WillOnce(Return(getMaxRwCount()));
             break;
         default:
             FAIL() << "Invalid IoType";
     }
 
-    ASSERT_EQ(Fastpath().io(GetParam(), mfile, mbuffer, io_size, 0, 0), MAX_RW_COUNT);
+    ASSERT_EQ(Fastpath().io(GetParam(), mfile, mbuffer, io_size, 0, 0), getMaxRwCount());
 }
 
 // Note: Tests for fallback eligible exceptions are further down this file
