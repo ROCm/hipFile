@@ -36,6 +36,9 @@ isValidBufferRegion(void *ptr, size_t length)
             return false;
         }
 
+        // Don't need to check base + buffer_range.size since
+        // HIP shouldn't give us invalid values
+
         if (uptr + length > base + buffer_range.size) {
             return false;
         }
