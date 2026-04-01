@@ -243,7 +243,7 @@ TEST_P(HipFileIoBackendSelectionParam, HipFileIoThrowsIfThereAreNoBackends)
     auto backends{std::vector<std::shared_ptr<Backend>>()};
 
     EXPECT_CALL(mds, getFileAndBuffer(handle, buffer)).WillOnce(Return(file_buffer_pair{mfile, mbuffer}));
-    EXPECT_CALL(mds, getBackends).WillOnce(Return(backends));
+    EXPECT_CALL(mds, getBackends).WillOnce(Return(std::move(backends)));
 
     switch (io_type) {
         case IoType::Read:
@@ -264,7 +264,7 @@ TEST_P(HipFileIoBackendSelectionParam, HipFileIoThrowsIfAllBackendsRejectTheIO)
     std::vector<std::shared_ptr<Backend>> backends{mbe1, mbe2, mbe3};
 
     EXPECT_CALL(mds, getFileAndBuffer(handle, buffer)).WillOnce(Return(file_buffer_pair{mfile, mbuffer}));
-    EXPECT_CALL(mds, getBackends).WillOnce(Return(backends));
+    EXPECT_CALL(mds, getBackends).WillOnce(Return(std::move(backends)));
     EXPECT_CALL(*mbe1, score(Eq(mfile), Eq(mbuffer), io_size, file_offset, buffer_offset))
         .WillOnce(Return(-1));
     EXPECT_CALL(*mbe2, score(Eq(mfile), Eq(mbuffer), io_size, file_offset, buffer_offset))
@@ -291,7 +291,7 @@ TEST_P(HipFileIoBackendSelectionParam, HipFileIoIssuesIoToHighestScoringBackend)
     std::vector<std::shared_ptr<Backend>> backends{mbe1, mbe2, mbe3};
 
     EXPECT_CALL(mds, getFileAndBuffer(handle, buffer)).WillOnce(Return(file_buffer_pair{mfile, mbuffer}));
-    EXPECT_CALL(mds, getBackends).WillOnce(Return(backends));
+    EXPECT_CALL(mds, getBackends).WillOnce(Return(std::move(backends)));
     EXPECT_CALL(*mbe1, score(Eq(mfile), Eq(mbuffer), io_size, file_offset, buffer_offset))
         .WillOnce(Return(0));
     EXPECT_CALL(*mbe2, score(Eq(mfile), Eq(mbuffer), io_size, file_offset, buffer_offset))

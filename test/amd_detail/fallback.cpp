@@ -287,7 +287,7 @@ TEST_P(FallbackParam, FallbackIoTruncatesSizeToMAX_RW_COUNT)
 
     EXPECT_CALL(msys, munmap);
     ASSERT_EQ(hipFile::getMaxRwCount(),
-              Fallback().io(io_type, file, big_buffer, SIZE_MAX, 0, 0, 16 * 1024 * 1024));
+              Fallback().io(io_type, file, std::move(big_buffer), SIZE_MAX, 0, 0, 16 * 1024 * 1024));
 }
 
 TEST_P(FallbackParam, FallbackIoThrowsOnBounceBufferAllocationFailure)

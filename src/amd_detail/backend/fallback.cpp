@@ -56,7 +56,8 @@ ssize_t
 Fallback::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
              hoff_t file_offset, hoff_t buffer_offset, size_t chunk_size)
 {
-    return _io_impl(type, file, buffer, size, file_offset, buffer_offset, chunk_size);
+    return _io_impl(type, std::move(file), std::move(buffer), size, file_offset, buffer_offset,
+                    chunk_size);
 }
 
 ssize_t
@@ -164,7 +165,7 @@ Fallback::async_io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBu
     }
 
     auto op = std::shared_ptr<AsyncOpFallback>(new AsyncOpFallback(
-        type, file, buffer, stream, size_p, file_offset_p, buffer_offset_p, bytes_transferred_p));
+        type, std::move(file), buffer, stream, size_p, file_offset_p, buffer_offset_p, bytes_transferred_p));
     Context<AsyncMonitor>::get()->addOp(op);
     auto  op_dev_ptr     = op->devPtr();
     void *kernel_args[1] = {&op_dev_ptr};
