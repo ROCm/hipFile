@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <utility>
 #include <sys/resource.h>
+#include <sys/stat.h>
 #include <vector>
 
 using namespace hipFile;
@@ -369,6 +370,15 @@ thread_function(int id)
 int
 main()
 {
+    // Security analyzers will be sad if you don't set umask 0077
+    // before creating temporary files
+    //
+    // Doing this here to avoid inadvertently synchronizing files if we
+    // added a mutex in the temp file function
+    //
+    // Ignoring return type since we never switch it back
+    (void)umask(S_IRWXG | S_IRWXO);
+
     struct rlimit nofile;
     if (-1 == getrlimit(RLIMIT_NOFILE, &nofile)) {
         cerr << "getrlimit() failed! " << strerror(errno) << endl;
