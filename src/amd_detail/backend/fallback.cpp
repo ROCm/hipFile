@@ -56,8 +56,7 @@ ssize_t
 Fallback::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
              hoff_t file_offset, hoff_t buffer_offset, size_t chunk_size)
 {
-    return _io_impl(type, std::move(file), std::move(buffer), size, file_offset, buffer_offset,
-                    chunk_size);
+    return _io_impl(type, std::move(file), std::move(buffer), size, file_offset, buffer_offset, chunk_size);
 }
 
 ssize_t
