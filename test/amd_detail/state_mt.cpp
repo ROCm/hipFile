@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <utility>
 #include <sys/resource.h>
+#include <sys/stat.h>
 #include <vector>
 
 using namespace hipFile;
