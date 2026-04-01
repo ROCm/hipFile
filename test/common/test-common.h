@@ -69,6 +69,7 @@ struct Tmpfile {
 
         path += "/hipFile.XXXXXX";
         if ((fd = mkstemp(path.data())) == -1) {
+            umask(old_umask);
             throw std::runtime_error("Could not create temporary file");
         }
 
