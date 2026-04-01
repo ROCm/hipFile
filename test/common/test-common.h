@@ -61,6 +61,10 @@ struct Tmpfile {
     {
     }
 
+    /*!
+     * \warning The constructor is NOT thread-safe and can result in
+     *          interleaved calls to `umask()`
+     */
     Tmpfile(std::string directory) : path{directory}
     {
         // Security analyzers will be sad if you don't set umask 0077
