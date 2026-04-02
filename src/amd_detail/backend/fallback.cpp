@@ -31,6 +31,7 @@
 #include <syslog.h>
 #include <system_error>
 #include <variant>
+#include <utility>
 
 using namespace hipFile;
 

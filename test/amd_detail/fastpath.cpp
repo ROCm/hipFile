@@ -31,6 +31,7 @@
 #include <sys/types.h>
 #include <system_error>
 #include <tuple>
+#include <utility>
 
 using namespace hipFile;
 using namespace testing;

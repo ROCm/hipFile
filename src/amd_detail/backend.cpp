@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <system_error>
 #include <unistd.h>
+#include <utility>
 
 using namespace hipFile;
 
