@@ -22,7 +22,7 @@ ssize_t
 Backend::io(IoType type, std::shared_ptr<IFile> file, std::shared_ptr<IBuffer> buffer, size_t size,
             hoff_t file_offset, hoff_t buffer_offset)
 {
-    return _io_impl(type, file, buffer, size, file_offset, buffer_offset);
+    return _io_impl(type, std::move(file), std::move(buffer), size, file_offset, buffer_offset);
 }
 
 ssize_t
@@ -42,7 +42,8 @@ BackendWithFallback::io(IoType type, std::shared_ptr<IFile> file, std::shared_pt
         std::exception_ptr e_ptr = std::current_exception();
         if (fallback_backend && is_fallback_eligible(e_ptr, nbytes) &&
             fallback_backend->score(file, buffer, size, file_offset, buffer_offset) >= 0) {
-            nbytes = fallback_backend->io(type, file, buffer, size, file_offset, buffer_offset);
+            nbytes = fallback_backend->io(type, std::move(file), std::move(buffer), size, file_offset,
+                                          buffer_offset);
         }
         else {
             throw;
@@ -61,5 +62,5 @@ BackendWithFallback::register_fallback_backend(std::shared_ptr<Backend> backend)
     else if (backend.get() == this) {
         throw std::invalid_argument("Cannot register a backend as it's own fallback.");
     }
-    fallback_backend = backend;
+    fallback_backend = std::move(backend);
 }

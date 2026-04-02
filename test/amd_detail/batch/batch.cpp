@@ -254,7 +254,7 @@ struct HipFileBatchContext : public HipFileUnopened {
         mock_driver_state = std::make_unique<StrictMock<MDriverState>>();
         _context          = batch_map.get(batch_map.createContext(_context_capacity));
         // May be overridden with EXPECT_CALL in the test.
-        EXPECT_CALL(*mock_driver_state, getFileAndBuffer).WillRepeatedly(Return(default_fb_pair));
+        EXPECT_CALL(*mock_driver_state, getFileAndBuffer).WillRepeatedly(Return(std::move(default_fb_pair)));
     }
 
     void TearDown() override

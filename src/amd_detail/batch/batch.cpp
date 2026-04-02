@@ -126,7 +126,7 @@ BatchContext::submit_operations(const hipFileIOParams_t *params, unsigned num_pa
             Context<DriverState>::get()->getFileAndBuffer(param_copy->fh, param_copy->u.batch.devPtr_base);
         auto op = std::make_shared<BatchOperation>(std::move(param_copy), _buffer, _file);
 
-        pending_ops.push_back(op);
+        pending_ops.push_back(std::move(op));
     }
 
     // All submitted operations look valid at this point. Accept them.
@@ -150,7 +150,7 @@ BatchContextMap::createContext(unsigned capacity)
     // somehow deallocates this handle...
 
     std::unique_lock<std::shared_mutex> ulock{batch_mutex};
-    active_contexts[handle] = context;
+    active_contexts[handle] = std::move(context);
     return handle;
 }
 
