@@ -95,7 +95,7 @@ File::bufferedFd() const noexcept
 }
 
 optional<int>
-File::unbufferedFd() const noexcept
+File::unbufferedFd() const
 {
     if (m_unbuffered_fd) {
         return m_unbuffered_fd.value().get();
