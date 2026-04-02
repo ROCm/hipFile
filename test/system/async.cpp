@@ -243,9 +243,9 @@ public:
         ASSERT_EQ(hipStreamDestroy(hip_stream), hipSuccess);
         ASSERT_EQ(hipFree(dev_ptr), hipSuccess);
     }
-    void                            *dev_ptr;
+    void                            *dev_ptr{};
     Tmpfile                          tf;
-    hipFileHandle_t                  fh;
+    hipFileHandle_t                  fh{};
     IoType                           io_type           = IoType::Read;
     size_t                           file_size         = 4_KiB;
     size_t                           buffer_size       = 4_KiB;
@@ -253,14 +253,14 @@ public:
     hoff_t                           file_offset       = 0;
     hoff_t                           buffer_offset     = 0;
     ssize_t                          bytes_transferred = 0;
-    hipStream_t                      hip_stream;
+    hipStream_t                      hip_stream{};
     std::shared_ptr<IFile>           file;
     std::shared_ptr<IBuffer>         buffer;
     std::shared_ptr<IStream>         stream;
     std::shared_ptr<AsyncOpFallback> op;
-    void                            *op_dev_ptr;
-    void                            *kernel_args[1];
-    int                              max_threads_per_block;
+    void                            *op_dev_ptr{};
+    void                            *kernel_args[1]{};
+    int                              max_threads_per_block = 0;
 };
 
 TEST_F(HipAsyncMemcpyKernel, unfixedSizeReturnsInval)
@@ -405,9 +405,9 @@ public:
     {
         ASSERT_EQ(hipFree(dev_ptr), hipSuccess);
     }
-    void           *dev_ptr;
+    void           *dev_ptr{};
     Tmpfile         tf;
-    hipFileHandle_t fh;
+    hipFileHandle_t fh{};
     size_t          io_size           = 1_MiB;
     size_t          file_size         = 1_MiB;
     size_t          buffer_size       = 1_MiB;
