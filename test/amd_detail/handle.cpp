@@ -184,7 +184,7 @@ TEST_F(HipFileHandle, file_initialization)
     int open_fd{eventfd(0, 0)};
     ASSERT_NE(open_fd, -1);
 
-    MountInfo mountinfo;
+    MountInfo mountinfo{};
     mountinfo.type                         = FilesystemType::ext4;
     mountinfo.options.ext4.journaling_mode = ExtJournalingMode::ordered;
 
@@ -688,7 +688,7 @@ TEST_F(HipFileHandle, OnExt4OrderedReturnsTrueForExt4Ordered)
     int open_fd{eventfd(0, 0)};
     ASSERT_NE(open_fd, -1);
 
-    MountInfo mountinfo;
+    MountInfo mountinfo{};
     mountinfo.type                         = FilesystemType::ext4;
     mountinfo.options.ext4.journaling_mode = ExtJournalingMode::ordered;
 
@@ -712,7 +712,7 @@ TEST_F(HipFileHandle, OnExt4OrderedReturnsFalseForExt4Journal)
     int open_fd{eventfd(0, 0)};
     ASSERT_NE(open_fd, -1);
 
-    MountInfo mountinfo;
+    MountInfo mountinfo{};
     mountinfo.type                         = FilesystemType::ext4;
     mountinfo.options.ext4.journaling_mode = ExtJournalingMode::journal;
 
@@ -736,7 +736,7 @@ TEST_F(HipFileHandle, OnExt4OrderedReturnsFalseForOtherFileSystem)
     int open_fd{eventfd(0, 0)};
     ASSERT_NE(open_fd, -1);
 
-    MountInfo mountinfo;
+    MountInfo mountinfo{};
     mountinfo.type = FilesystemType::other;
 
     ExpectUnregisteredFileBuilder(msys, mlibmounthelper)
@@ -759,7 +759,7 @@ TEST_F(HipFileHandle, OnXfsReturnsTrueForXfs)
     int open_fd{eventfd(0, 0)};
     ASSERT_NE(open_fd, -1);
 
-    MountInfo mountinfo;
+    MountInfo mountinfo{};
     mountinfo.type = FilesystemType::xfs;
 
     ExpectUnregisteredFileBuilder(msys, mlibmounthelper)
@@ -782,7 +782,7 @@ TEST_F(HipFileHandle, OnXfsReturnsFalseForOtherFileSystem)
     int open_fd{eventfd(0, 0)};
     ASSERT_NE(open_fd, -1);
 
-    MountInfo mountinfo;
+    MountInfo mountinfo{};
     mountinfo.type = FilesystemType::other;
 
     ExpectUnregisteredFileBuilder(msys, mlibmounthelper)
