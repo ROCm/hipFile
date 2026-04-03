@@ -217,7 +217,7 @@ protected:
         io_type = GetParam();
     }
 
-    IoType io_type;
+    IoType io_type{IoType::Read};
 };
 
 TEST_P(FallbackParam, FallbackIoRejectedIfBackendIsDisabled)

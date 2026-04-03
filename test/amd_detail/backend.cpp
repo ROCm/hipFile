@@ -36,8 +36,8 @@ struct HipFileBackendWithFallback : public HipFileUnopened, ::testing::WithParam
     std::shared_ptr<StrictMock<DummyBackendWithFallback>> default_backend;
     std::shared_ptr<StrictMock<DummyFallbackBackend>>     fallback_backend;
 
-    IoType  io_type;
-    ssize_t successful_io_size = 0x1234;
+    IoType  io_type{IoType::Read};
+    ssize_t successful_io_size{0x1234};
 
     void SetUp() override
     {

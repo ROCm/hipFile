@@ -397,8 +397,8 @@ INSTANTIATE_TEST_SUITE_P(HipFileAsyncSuite, HipFileReadWriteAsync, ::testing::Va
 struct FallbackAsyncIO : public HipFileOpened, public ::testing::WithParamInterface<IoType> {
     FallbackAsyncIO()
         : mfile{std::make_shared<StrictMock<MFile>>()}, mbuffer{std::make_shared<StrictMock<MBuffer>>()},
-          mstream{std::make_shared<StrictMock<MStream>>()}, size{1024 * 1024}, file_offset{0},
-          buffer_offset{0}, bytes_written{0}
+          mstream{std::make_shared<StrictMock<MStream>>()}, io_type{IoType::Read}, size{1024 * 1024},
+          file_offset{0}, buffer_offset{0}, bytes_written{0}
     {
     }
     void SetUp() override
