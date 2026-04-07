@@ -19,6 +19,8 @@ cdef extern from "hip/hip_runtime_api.h":
     ctypedef enum hipError_t:
         hipSuccess = 0
 
+    hipError_t hipPeekAtLastError()
+
 
 # ---------------------------------------------------------------------------
 #  hipFile public API

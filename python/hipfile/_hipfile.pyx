@@ -7,6 +7,7 @@ Functions that return ``hipFileError_t`` in C return a
 ``(hipFileOpError_t, hipError_t)`` 2-tuple here.
 """
 
+from libc.errno cimport errno
 from libc.string cimport memset
 from libc.stdint cimport uintptr_t
 
@@ -211,28 +212,44 @@ def read(uintptr_t handle, uintptr_t buffer_base, size_t size,
          _c.hoff_t file_offset, _c.hoff_t buffer_offset):
     """Wrapper for ``hipFileRead``.
 
-    Returns raw ``ssize_t``:
-      * ``>= 0`` — number of bytes read
-      * ``-1``   — system error (check ``errno``)
-      * ``< -1`` — negate to get a ``hipFileOpError_t``
+    Returns ``(result, extra)``:
+      * ``result >= 0`` — number of bytes read, ``extra = 0``
+      * ``result == -1`` — system error, ``extra = errno``
+      * ``result < -1``  — negated ``hipFileOpError_t``; if
+        ``-hipFileHipDriverError``, ``extra = hipError_t`` from
+        ``hipPeekAtLastError()``, otherwise ``extra = 0``
     """
-    return _c.hipFileRead(<_c.hipFileHandle_t>handle,
-                          <void *>buffer_base, size,
-                          file_offset, buffer_offset)
+    cdef ssize_t ret = _c.hipFileRead(<_c.hipFileHandle_t>handle,
+                                      <void *>buffer_base, size,
+                                      file_offset, buffer_offset)
+    cdef int extra = 0
+    if ret == -1:
+        extra = errno
+    elif ret == -<int>_c.hipFileHipDriverError:
+        extra = <int>_c.hipPeekAtLastError()
+    return (ret, extra)
 
 
 def write(uintptr_t handle, uintptr_t buffer_base, size_t size,
           _c.hoff_t file_offset, _c.hoff_t buffer_offset):
     """Wrapper for ``hipFileWrite``.
 
-    Returns raw ``ssize_t``:
-      * ``>= 0`` — number of bytes written
-      * ``-1``   — system error (check ``errno``)
-      * ``< -1`` — negate to get a ``hipFileOpError_t``
+    Returns ``(result, extra)``:
+      * ``result >= 0`` — number of bytes written, ``extra = 0``
+      * ``result == -1`` — system error, ``extra = errno``
+      * ``result < -1``  — negated ``hipFileOpError_t``; if
+        ``-hipFileHipDriverError``, ``extra = hipError_t`` from
+        ``hipPeekAtLastError()``, otherwise ``extra = 0``
     """
-    return _c.hipFileWrite(<_c.hipFileHandle_t>handle,
-                           <const void *>buffer_base, size,
-                           file_offset, buffer_offset)
+    cdef ssize_t ret = _c.hipFileWrite(<_c.hipFileHandle_t>handle,
+                                       <const void *>buffer_base, size,
+                                       file_offset, buffer_offset)
+    cdef int extra = 0
+    if ret == -1:
+        extra = errno
+    elif ret == -<int>_c.hipFileHipDriverError:
+        extra = <int>_c.hipPeekAtLastError()
+    return (ret, extra)
 
 
 # ---------------------------------------------------------------------------

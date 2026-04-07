@@ -9,7 +9,7 @@ from hipfile._hipfile import (
     read as _read,
     write as _write
 )
-from hipfile.enums import FileHandleType
+from hipfile.enums import OpError, FileHandleType
 from hipfile.error import HipFileException
 
 DefaultHandleType = None
@@ -89,23 +89,27 @@ class FileHandle():
     def read(self, buffer, size, file_offset, buffer_offset):
         if (self._handle is None):
             raise RuntimeError("The FileHandle is not open.")
-        bytes_read = _read(self._handle, buffer.ptr, size, file_offset, buffer_offset)
-        # Note: _read should raise an OSError if a system error occured.
-        if (bytes_read < -1):
+        (bytes_read, extra_err) = _read(self._handle, buffer.ptr, size, file_offset, buffer_offset)
+        if (bytes_read == -1):
+            # extra_err is errno
+            raise OSError(extra_err, os.strerror(extra_err))
+        elif (bytes_read < -1):
             # hipFile Error
-            # Issue: If bytes_read == -hipFileHipDriverError, how do we get the hipError_t?
-            # Probably like in C and calling hipPeekLastError
-            raise HipFileException(-bytes_read, 0)
+            # If -bytes_read == OpError.HipDriverError, extra_err is hipError_t.
+            # Otherwise, extra_err is 0.
+            raise HipFileException(-bytes_read, extra_err)
         return bytes_read
 
     def write(self, buffer, size, file_offset, buffer_offset):
         if (self._handle is None):
             raise RuntimeError("The FileHandle is not open.")
-        bytes_written = _write(self._handle, buffer.ptr, size, file_offset, buffer_offset)
-        # Note: _write should raise an OSError if a system error occured.
-        if (bytes_written < -1):
+        (bytes_written, extra_err) = _write(self._handle, buffer.ptr, size, file_offset, buffer_offset)
+        if (bytes_written == -1):
+            # extra_err is errno
+            raise OSError(extra_err, os.strerror(extra_err))
+        elif (bytes_written < -1):
             # hipFile Error
-            # Issue: If bytes_written == -hipFileHipDriverError, how do we get the hipError_t?
-            # Probably like in C and calling hipPeekLastError
-            raise HipFileException(-bytes_written, 0)
+            # If -bytes_written == OpError.HipDriverError, extra_err is hipError_t.
+            # Otherwise, extra_err is 0.
+            raise HipFileException(-bytes_written, extra_err)
         return bytes_written
