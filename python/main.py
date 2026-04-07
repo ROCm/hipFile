@@ -31,9 +31,9 @@ with Driver() as hipfile_driver:
         with FileHandle(input_path, os.O_RDWR | os.O_DIRECT | os.O_CREAT) as fh_input:
             with FileHandle(output_path, os.O_RDWR | os.O_DIRECT | os.O_CREAT | os.O_TRUNC) as fh_output:
                 print(f"Transferring {size} bytes...")
-                bytes_read = fh_input.read(registered_buffer._buffer_ptr, size, 0, 0)
+                bytes_read = fh_input.read(registered_buffer, size, 0, 0)
                 print(f"Bytes Read: {bytes_read}")
-                bytes_written = fh_output.write(registered_buffer._buffer_ptr, size, 0, 0)
+                bytes_written = fh_output.write(registered_buffer, size, 0, 0)
                 print(f"Bytes Written: {bytes_written}")
 
 hipFree(buffer)

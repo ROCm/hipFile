@@ -22,6 +22,10 @@ class Buffer():
     def __exit__(self, exc_type, exc, tb):
         self.deregister()
 
+    @property
+    def ptr(self):
+        return self._buffer_ptr
+
     def deregister(self):
         if (self._registered):
             err = buf_deregister(self._buffer_ptr)
