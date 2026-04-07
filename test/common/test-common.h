@@ -8,7 +8,9 @@
 #include "hipfile.h"
 #include "magic-word.h"
 
+#include <cerrno>
 #include <cstdint>
+#include <cstring>
 #include <iostream>
 #include <random>
 #include <stdexcept>
@@ -73,8 +75,10 @@ struct Tmpfile {
 
         path += "/hipFile.XXXXXX";
         if ((fd = mkstemp(path.data())) == -1) {
+            int mkstemp_err{errno};
             umask(old_umask);
-            throw std::runtime_error("Could not create temporary file");
+            throw std::runtime_error("Could not create temporary file " + path + ": " +
+                                     std::string(std::strerror(mkstemp_err)));
         }
 
         umask(old_umask);
