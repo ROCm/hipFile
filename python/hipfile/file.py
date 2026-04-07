@@ -9,19 +9,27 @@ from hipfile._hipfile import (
     read as _read,
     write as _write
 )
+from hipfile.enums import FileHandleType
 from hipfile.error import HipFileException
+
+DefaultHandleType = None
+if (os.name == 'posix'):
+    DefaultHandleType = FileHandleType.OpaqueFD
+elif (os.name == 'nt'):
+    DefaultHandleType = FileHandleType.OpaqueWin32
 
 class FileHandle():
     DEFAULT_MODE = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
 
-    def __init__(self, path, flags, mode = DEFAULT_MODE, io_type = None):
+    def __init__(self, path, flags, mode = DEFAULT_MODE, handle_type = DefaultHandleType):
         self._fd = None
         self._flags = flags
         self._handle = None
-        # io_type currently unsupported - C bindings only use hipFileHandleTypeOpaqueFD
-        self._io_type = io_type
+        self._handle_type = None
         self._mode = mode
         self._path = path
+
+        self.handle_type = handle_type
 
     def __del__(self):
         self.close()
@@ -42,6 +50,16 @@ class FileHandle():
         return self._handle
     
     @property
+    def handle_type(self):
+        return self._handle_type
+    
+    @handle_type.setter
+    def handle_type(self, _handle_type):
+        if (_handle_type not in FileHandleType):
+            raise ValueError(f"'{_handle_type}' is not a member of enum FileHandleType")
+        self._handle_type = _handle_type
+    
+    @property
     def mode(self):
         return self._mode
     
@@ -53,7 +71,7 @@ class FileHandle():
         if (self._handle is not None):
             raise RuntimeError("The FileHandle is already open.")
         self._fd = os.open(self._path, self._flags, self._mode)
-        (handle, err) = handle_register(self._fd)
+        (handle, err) = handle_register(self._fd, self._handle_type)
         if (err[0] != 0):
             os.close(self._fd)
             self._fd = None

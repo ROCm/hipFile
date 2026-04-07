@@ -5,6 +5,7 @@ import stat
 
 from hipfile.buffer import Buffer
 from hipfile.driver import Driver
+from hipfile.enums import FileHandleType
 from hipfile.file import FileHandle
 from hipfile.properties import driver_get_properties, get_version
 from hipfile.hipMalloc import hipFree, hipMalloc
@@ -28,7 +29,7 @@ print(f"Buffer located at: {buffer_ptr} | {hex(buffer_ptr)}")
 with Driver() as hipfile_driver:
     print(f"Driver Use Count After: {hipfile_driver.use_count()}")
     with Buffer.from_ctypes_void_p(buffer, size, 0) as registered_buffer:
-        with FileHandle(input_path, os.O_RDWR | os.O_DIRECT | os.O_CREAT) as fh_input:
+        with FileHandle(input_path, os.O_RDWR | os.O_DIRECT | os.O_CREAT, handle_type = FileHandleType.OpaqueFD) as fh_input:
             with FileHandle(output_path, os.O_RDWR | os.O_DIRECT | os.O_CREAT | os.O_TRUNC) as fh_output:
                 print(f"Transferring {size} bytes...")
                 bytes_read = fh_input.read(registered_buffer, size, 0, 0)
