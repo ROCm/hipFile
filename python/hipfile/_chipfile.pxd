@@ -7,7 +7,6 @@ wrapped by the low-level Cython bindings.
 """
 
 from libc.stdint cimport int64_t, uint64_t
-from libc.stddef cimport size_t
 from posix.types cimport off_t
 
 
@@ -86,8 +85,6 @@ cdef extern from "hipfile.h":
     ctypedef struct hipFileError_t:
         hipFileOpError_t err
         hipError_t hip_drv_err
-
-    const char *hipFileGetOpErrorString(hipFileOpError_t status)
 
     # -- Opaque handles -----------------------------------------------------
 

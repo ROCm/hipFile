@@ -74,7 +74,6 @@ class FileHandle:
         handle, err = hipFileHandleRegister(self._fd, self._handle_type)
         if err[0] != 0:
             os.close(self._fd)
-            self._fd = None
             raise HipFileException(err[0], err[1])
         self._handle = handle
 

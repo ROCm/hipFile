@@ -1,6 +1,7 @@
 # pylint: disable=C0114,C0115,C0116
 from __future__ import annotations
 from typing import TYPE_CHECKING
+from sys import stderr
 
 from hipfile._hipfile import (  # pylint: disable=E0401,E0611
     hipFileBufDeregister,
@@ -26,7 +27,12 @@ class Buffer:
 
     def __del__(self):
         # We did not create the underlying buffer. Don't try to free it.
-        self.deregister()
+        try:
+            self.deregister()
+        except Exception:  # pylint: disable=W0718  # Suppress exceptions in a dtor
+            print(
+                "Failed to deregister hipFile.Buffer at destruction time.", file=stderr
+            )
 
     def __enter__(self):
         self.register()
