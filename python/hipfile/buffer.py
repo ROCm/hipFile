@@ -2,7 +2,10 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from hipfile._hipfile import buf_deregister, buf_register  # pylint: disable=E0401,E0611
+from hipfile._hipfile import (  # pylint: disable=E0401,E0611
+    hipFileBufDeregister,
+    hipFileBufRegister,
+)
 from hipfile.error import HipFileException
 
 if TYPE_CHECKING:
@@ -38,13 +41,13 @@ class Buffer:
 
     def deregister(self):
         if self._registered:
-            err = buf_deregister(self._buffer_ptr)
+            err = hipFileBufDeregister(self._buffer_ptr)
             if err[0] != 0:
                 raise HipFileException(err[0], err[1])
             self._registered = False
 
     def register(self):
-        err = buf_register(self._buffer_ptr, self._length, self._flags)
+        err = hipFileBufRegister(self._buffer_ptr, self._length, self._flags)
         if err[0] != 0:
             raise HipFileException(err[0], err[1])
         self._registered = True

@@ -118,7 +118,7 @@ def hip_drv_err(tuple err):
     return err[1]
 
 
-def get_op_error_string(int status):
+def hipFileGetOpErrorString(int status):
     """Wrapper for ``hipFileGetOpErrorString``."""
     cdef const char *s = _c.hipFileGetOpErrorString(<_c.hipFileOpError_t>status)
     if s == NULL:
@@ -130,17 +130,17 @@ def get_op_error_string(int status):
 #  Driver lifecycle
 # ---------------------------------------------------------------------------
 
-def driver_open():
+def hipFileDriverOpen():
     """Wrapper for ``hipFileDriverOpen``."""
     return _err(_c.hipFileDriverOpen())
 
 
-def driver_close():
+def hipFileDriverClose():
     """Wrapper for ``hipFileDriverClose``."""
     return _err(_c.hipFileDriverClose())
 
 
-def use_count():
+def hipFileUseCount():
     """Wrapper for ``hipFileUseCount``."""
     return <int>_c.hipFileUseCount()
 
@@ -149,7 +149,7 @@ def use_count():
 #  Version
 # ---------------------------------------------------------------------------
 
-def get_version():
+def hipFileGetVersion():
     """Wrapper for ``hipFileGetVersion``.
 
     Returns ``((major, minor, patch), error_tuple)``.
@@ -163,7 +163,7 @@ def get_version():
 #  File handles
 # ---------------------------------------------------------------------------
 
-def handle_register(int fd, int handle_type):
+def hipFileHandleRegister(int fd, int handle_type):
     """Wrapper for ``hipFileHandleRegister``.
 
     Parameters
@@ -185,7 +185,7 @@ def handle_register(int fd, int handle_type):
     return (<uintptr_t>fh, _err(e))
 
 
-def handle_deregister(uintptr_t handle):
+def hipFileHandleDeregister(uintptr_t handle):
     """Wrapper for ``hipFileHandleDeregister``."""
     _c.hipFileHandleDeregister(<_c.hipFileHandle_t>handle)
 
@@ -194,12 +194,12 @@ def handle_deregister(uintptr_t handle):
 #  Buffer registration
 # ---------------------------------------------------------------------------
 
-def buf_register(uintptr_t buffer_base, size_t length, int flags=0):
+def hipFileBufRegister(uintptr_t buffer_base, size_t length, int flags=0):
     """Wrapper for ``hipFileBufRegister``."""
     return _err(_c.hipFileBufRegister(<const void *>buffer_base, length, flags))
 
 
-def buf_deregister(uintptr_t buffer_base):
+def hipFileBufDeregister(uintptr_t buffer_base):
     """Wrapper for ``hipFileBufDeregister``."""
     return _err(_c.hipFileBufDeregister(<const void *>buffer_base))
 
@@ -208,8 +208,8 @@ def buf_deregister(uintptr_t buffer_base):
 #  Synchronous I/O
 # ---------------------------------------------------------------------------
 
-def read(uintptr_t handle, uintptr_t buffer_base, size_t size,
-         _c.hoff_t file_offset, _c.hoff_t buffer_offset):
+def hipFileRead(uintptr_t handle, uintptr_t buffer_base, size_t size,
+                _c.hoff_t file_offset, _c.hoff_t buffer_offset):
     """Wrapper for ``hipFileRead``.
 
     Returns ``(result, extra)``:
@@ -230,8 +230,8 @@ def read(uintptr_t handle, uintptr_t buffer_base, size_t size,
     return (ret, extra)
 
 
-def write(uintptr_t handle, uintptr_t buffer_base, size_t size,
-          _c.hoff_t file_offset, _c.hoff_t buffer_offset):
+def hipFileWrite(uintptr_t handle, uintptr_t buffer_base, size_t size,
+                 _c.hoff_t file_offset, _c.hoff_t buffer_offset):
     """Wrapper for ``hipFileWrite``.
 
     Returns ``(result, extra)``:
@@ -256,7 +256,7 @@ def write(uintptr_t handle, uintptr_t buffer_base, size_t size,
 #  Driver properties
 # ---------------------------------------------------------------------------
 
-def driver_get_properties():
+def hipFileDriverGetProperties():
     """Wrapper for ``hipFileDriverGetProperties``.
 
     Returns ``(props_dict, error_tuple)``.

@@ -1,5 +1,5 @@
 # pylint: disable=C0114,C0115,C0116
-from hipfile._hipfile import get_op_error_string  # pylint: disable=E0401,E0611
+from hipfile._hipfile import hipFileGetOpErrorString  # pylint: disable=E0401,E0611
 
 
 class HipFileException(Exception):
@@ -16,7 +16,7 @@ class HipFileException(Exception):
         return self._hip_err
 
     def __str__(self):
-        err_msg = f"{self._hipfile_err} - {get_op_error_string(self._hipfile_err)}"
+        err_msg = f"{self._hipfile_err} - {hipFileGetOpErrorString(self._hipfile_err)}"
         if self._hipfile_err == 5011:
             err_msg += f" {self._hip_err}"
         return err_msg

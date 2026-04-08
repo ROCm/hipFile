@@ -3,12 +3,10 @@ import os
 import stat
 
 from hipfile._hipfile import (  # pylint: disable=E0401,E0611
-    # File handles
-    handle_register,
-    handle_deregister,
-    # Synchronous I/O
-    read as _read,
-    write as _write,
+    hipFileHandleRegister,
+    hipFileHandleDeregister,
+    hipFileRead,
+    hipFileWrite,
 )
 from hipfile.enums import FileHandleType
 from hipfile.error import HipFileException
@@ -73,7 +71,7 @@ class FileHandle:
         if self._handle is not None:
             raise RuntimeError("The FileHandle is already open.")
         self._fd = os.open(self._path, self._flags, self._mode)
-        handle, err = handle_register(self._fd, self._handle_type)
+        handle, err = hipFileHandleRegister(self._fd, self._handle_type)
         if err[0] != 0:
             os.close(self._fd)
             self._fd = None
@@ -82,7 +80,7 @@ class FileHandle:
 
     def close(self):
         if self._handle is not None:
-            handle_deregister(self._handle)
+            hipFileHandleDeregister(self._handle)
             self._handle = None
         if self._fd is not None:
             os.close(self._fd)
@@ -91,7 +89,7 @@ class FileHandle:
     def read(self, buffer, size, file_offset, buffer_offset):
         if self._handle is None:
             raise RuntimeError("The FileHandle is not open.")
-        bytes_read, extra_err = _read(
+        bytes_read, extra_err = hipFileRead(
             self._handle, buffer.ptr, size, file_offset, buffer_offset
         )
         if bytes_read == -1:
@@ -107,7 +105,7 @@ class FileHandle:
     def write(self, buffer, size, file_offset, buffer_offset):
         if self._handle is None:
             raise RuntimeError("The FileHandle is not open.")
-        bytes_written, extra_err = _write(
+        bytes_written, extra_err = hipFileWrite(
             self._handle, buffer.ptr, size, file_offset, buffer_offset
         )
         if bytes_written == -1:
