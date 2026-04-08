@@ -1,9 +1,6 @@
-from hipfile._hipfile import (
-    driver_open,
-    driver_close,
-    use_count as _use_count
-)
+from hipfile._hipfile import driver_open, driver_close, use_count as _use_count
 from hipfile.error import HipFileException
+
 
 class Driver:
 
@@ -20,10 +17,10 @@ class Driver:
 
     def close(self):
         err = driver_close()
-        if (err[0] != 0):
+        if err[0] != 0:
             raise HipFileException(err[0], err[1])
 
     def open(self):
         err = driver_open()
-        if (err[0] != 0):
+        if err[0] != 0:
             raise HipFileException(err[0], err[1])

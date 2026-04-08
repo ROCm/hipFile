@@ -1,16 +1,14 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from hipfile._hipfile import (
-    buf_deregister,
-    buf_register
-)
+from hipfile._hipfile import buf_deregister, buf_register
 from hipfile.error import HipFileException
 
 if TYPE_CHECKING:
     from ctypes import c_void_p
 
-class Buffer():
+
+class Buffer:
 
     @classmethod
     def from_ctypes_void_p(cls, ctypes_void_p: c_void_p, length, flags):
@@ -38,14 +36,14 @@ class Buffer():
         return self._buffer_ptr
 
     def deregister(self):
-        if (self._registered):
+        if self._registered:
             err = buf_deregister(self._buffer_ptr)
-            if (err[0] != 0):
+            if err[0] != 0:
                 raise HipFileException(err[0], err[1])
             self._registered = False
 
     def register(self):
         err = buf_register(self._buffer_ptr, self._length, self._flags)
-        if (err[0] != 0):
+        if err[0] != 0:
             raise HipFileException(err[0], err[1])
         self._registered = True

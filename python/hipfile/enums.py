@@ -55,44 +55,44 @@ class OpError(IntEnum):
     in hipfile.h automatically.
     """
 
-    Success                 = hipFileSuccess
-    DriverNotInitialized    = hipFileDriverNotInitialized
-    DriverInvalidProps      = hipFileDriverInvalidProps
-    DriverUnsupportedLimit  = hipFileDriverUnsupportedLimit
-    DriverVersionMismatch   = hipFileDriverVersionMismatch
-    DriverVersionReadError  = hipFileDriverVersionReadError
-    DriverClosing           = hipFileDriverClosing
-    PlatformNotSupported    = hipFilePlatformNotSupported
-    IONotSupported          = hipFileIONotSupported
-    DeviceNotSupported      = hipFileDeviceNotSupported
-    DriverError             = hipFileDriverError
-    HipDriverError          = hipFileHipDriverError
-    HipPointerInvalid       = hipFileHipPointerInvalid
-    HipMemoryTypeInvalid    = hipFileHipMemoryTypeInvalid
-    HipPointerRangeError    = hipFileHipPointerRangeError
-    HipContextMismatch      = hipFileHipContextMismatch
-    InvalidMappingSize      = hipFileInvalidMappingSize
-    InvalidMappingRange     = hipFileInvalidMappingRange
-    InvalidFileType         = hipFileInvalidFileType
-    InvalidFileOpenFlag     = hipFileInvalidFileOpenFlag
-    DIONotSet               = hipFileDIONotSet
-    InvalidValue            = hipFileInvalidValue
+    Success = hipFileSuccess
+    DriverNotInitialized = hipFileDriverNotInitialized
+    DriverInvalidProps = hipFileDriverInvalidProps
+    DriverUnsupportedLimit = hipFileDriverUnsupportedLimit
+    DriverVersionMismatch = hipFileDriverVersionMismatch
+    DriverVersionReadError = hipFileDriverVersionReadError
+    DriverClosing = hipFileDriverClosing
+    PlatformNotSupported = hipFilePlatformNotSupported
+    IONotSupported = hipFileIONotSupported
+    DeviceNotSupported = hipFileDeviceNotSupported
+    DriverError = hipFileDriverError
+    HipDriverError = hipFileHipDriverError
+    HipPointerInvalid = hipFileHipPointerInvalid
+    HipMemoryTypeInvalid = hipFileHipMemoryTypeInvalid
+    HipPointerRangeError = hipFileHipPointerRangeError
+    HipContextMismatch = hipFileHipContextMismatch
+    InvalidMappingSize = hipFileInvalidMappingSize
+    InvalidMappingRange = hipFileInvalidMappingRange
+    InvalidFileType = hipFileInvalidFileType
+    InvalidFileOpenFlag = hipFileInvalidFileOpenFlag
+    DIONotSet = hipFileDIONotSet
+    InvalidValue = hipFileInvalidValue
     MemoryAlreadyRegistered = hipFileMemoryAlreadyRegistered
-    MemoryNotRegistered     = hipFileMemoryNotRegistered
-    PermissionDenied        = hipFilePermissionDenied
-    DriverAlreadyOpen       = hipFileDriverAlreadyOpen
-    HandleNotRegistered     = hipFileHandleNotRegistered
+    MemoryNotRegistered = hipFileMemoryNotRegistered
+    PermissionDenied = hipFilePermissionDenied
+    DriverAlreadyOpen = hipFileDriverAlreadyOpen
+    HandleNotRegistered = hipFileHandleNotRegistered
     HandleAlreadyRegistered = hipFileHandleAlreadyRegistered
-    DeviceNotFound          = hipFileDeviceNotFound
-    InternalError           = hipFileInternalError
-    GetNewFDFailed          = hipFileGetNewFDFailed
-    DriverSetupError        = hipFileDriverSetupError
-    IODisabled              = hipFileIODisabled
-    BatchSubmitFailed       = hipFileBatchSubmitFailed
-    GPUMemoryPinningFailed  = hipFileGPUMemoryPinningFailed
-    BatchFull               = hipFileBatchFull
-    AsyncNotSupported       = hipFileAsyncNotSupported
-    IOMaxError              = hipFileIOMaxError
+    DeviceNotFound = hipFileDeviceNotFound
+    InternalError = hipFileInternalError
+    GetNewFDFailed = hipFileGetNewFDFailed
+    DriverSetupError = hipFileDriverSetupError
+    IODisabled = hipFileIODisabled
+    BatchSubmitFailed = hipFileBatchSubmitFailed
+    GPUMemoryPinningFailed = hipFileGPUMemoryPinningFailed
+    BatchFull = hipFileBatchFull
+    AsyncNotSupported = hipFileAsyncNotSupported
+    IOMaxError = hipFileIOMaxError
 
 
 class FileHandleType(IntEnum):
@@ -101,6 +101,6 @@ class FileHandleType(IntEnum):
     Values are sourced from the C enum via the Cython layer.
     """
 
-    OpaqueFD    = hipFileHandleTypeOpaqueFD
+    OpaqueFD = hipFileHandleTypeOpaqueFD
     OpaqueWin32 = hipFileHandleTypeOpaqueWin32
     UserspaceFS = hipFileHandleTypeUserspaceFS

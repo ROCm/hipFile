@@ -11,7 +11,7 @@ from hipfile import (
     Buffer,
     FileHandleType,
     driver_get_properties,
-    get_version
+    get_version,
 )
 
 hipfile_version = get_version()
@@ -33,8 +33,14 @@ print(f"Buffer located at: {buffer_ptr} | {hex(buffer_ptr)}")
 with Driver() as hipfile_driver:
     print(f"Driver Use Count After: {hipfile_driver.use_count()}")
     with Buffer.from_ctypes_void_p(buffer, size, 0) as registered_buffer:
-        with FileHandle(input_path, os.O_RDWR | os.O_DIRECT | os.O_CREAT, handle_type = FileHandleType.OpaqueFD) as fh_input:
-            with FileHandle(output_path, os.O_RDWR | os.O_DIRECT | os.O_CREAT | os.O_TRUNC) as fh_output:
+        with FileHandle(
+            input_path,
+            os.O_RDWR | os.O_DIRECT | os.O_CREAT,
+            handle_type=FileHandleType.OpaqueFD,
+        ) as fh_input:
+            with FileHandle(
+                output_path, os.O_RDWR | os.O_DIRECT | os.O_CREAT | os.O_TRUNC
+            ) as fh_output:
                 print(f"Transferring {size} bytes...")
                 bytes_read = fh_input.read(registered_buffer, size, 0, 0)
                 print(f"Bytes Read: {bytes_read}")
@@ -43,18 +49,18 @@ with Driver() as hipfile_driver:
 
 hipFree(buffer)
 
-with open(input_path, 'br') as file_in:
+with open(input_path, "br") as file_in:
     hash_in = hashlib.sha256()
-    chunk = file_in.read(1 * 1024 * 1024) # 1 MiB
-    while (len(chunk) != 0):
+    chunk = file_in.read(1 * 1024 * 1024)  # 1 MiB
+    while len(chunk) != 0:
         hash_in.update(chunk)
-        chunk = file_in.read(1 * 1024 * 1024) # 1 MiB
+        chunk = file_in.read(1 * 1024 * 1024)  # 1 MiB
     print(f"Input File Hash: {hash_in.hexdigest()}")
 
-with open(output_path, 'br') as file_out:
+with open(output_path, "br") as file_out:
     hash_out = hashlib.sha256()
-    chunk = file_out.read(1 * 1024 * 1024) # 1 MiB
-    while (len(chunk) != 0):
+    chunk = file_out.read(1 * 1024 * 1024)  # 1 MiB
+    while len(chunk) != 0:
         hash_out.update(chunk)
-        chunk = file_out.read(1 * 1024 * 1024) # 1 MiB
+        chunk = file_out.read(1 * 1024 * 1024)  # 1 MiB
     print(f"Output File Hash: {hash_out.hexdigest()}")

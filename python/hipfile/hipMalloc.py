@@ -3,6 +3,7 @@ This is a hack to have some semblance of GPU memory management
 without introducing a dependency at this early stage of
 development. Do not rely upon anything in this module.
 """
+
 import ctypes
 import sys
 
@@ -24,14 +25,16 @@ _hip.hipMalloc.restype = ctypes.c_int
 _hip.hipFree.argtypes = [ctypes.c_void_p]
 _hip.hipFree.restype = ctypes.c_int
 
+
 def hipMalloc(size_bytes: int) -> ctypes.c_void_p:
     d_ptr = ctypes.c_void_p()
     status = _hip.hipMalloc(ctypes.byref(d_ptr), ctypes.c_size_t(size_bytes))
-    if (status != 0):
+    if status != 0:
         raise RuntimeError(f"hipMalloc failed ({status})")
     return d_ptr
 
+
 def hipFree(ptr: ctypes.c_void_p) -> None:
     status = _hip.hipFree(ptr)
-    if (status != 0):
+    if status != 0:
         raise RuntimeError(f"hipFree failed ({status})")
