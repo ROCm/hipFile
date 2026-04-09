@@ -163,13 +163,13 @@ def hipFileGetVersion():
 #  File handles
 # ---------------------------------------------------------------------------
 
-def hipFileHandleRegister(int fd, int handle_type):
+def hipFileHandleRegister(uintptr_t handle_value, int handle_type):
     """Wrapper for ``hipFileHandleRegister``.
 
     Parameters
     ----------
-    fd : int
-        POSIX file descriptor.
+    handle_value : int
+        POSIX file descriptor or Win32 HANDLE, depending on *handle_type*.
     handle_type : int
         Value from ``hipFileFileHandleType_t``.
 
@@ -180,7 +180,10 @@ def hipFileHandleRegister(int fd, int handle_type):
     cdef _c.hipFileDescr_t descr
     memset(&descr, 0, sizeof(descr))
     descr.type = <_c.hipFileFileHandleType_t>handle_type
-    descr.fd = fd
+    if handle_type == <int>_c.hipFileHandleTypeOpaqueWin32:
+        descr.hFile = <void *>handle_value
+    else:
+        descr.fd = <int>handle_value
     cdef _c.hipFileError_t e = _c.hipFileHandleRegister(&fh, &descr)
     return (<uintptr_t>fh, _err(e))
 

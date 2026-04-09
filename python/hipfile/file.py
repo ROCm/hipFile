@@ -11,17 +11,13 @@ from hipfile._hipfile import (  # pylint: disable=E0401,E0611
 from hipfile.enums import FileHandleType
 from hipfile.error import HipFileException
 
-default_handle_type = None
-if os.name == "posix":
-    default_handle_type = FileHandleType.OPAQUE_FD
-elif os.name == "nt":
-    default_handle_type = FileHandleType.OPAQUE_WIN32
-
 
 class FileHandle:
     DEFAULT_MODE = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
 
-    def __init__(self, path, flags, mode=DEFAULT_MODE, handle_type=default_handle_type):
+    def __init__(
+        self, path, flags, mode=DEFAULT_MODE, handle_type=FileHandleType.OPAQUE_FD
+    ):
         self._fd = None
         self._flags = flags
         self._handle = None
@@ -55,8 +51,14 @@ class FileHandle:
 
     @handle_type.setter
     def handle_type(self, _handle_type):
+        if self._handle is not None:
+            raise RuntimeError("Cannot modify handle_type while FileHandle is open")
         if _handle_type not in FileHandleType:
             raise ValueError(f"'{_handle_type}' is not a member of enum FileHandleType")
+        if _handle_type == FileHandleType.OPAQUE_WIN32:
+            raise NotImplementedError(
+                "FileHandle does not currently support Win32 Handles"
+            )
         self._handle_type = _handle_type
 
     @property
