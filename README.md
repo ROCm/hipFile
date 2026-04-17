@@ -1,7 +1,9 @@
 # hipFile
 
 > [!CAUTION]
-> The hipFile repository is retired, please use the [ROCm/rocm-systems](https://github.com/ROCm/rocm-systems) repository 
+> The hipFile repository is retired, please use the [ROCm/rocm-systems](https://github.com/ROCm/rocm-systems) repository
+
+> [!CAUTION] 
 > This release is an *early-access* software technology preview. Running production workloads is *not* recommended.
 
 [![MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/ROCm/hipFile/develop/LICENSE.md)
