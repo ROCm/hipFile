@@ -155,34 +155,9 @@ private:
 
 using StatsV1 = StatsTemplate<PerGpuStatsV1, 16>;
 
-/// When adding new fields, remember to increment Stats::version
-enum class StatsCounters {
-    TotalFastPathReadBytes,
-    TotalFastPathWriteBytes,
-    TotalFallbackPathReadBytes,
-    TotalFallbackPathWriteBytes,
+using Stats = StatsV1;
 
-    Max,
-    Capacity = 64,
-};
-
-static_assert(StatsCounters::Max <= StatsCounters::Capacity, "Increase StatsCounters::Capacity");
-
-struct Stats {
-    using Array = std::array<std::atomic_uint64_t, static_cast<std::size_t>(StatsCounters::Capacity)>;
-    StatsLevel     level{};
-    const uint64_t version{1};
-    Array          counters;
-
-    std::atomic_uint64_t &getCounter(StatsCounters index)
-    {
-        return counters[static_cast<std::size_t>(index)];
-    }
-    const std::atomic_uint64_t &getCounter(StatsCounters index) const
-    {
-        return counters[static_cast<std::size_t>(index)];
-    }
-};
+static_assert(std::is_standard_layout_v<Stats>, "Stats must be standard layout");
 
 class StatsContainer {
 public:
@@ -257,7 +232,7 @@ public:
     bool connectServer() override;
     bool generateReport(std::ostream &stream) const override;
 
-    static void generateReportV1(std::ostream &stream, const Stats *stats);
+    static void generateReportV1(std::ostream &stream, const StatsV1 *stats);
 
 private:
     FileDescriptor m_pfd, m_sfd;

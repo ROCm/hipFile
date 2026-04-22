@@ -5,6 +5,7 @@
 
 #include "configuration.h"
 #include "context.h"
+#include "hip.h"
 #include "stats.h"
 #include "sys.h"
 
@@ -109,8 +110,8 @@ StatsContainer::StatsContainer()
         Context<Sys>::get()->munmap(shm, sizeof(Stats));
         throw;
     }
-    m_stats        = new (shm) Stats;
-    m_stats->level = std::min(level, StatsLevel::Max);
+    m_stats = new (shm) Stats;
+    m_stats->setLevel(std::min(level, StatsLevel::Max));
 }
 
 StatsContainer::~StatsContainer()
@@ -242,9 +243,9 @@ StatsClient::generateReport(std::ostream &stream) const
     if (stats == nullptr) {
         return false;
     }
-    stream << "AIS-STATS Version: " << stats->version
-           << "\nHipFile Stats Level: " << static_cast<uint64_t>(stats->level) << '\n';
-    switch (stats->version) {
+    stream << "AIS-STATS Version: " << stats->getVersion()
+           << "\nHipFile Stats Level: " << static_cast<uint64_t>(stats->getLevel()) << '\n';
+    switch (stats->getVersion()) {
         case 1:
             generateReportV1(stream, stats);
             break;
@@ -255,19 +256,80 @@ StatsClient::generateReport(std::ostream &stream) const
     return true;
 }
 
+namespace reportUtil {
+    const char *toString(IoType) noexcept;
+    const char *toString(StatsBackend) noexcept;
+    double      bandwidthGiBs(uint64_t bytes, uint64_t timeUs) noexcept;
+    double      latencyUs(uint64_t timeUs, uint64_t count) noexcept;
+
+    const char *toString(IoType ioType) noexcept
+    {
+        switch (ioType) {
+            case IoType::Read:
+                return "Read";
+            case IoType::Write:
+                return "Write";
+            default:
+                return "Unknown";
+        }
+    }
+
+    const char *toString(StatsBackend backend) noexcept
+    {
+        switch (backend) {
+            case StatsBackend::Fastpath:
+                return "Fastpath";
+            case StatsBackend::Fallback:
+                return "Fallback";
+            case StatsBackend::Count:
+                [[fallthrough]];
+            default:
+                return "Unknown";
+        }
+    }
+
+    double bandwidthGiBs(uint64_t bytes, uint64_t timeUs) noexcept
+    {
+        double time{static_cast<double>(timeUs) / 1000000.0};
+        double gigaBytes{static_cast<double>(bytes) / (1024.0 * 1024.0 * 1024.0)};
+        return time > 0 ? (gigaBytes / time) : 0.0;
+    }
+
+    double latencyUs(uint64_t timeUs, uint64_t count) noexcept
+    {
+        return count > 0 ? (static_cast<double>(timeUs) / static_cast<double>(count)) : 0.0;
+    }
+}
+
 void
-StatsClient::generateReportV1(std::ostream &stream, const Stats *stats)
+StatsClient::generateReportV1(std::ostream &stream, const StatsV1 *stats)
 {
     if (stats == nullptr) {
         return;
     }
-    stream << "Total fast path reads (B): " << stats->getCounter(StatsCounters::TotalFastPathReadBytes).load()
-           << "\nTotal fast path writes (B): "
-           << stats->getCounter(StatsCounters::TotalFastPathWriteBytes).load()
-           << "\nTotal fallback path reads (B): "
-           << stats->getCounter(StatsCounters::TotalFallbackPathReadBytes).load()
-           << "\nTotal fallback path writes (B): "
-           << stats->getCounter(StatsCounters::TotalFallbackPathWriteBytes).load() << '\n';
+    static constexpr IoType       ioTypes[]{IoType::Read, IoType::Write};
+    static constexpr StatsBackend backends[]{StatsBackend::Fastpath, StatsBackend::Fallback};
+    for (const auto &backend : backends) {
+        for (const auto &ioType : ioTypes) {
+            uint64_t totalBytes{}, totalCount{}, totalTimeUs{};
+            for (size_t i{}; i < StatsV1::MaxGpus; ++i) {
+                if (const auto *perGpuStats{stats->getPerGpuStats(i, backend)}) {
+                    if (const auto [sizeHist, countHist, timeHist] = perGpuStats->getHistograms(ioType);
+                        sizeHist != nullptr && countHist != nullptr && timeHist != nullptr) {
+                        totalBytes += sizeHist->accumulate();
+                        totalCount += countHist->accumulate();
+                        totalTimeUs += timeHist->accumulate();
+                    }
+                }
+            }
+            stream << "Total " << reportUtil::toString(backend) << ' ' << reportUtil::toString(ioType)
+                   << " Size (B): " << totalBytes << '\n';
+            stream << "Average " << reportUtil::toString(backend) << ' ' << reportUtil::toString(ioType)
+                   << " Bandwidth (GiB/s): " << reportUtil::bandwidthGiBs(totalBytes, totalTimeUs) << '\n';
+            stream << "Average " << reportUtil::toString(backend) << ' ' << reportUtil::toString(ioType)
+                   << " Latency (us): " << reportUtil::latencyUs(totalTimeUs, totalCount) << "\n\n";
+        }
+    }
 }
 
 void
@@ -282,36 +344,29 @@ StatsIoTracker::complete(uint64_t bytes) const noexcept
 void
 StatsCollection::addIo(IoType ioType, StatsBackend backend, uint64_t bytes, uint64_t timeUs) const noexcept
 {
-    (void)timeUs;
     Stats *stats{Context<StatsServer>::get()->getStats()};
-    if (stats == nullptr || stats->level < StatsLevel::Basic) {
+    if (stats == nullptr || stats->getLevel() < StatsLevel::Basic) {
         return;
     }
-    StatsCounters counter{StatsCounters::Max};
-    switch (backend) {
-        case StatsBackend::Fastpath:
-            if (ioType == IoType::Read) {
-                counter = StatsCounters::TotalFastPathReadBytes;
-            }
-            else {
-                counter = StatsCounters::TotalFastPathWriteBytes;
-            }
-            break;
-        case StatsBackend::Fallback:
-            if (ioType == IoType::Read) {
-                counter = StatsCounters::TotalFallbackPathReadBytes;
-            }
-            else {
-                counter = StatsCounters::TotalFallbackPathWriteBytes;
-            }
-            break;
-        case StatsBackend::Count:
-            [[fallthrough]];
-        default:
-            break;
+    size_t device{};
+    try {
+        device = static_cast<size_t>(Context<Hip>::get()->hipGetDevice());
     }
-    if (counter != StatsCounters::Max) {
-        stats->getCounter(counter) += bytes;
+    catch (...) {
+        return;
     }
+    auto *perGpuStats{stats->getPerGpuStats(device, backend)};
+    if (perGpuStats == nullptr) {
+        return;
+    }
+    auto [sizeHist, countHist, timeHist] = perGpuStats->getHistograms(ioType);
+    if (sizeHist == nullptr || countHist == nullptr || timeHist == nullptr) {
+        return;
+    }
+    size_t bucket = StatsHistogram::toHistogramBucket(bytes);
+    sizeHist->buckets[bucket].fetch_add(bytes, std::memory_order_relaxed);
+    countHist->buckets[bucket].fetch_add(1, std::memory_order_relaxed);
+    timeHist->buckets[bucket].fetch_add(timeUs, std::memory_order_relaxed);
+    perGpuStats->inUse.store(1, std::memory_order_relaxed);
 }
 }

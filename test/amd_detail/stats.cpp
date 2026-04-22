@@ -5,6 +5,7 @@
 
 #include "hipfile-test.h"
 #include "mconfiguration.h"
+#include "mhip.h"
 #include "mstats.h"
 #include "stats.h"
 #include "msys.h"
@@ -27,17 +28,31 @@ TEST_F(HipFileStats, StatsCollectionAddIo)
 {
     Stats                    stats{};
     StrictMock<MStatsServer> mstats{};
+    StrictMock<MHip>         mhip{};
     EXPECT_CALL(mstats, getStats).WillRepeatedly(testing::Return(&stats));
-    stats.level = StatsLevel::Basic;
+    EXPECT_CALL(mhip, hipGetDevice).WillRepeatedly(testing::Return(0));
+    stats.setLevel(StatsLevel::Basic);
     Context<StatsCollection>::get()->addIo(IoType::Read, StatsBackend::Fastpath, 10, 0);
-    ASSERT_EQ(10, stats.getCounter(StatsCounters::TotalFastPathReadBytes).load());
+    ASSERT_EQ(10, stats.getPerGpuStats(0, StatsBackend::Fastpath)
+                      ->ioSizeBytes[static_cast<size_t>(IoType::Read)]
+                      .buckets[0]
+                      .load());
     Context<StatsCollection>::get()->addIo(IoType::Write, StatsBackend::Fallback, 10, 0);
-    ASSERT_EQ(10, stats.getCounter(StatsCounters::TotalFallbackPathWriteBytes).load());
+    ASSERT_EQ(10, stats.getPerGpuStats(0, StatsBackend::Fallback)
+                      ->ioSizeBytes[static_cast<size_t>(IoType::Write)]
+                      .buckets[0]
+                      .load());
     Context<StatsCollection>::get()->addIo(IoType::Read, StatsBackend::Fastpath, 10, 0);
-    ASSERT_EQ(20, stats.getCounter(StatsCounters::TotalFastPathReadBytes).load());
-    stats.level = StatsLevel::Disabled;
+    ASSERT_EQ(20, stats.getPerGpuStats(0, StatsBackend::Fastpath)
+                      ->ioSizeBytes[static_cast<size_t>(IoType::Read)]
+                      .buckets[0]
+                      .load());
+    stats.setLevel(StatsLevel::Disabled);
     Context<StatsCollection>::get()->addIo(IoType::Write, StatsBackend::Fallback, 10, 0);
-    ASSERT_EQ(10, stats.getCounter(StatsCounters::TotalFallbackPathWriteBytes).load());
+    ASSERT_EQ(10, stats.getPerGpuStats(0, StatsBackend::Fallback)
+                      ->ioSizeBytes[static_cast<size_t>(IoType::Write)]
+                      .buckets[0]
+                      .load());
 }
 
 TEST_F(HipFileStats, StatsContainer)
@@ -61,16 +76,39 @@ TEST_F(HipFileStats, GenerateReportV1)
 {
     Stats              stats{};
     std::ostringstream os{};
-    stats.getCounter(StatsCounters::TotalFastPathReadBytes)      = 2;
-    stats.getCounter(StatsCounters::TotalFastPathWriteBytes)     = 4;
-    stats.getCounter(StatsCounters::TotalFallbackPathReadBytes)  = 6;
-    stats.getCounter(StatsCounters::TotalFallbackPathWriteBytes) = 8;
+    stats.getPerGpuStats(0, StatsBackend::Fastpath)
+        ->ioSizeBytes[static_cast<size_t>(IoType::Read)]
+        .buckets[0] = 2;
+    stats.getPerGpuStats(0, StatsBackend::Fastpath)
+        ->ioSizeBytes[static_cast<size_t>(IoType::Write)]
+        .buckets[0] = 4;
+    stats.getPerGpuStats(0, StatsBackend::Fallback)
+        ->ioSizeBytes[static_cast<size_t>(IoType::Read)]
+        .buckets[0] = 6;
+    stats.getPerGpuStats(0, StatsBackend::Fallback)
+        ->ioSizeBytes[static_cast<size_t>(IoType::Write)]
+        .buckets[0] = 8;
     StatsClient::generateReportV1(os, &stats);
     std::string str{os.str()};
-    ASSERT_GT(std::string::npos, str.find('2'));
-    ASSERT_GT(std::string::npos, str.find('4'));
-    ASSERT_GT(std::string::npos, str.find('6'));
-    ASSERT_GT(std::string::npos, str.find('8'));
+    ASSERT_GT(std::string::npos, str.find("Total Fastpath Read Size (B): 2"));
+    ASSERT_GT(std::string::npos, str.find("Total Fastpath Write Size (B): 4"));
+    ASSERT_GT(std::string::npos, str.find("Total Fallback Read Size (B): 6"));
+    ASSERT_GT(std::string::npos, str.find("Total Fallback Write Size (B): 8"));
+}
+
+TEST_F(HipFileStats, GenerateReportV1TwoGpus)
+{
+    Stats              stats{};
+    std::ostringstream os{};
+    stats.getPerGpuStats(0, StatsBackend::Fastpath)
+        ->ioSizeBytes[static_cast<size_t>(IoType::Read)]
+        .buckets[0] = 2;
+    stats.getPerGpuStats(1, StatsBackend::Fastpath)
+        ->ioSizeBytes[static_cast<size_t>(IoType::Read)]
+        .buckets[0] = 4;
+    StatsClient::generateReportV1(os, &stats);
+    std::string str{os.str()};
+    ASSERT_GT(std::string::npos, str.find("Total Fastpath Read Size (B): 6"));
 }
 
 struct HipFileStatsHistogram : public HipFileUnopened {};
