@@ -11,7 +11,9 @@
 
 #include <cerrno>
 #include <fcntl.h>
+#include <iomanip>
 #include <poll.h>
+#include <sstream>
 #include <unistd.h>
 #include <sys/eventfd.h>
 #include <sys/mman.h>
@@ -301,6 +303,45 @@ namespace reportUtil {
     }
 }
 
+static void
+generateReportHistogramV1(
+    std::ostream &stream, const StatsV1 *stats, size_t gpuId, const char *name, const char *op,
+    std::function<void(std::ostream &, PerGpuStatsV1::ConstHistograms, size_t bucket)> printFn)
+{
+    if (stats == nullptr) {
+        return;
+    }
+    static constexpr IoType       ioTypes[]{IoType::Read, IoType::Write};
+    static constexpr StatsBackend backends[]{StatsBackend::Fastpath, StatsBackend::Fallback};
+    int                           fw{16}, w{34};
+    stream << "IO " << name << " Histogram\n";
+    stream << std::left << std::setw(fw) << "IO Size (KiB)";
+    for (const auto &backend : backends) {
+        for (const auto &ioType : ioTypes) {
+            std::stringstream header{};
+            header << reportUtil::toString(backend) << ' ' << reportUtil::toString(ioType) << ' ' << op;
+            stream << std::right << std::setw(w) << header.str();
+        }
+    }
+    stream << '\n';
+    for (size_t i{}; i < StatsHistogram::MaxBuckets; ++i) {
+        auto [lower, upper] = StatsHistogram::bucketRange(i);
+        std::stringstream rowName{};
+        rowName << (lower >> 10) << '-'
+                << (i == StatsHistogram::MaxBuckets - 1 ? "..." : std::to_string(upper >> 10));
+        stream << std::left << std::setw(fw) << rowName.str();
+        for (const auto &backend : backends) {
+            for (const auto &ioType : ioTypes) {
+                if (const auto *perGpuStats{stats->getPerGpuStats(gpuId, backend)}) {
+                    stream << std::right << std::setw(w);
+                    printFn(stream, perGpuStats->getHistograms(ioType), i);
+                }
+            }
+        }
+        stream << '\n';
+    }
+}
+
 void
 StatsClient::generateReportV1(std::ostream &stream, const StatsV1 *stats)
 {
@@ -329,6 +370,45 @@ StatsClient::generateReportV1(std::ostream &stream, const StatsV1 *stats)
             stream << "Average " << reportUtil::toString(backend) << ' ' << reportUtil::toString(ioType)
                    << " Latency (us): " << reportUtil::latencyUs(totalTimeUs, totalCount) << "\n\n";
         }
+    }
+    for (size_t gpuId{}; gpuId < StatsV1::MaxGpus; ++gpuId) {
+        if (!stats->gpuInUse(gpuId)) {
+            continue;
+        }
+        stream << "GPU " << gpuId << ":\n";
+        auto ioSize = [](std::ostream &str, PerGpuStatsV1::ConstHistograms histograms, size_t bucket) {
+            const auto [sizeHist, countHist, timeHist] = histograms;
+            uint64_t size{};
+            if (sizeHist != nullptr) {
+                size = sizeHist->buckets[bucket].load();
+            }
+            str << size;
+        };
+        auto bandwidth = [](std::ostream &str, PerGpuStatsV1::ConstHistograms histograms, size_t bucket) {
+            const auto [sizeHist, countHist, timeHist] = histograms;
+            uint64_t size{}, timeUs{};
+            if (sizeHist != nullptr) {
+                size = sizeHist->buckets[bucket].load();
+            }
+            if (timeHist != nullptr) {
+                timeUs = timeHist->buckets[bucket].load();
+            }
+            str << reportUtil::bandwidthGiBs(size, timeUs);
+        };
+        auto latency = [](std::ostream &str, PerGpuStatsV1::ConstHistograms histograms, size_t bucket) {
+            const auto [sizeHist, countHist, timeHist] = histograms;
+            uint64_t timeUs{}, count{};
+            if (timeHist != nullptr) {
+                timeUs = timeHist->buckets[bucket].load();
+            }
+            if (countHist != nullptr) {
+                count = countHist->buckets[bucket].load();
+            }
+            str << reportUtil::latencyUs(timeUs, count);
+        };
+        generateReportHistogramV1(stream, stats, gpuId, "Size", "Size (B)", ioSize);
+        generateReportHistogramV1(stream, stats, gpuId, "Bandwidth", "Bandwidth (GiB/s)", bandwidth);
+        generateReportHistogramV1(stream, stats, gpuId, "Latency", "Latency (us)", latency);
     }
 }
 
