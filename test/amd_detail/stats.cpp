@@ -131,4 +131,13 @@ TEST_F(HipFileStatsPerGpuStatsV1, GetHistograms)
     ASSERT_EQ(nullptr, invalidTime);
 }
 
+struct HipFileStatsV1 : public HipFileUnopened {};
+
+TEST_F(HipFileStatsV1, getPerGpuStats)
+{
+    StatsV1 stats{};
+    ASSERT_EQ(nullptr, stats.getPerGpuStats(StatsV1::MaxGpus, StatsBackend::Fastpath));
+    ASSERT_EQ(nullptr, stats.getPerGpuStats(0, static_cast<StatsBackend>(-1)));
+}
+
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON

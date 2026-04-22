@@ -8,6 +8,7 @@
 #include "io.h"
 
 #include <array>
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <functional>
@@ -16,6 +17,7 @@
 #include <ostream>
 #include <thread>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 namespace hipFile {
@@ -95,6 +97,63 @@ struct PerGpuStatsV1 {
                                &ioCount[static_cast<size_t>(ioType)], &ioTimeUs[static_cast<size_t>(ioType)]};
     }
 };
+
+template <typename PerGpuStatsT, size_t gpus> class StatsTemplate {
+public:
+    static constexpr size_t MaxGpus{gpus};
+    using PerGpuStats      = PerGpuStatsT;
+    using PerBackendStats  = std::array<PerGpuStats, static_cast<size_t>(StatsBackend::Count)>;
+    using PerGpuStatsArray = std::array<PerBackendStats, MaxGpus>;
+
+    static_assert(std::is_standard_layout_v<PerGpuStats>, "PerGpuStats must be standard layout");
+
+    uint64_t getVersion() const noexcept
+    {
+        return m_version;
+    }
+
+    StatsLevel getLevel() const noexcept
+    {
+        return m_level;
+    }
+
+    void setLevel(StatsLevel level) noexcept
+    {
+        m_level = level;
+    }
+
+    PerGpuStats *getPerGpuStats(size_t gpuId, StatsBackend backend) noexcept
+    {
+        if (gpuId >= MaxGpus || static_cast<size_t>(backend) >= static_cast<size_t>(StatsBackend::Count)) {
+            return nullptr;
+        }
+        return &m_perGpuStats[gpuId][static_cast<size_t>(backend)];
+    }
+
+    const PerGpuStats *getPerGpuStats(size_t gpuId, StatsBackend backend) const noexcept
+    {
+        if (gpuId >= MaxGpus || static_cast<size_t>(backend) >= static_cast<size_t>(StatsBackend::Count)) {
+            return nullptr;
+        }
+        return &m_perGpuStats[gpuId][static_cast<size_t>(backend)];
+    }
+
+    bool gpuInUse(size_t gpuId) const noexcept
+    {
+        if (gpuId >= MaxGpus) {
+            return false;
+        }
+        return std::any_of(m_perGpuStats[gpuId].begin(), m_perGpuStats[gpuId].end(),
+                           [](const PerGpuStats &stats) { return stats.inUse.load() != 0; });
+    }
+
+private:
+    const uint64_t   m_version{PerGpuStatsT::version};
+    StatsLevel       m_level{};
+    PerGpuStatsArray m_perGpuStats{};
+};
+
+using StatsV1 = StatsTemplate<PerGpuStatsV1, 16>;
 
 /// When adding new fields, remember to increment Stats::version
 enum class StatsCounters {
