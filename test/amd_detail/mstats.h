@@ -18,7 +18,7 @@ public:
     MStatsServer() : co{this}
     {
     }
-    MOCK_METHOD(Stats *, getStats, (), (override));
+    MOCK_METHOD(Stats *, getStats, (), (noexcept, override));
 };
 
 class MStatsCollection : public StatsCollection {

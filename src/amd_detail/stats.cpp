@@ -94,17 +94,37 @@ populateSocketAddr(sockaddr_un &addr, pid_t pid) noexcept
 }
 
 namespace hipFile {
-StatsServer::StatsServer()
+StatsContainer::StatsContainer()
     : m_fd{FileDescriptor::make_managed(Context<Sys>::get()->memfd_create("AISSTATS", MFD_ALLOW_SEALING))},
-      m_efd{FileDescriptor::make_managed(Context<Sys>::get()->eventfd(0, 0))}, m_stats{nullptr, &statsDeleter}
+      m_stats{nullptr}
 {
-    int fd{m_fd.get()};
-    Context<Sys>::get()->ftruncate(fd, sizeof(Stats));
-    void *shm = Context<Sys>::get()->mmap(nullptr, sizeof(Stats), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    Context<Sys>::get()->fcntl(fd, F_ADD_SEALS, F_SEAL_SHRINK | F_SEAL_FUTURE_WRITE);
-    m_stats = UniqueStats{new (shm) Stats{}, &statsDeleter};
-    m_stats->level =
-        std::min(static_cast<StatsLevel>(Context<Configuration>::get()->statsLevel()), StatsLevel::Max);
+    StatsLevel level{static_cast<StatsLevel>(Context<Configuration>::get()->statsLevel())};
+    Context<Sys>::get()->ftruncate(m_fd.get(), sizeof(Stats));
+    void *shm =
+        Context<Sys>::get()->mmap(nullptr, sizeof(Stats), PROT_READ | PROT_WRITE, MAP_SHARED, m_fd.get(), 0);
+    try {
+        Context<Sys>::get()->fcntl(m_fd.get(), F_ADD_SEALS, F_SEAL_SHRINK | F_SEAL_FUTURE_WRITE);
+    }
+    catch (...) {
+        Context<Sys>::get()->munmap(shm, sizeof(Stats));
+        throw;
+    }
+    m_stats        = new (shm) Stats;
+    m_stats->level = std::min(level, StatsLevel::Max);
+}
+
+StatsContainer::~StatsContainer()
+{
+    if (m_stats == nullptr)
+        return;
+    m_stats->~Stats();
+    Context<Sys>::get()->munmap(m_stats, sizeof(Stats));
+    m_stats = nullptr;
+}
+
+StatsServer::StatsServer()
+    : m_efd{FileDescriptor::make_managed(Context<Sys>::get()->eventfd(0, 0))}, m_stats{}
+{
     m_thread = std::thread(&StatsServer::threadFn, this);
 }
 
@@ -119,19 +139,10 @@ StatsServer::~StatsServer()
 }
 
 void
-StatsServer::statsDeleter(Stats *s)
-{
-    if (s == nullptr) {
-        return;
-    }
-    s->~Stats();
-    Context<Sys>::get()->munmap(s, sizeof(Stats));
-}
-
-void
 StatsServer::threadFn()
 {
     FileDescriptor sock{FileDescriptor::make_managed(socket(AF_UNIX, SOCK_STREAM, 0))};
+    int            fd{m_stats.getFd()};
     pid_t          pid{getpid()};
     if (sock.get() == -1) {
         return;
@@ -169,7 +180,7 @@ StatsServer::threadFn()
             if (conn == -1) {
                 continue;
             }
-            sendFd(conn, m_fd.get());
+            sendFd(conn, fd);
             close(conn);
         }
         if (pfd[1].revents & (POLLIN | POLLERR | POLLNVAL)) {

@@ -40,20 +40,21 @@ TEST_F(HipFileStats, StatsCollectionAddIo)
     ASSERT_EQ(10, stats.getCounter(StatsCounters::TotalFallbackPathWriteBytes).load());
 }
 
-TEST_F(HipFileStats, StatsServerLifetime)
+TEST_F(HipFileStats, StatsContainer)
 {
     StrictMock<MSys>           msys{};
     StrictMock<MConfiguration> mcfg{};
-    char                       buff[sizeof(Stats)];
+    alignas(Stats) char        buff[sizeof(Stats)];
     EXPECT_CALL(msys, memfd_create).WillOnce(testing::Return(10));
-    EXPECT_CALL(msys, eventfd).WillOnce(testing::Return(11));
     EXPECT_CALL(msys, fcntl).WillOnce(testing::Return(0));
     EXPECT_CALL(msys, ftruncate);
     EXPECT_CALL(msys, mmap).WillOnce(testing::Return(&buff));
-    EXPECT_CALL(msys, munmap);
-    EXPECT_CALL(msys, close).Times(3);
+    EXPECT_CALL(msys, munmap).Times(1);
+    EXPECT_CALL(msys, close).Times(1);
     EXPECT_CALL(mcfg, statsLevel()).WillOnce(testing::Return(1));
-    StatsServer srvr{};
+    StatsContainer sc{};
+    ASSERT_EQ(reinterpret_cast<Stats *>(&buff), sc.getStats());
+    ASSERT_EQ(10, sc.getFd());
 }
 
 TEST_F(HipFileStats, GenerateReportV1)

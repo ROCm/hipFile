@@ -58,23 +58,61 @@ struct Stats {
     }
 };
 
+class StatsContainer {
+public:
+    StatsContainer();
+    ~StatsContainer();
+
+    StatsContainer(const StatsContainer &)            = delete;
+    StatsContainer &operator=(const StatsContainer &) = delete;
+
+    StatsContainer(StatsContainer &&other) noexcept : m_fd(std::move(other.m_fd)), m_stats(other.m_stats)
+    {
+        other.m_stats = nullptr;
+    }
+
+    StatsContainer &operator=(StatsContainer &&other) noexcept
+    {
+        if (this != &other) {
+            std::swap(m_fd, other.m_fd);
+            std::swap(m_stats, other.m_stats);
+        }
+        return *this;
+    }
+
+    Stats *getStats() noexcept
+    {
+        return m_stats;
+    }
+
+    const Stats *getStats() const noexcept
+    {
+        return m_stats;
+    }
+
+    int getFd() const noexcept
+    {
+        return m_fd.get();
+    }
+
+private:
+    FileDescriptor m_fd;
+    Stats         *m_stats;
+};
+
 class StatsServer {
 public:
     StatsServer();
     virtual ~StatsServer();
-    virtual Stats *getStats()
+    virtual Stats *getStats() noexcept
     {
-        return m_stats.get();
+        return m_stats.getStats();
     }
-
-    static void statsDeleter(Stats *s);
-    using UniqueStats = std::unique_ptr<Stats, decltype(&StatsServer::statsDeleter)>;
 
 private:
     void           threadFn();
-    FileDescriptor m_fd;
     FileDescriptor m_efd;
-    UniqueStats    m_stats;
+    StatsContainer m_stats;
     std::thread    m_thread;
 };
 
