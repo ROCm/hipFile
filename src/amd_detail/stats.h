@@ -10,9 +10,12 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <functional>
 #include <memory>
+#include <numeric>
 #include <ostream>
 #include <thread>
+#include <utility>
 
 namespace hipFile {
 
@@ -27,6 +30,39 @@ enum class StatsBackend {
     Fastpath,
     Fallback,
     Count,
+};
+
+struct StatsHistogram {
+    static constexpr size_t   MaxBuckets{16};
+    static constexpr uint64_t FirstBucketBits{12};
+    using Buckets = std::array<std::atomic_uint64_t, MaxBuckets>;
+    Buckets buckets{};
+
+    static size_t toHistogramBucket(uint64_t bytes) noexcept
+    {
+        bytes >>= FirstBucketBits;
+        int idx{bytes == 0 ? 0 : 64 - __builtin_clzll(bytes)}; // log2(); clz(0) is UB
+        return std::min(static_cast<size_t>(idx), MaxBuckets - 1);
+    }
+
+    static constexpr std::pair<uint64_t, uint64_t> bucketRange(size_t bucket) noexcept
+    {
+        if (bucket == 0) {
+            return std::make_pair(uint64_t{0}, uint64_t{1} << FirstBucketBits);
+        }
+        else if (bucket < MaxBuckets - 1) {
+            uint64_t lower{uint64_t{1} << (bucket + FirstBucketBits - 1)};
+            return std::make_pair(lower, lower << 1);
+        }
+        else {
+            return std::make_pair(uint64_t{1} << (MaxBuckets + FirstBucketBits - 2), UINT64_MAX);
+        }
+    }
+
+    uint64_t accumulate() const noexcept
+    {
+        return std::accumulate(buckets.begin(), buckets.end(), uint64_t{0});
+    }
 };
 
 /// When adding new fields, remember to increment Stats::version

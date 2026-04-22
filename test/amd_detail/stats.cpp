@@ -73,4 +73,43 @@ TEST_F(HipFileStats, GenerateReportV1)
     ASSERT_GT(std::string::npos, str.find('8'));
 }
 
+struct HipFileStatsHistogram : public HipFileUnopened {};
+
+TEST_F(HipFileStatsHistogram, ToHistogramBucket)
+{
+    ASSERT_EQ(0, StatsHistogram::toHistogramBucket(0));
+    ASSERT_EQ(0, StatsHistogram::toHistogramBucket(1));
+    ASSERT_EQ(0, StatsHistogram::toHistogramBucket(4095));
+    ASSERT_EQ(1, StatsHistogram::toHistogramBucket(4096));
+    ASSERT_EQ(1, StatsHistogram::toHistogramBucket(8191));
+    ASSERT_EQ(2, StatsHistogram::toHistogramBucket(8192));
+    ASSERT_EQ(2, StatsHistogram::toHistogramBucket(16383));
+    ASSERT_EQ(3, StatsHistogram::toHistogramBucket(16384));
+    ASSERT_EQ(14, StatsHistogram::toHistogramBucket(uint64_t{1} << 25));
+    ASSERT_EQ(15, StatsHistogram::toHistogramBucket(uint64_t{1} << 30));
+    ASSERT_EQ(15, StatsHistogram::toHistogramBucket(uint64_t{1} << 40));
+}
+
+TEST_F(HipFileStatsHistogram, BucketRange)
+{
+    auto [lower0, upper0] = StatsHistogram::bucketRange(0);
+    ASSERT_EQ(0, lower0);
+    ASSERT_EQ(4096, upper0);
+    auto [lower1, upper1] = StatsHistogram::bucketRange(1);
+    ASSERT_EQ(4096, lower1);
+    ASSERT_EQ(8192, upper1);
+    auto [lower2, upper2] = StatsHistogram::bucketRange(2);
+    ASSERT_EQ(8192, lower2);
+    ASSERT_EQ(16384, upper2);
+    auto [lower3, upper3] = StatsHistogram::bucketRange(3);
+    ASSERT_EQ(16384, lower3);
+    ASSERT_EQ(32768, upper3);
+    auto [lower14, upper14] = StatsHistogram::bucketRange(14);
+    ASSERT_EQ(uint64_t{1} << 25, lower14);
+    ASSERT_EQ(uint64_t{1} << 26, upper14);
+    auto [lower15, upper15] = StatsHistogram::bucketRange(15);
+    ASSERT_EQ(uint64_t{1} << 26, lower15);
+    ASSERT_EQ(UINT64_MAX, upper15);
+}
+
 HIPFILE_WARN_NO_GLOBAL_CTOR_ON
