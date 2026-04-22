@@ -15,6 +15,7 @@
 #include <numeric>
 #include <ostream>
 #include <thread>
+#include <tuple>
 #include <utility>
 
 namespace hipFile {
@@ -62,6 +63,36 @@ struct StatsHistogram {
     uint64_t accumulate() const noexcept
     {
         return std::accumulate(buckets.begin(), buckets.end(), uint64_t{0});
+    }
+};
+
+struct PerGpuStatsV1 {
+    static constexpr uint64_t     version{1};
+    std::atomic_uint64_t          inUse{};
+    std::array<StatsHistogram, 2> ioSizeBytes{};
+    std::array<StatsHistogram, 2> ioCount{};
+    std::array<StatsHistogram, 2> ioTimeUs{};
+
+    using Histograms = std::tuple<StatsHistogram *, StatsHistogram *, StatsHistogram *>;
+    using ConstHistograms =
+        std::tuple<const StatsHistogram *, const StatsHistogram *, const StatsHistogram *>;
+
+    Histograms getHistograms(IoType ioType) noexcept
+    {
+        if (ioType != IoType::Read && ioType != IoType::Write) {
+            return Histograms{nullptr, nullptr, nullptr};
+        }
+        return Histograms{&ioSizeBytes[static_cast<size_t>(ioType)], &ioCount[static_cast<size_t>(ioType)],
+                          &ioTimeUs[static_cast<size_t>(ioType)]};
+    }
+
+    ConstHistograms getHistograms(IoType ioType) const noexcept
+    {
+        if (ioType != IoType::Read && ioType != IoType::Write) {
+            return ConstHistograms{nullptr, nullptr, nullptr};
+        }
+        return ConstHistograms{&ioSizeBytes[static_cast<size_t>(ioType)],
+                               &ioCount[static_cast<size_t>(ioType)], &ioTimeUs[static_cast<size_t>(ioType)]};
     }
 };
 
