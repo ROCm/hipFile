@@ -5,9 +5,11 @@
 #pragma once
 
 #include "file-descriptor.h"
+#include "io.h"
 
 #include <array>
 #include <atomic>
+#include <chrono>
 #include <memory>
 #include <ostream>
 #include <thread>
@@ -19,6 +21,12 @@ enum class StatsLevel : uint64_t {
     Basic,
     Detailed,
     Max,
+};
+
+enum class StatsBackend {
+    Fastpath,
+    Fallback,
+    Count,
 };
 
 /// When adding new fields, remember to increment Stats::version
@@ -49,11 +57,6 @@ struct Stats {
         return counters[static_cast<std::size_t>(index)];
     }
 };
-
-void statsAddFastPathRead(uint64_t bytes);
-void statsAddFastPathWrite(uint64_t bytes);
-void statsAddFallbackPathRead(uint64_t bytes);
-void statsAddFallbackPathWrite(uint64_t bytes);
 
 class StatsServer {
 public:
@@ -95,5 +98,25 @@ public:
 private:
     FileDescriptor m_pfd, m_sfd;
     pid_t          m_pid{0};
+};
+
+class StatsIoTracker {
+public:
+    StatsIoTracker(IoType ioType, StatsBackend backend) noexcept
+        : m_ioType(ioType), m_backend(backend), m_startTime{std::chrono::steady_clock::now()}
+    {
+    }
+    void complete(uint64_t bytes) const noexcept;
+
+private:
+    IoType                                m_ioType;
+    StatsBackend                          m_backend;
+    std::chrono::steady_clock::time_point m_startTime;
+};
+
+class StatsCollection {
+public:
+    virtual ~StatsCollection() = default;
+    virtual void addIo(IoType ioType, StatsBackend backend, uint64_t bytes, uint64_t timeUs) const noexcept;
 };
 }

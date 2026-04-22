@@ -260,38 +260,47 @@ StatsClient::generateReportV1(std::ostream &stream, const Stats *stats)
 }
 
 void
-statsAddFastPathRead(uint64_t bytes)
+StatsIoTracker::complete(uint64_t bytes) const noexcept
 {
-    Stats *stats{Context<StatsServer>::get()->getStats()};
-    if (stats && stats->level >= StatsLevel::Basic) {
-        stats->getCounter(StatsCounters::TotalFastPathReadBytes) += bytes;
-    }
+    auto endTime{std::chrono::steady_clock::now()};
+    auto duration{std::chrono::duration_cast<std::chrono::microseconds>(endTime - m_startTime)};
+    Context<StatsCollection>::get()->addIo(m_ioType, m_backend, bytes,
+                                           static_cast<uint64_t>(duration.count()));
 }
 
 void
-statsAddFastPathWrite(uint64_t bytes)
+StatsCollection::addIo(IoType ioType, StatsBackend backend, uint64_t bytes, uint64_t timeUs) const noexcept
 {
+    (void)timeUs;
     Stats *stats{Context<StatsServer>::get()->getStats()};
-    if (stats && stats->level >= StatsLevel::Basic) {
-        stats->getCounter(StatsCounters::TotalFastPathWriteBytes) += bytes;
+    if (stats == nullptr || stats->level < StatsLevel::Basic) {
+        return;
     }
-}
-
-void
-statsAddFallbackPathRead(uint64_t bytes)
-{
-    Stats *stats{Context<StatsServer>::get()->getStats()};
-    if (stats && stats->level >= StatsLevel::Basic) {
-        stats->getCounter(StatsCounters::TotalFallbackPathReadBytes) += bytes;
+    StatsCounters counter{StatsCounters::Max};
+    switch (backend) {
+        case StatsBackend::Fastpath:
+            if (ioType == IoType::Read) {
+                counter = StatsCounters::TotalFastPathReadBytes;
+            }
+            else {
+                counter = StatsCounters::TotalFastPathWriteBytes;
+            }
+            break;
+        case StatsBackend::Fallback:
+            if (ioType == IoType::Read) {
+                counter = StatsCounters::TotalFallbackPathReadBytes;
+            }
+            else {
+                counter = StatsCounters::TotalFallbackPathWriteBytes;
+            }
+            break;
+        case StatsBackend::Count:
+            [[fallthrough]];
+        default:
+            break;
     }
-}
-
-void
-statsAddFallbackPathWrite(uint64_t bytes)
-{
-    Stats *stats{Context<StatsServer>::get()->getStats()};
-    if (stats && stats->level >= StatsLevel::Basic) {
-        stats->getCounter(StatsCounters::TotalFallbackPathWriteBytes) += bytes;
+    if (counter != StatsCounters::Max) {
+        stats->getCounter(counter) += bytes;
     }
 }
 }

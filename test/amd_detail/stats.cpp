@@ -23,26 +23,22 @@ HIPFILE_WARN_NO_GLOBAL_CTOR_OFF
 
 struct HipFileStats : public HipFileUnopened {};
 
-#define STAT_TEST(name)                                                                                      \
-    TEST_F(HipFileStats, statsAdd##name)                                                                     \
-    {                                                                                                        \
-        Stats                    stats{};                                                                    \
-        StrictMock<MStatsServer> mstats{};                                                                   \
-        EXPECT_CALL(mstats, getStats).WillRepeatedly(testing::Return(&stats));                               \
-        stats.level = StatsLevel::Basic;                                                                     \
-        statsAdd##name(0x10);                                                                                \
-        ASSERT_EQ(0x10, stats.getCounter(StatsCounters::Total##name##Bytes).load());                         \
-        statsAdd##name(0x10);                                                                                \
-        ASSERT_EQ(0x20, stats.getCounter(StatsCounters::Total##name##Bytes).load());                         \
-        stats.level = StatsLevel::Disabled;                                                                  \
-        statsAdd##name(0x10);                                                                                \
-        ASSERT_EQ(0x20, stats.getCounter(StatsCounters::Total##name##Bytes).load());                         \
-    }
-
-STAT_TEST(FastPathRead)
-STAT_TEST(FastPathWrite)
-STAT_TEST(FallbackPathRead)
-STAT_TEST(FallbackPathWrite)
+TEST_F(HipFileStats, StatsCollectionAddIo)
+{
+    Stats                    stats{};
+    StrictMock<MStatsServer> mstats{};
+    EXPECT_CALL(mstats, getStats).WillRepeatedly(testing::Return(&stats));
+    stats.level = StatsLevel::Basic;
+    Context<StatsCollection>::get()->addIo(IoType::Read, StatsBackend::Fastpath, 10, 0);
+    ASSERT_EQ(10, stats.getCounter(StatsCounters::TotalFastPathReadBytes).load());
+    Context<StatsCollection>::get()->addIo(IoType::Write, StatsBackend::Fallback, 10, 0);
+    ASSERT_EQ(10, stats.getCounter(StatsCounters::TotalFallbackPathWriteBytes).load());
+    Context<StatsCollection>::get()->addIo(IoType::Read, StatsBackend::Fastpath, 10, 0);
+    ASSERT_EQ(20, stats.getCounter(StatsCounters::TotalFastPathReadBytes).load());
+    stats.level = StatsLevel::Disabled;
+    Context<StatsCollection>::get()->addIo(IoType::Write, StatsBackend::Fallback, 10, 0);
+    ASSERT_EQ(10, stats.getCounter(StatsCounters::TotalFallbackPathWriteBytes).load());
+}
 
 TEST_F(HipFileStats, StatsServerLifetime)
 {
