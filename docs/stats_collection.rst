@@ -17,7 +17,7 @@ Collection is controlled by the environment variable ``HIPFILE_STATS_LEVEL``.
 Value Description
 ===== =================================================
 0     Disabled
-1     Basic
+1     Basic (default value)
 2     Detailed (same as basic; reserved for future use)
 ===== =================================================
 
