@@ -23,5 +23,7 @@ Value Description
 
 Stats Collected
 ---------------
-* Basic: Bytes read/written on the fastpath backend
-* Basic: Bytes read/written on the fallback backend
+* Basic: Bytes read/written on the fastpath/fallback backends.
+* Basic: Bandwidth for reads/writes on the fastpath/fallback backends.
+* Basic: Latency for reads/writes on the fastpath/fallback backends.
+* Basic: Histograms of above stats broken into buckets based on the size of the I/O.
