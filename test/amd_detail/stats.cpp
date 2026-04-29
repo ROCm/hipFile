@@ -155,18 +155,22 @@ struct HipFileStatsPerGpuStatsV1 : public HipFileUnopened {};
 TEST_F(HipFileStatsPerGpuStatsV1, GetHistograms)
 {
     PerGpuStatsV1 stats{};
-    auto [readSize, readCount, readTime]          = stats.getHistograms(IoType::Read);
-    auto [writeSize, writeCount, writeTime]       = stats.getHistograms(IoType::Write);
-    auto [invalidSize, invalidCount, invalidTime] = stats.getHistograms(static_cast<IoType>(-1));
+    auto [readSize, readCount, readTime, readError]     = stats.getHistograms(IoType::Read);
+    auto [writeSize, writeCount, writeTime, writeError] = stats.getHistograms(IoType::Write);
+    auto [invalidSize, invalidCount, invalidTime, invalidError] =
+        stats.getHistograms(static_cast<IoType>(-1));
     ASSERT_EQ(&stats.ioSizeBytes[0], readSize);
     ASSERT_EQ(&stats.ioCount[0], readCount);
     ASSERT_EQ(&stats.ioTimeUs[0], readTime);
+    ASSERT_EQ(&stats.errorCount[0], readError);
     ASSERT_EQ(&stats.ioSizeBytes[1], writeSize);
     ASSERT_EQ(&stats.ioCount[1], writeCount);
     ASSERT_EQ(&stats.ioTimeUs[1], writeTime);
+    ASSERT_EQ(&stats.errorCount[1], writeError);
     ASSERT_EQ(nullptr, invalidSize);
     ASSERT_EQ(nullptr, invalidCount);
     ASSERT_EQ(nullptr, invalidTime);
+    ASSERT_EQ(nullptr, invalidError);
 }
 
 struct HipFileStatsV1 : public HipFileUnopened {};

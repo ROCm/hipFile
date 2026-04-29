@@ -355,8 +355,10 @@ StatsClient::generateReportV1(std::ostream &stream, const StatsV1 *stats)
             uint64_t totalBytes{}, totalCount{}, totalTimeUs{};
             for (size_t i{}; i < StatsV1::MaxGpus; ++i) {
                 if (const auto *perGpuStats{stats->getPerGpuStats(i, backend)}) {
-                    if (const auto [sizeHist, countHist, timeHist] = perGpuStats->getHistograms(ioType);
-                        sizeHist != nullptr && countHist != nullptr && timeHist != nullptr) {
+                    if (const auto [sizeHist, countHist, timeHist, errorCountHist] =
+                            perGpuStats->getHistograms(ioType);
+                        sizeHist != nullptr && countHist != nullptr && timeHist != nullptr &&
+                        errorCountHist != nullptr) {
                         totalBytes += sizeHist->accumulate();
                         totalCount += countHist->accumulate();
                         totalTimeUs += timeHist->accumulate();
@@ -377,7 +379,10 @@ StatsClient::generateReportV1(std::ostream &stream, const StatsV1 *stats)
         }
         stream << "GPU " << gpuId << ":\n";
         auto ioSize = [](std::ostream &str, PerGpuStatsV1::ConstHistograms histograms, size_t bucket) {
-            const auto [sizeHist, countHist, timeHist] = histograms;
+            const auto [sizeHist, countHist, timeHist, errorCountHist] = histograms;
+            (void)countHist;
+            (void)timeHist;
+            (void)errorCountHist;
             uint64_t size{};
             if (sizeHist != nullptr) {
                 size = sizeHist->buckets[bucket].load();
@@ -385,7 +390,9 @@ StatsClient::generateReportV1(std::ostream &stream, const StatsV1 *stats)
             str << size;
         };
         auto bandwidth = [](std::ostream &str, PerGpuStatsV1::ConstHistograms histograms, size_t bucket) {
-            const auto [sizeHist, countHist, timeHist] = histograms;
+            const auto [sizeHist, countHist, timeHist, errorCountHist] = histograms;
+            (void)countHist;
+            (void)errorCountHist;
             uint64_t size{}, timeUs{};
             if (sizeHist != nullptr) {
                 size = sizeHist->buckets[bucket].load();
@@ -396,7 +403,9 @@ StatsClient::generateReportV1(std::ostream &stream, const StatsV1 *stats)
             str << reportUtil::bandwidthGiBs(size, timeUs);
         };
         auto latency = [](std::ostream &str, PerGpuStatsV1::ConstHistograms histograms, size_t bucket) {
-            const auto [sizeHist, countHist, timeHist] = histograms;
+            const auto [sizeHist, countHist, timeHist, errorCountHist] = histograms;
+            (void)sizeHist;
+            (void)errorCountHist;
             uint64_t timeUs{}, count{};
             if (timeHist != nullptr) {
                 timeUs = timeHist->buckets[bucket].load();
@@ -439,7 +448,8 @@ StatsCollection::addIo(IoType ioType, StatsBackend backend, uint64_t bytes, uint
     if (perGpuStats == nullptr) {
         return;
     }
-    auto [sizeHist, countHist, timeHist] = perGpuStats->getHistograms(ioType);
+    auto [sizeHist, countHist, timeHist, errorCountHist] = perGpuStats->getHistograms(ioType);
+    (void)errorCountHist;
     if (sizeHist == nullptr || countHist == nullptr || timeHist == nullptr) {
         return;
     }
