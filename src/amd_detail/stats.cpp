@@ -459,4 +459,34 @@ StatsCollection::addIo(IoType ioType, StatsBackend backend, uint64_t bytes, uint
     timeHist->buckets[bucket].fetch_add(timeUs, std::memory_order_relaxed);
     perGpuStats->inUse.store(1, std::memory_order_relaxed);
 }
+
+void
+StatsCollection::error(IoType ioType, StatsBackend backend, uint64_t bytes) const noexcept
+{
+    Stats *stats{Context<IStatsServer>::get()->getStats()};
+    if (stats == nullptr || stats->getLevel() < StatsLevel::Basic) {
+        return;
+    }
+    size_t device{};
+    try {
+        device = static_cast<size_t>(Context<Hip>::get()->hipGetDevice());
+    }
+    catch (...) {
+        return;
+    }
+    auto *perGpuStats{stats->getPerGpuStats(device, backend)};
+    if (perGpuStats == nullptr) {
+        return;
+    }
+    auto [sizeHist, countHist, timeHist, errorCountHist] = perGpuStats->getHistograms(ioType);
+    (void)sizeHist;
+    (void)countHist;
+    (void)timeHist;
+    if (errorCountHist == nullptr) {
+        return;
+    }
+    size_t bucket = StatsHistogram::toHistogramBucket(bytes);
+    errorCountHist->buckets[bucket].fetch_add(1, std::memory_order_relaxed);
+    perGpuStats->inUse.store(1, std::memory_order_relaxed);
+}
 }

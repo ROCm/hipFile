@@ -265,5 +265,6 @@ class StatsCollection {
 public:
     virtual ~StatsCollection() = default;
     virtual void addIo(IoType ioType, StatsBackend backend, uint64_t bytes, uint64_t timeUs) const noexcept;
+    virtual void error(IoType ioType, StatsBackend backend, uint64_t bytes) const noexcept;
 };
 }

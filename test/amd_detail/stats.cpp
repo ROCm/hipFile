@@ -55,6 +55,37 @@ TEST_F(HipFileStats, StatsCollectionAddIo)
                       .load());
 }
 
+TEST_F(HipFileStats, StatsCollectionError)
+{
+    Stats                    stats{};
+    StrictMock<MStatsServer> mstats{};
+    StrictMock<MHip>         mhip{};
+    EXPECT_CALL(mstats, getStats).WillRepeatedly(testing::Return(&stats));
+    EXPECT_CALL(mhip, hipGetDevice).WillRepeatedly(testing::Return(0));
+    stats.setLevel(StatsLevel::Basic);
+    Context<StatsCollection>::get()->error(IoType::Read, StatsBackend::Fastpath, 10);
+    ASSERT_EQ(1, stats.getPerGpuStats(0, StatsBackend::Fastpath)
+                     ->errorCount[static_cast<size_t>(IoType::Read)]
+                     .buckets[0]
+                     .load());
+    Context<StatsCollection>::get()->error(IoType::Write, StatsBackend::Fallback, 10);
+    ASSERT_EQ(1, stats.getPerGpuStats(0, StatsBackend::Fallback)
+                     ->errorCount[static_cast<size_t>(IoType::Write)]
+                     .buckets[0]
+                     .load());
+    Context<StatsCollection>::get()->error(IoType::Read, StatsBackend::Fastpath, 10);
+    ASSERT_EQ(2, stats.getPerGpuStats(0, StatsBackend::Fastpath)
+                     ->errorCount[static_cast<size_t>(IoType::Read)]
+                     .buckets[0]
+                     .load());
+    stats.setLevel(StatsLevel::Disabled);
+    Context<StatsCollection>::get()->error(IoType::Write, StatsBackend::Fallback, 10);
+    ASSERT_EQ(1, stats.getPerGpuStats(0, StatsBackend::Fallback)
+                     ->errorCount[static_cast<size_t>(IoType::Write)]
+                     .buckets[0]
+                     .load());
+}
+
 TEST_F(HipFileStats, StatsContainer)
 {
     StrictMock<MSys>           msys{};
