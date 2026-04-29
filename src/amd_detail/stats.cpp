@@ -352,7 +352,7 @@ StatsClient::generateReportV1(std::ostream &stream, const StatsV1 *stats)
     static constexpr StatsBackend backends[]{StatsBackend::Fastpath, StatsBackend::Fallback};
     for (const auto &backend : backends) {
         for (const auto &ioType : ioTypes) {
-            uint64_t totalBytes{}, totalCount{}, totalTimeUs{};
+            uint64_t totalBytes{}, totalCount{}, totalTimeUs{}, totalErrors{};
             for (size_t i{}; i < StatsV1::MaxGpus; ++i) {
                 if (const auto *perGpuStats{stats->getPerGpuStats(i, backend)}) {
                     if (const auto [sizeHist, countHist, timeHist, errorCountHist] =
@@ -362,6 +362,7 @@ StatsClient::generateReportV1(std::ostream &stream, const StatsV1 *stats)
                         totalBytes += sizeHist->accumulate();
                         totalCount += countHist->accumulate();
                         totalTimeUs += timeHist->accumulate();
+                        totalErrors += errorCountHist->accumulate();
                     }
                 }
             }
@@ -370,7 +371,9 @@ StatsClient::generateReportV1(std::ostream &stream, const StatsV1 *stats)
             stream << "Average " << reportUtil::toString(backend) << ' ' << reportUtil::toString(ioType)
                    << " Bandwidth (GiB/s): " << reportUtil::bandwidthGiBs(totalBytes, totalTimeUs) << '\n';
             stream << "Average " << reportUtil::toString(backend) << ' ' << reportUtil::toString(ioType)
-                   << " Latency (us): " << reportUtil::latencyUs(totalTimeUs, totalCount) << "\n\n";
+                   << " Latency (us): " << reportUtil::latencyUs(totalTimeUs, totalCount) << '\n';
+            stream << "Total " << reportUtil::toString(backend) << ' ' << reportUtil::toString(ioType)
+                   << " Errors: " << totalErrors << "\n\n";
         }
     }
     for (size_t gpuId{}; gpuId < StatsV1::MaxGpus; ++gpuId) {
@@ -415,9 +418,21 @@ StatsClient::generateReportV1(std::ostream &stream, const StatsV1 *stats)
             }
             str << reportUtil::latencyUs(timeUs, count);
         };
+        auto errorCount = [](std::ostream &str, PerGpuStatsV1::ConstHistograms histograms, size_t bucket) {
+            const auto [sizeHist, countHist, timeHist, errorCountHist] = histograms;
+            (void)sizeHist;
+            (void)countHist;
+            (void)timeHist;
+            uint64_t errors{};
+            if (errorCountHist != nullptr) {
+                errors = errorCountHist->buckets[bucket].load();
+            }
+            str << errors;
+        };
         generateReportHistogramV1(stream, stats, gpuId, "Size", "Size (B)", ioSize);
         generateReportHistogramV1(stream, stats, gpuId, "Bandwidth", "Bandwidth (GiB/s)", bandwidth);
         generateReportHistogramV1(stream, stats, gpuId, "Latency", "Latency (us)", latency);
+        generateReportHistogramV1(stream, stats, gpuId, "Errors", "Error Count", errorCount);
     }
 }
 

@@ -119,12 +119,28 @@ TEST_F(HipFileStats, GenerateReportV1)
     stats.getPerGpuStats(0, StatsBackend::Fallback)
         ->ioSizeBytes[static_cast<size_t>(IoType::Write)]
         .buckets[0] = 8;
+    stats.getPerGpuStats(0, StatsBackend::Fastpath)
+        ->errorCount[static_cast<size_t>(IoType::Read)]
+        .buckets[0] = 1;
+    stats.getPerGpuStats(0, StatsBackend::Fastpath)
+        ->errorCount[static_cast<size_t>(IoType::Write)]
+        .buckets[0] = 2;
+    stats.getPerGpuStats(0, StatsBackend::Fallback)
+        ->errorCount[static_cast<size_t>(IoType::Read)]
+        .buckets[0] = 3;
+    stats.getPerGpuStats(0, StatsBackend::Fallback)
+        ->errorCount[static_cast<size_t>(IoType::Write)]
+        .buckets[0] = 4;
     StatsClient::generateReportV1(os, &stats);
     std::string str{os.str()};
     ASSERT_GT(std::string::npos, str.find("Total Fastpath Read Size (B): 2"));
     ASSERT_GT(std::string::npos, str.find("Total Fastpath Write Size (B): 4"));
     ASSERT_GT(std::string::npos, str.find("Total Fallback Read Size (B): 6"));
     ASSERT_GT(std::string::npos, str.find("Total Fallback Write Size (B): 8"));
+    ASSERT_GT(std::string::npos, str.find("Total Fastpath Read Errors: 1"));
+    ASSERT_GT(std::string::npos, str.find("Total Fastpath Write Errors: 2"));
+    ASSERT_GT(std::string::npos, str.find("Total Fallback Read Errors: 3"));
+    ASSERT_GT(std::string::npos, str.find("Total Fallback Write Errors: 4"));
 }
 
 TEST_F(HipFileStats, GenerateReportV1TwoGpus)
@@ -137,9 +153,16 @@ TEST_F(HipFileStats, GenerateReportV1TwoGpus)
     stats.getPerGpuStats(1, StatsBackend::Fastpath)
         ->ioSizeBytes[static_cast<size_t>(IoType::Read)]
         .buckets[0] = 4;
+    stats.getPerGpuStats(0, StatsBackend::Fastpath)
+        ->errorCount[static_cast<size_t>(IoType::Read)]
+        .buckets[0] = 1;
+    stats.getPerGpuStats(1, StatsBackend::Fastpath)
+        ->errorCount[static_cast<size_t>(IoType::Read)]
+        .buckets[0] = 2;
     StatsClient::generateReportV1(os, &stats);
     std::string str{os.str()};
     ASSERT_GT(std::string::npos, str.find("Total Fastpath Read Size (B): 6"));
+    ASSERT_GT(std::string::npos, str.find("Total Fastpath Read Errors: 3"));
 }
 
 struct HipFileStatsHistogram : public HipFileUnopened {};
