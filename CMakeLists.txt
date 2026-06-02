@@ -220,7 +220,6 @@ option(AIS_INSTALL_EXAMPLES "Install example programs" ON)
 #------------------
 option(AIS_INSTALL_TOOLS "Install tool programs" ON)
 
-
 #------
 # docs
 #------
