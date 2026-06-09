@@ -1,0 +1,56 @@
+name: hipFile GHCR create ais_ci_rocky8 (placeholder)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/create-rocky8.yml'
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  # Reclaims the hipfile/ais_ci_rocky8 namespace under the org that owns THIS repo.
+  # Run from ROCm/hipFile so the new package is access-linked there.
+  IMAGE: ${{ github.repository_owner }}/hipfile/ais_ci_rocky8
+  TAG: hello-world
+  # Set to "true" to only build locally; "false" actually pushes (creates the package).
+  DRY_RUN: "false"
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build and push hello-world placeholder
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          IMAGE_REF="$(printf '%s/%s' "${REGISTRY}" "${IMAGE}" | tr '[:upper:]' '[:lower:]')"
+          SOURCE_URL="https://github.com/${REPO}"
+          echo "Target: ${IMAGE_REF}:${TAG}  (source=${SOURCE_URL})"
+
+          # Minimal inline 'hello-world' style image; no external Dockerfile needed.
+          printf '%s\n' \
+            'FROM busybox:latest' \
+            'CMD ["echo", "hello-world: hipFile ais_ci_rocky8 placeholder"]' \
+            > Dockerfile.placeholder
+
+          docker build \
+            --label "org.opencontainers.image.source=${SOURCE_URL}" \
+            --label "org.opencontainers.image.description=hipFile ais_ci_rocky8 placeholder to (re)claim the GHCR namespace" \
+            -f Dockerfile.placeholder \
+            -t "${IMAGE_REF}:${TAG}" .
+
+          if [ "${DRY_RUN}" = "true" ]; then
+            echo "DRY_RUN=true -> built ${IMAGE_REF}:${TAG} but not pushing."
+            exit 0
+          fi
+
+          echo "${GH_TOKEN}" | docker login "${REGISTRY}" -u "${ACTOR}" --password-stdin
+          docker push "${IMAGE_REF}:${TAG}"
+          echo "Pushed ${IMAGE_REF}:${TAG}"

@@ -15,6 +15,7 @@ permissions:
   packages: read
 jobs:
   AIS_CI_Pre-check:
+    if: false
     outputs:
       changed_dockerfile: ${{ steps.ci-flags.outputs.changed_dockerfile }}
     runs-on: [ubuntu-24.04]
