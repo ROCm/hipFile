@@ -32,27 +32,45 @@ TEST_F(HipFileStats, StatsCollectionAddIo)
     EXPECT_CALL(mstats, getStats).WillRepeatedly(testing::Return(&stats));
     EXPECT_CALL(mhip, hipGetDevice).WillRepeatedly(testing::Return(0));
     stats.setLevel(StatsLevel::Basic);
-    Context<StatsCollection>::get()->addIo(IoType::Read, StatsBackend::Fastpath, 10, 0);
+    Context<StatsCollection>::get()->addIo(IoType::Read, StatsBackend::Fastpath, 10, 0, true);
     ASSERT_EQ(10, stats.getPerGpuStats(0, StatsBackend::Fastpath)
                       ->ioSizeBytes[static_cast<size_t>(IoType::Read)]
                       .buckets[0]
                       .load());
-    Context<StatsCollection>::get()->addIo(IoType::Write, StatsBackend::Fallback, 10, 0);
+    Context<StatsCollection>::get()->addIo(IoType::Write, StatsBackend::Fallback, 10, 0, true);
     ASSERT_EQ(10, stats.getPerGpuStats(0, StatsBackend::Fallback)
                       ->ioSizeBytes[static_cast<size_t>(IoType::Write)]
                       .buckets[0]
                       .load());
-    Context<StatsCollection>::get()->addIo(IoType::Read, StatsBackend::Fastpath, 10, 0);
+    Context<StatsCollection>::get()->addIo(IoType::Read, StatsBackend::Fastpath, 10, 0, true);
     ASSERT_EQ(20, stats.getPerGpuStats(0, StatsBackend::Fastpath)
                       ->ioSizeBytes[static_cast<size_t>(IoType::Read)]
                       .buckets[0]
                       .load());
     stats.setLevel(StatsLevel::Disabled);
-    Context<StatsCollection>::get()->addIo(IoType::Write, StatsBackend::Fallback, 10, 0);
+    Context<StatsCollection>::get()->addIo(IoType::Write, StatsBackend::Fallback, 10, 0, true);
     ASSERT_EQ(10, stats.getPerGpuStats(0, StatsBackend::Fallback)
                       ->ioSizeBytes[static_cast<size_t>(IoType::Write)]
                       .buckets[0]
                       .load());
+}
+
+TEST_F(HipFileStats, StatsCollectionAddIoUnaligned)
+{
+    Stats                    stats{};
+    StrictMock<MStatsServer> mstats{};
+    StrictMock<MHip>         mhip{};
+    EXPECT_CALL(mstats, getStats).WillRepeatedly(testing::Return(&stats));
+    EXPECT_CALL(mhip, hipGetDevice).WillRepeatedly(testing::Return(0));
+    stats.setLevel(StatsLevel::Basic);
+    Context<StatsCollection>::get()->addIo(IoType::Read, StatsBackend::Fastpath, 10, 0, false);
+    ASSERT_EQ(1, stats.getPerGpuStats(0, StatsBackend::Fastpath)
+                     ->unalignedCount[static_cast<size_t>(IoType::Read)]
+                     .load());
+    Context<StatsCollection>::get()->addIo(IoType::Read, StatsBackend::Fastpath, 10, 0, true);
+    ASSERT_EQ(1, stats.getPerGpuStats(0, StatsBackend::Fastpath)
+                     ->unalignedCount[static_cast<size_t>(IoType::Read)]
+                     .load());
 }
 
 TEST_F(HipFileStats, StatsCollectionError)

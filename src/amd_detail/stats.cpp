@@ -460,11 +460,12 @@ StatsIoTracker::complete(uint64_t bytes) const noexcept
     auto endTime{std::chrono::steady_clock::now()};
     auto duration{std::chrono::duration_cast<std::chrono::microseconds>(endTime - m_startTime)};
     Context<StatsCollection>::get()->addIo(m_ioType, m_backend, bytes,
-                                           static_cast<uint64_t>(duration.count()));
+                                           static_cast<uint64_t>(duration.count()), m_aligned);
 }
 
 void
-StatsCollection::addIo(IoType ioType, StatsBackend backend, uint64_t bytes, uint64_t timeUs) const noexcept
+StatsCollection::addIo(IoType ioType, StatsBackend backend, uint64_t bytes, uint64_t timeUs,
+                       bool aligned) const noexcept
 {
     Stats *stats{Context<IStatsServer>::get()->getStats()};
     if (stats == nullptr || stats->getLevel() < StatsLevel::Basic) {
@@ -491,6 +492,9 @@ StatsCollection::addIo(IoType ioType, StatsBackend backend, uint64_t bytes, uint
     countHist->buckets[bucket].fetch_add(1, std::memory_order_relaxed);
     timeHist->buckets[bucket].fetch_add(timeUs, std::memory_order_relaxed);
     perGpuStats->inUse.store(1, std::memory_order_relaxed);
+    if (!aligned) {
+        perGpuStats->unalignedCount[static_cast<size_t>(ioType)].fetch_add(1, std::memory_order_relaxed);
+    }
 }
 
 void
