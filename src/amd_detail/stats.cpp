@@ -370,7 +370,7 @@ StatsClient::generateReportV1(std::ostream &stream, const StatsV1 *stats)
     static constexpr StatsBackend backends[]{StatsBackend::Fastpath, StatsBackend::Fallback};
     for (const auto &backend : backends) {
         for (const auto &ioType : ioTypes) {
-            uint64_t totalBytes{}, totalCount{}, totalTimeUs{}, totalErrors{};
+            uint64_t totalBytes{}, totalCount{}, totalTimeUs{}, totalErrors{}, totalUnaligned{};
             for (size_t i{}; i < StatsV1::MaxGpus; ++i) {
                 if (const auto *perGpuStats{stats->getPerGpuStats(i, backend)}) {
                     if (const auto [sizeHist, countHist, timeHist, errorCountHist] =
@@ -381,6 +381,7 @@ StatsClient::generateReportV1(std::ostream &stream, const StatsV1 *stats)
                         totalCount += countHist->accumulate();
                         totalTimeUs += timeHist->accumulate();
                         totalErrors += errorCountHist->accumulate();
+                        totalUnaligned += perGpuStats->unalignedCount[static_cast<size_t>(ioType)].load();
                     }
                 }
             }
@@ -391,7 +392,9 @@ StatsClient::generateReportV1(std::ostream &stream, const StatsV1 *stats)
             stream << "Average " << reportUtil::toString(backend) << ' ' << reportUtil::toString(ioType)
                    << " Latency (us): " << reportUtil::latencyUs(totalTimeUs, totalCount) << '\n';
             stream << "Total " << reportUtil::toString(backend) << ' ' << reportUtil::toString(ioType)
-                   << " Errors: " << totalErrors << "\n\n";
+                   << " Errors: " << totalErrors << '\n';
+            stream << "Total " << reportUtil::toString(backend) << ' ' << reportUtil::toString(ioType)
+                   << " Unaligned: " << totalUnaligned << "\n\n";
         }
     }
     for (size_t gpuId{}; gpuId < StatsV1::MaxGpus; ++gpuId) {
@@ -451,6 +454,15 @@ StatsClient::generateReportV1(std::ostream &stream, const StatsV1 *stats)
         generateReportHistogramV1(stream, stats, gpuId, "Bandwidth", "Bandwidth (GiB/s)", bandwidth);
         generateReportHistogramV1(stream, stats, gpuId, "Latency", "Latency (us)", latency);
         generateReportHistogramV1(stream, stats, gpuId, "Errors", "Error Count", errorCount);
+        for (const auto &backend : backends) {
+            for (const auto &ioType : ioTypes) {
+                auto unalignedCount{stats->getPerGpuStats(gpuId, backend)
+                                        ->unalignedCount[static_cast<size_t>(ioType)]
+                                        .load()};
+                stream << reportUtil::toString(backend) << ' ' << reportUtil::toString(ioType)
+                       << " Unaligned Count: " << unalignedCount << '\n';
+            }
+        }
     }
 }
 
